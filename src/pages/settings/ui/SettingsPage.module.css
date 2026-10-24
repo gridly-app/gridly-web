@@ -1,0 +1,40 @@
+.settings {
+	flex: 1;
+	min-height: 0;
+	margin: 0;
+	overflow: auto;
+	padding: 28px;
+	background: var(--surface);
+}
+.field {
+	max-width: 560px;
+}
+.settings hr {
+	border: none;
+	border-top: 1px solid var(--line);
+	margin: 25px 0;
+}
+.settings h3 {
+	font-size: 18px;
+	letter-spacing: -0.5px;
+}
+.switch-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	max-width: 560px;
+	padding: 17px 0;
+	border-bottom: 1px solid var(--line);
+	font-size: 12px;
+}
+.submit {
+	margin-top: 22px;
+}
+.switch {
+	margin: 0;
+}
+@media (width <= 580px) {
+	.settings {
+		padding: 20px 16px;
+	}
+}

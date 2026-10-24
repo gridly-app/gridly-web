@@ -1,0 +1,47 @@
+.timeline {
+	padding: 0 26px;
+}
+
+.timeline > div {
+	display: flex;
+	gap: 18px;
+	padding: 24px 0;
+	border-bottom: 1px solid var(--line);
+	align-items: flex-start;
+	font-size: 12px;
+}
+
+.timeline p {
+	margin: 6px 0 0;
+	font-size: 11px;
+}
+
+.timeline time {
+	margin-left: auto;
+	font-size: 10px;
+	color: var(--muted-foreground);
+}
+
+.event-dot {
+	width: 9px;
+	height: 9px;
+	border: 2px solid #929edc;
+	border-radius: 50%;
+	margin-top: 4px;
+	border-color: var(--brand-accent);
+	flex-shrink: 0;
+}
+@media (width <= 580px) {
+	.timeline {
+		padding: 0 16px;
+	}
+
+	.timeline > div {
+		flex-wrap: wrap;
+	}
+
+	.timeline time {
+		width: 100%;
+		margin-left: 27px;
+	}
+}

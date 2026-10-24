@@ -1,0 +1,39 @@
+.pagination-content {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pagination-content li {
+	flex-shrink: 0;
+}
+
+@media (width <= 700px) {
+	.pagination-content {
+		overflow-x: auto;
+	}
+}
+
+.fitted {
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+	gap: 2px;
+	justify-content: center;
+	overflow: hidden;
+}
+.fitted > li:first-child {
+	margin-right: auto;
+}
+.fitted > li:last-child {
+	margin-left: auto;
+}
+.fitted > li:not(:first-child, :last-child) {
+	min-width: 0;
+	max-width: calc(100% - 96px);
+	flex-shrink: 1;
+}

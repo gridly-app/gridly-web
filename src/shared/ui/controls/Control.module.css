@@ -1,0 +1,19 @@
+.control {
+	font: inherit;
+	font-weight: inherit;
+	min-width: 0;
+	min-height: 40px;
+	padding: 10px 12px;
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	background: var(--control-bg);
+	color: var(--text);
+	outline-offset: 3px;
+}
+.control:focus-visible {
+	outline: 2px solid var(--brand-accent);
+}
+.control:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}

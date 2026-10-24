@@ -1,0 +1,69 @@
+.warehouse-information {
+	padding: 28px;
+	max-width: none;
+	flex: 1;
+	min-height: 0;
+	border: 0;
+	border-radius: 0;
+	margin: 0;
+	overflow: auto;
+	background: var(--surface);
+}
+
+.information-name {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	color: var(--brand-accent);
+	padding: 8px 0;
+}
+
+.information-name h2 {
+	margin: 0;
+	color: var(--text);
+	font-size: 22px;
+}
+
+.warehouse-information dl {
+	margin: 24px 0;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0 40px;
+}
+
+.warehouse-information dl > div {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 22px 0;
+	border-bottom: 1px solid var(--line);
+	font-size: 13px;
+	flex-direction: column;
+}
+
+.warehouse-information dt {
+	color: var(--muted-foreground);
+}
+
+.warehouse-information dd {
+	margin: 0;
+	text-align: left;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.information-name > svg {
+	box-sizing: content-box;
+	padding: 14px;
+	background: var(--soft);
+	border-radius: 16px;
+}
+@media (width <= 580px) {
+	.warehouse-information {
+		padding: 20px 16px;
+	}
+
+	.warehouse-information dl {
+		grid-template-columns: 1fr;
+	}
+}

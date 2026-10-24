@@ -1,0 +1,79 @@
+.space-combobox-control {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	min-width: 0;
+	position: relative;
+}
+
+.space-combobox-control input {
+	width: 100%;
+	min-width: 0;
+	padding-right: 36px;
+}
+
+.space-combobox-trigger {
+	position: absolute;
+	right: 5px;
+	width: 28px;
+	height: 28px;
+	display: grid;
+	place-items: center;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.space-combobox-trigger:hover {
+	background: var(--muted);
+}
+
+.space-combobox-positioner {
+	z-index: 120;
+	outline: none;
+}
+
+.space-combobox-popup {
+	min-width: var(--anchor-width);
+	max-width: min(480px, var(--available-width));
+	border: 1px solid var(--line);
+	border-radius: 14px;
+	background: var(--surface);
+	color: var(--text);
+	padding: 5px;
+	box-shadow: 0 12px 40px #0003;
+}
+
+.space-combobox-list {
+	max-height: min(300px, var(--available-height));
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.space-combobox-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	border-radius: 9px;
+	padding: 9px 12px;
+	font-size: 13px;
+	cursor: pointer;
+	outline: none;
+}
+
+.space-combobox-item[data-highlighted] {
+	background: var(--soft);
+}
+
+.space-combobox-empty {
+	padding: 12px;
+	color: var(--muted-foreground);
+}
+
+.space-combobox-trigger:focus-visible {
+	outline: 2px solid var(--brand-accent);
+	outline-offset: 3px;
+}

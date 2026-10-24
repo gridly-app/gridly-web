@@ -1,0 +1,14 @@
+.section-caption {
+	font-size: 9px;
+	color: var(--muted-foreground);
+	font-weight: 800;
+	letter-spacing: 1px;
+	margin: 0 0 19px;
+}
+
+@media (width <= 580px) {
+	.section-caption {
+		font-size: 8px;
+		letter-spacing: 0.5px;
+	}
+}

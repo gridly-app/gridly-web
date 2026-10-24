@@ -1,0 +1,8 @@
+.row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.wrap {
+	flex-wrap: wrap;
+}

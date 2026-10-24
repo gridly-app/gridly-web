@@ -1,0 +1,81 @@
+import type { Robot, Warehouse } from "@/entities/warehouse";
+import localLayout from "./Layout.module.css";
+import mapStyles from "./WarehouseMap.module.css";
+
+export interface RobotDetailsProps {
+	robot: Robot;
+	warehouse: Pick<Warehouse, "products" | "orders">;
+}
+
+export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
+	const task = robot.currentTask;
+	const product = warehouse.products.find(
+		(product) => product.id === task?.productId,
+	);
+	const order = warehouse.orders.find((order) => order.id === task?.orderId);
+
+	return (
+		<div data-robot-id={robot.id}>
+			<h3>{robot.name}</h3>
+			<div className={mapStyles["detail-line"]}>
+				<span>Положение</span>
+				<b>
+					{robot.x}, {robot.y}
+				</b>
+			</div>
+			<div className={mapStyles["detail-line"]}>
+				<span>Состояние</span>
+				<b>
+					{robot.status === "idle"
+						? "Свободен"
+						: task?.carrying
+							? "Везёт груз"
+							: robot.status === "working"
+								? "Обрабатывает груз"
+								: "В пути"}
+				</b>
+			</div>
+			{task ? (
+				<div
+					className={mapStyles["robot-current-task"]}
+					data-task-phase={task.phase}
+				>
+					<div className={localLayout["section-caption"]}>ТЕКУЩАЯ ЗАДАЧА</div>
+					<p className={mapStyles["robot-task-label"]}>{task.label}</p>
+					<div className={mapStyles["detail-line"]}>
+						<span>Заказ</span>
+						<b>{order?.number || task.orderId}</b>
+					</div>
+					<p>
+						{product?.name || "Груз"} · {task.quantity} шт.
+					</p>
+					<div className={mapStyles["detail-line"]}>
+						<span>Цель</span>
+						<b>
+							{task.target.x}, {task.target.y}
+						</b>
+					</div>
+					<div className={mapStyles["detail-line"]}>
+						<span>Осталось</span>
+						<b>{Math.max(0, task.route.length - 1)} клеток</b>
+					</div>
+				</div>
+			) : robot.returnRoute?.length ? (
+				<div
+					className={mapStyles["robot-current-task"]}
+					data-task-phase="return"
+				>
+					<div className={localLayout["section-caption"]}>ТЕКУЩАЯ ЗАДАЧА</div>
+					<p className={mapStyles["robot-task-label"]}>Возврат на стоянку</p>
+					<p>Осталось {Math.max(0, robot.returnRoute.length - 1)} клеток</p>
+				</div>
+			) : (
+				<p className={localLayout.muted}>
+					{robot.status === "idle"
+						? "Ожидает следующей задачи"
+						: "Данные текущей задачи пока не получены"}
+				</p>
+			)}
+		</div>
+	);
+}

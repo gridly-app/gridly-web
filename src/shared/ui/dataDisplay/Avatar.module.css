@@ -1,0 +1,19 @@
+.avatar {
+	border-radius: 11px;
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	font-size: 11px;
+	font-weight: 800;
+	background: var(--avatar-bg);
+	color: var(--avatar-fg);
+	border: var(--avatar-border);
+}
+.avatar [data-slot="avatar-fallback"] {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	border-radius: inherit;
+}

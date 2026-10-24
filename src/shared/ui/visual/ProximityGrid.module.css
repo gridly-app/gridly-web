@@ -1,0 +1,40 @@
+.proximity-cell {
+	display: block;
+	aspect-ratio: 1;
+}
+
+.art-grid i {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1;
+	border-radius: 5px;
+}
+
+.art-grid {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 7px;
+	transform: perspective(500px) rotateX(25deg) rotateZ(-15deg);
+	margin: 35px -30px;
+	width: 100%;
+	max-width: 400px;
+	isolation: isolate;
+}
+
+.proximity-cell:hover {
+	position: relative;
+	z-index: 1;
+}
+
+.art-grid i {
+	background: var(--proximity-cell-bg, #414b38);
+}
+
+.art-grid .art-shelf {
+	background: var(--proximity-shelf-bg, #7d8c65);
+}
+
+.art-grid .art-active {
+	background: var(--proximity-active-bg, #ec8552);
+	box-shadow: var(--proximity-active-shadow, 4px 6px 0 #a35231);
+}

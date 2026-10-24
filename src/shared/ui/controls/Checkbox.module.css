@@ -1,0 +1,28 @@
+.space-checkbox {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	background: var(--surface);
+	color: white;
+	cursor: pointer;
+}
+
+.space-checkbox[data-checked] {
+	background: var(--brand-accent);
+	border-color: var(--brand-accent);
+}
+
+.space-checkbox:focus-visible {
+	outline: 2px solid var(--brand-accent);
+	outline-offset: 3px;
+}
+
+.space-checkbox:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}

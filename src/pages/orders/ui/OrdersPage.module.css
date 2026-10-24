@@ -1,0 +1,42 @@
+.order-link {
+	background: none;
+	border: none;
+	color: var(--brand-accent);
+	font-weight: 700;
+}
+
+.order-line {
+	padding: 0 12px 8px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	margin-bottom: 12px;
+}
+
+.lineField {
+	flex: 1;
+}
+
+.order-line input {
+	width: 100%;
+}
+
+.order-statistics {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	color: var(--text);
+}
+
+.order-statistics b {
+	font-size: 11px;
+}
+
+.order-statistics small {
+	color: var(--muted-foreground);
+	font-size: 9px;
+	font-weight: 500;
+}
+
+.order-link {
+	color: var(--brand-accent);
+}

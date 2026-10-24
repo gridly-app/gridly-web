@@ -1,0 +1,210 @@
+.workspace[data-immersive] {
+	visibility: hidden;
+	pointer-events: none;
+}
+.brand {
+	font-size: 23px;
+	letter-spacing: -1.5px;
+	font-weight: 800;
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	flex: 1;
+	min-width: 0;
+}
+.brand-icon {
+	display: grid;
+	place-items: center;
+	width: 33px;
+	height: 34px;
+	flex-shrink: 0;
+	border-radius: 11px;
+	background: var(--brand-orange);
+	color: white;
+}
+.brand-dot {
+	color: var(--sidebar-brand-dot);
+	margin-left: -10px;
+}
+.sidebar-label {
+	display: block;
+	font-size: 9px;
+	font-weight: 800;
+	letter-spacing: 1.2px;
+	padding: 14px 12px;
+	color: var(--sidebar-caption);
+}
+.warehouse-section-label {
+	padding-top: 20px;
+}
+.notification-dot {
+	flex: 0 0 6px;
+	width: 6px;
+	height: 6px;
+	background: var(--sidebar-notification);
+	border-radius: 50%;
+}
+.workspace-dropdown {
+	position: relative;
+	display: flex;
+	align-items: center;
+	margin: 4px 0 14px;
+	min-width: 0;
+	border: 1px solid var(--sidebar-control-border);
+	border-radius: 13px;
+}
+.workspace-dropdown > svg {
+	position: absolute;
+	left: 11px;
+	z-index: 1;
+	pointer-events: none;
+	color: var(--brand-accent);
+}
+.workspace-select-trigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+	min-width: 0;
+	min-height: 48px;
+	padding: 12px 10px 12px 38px;
+	border: 0;
+	border-radius: 13px;
+	background: var(--sidebar-control-bg);
+	color: var(--sidebar-control-fg);
+	font: inherit;
+	font-size: 11px;
+	font-weight: 700;
+	cursor: pointer;
+}
+.workspace-select-trigger > span:first-child {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.workspace-select-trigger:focus-visible {
+	outline: 2px solid var(--brand-accent);
+	outline-offset: 3px;
+}
+.workspace-select-trigger:hover {
+	background: var(--sidebar-control-hover);
+	color: var(--sidebar-fg);
+}
+.sidebar-bottom {
+	padding-top: 20px;
+}
+.profile-trigger {
+	justify-content: flex-start;
+	gap: 10px;
+	width: 100%;
+	padding: 12px 9px;
+	border-radius: 14px;
+	min-height: 40px;
+	color: var(--sidebar-control-fg);
+	background: var(--sidebar-control-bg);
+}
+.profile-trigger:hover {
+	background: var(--sidebar-hover);
+}
+.profile-name {
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+	font-size: 11px;
+}
+.profile-name b {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.profile-name small {
+	display: block;
+	font-size: 9px;
+	font-weight: 400;
+	margin-top: 4px;
+	color: var(--sidebar-profile-muted);
+}
+.profile-trigger[data-demo] {
+	border: 1px solid var(--demo-border);
+	background: var(--demo-bg);
+}
+.profile-trigger[data-demo]:hover,
+.profile-trigger[data-demo][data-popup-open] {
+	border-color: var(--demo-hover-border);
+	background: var(--demo-hover-bg);
+}
+.avatar {
+	flex: 0 0 34px;
+	width: 34px;
+	height: 34px;
+	aspect-ratio: 1;
+	border-radius: 50%;
+}
+.profile-trigger[data-demo] .avatar {
+	color: var(--demo-avatar-fg);
+	background: var(--demo-avatar-bg);
+}
+.sidebar-brand-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-bottom: 24px;
+}
+.trigger {
+	margin: 0;
+	flex: 0 0 40px;
+	width: 40px;
+	height: 40px;
+	padding: 10px;
+}
+.workspace[data-state="collapsed"] .brand {
+	font-size: 0;
+	flex: none;
+	padding: 0;
+	gap: 0;
+}
+.workspace[data-state="collapsed"] .brand-dot,
+.workspace[data-state="collapsed"] .sidebar-label,
+.workspace[data-state="collapsed"] .workspace-dropdown,
+.workspace[data-state="collapsed"] .profile-name,
+.workspace[data-state="collapsed"] .profile-trigger > svg {
+	display: none;
+}
+.workspace[data-state="collapsed"] .sidebar-brand-row {
+	flex-direction: column-reverse;
+	gap: 12px;
+}
+.workspace[data-state="collapsed"] .profile-trigger {
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	margin-inline: auto;
+	gap: 0;
+	justify-content: center;
+}
+.workspace[data-state="collapsed"] .notification-dot {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	margin: 0;
+}
+.workspace[data-state="collapsed"] .brand-icon {
+	width: 40px;
+	height: 40px;
+}
+.workspace[data-state="collapsed"] .brand-icon svg {
+	width: 20px;
+	height: 20px;
+}
+@media (width <= 850px) {
+	.brand {
+		font-size: 21px;
+	}
+}
+@media (width <= 580px) {
+	.workspace[data-state="expanded"] .brand-icon {
+		width: 29px;
+		height: 30px;
+	}
+}

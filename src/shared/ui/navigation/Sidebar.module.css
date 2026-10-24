@@ -1,0 +1,117 @@
+.sidebar {
+	width: 244px;
+	padding: 28px 16px 16px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	height: 100dvh;
+	position: relative;
+	overflow: visible;
+	border: 0;
+	border-right: var(--sidebar-border);
+	background: var(--sidebar-bg);
+	color: var(--sidebar-fg);
+	transition:
+		width 200ms,
+		padding 200ms;
+}
+.header {
+	flex-shrink: 0;
+	position: relative;
+}
+.content {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+}
+.footer {
+	flex-shrink: 0;
+	margin-top: auto;
+}
+.menu {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.menuButton {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 40px;
+	padding: 10px 12px;
+	border-radius: 11px;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--sidebar-muted);
+}
+.menuButton:hover {
+	background: var(--sidebar-hover);
+}
+.menuButton[aria-current="page"] {
+	background: var(--sidebar-selected);
+	color: var(--sidebar-selected-fg);
+}
+.menuButton > svg {
+	flex: 0 0 20px;
+	width: 20px;
+	height: 20px;
+}
+.menuButton[aria-current="page"] > svg {
+	color: var(--sidebar-selected-icon);
+}
+.menuButton > span {
+	flex: 1;
+}
+.menuButton > small {
+	background: var(--sidebar-badge);
+	color: var(--sidebar-fg);
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+.trigger {
+	display: flex;
+	color: var(--sidebar-trigger-fg);
+	border: 1px solid var(--sidebar-trigger-border);
+}
+.sidebar[data-state="collapsed"] {
+	width: 72px;
+	padding-inline: 10px;
+}
+.menuButton[data-state="collapsed"] {
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	margin-inline: auto;
+	position: relative;
+	gap: 0;
+	justify-content: center;
+}
+.menuButton[data-state="collapsed"] > span,
+.menuButton[data-state="collapsed"] > small {
+	display: none;
+}
+@media (width <= 1150px) {
+	.sidebar {
+		width: 220px;
+	}
+}
+@media (width <= 850px) {
+	.sidebar {
+		padding: 22px 10px 12px;
+	}
+	.sidebar[data-state="expanded"] {
+		width: 228px;
+	}
+	.sidebar[data-state="collapsed"] {
+		width: 58px;
+		padding-inline: 6px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.sidebar {
+		transition: none;
+	}
+}

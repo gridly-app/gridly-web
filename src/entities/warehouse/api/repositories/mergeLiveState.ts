@@ -1,0 +1,43 @@
+import type {
+	Warehouse,
+	WarehouseLiveState,
+} from "../../model/warehouse/schemas";
+
+export function isApplicableLiveState(
+	snapshot: Warehouse,
+	live?: WarehouseLiveState,
+): live is WarehouseLiveState {
+	return (
+		!!live?.stateVersion &&
+		live.layoutVersion === snapshot.version &&
+		BigInt(live.stateVersion) >
+			BigInt(snapshot.stateVersion || snapshot.tick || "0")
+	);
+}
+
+export function mergeLiveState(
+	snapshot: Warehouse,
+	live?: WarehouseLiveState,
+): Warehouse {
+	if (!isApplicableLiveState(snapshot, live)) return snapshot;
+	const positions = new Map(live.robots.map((robot) => [robot.id, robot]));
+
+	return {
+		...snapshot,
+		...live,
+		robots: snapshot.robots.map((robot) => {
+			const position = positions.get(robot.id);
+
+			return position
+				? {
+						...robot,
+						x: position.x,
+						y: position.y,
+						status: position.status,
+						currentTask: position.currentTask,
+						returnRoute: position.returnRoute,
+					}
+				: robot;
+		}),
+	};
+}

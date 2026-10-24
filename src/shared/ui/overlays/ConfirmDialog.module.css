@@ -1,0 +1,67 @@
+.reset-spinning {
+	animation: reset-spin 0.65s linear infinite;
+}
+
+@keyframes reset-spin {
+	to {
+		transform: rotate(-360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.reset-spinning {
+		animation: none;
+	}
+}
+
+.confirmation-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	background: #0003;
+	backdrop-filter: blur(5px);
+}
+
+.confirmation-viewport {
+	position: fixed;
+	inset: 0;
+	z-index: 101;
+	display: grid;
+	place-items: center;
+	padding: 20px;
+}
+
+.confirmation-popup {
+	width: min(480px, 100%);
+	border: 1px solid var(--line);
+	border-radius: 24px;
+	background: var(--surface);
+	box-shadow: 0 24px 80px #0003;
+}
+
+.confirmation-header {
+	padding: 24px;
+}
+
+.confirmation-header h2 {
+	margin: 0 0 12px;
+	font-size: 20px;
+}
+
+.confirmation-header p {
+	color: var(--muted-foreground);
+	line-height: 1.6;
+}
+
+.confirmation-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 12px 20px 20px;
+}
+
+@media (width <= 600px) {
+	.confirmation-footer {
+		flex-direction: column-reverse;
+	}
+}

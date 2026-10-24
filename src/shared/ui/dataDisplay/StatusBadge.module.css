@@ -1,0 +1,71 @@
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 8px 10px;
+	border-radius: 12px;
+	background: var(--surface);
+	font-size: 11px;
+}
+
+.status-secondary {
+	color: var(--muted-foreground);
+}
+
+.status-indicator {
+	position: relative;
+	display: inline-flex;
+	width: 8px;
+	height: 8px;
+	color: #40a77b;
+}
+
+.status-badge[data-status="offline"] .status-indicator {
+	color: #99a4b7;
+}
+
+.status-badge[data-status="info"] .status-indicator {
+	color: #6e7dd3;
+}
+
+.status-badge[data-status="busy"] .status-indicator {
+	color: #d26b63;
+}
+
+.status-dot,
+.status-wave {
+	position: absolute;
+	inset: 0;
+	background: currentcolor;
+	border-radius: 50%;
+}
+
+.status-animated .status-wave {
+	animation: status-ping 2.25s ease-out infinite;
+}
+
+@keyframes status-ping {
+	75%,
+	100% {
+		transform: scale(2.5);
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.status-animated .status-wave {
+		animation: none;
+	}
+}
+
+@media (width <= 580px) {
+	.compact {
+		font-size: 9px;
+		padding: 6px;
+		gap: 5px;
+	}
+	.compact .status-secondary {
+		display: none;
+	}
+}
