@@ -1,13 +1,13 @@
-import type { Category } from "@/entities/warehouse";
-import { formText, id } from "@/shared/lib";
+import type { Category, CategoryInput } from "@/entities/warehouse";
+import { formText } from "@/shared/lib";
 
 export function categoryFromForm(
 	data: FormData,
-	category?: Category,
-): Category {
+	category?: Category | undefined,
+): CategoryInput {
 	return {
 		revision: category?.revision,
-		id: category?.id || id(),
+		id: category?.id,
 		name: formText(data, "name"),
 		cold: formText(data, "cold") === "true",
 	};

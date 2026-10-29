@@ -1,7 +1,10 @@
-import type { Product } from "@/entities/warehouse";
-import { formNumber, formText, id } from "@/shared/lib";
+import type { Product, ProductInput } from "@/entities/warehouse";
+import { formNumber, formText } from "@/shared/lib";
 
-export function productFromForm(data: FormData, product?: Product): Product {
+export function productFromForm(
+	data: FormData,
+	product?: Product | undefined,
+): ProductInput {
 	const volume = formText(data, "volume");
 	const price = formText(data, "price");
 	const shelf = formNumber(data, "shelf");
@@ -22,7 +25,7 @@ export function productFromForm(data: FormData, product?: Product): Product {
 
 	return {
 		revision: product?.revision,
-		id: product?.id || id(),
+		id: product?.id,
 		name: formText(data, "name"),
 		sku: formText(data, "sku"),
 		category: formText(data, "category"),

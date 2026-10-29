@@ -1,18 +1,24 @@
 import { useState } from "react";
-import type { Category, CommandExecutor, Product } from "@/entities/warehouse";
-import type { Dialog } from "./useCatalogPage";
+import type {
+	Category,
+	CategoryInput,
+	CommandExecutor,
+	Product,
+	ProductInput,
+} from "@/entities/warehouse";
+import type { CatalogDialogState, CatalogTab } from "./catalog";
 
 export function useCatalogDialog(execute: CommandExecutor) {
-	const [dialog, setDialog] = useState<Dialog | null>(null);
+	const [dialog, setDialog] = useState<CatalogDialogState | null>(null);
 
-	async function saveProduct(product: Product) {
+	async function saveProduct(product: ProductInput) {
 		await execute("product", product);
-		setDialog(null);
+		setDialog((current) => (current === dialog ? null : current));
 	}
 
-	async function saveCategory(category: Category) {
+	async function saveCategory(category: CategoryInput) {
 		await execute("category", category);
-		setDialog(null);
+		setDialog((current) => (current === dialog ? null : current));
 	}
 
 	return {
@@ -20,7 +26,7 @@ export function useCatalogDialog(execute: CommandExecutor) {
 		close: () => setDialog(null),
 		saveProduct,
 		saveCategory,
-		openNewItem: (type: "products" | "categories") =>
+		openNewItem: (type: CatalogTab) =>
 			setDialog(
 				type === "products" ? { type: "product" } : { type: "category" },
 			),

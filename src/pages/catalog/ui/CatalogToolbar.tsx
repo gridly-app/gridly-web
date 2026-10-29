@@ -1,36 +1,54 @@
 import { IconPlus } from "@tabler/icons-react";
 import { Button, SearchField, SegmentedControl } from "@/shared/ui";
-import type { useCatalogPage } from "../model/useCatalogPage";
+import type { CatalogTab } from "../model/catalog";
 import catalogStyles from "./CatalogToolbar.module.css";
 
 export interface CatalogToolbarProps {
-	model: Pick<
-		ReturnType<typeof useCatalogPage>,
-		"tab" | "setTab" | "search" | "setSearch"
-	> & { openNewItem: () => void };
+	tab: CatalogTab;
+	canCreate: boolean;
+	search: string;
+	onTabChange: (tab: CatalogTab) => void;
+	onSearchChange: (search: string) => void;
+	onCreate: () => void;
 }
 
-export function CatalogToolbar({ model }: CatalogToolbarProps) {
-	const { tab, openNewItem, setTab, search, setSearch } = model;
-
+export function CatalogToolbar({
+	tab,
+	canCreate,
+	search,
+	onTabChange,
+	onSearchChange,
+	onCreate,
+}: CatalogToolbarProps) {
 	return (
 		<>
 			<div className={catalogStyles.actions}>
-				<Button variant="default" onClick={openNewItem}>
+				<Button
+					disabled={!canCreate}
+					title={
+						!canCreate ? "Создание недоступно по данным сервера" : undefined
+					}
+					variant="default"
+					onClick={onCreate}
+				>
 					<IconPlus size={18} />
 					{tab === "products" ? "Новый товар" : "Новая категория"}
 				</Button>
 				<SegmentedControl
 					aria-label="Раздел каталога"
 					value={tab}
-					onValueChange={setTab}
+					onValueChange={onTabChange}
 					items={[
 						{ value: "products", label: "Товары" },
 						{ value: "categories", label: "Категории" },
 					]}
 				/>
 			</div>
-			<SearchField value={search} onChange={setSearch} />
+			<SearchField
+				aria-label="Поиск по каталогу"
+				value={search}
+				onChange={onSearchChange}
+			/>
 		</>
 	);
 }

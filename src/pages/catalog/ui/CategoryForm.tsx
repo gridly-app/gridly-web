@@ -1,10 +1,10 @@
-import type { Category } from "@/entities/warehouse";
+import type { Category, CategoryInput } from "@/entities/warehouse";
 import { Combobox, Field, FormShell, Input } from "@/shared/ui";
 import { categoryFromForm } from "../model/categoryFromForm";
 
 export interface CategoryFormProps {
-	category?: Category;
-	onSave: (category: Category) => Promise<void>;
+	category?: Category | undefined;
+	onSave: (category: CategoryInput) => Promise<void>;
 	pending: boolean;
 }
 

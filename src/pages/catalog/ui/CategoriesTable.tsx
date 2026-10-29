@@ -1,3 +1,4 @@
+import type { Category } from "@/entities/warehouse";
 import {
 	Button,
 	Table,
@@ -8,18 +9,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui";
-
-import type { useCatalogDialog } from "../model/useCatalogDialog";
-import type { useCatalogPage } from "../model/useCatalogPage";
+import type { CatalogCategory } from "../model/catalog";
 
 export interface CategoriesTableProps {
-	model: Pick<ReturnType<typeof useCatalogPage>, "visibleCategories"> &
-		Pick<ReturnType<typeof useCatalogDialog>, "editCategory">;
+	items: readonly CatalogCategory[];
+	onEdit: (category: Category) => void;
 }
 
-export function CategoriesTable({ model }: CategoriesTableProps) {
-	const { visibleCategories } = model;
-
+export function CategoriesTable({ items, onEdit }: CategoriesTableProps) {
 	return (
 		<Table>
 			<TableHeader>
@@ -31,19 +28,20 @@ export function CategoriesTable({ model }: CategoriesTableProps) {
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{visibleCategories.map((c) => (
+				{items.map((c) => (
 					<TableRow key={c.id}>
 						<TableCell>
 							<b>{c.name}</b>
 						</TableCell>
 						<TableCell>{c.cold ? "Холодное" : "Обычное"}</TableCell>
-						<TableCell>{c.productCount}</TableCell>
+						<TableCell>{c.productCount ?? "—"}</TableCell>
 						<TableCell>
 							<TableActions>
 								<Button
 									size="sm"
 									variant="ghost"
-									onClick={() => model.editCategory(c)}
+									disabled={!c.allowedActions?.includes("edit")}
+									onClick={() => onEdit(c)}
 								>
 									Изменить
 								</Button>

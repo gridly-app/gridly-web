@@ -1,4 +1,5 @@
-import { StatusBadge as Badge } from "@/entities/warehouse";
+import { StatusBadge as Badge, type Product } from "@/entities/warehouse";
+
 import {
 	Button,
 	Table,
@@ -9,23 +10,22 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui";
-import type { useCatalogDialog } from "../model/useCatalogDialog";
-import type { useCatalogPage } from "../model/useCatalogPage";
+import type { CatalogProduct } from "../model/catalog";
 import localLayout from "./Layout.module.css";
 
 export interface ProductsTableProps {
-	model: Pick<
-		ReturnType<typeof useCatalogPage>,
-		"visibleProducts" | "toggleProductArchive"
-	> &
-		Pick<ReturnType<typeof useCatalogDialog>, "editProduct"> & {
-			pending: boolean;
-		};
+	items: readonly CatalogProduct[];
+	pending: boolean;
+	onEdit: (product: Product) => void;
+	onToggleArchive: (id: string) => void;
 }
 
-export function ProductsTable({ model }: ProductsTableProps) {
-	const { visibleProducts, pending } = model;
-
+export function ProductsTable({
+	items,
+	pending,
+	onEdit,
+	onToggleArchive,
+}: ProductsTableProps) {
 	return (
 		<Table>
 			<TableHeader>
@@ -39,7 +39,7 @@ export function ProductsTable({ model }: ProductsTableProps) {
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{visibleProducts.map((p) => (
+				{items.map((p) => (
 					<TableRow key={p.id}>
 						<TableCell>
 							<b>{p.name}</b>
@@ -48,21 +48,29 @@ export function ProductsTable({ model }: ProductsTableProps) {
 						<TableCell className={localLayout.muted}>{p.sku}</TableCell>
 						<TableCell>{p.categoryName}</TableCell>
 						<TableCell>{p.volume} м³</TableCell>
-						<TableCell>{Number(p.price).toLocaleString("ru")} ₽</TableCell>
+						<TableCell>
+							{p.price ? Number(p.price).toLocaleString("ru") : "—"} ₽
+						</TableCell>
 						<TableCell>
 							<TableActions>
 								<Button
 									size="sm"
 									variant="ghost"
-									onClick={() => model.editProduct(p)}
+									disabled={pending || !p.allowedActions?.includes("edit")}
+									onClick={() => onEdit(p)}
 								>
 									Изменить
 								</Button>
 								<Button
 									size="sm"
 									variant="ghost"
-									disabled={pending}
-									onClick={() => void model.toggleProductArchive(p.id)}
+									disabled={
+										pending ||
+										!p.allowedActions?.includes(
+											p.archived ? "restore" : "archive",
+										)
+									}
+									onClick={() => void onToggleArchive(p.id)}
 								>
 									{p.archived ? "Восстановить" : "В архив"}
 								</Button>

@@ -1,39 +1,49 @@
-import type { Category } from "@/entities/warehouse";
+import type {
+	Category,
+	CategoryInput,
+	ProductInput,
+} from "@/entities/warehouse";
 import { Modal } from "@/shared/ui";
-import type { useCatalogDialog } from "../model/useCatalogDialog";
+import type { CatalogDialogState } from "../model/catalog";
 import { CategoryForm } from "./CategoryForm";
 import { ProductForm } from "./ProductForm";
 
 export interface CatalogDialogProps {
-	model: Pick<
-		ReturnType<typeof useCatalogDialog>,
-		"dialog" | "close" | "saveProduct" | "saveCategory"
-	> & { pending: boolean; categories: Category[] };
+	dialog: CatalogDialogState | null;
+	pending: boolean;
+	categories: Category[];
+	onClose: () => void;
+	onSaveProduct: (product: ProductInput) => Promise<void>;
+	onSaveCategory: (category: CategoryInput) => Promise<void>;
 }
 
-export function CatalogDialog({ model }: CatalogDialogProps) {
-	const { dialog, close, pending, saveProduct, saveCategory, categories } =
-		model;
-
+export function CatalogDialog({
+	dialog,
+	pending,
+	categories,
+	onClose,
+	onSaveProduct,
+	onSaveCategory,
+}: CatalogDialogProps) {
 	return (
 		<>
 			{dialog && (
 				<Modal
 					title={dialog.type === "product" ? "Товар каталога" : "Категория"}
-					onClose={close}
+					onClose={onClose}
 				>
 					{dialog.type === "product" ? (
 						<ProductForm
 							product={dialog.item}
 							categories={categories}
 							pending={pending}
-							onSave={saveProduct}
+							onSave={onSaveProduct}
 						/>
 					) : (
 						<CategoryForm
 							category={dialog.item}
 							pending={pending}
-							onSave={saveCategory}
+							onSave={onSaveCategory}
 						/>
 					)}
 				</Modal>
