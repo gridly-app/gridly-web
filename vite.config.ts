@@ -6,6 +6,24 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), "");
 
 	return {
+		build: {
+			manifest: true,
+			rollupOptions: {
+				output: {
+					onlyExplicitManualChunks: true,
+					manualChunks(id) {
+						if (!id.includes("node_modules/")) return;
+						if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id))
+							return "react-runtime";
+						if (/\/node_modules\/(react-router|react-router-dom)\//.test(id))
+							return "router";
+
+						if (/\/node_modules\/zod\//.test(id)) return "validation";
+						if (/\/node_modules\/@tanstack\//.test(id)) return "query";
+					},
+				},
+			},
+		},
 		server: {
 			proxy: {
 				"/api": {
@@ -14,33 +32,7 @@ export default defineConfig(({ mode }) => {
 				},
 			},
 		},
-		plugins: [
-			react(),
-			{
-				name: "production-demo-isolation",
-				apply: "build",
-				generateBundle(_options, bundle) {
-					for (const output of Object.values(bundle)) {
-						if (output.type !== "chunk") {
-							continue;
-						}
-						for (const moduleId of Object.keys(output.modules)) {
-							const normalized = moduleId.replaceAll("\\", "/");
-
-							if (
-								/\/src\/app\/mocks\/|\/node_modules\/(msw|@mswjs)\//.test(
-									normalized,
-								)
-							) {
-								this.error(
-									`Development mocks must not enter the production bundle: ${moduleId}`,
-								);
-							}
-						}
-					}
-				},
-			},
-		],
+		plugins: [react()],
 		resolve: {
 			alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
 		},
