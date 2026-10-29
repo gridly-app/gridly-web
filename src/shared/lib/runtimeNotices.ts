@@ -26,4 +26,5 @@ class RuntimeNotices {
 		for (const listener of this.listeners) listener();
 	}
 }
+
 export const runtimeNotices = new RuntimeNotices();

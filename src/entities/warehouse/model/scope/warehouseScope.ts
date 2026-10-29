@@ -23,10 +23,12 @@ export interface WarehouseScopeProviderProps {
 }
 
 export const WarehouseDataContext = createContext<Warehouse | null>(null);
+
 export const WarehouseCommandsContext = createContext<Pick<
 	WarehouseScope,
 	"execute" | "command"
 > | null>(null);
+
 export const WarehousePendingContext = createContext(false);
 
 export function useWarehouseSnapshot() {

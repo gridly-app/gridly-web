@@ -8,11 +8,13 @@ import {
 	workflowKeys,
 } from "@/entities/warehouse";
 import { errorMessage } from "@/shared/lib";
+
 export interface SettingsFormOptions {
 	w: Warehouse;
 	execute: CommandExecutor;
 	pending: boolean;
 }
+
 export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 	const cache = useQueryClient();
 	const [draft, setDraft] = useState(() => ({

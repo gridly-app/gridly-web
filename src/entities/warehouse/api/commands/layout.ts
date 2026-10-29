@@ -2,6 +2,7 @@ import type { WarehouseCommand } from "../../model/commands/commands";
 import type { RestCommandContext } from "./context";
 import { requireRevision } from "./context";
 import { serializeLayoutCells } from "./layoutCells";
+
 export async function saveMap(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "saveMap" }>,
@@ -28,6 +29,7 @@ export async function saveMap(
 		routes: draft.routes,
 	});
 }
+
 export async function discardLayout(
 	context: RestCommandContext,
 	_command: Extract<WarehouseCommand, { action: "discard" }>,

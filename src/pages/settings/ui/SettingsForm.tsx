@@ -5,6 +5,7 @@ import {
 	useSettingsForm,
 } from "../model/useSettingsForm";
 import styles from "./SettingsPage.module.css";
+
 export function SettingsForm(props: SettingsFormOptions) {
 	const id = useId();
 	const model = useSettingsForm(props);

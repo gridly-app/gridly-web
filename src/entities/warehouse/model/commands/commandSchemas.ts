@@ -12,6 +12,7 @@ import {
 export const orderInputSchema = orderSchema
 	.pick({ kind: true, party: true, lines: true, manual: true })
 	.extend({ id: z.string().optional(), revision: z.number().optional() });
+
 export const robotInputSchema = robotSchema
 	.pick({
 		name: true,
@@ -21,18 +22,22 @@ export const robotInputSchema = robotSchema
 		capacity: true,
 	})
 	.extend({ id: z.string().optional(), revision: z.number().optional() });
+
 export const warehouseInputSchema = warehouseSchema.pick({
 	name: true,
 	width: true,
 	height: true,
 	timezone: true,
 });
+
 export const categoryInputSchema = categorySchema
 	.pick({ name: true, cold: true })
 	.extend({ id: z.string().optional(), revision: z.number().optional() });
+
 export const productInputSchema = productSchema
 	.omit({ id: true, allowedActions: true })
 	.extend({ id: z.string().optional() });
+
 export const layoutInputSchema = z.object({
 	cells: z.array(cellSchema),
 	routes: z.array(blockRoutePlanSchema),
@@ -42,6 +47,7 @@ export const layoutInputSchema = z.object({
 		.optional(),
 	draftRevision: z.number().optional(),
 });
+
 export const commandPayloads = {
 	saveMap: layoutInputSchema,
 	resize: z.object({

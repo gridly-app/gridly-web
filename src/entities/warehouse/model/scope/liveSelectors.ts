@@ -18,14 +18,17 @@ export const selectMapLive = (
 		events: warehouse.events,
 	};
 };
+
 export const selectRobotsLive = (
 	snapshot: Warehouse,
 	live?: WarehouseLiveState | undefined,
 ) => ({ robots: mergeLiveState(snapshot, live).robots });
+
 export const selectInventoryLive = (
 	snapshot: Warehouse,
 	live?: WarehouseLiveState | undefined,
 ) => ({ stock: live?.stock ?? snapshot.stock });
+
 export const selectOrdersLive = (
 	snapshot: Warehouse,
 	live?: WarehouseLiveState | undefined,
@@ -34,6 +37,7 @@ export const selectOrdersLive = (
 	orders: live?.orders ?? snapshot.orders,
 	stock: live?.stock ?? snapshot.stock,
 });
+
 export const selectHistoryLive = (
 	snapshot: Warehouse,
 	live?: WarehouseLiveState | undefined,

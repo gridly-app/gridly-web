@@ -8,14 +8,17 @@ import {
 
 const revision = z.number().int().nonnegative().optional();
 const identity = { id: z.string(), revision };
+
 const counter = z.union([
 	z.string().regex(/^\d+$/),
 	z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 ]);
+
 const decimal = z.union([z.string().regex(/^-?\d+(?:\.\d+)?$/), z.number()]);
 const optionalText = z.string().optional();
 const nullableText = z.string().nullable().optional();
 const optionalNumber = z.number().optional();
+
 export const policyDto = z.object({
 	revision,
 	confirm_unload: z.boolean(),
@@ -23,6 +26,7 @@ export const policyDto = z.object({
 	confirm_putaway: z.boolean(),
 	confirm_load: z.boolean(),
 });
+
 export const warehouseDto = z
 	.object({
 		...identity,
@@ -42,6 +46,7 @@ export const warehouseDto = z
 		last_tick_at: optionalText,
 	})
 	.refine((w) => w.width * w.height <= 10000, "Map exceeds 10000 cells");
+
 export const cellDto = z.object({
 	x: z.number().int().nonnegative(),
 	y: z.number().int().nonnegative(),
@@ -59,6 +64,7 @@ export const cellDto = z.object({
 	capacity_volume: decimal,
 	zone: storageZoneSchema.optional(),
 });
+
 export const layoutDto = z
 	.object({
 		version: optionalNumber,
@@ -74,6 +80,7 @@ export const layoutDto = z
 			l.cells.every((c) => c.x < l.width && c.y < l.height),
 		"Invalid map bounds",
 	);
+
 export const robotDto = z.object({
 	allowed_actions: z.array(z.string()).optional(),
 	blocked_reason: optionalText,
@@ -92,6 +99,7 @@ export const robotDto = z.object({
 	capacity_volume: decimal,
 	status: z.string(),
 });
+
 export const categoryDto = z.object({
 	allowed_actions: z.array(z.string()).optional(),
 	product_count: optionalNumber,
@@ -101,6 +109,7 @@ export const categoryDto = z.object({
 	archived_at: nullableText,
 	is_archived: z.boolean().optional(),
 });
+
 export const productDto = z.object({
 	allowed_actions: z.array(z.string()).optional(),
 	...identity,
@@ -115,12 +124,14 @@ export const productDto = z.object({
 	archived_at: nullableText,
 	is_archived: z.boolean().optional(),
 });
+
 export const taskDto = z.object({
 	...identity,
 	type: z.string(),
 	status: z.string(),
 	allowed_actions: z.array(z.string()).optional(),
 });
+
 export const orderDto = z.object({
 	quantity: optionalNumber,
 	stage: optionalNumber,
@@ -153,6 +164,7 @@ export const orderDto = z.object({
 		)
 		.optional(),
 });
+
 export const stockDto = z.object({
 	available_quantity: optionalNumber,
 	write_off_blocked_reason: optionalText,
@@ -169,6 +181,7 @@ export const stockDto = z.object({
 	cell_y: optionalNumber,
 	robot_id: optionalText,
 });
+
 const positionDto = z.object({
 	motion_path: z.array(z.object({ x: z.number(), y: z.number() })).optional(),
 	id: z.string(),
@@ -176,6 +189,7 @@ const positionDto = z.object({
 	y: z.number(),
 	status: z.string(),
 });
+
 export const mapStateDto = z.object({
 	warehouse_id: z.string(),
 	state_version: counter,
@@ -184,10 +198,12 @@ export const mapStateDto = z.object({
 	robots: z.array(positionDto),
 	as_of: optionalText,
 });
+
 export const legacyMapStateDto = z.object({
 	warehouse: warehouseDto,
 	robots: z.array(positionDto).nullable(),
 });
+
 export const eventDto = z.object({
 	id: z.union([z.string(), z.number()]),
 	event_type: optionalText,
@@ -197,8 +213,10 @@ export const eventDto = z.object({
 	message: optionalText,
 	detail: optionalText,
 });
+
 export const revisionDto = z.object({ revision });
 export const createdDto = z.object({ id: z.string() });
+
 export const validationDto = z.object({
 	valid: z.boolean(),
 	issues: z.array(z.object({ message: z.string() })),
@@ -207,15 +225,27 @@ export const validationDto = z.object({
 export type Revisioned = z.infer<typeof createdDto> & {
 	revision?: number | undefined;
 };
+
 export type PolicyDto = z.infer<typeof policyDto>;
+
 export type WarehouseDto = z.infer<typeof warehouseDto>;
+
 export type CellDto = z.infer<typeof cellDto>;
+
 export type LayoutDto = z.infer<typeof layoutDto>;
+
 export type RobotDto = z.infer<typeof robotDto>;
+
 export type CategoryDto = z.infer<typeof categoryDto>;
+
 export type ProductDto = z.infer<typeof productDto>;
+
 export type TaskDto = z.infer<typeof taskDto>;
+
 export type OrderDto = z.infer<typeof orderDto>;
+
 export type StockDto = z.infer<typeof stockDto>;
+
 export type MapStateDto = z.infer<typeof mapStateDto>;
+
 export type EventDto = z.infer<typeof eventDto>;

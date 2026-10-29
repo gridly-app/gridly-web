@@ -17,6 +17,7 @@ function memory() {
 		},
 	};
 }
+
 const form = (id: string): SavedOrderForm => ({
 	id,
 	version: 2,
@@ -48,6 +49,7 @@ test("multiple incomplete forms survive repository recreation and deleting one k
 	reloaded.remove("one");
 	expect(reloaded.read()).toEqual([form("two")]);
 });
+
 test("form scopes isolate accounts, warehouses, directions and demo sessions", () => {
 	const storage = memory();
 	new OrderFormDrafts(storage, ["account", "a"], "w", "inbound").save(
@@ -69,6 +71,7 @@ test("form scopes isolate accounts, warehouses, directions and demo sessions", (
 		new OrderFormDrafts(storage, ["demo", "two"], "w", "inbound").read(),
 	).toEqual([]);
 });
+
 test("corrupt stored data is ignored and write failures are reported", () => {
 	const storage = memory();
 	const drafts = new OrderFormDrafts(storage, ["account", "a"], "w", "inbound");

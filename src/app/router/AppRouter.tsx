@@ -193,6 +193,7 @@ function AccountEntry() {
 		);
 	return user ? <WorkspaceEntry /> : <AuthRoute />;
 }
+
 export function AppRouter() {
 	return <RouterProvider router={router} />;
 }

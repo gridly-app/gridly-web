@@ -8,19 +8,25 @@ const metadataSchema = z.object({
 	expires_at: z.iso.datetime({ offset: true }),
 	initial_warehouse_id: z.string().min(1),
 });
+
 const sessionSchema = metadataSchema.extend({
 	access_token: z.string().min(1),
 });
+
 const storedSchema = sessionSchema.extend({
 	last_warehouse_id: z.string().optional(),
 });
+
 export type DemoCredentials = z.infer<typeof storedSchema>;
+
 export type DemoStatus = "idle" | "starting" | "active" | "expired" | "error";
+
 export interface DemoSnapshot {
 	status: DemoStatus;
 	session: DemoCredentials | null;
 	error: string;
 }
+
 const storageKey = "gridly.demo.session";
 
 export class ServerDemoSession {

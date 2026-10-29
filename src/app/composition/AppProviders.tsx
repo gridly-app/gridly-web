@@ -14,11 +14,13 @@ import type { AppDependencies } from "./dependencies";
 import styles from "./RuntimeFeedback.module.css";
 
 const DependenciesContext = createContext<AppDependencies | null>(null);
+
 export function useAppDependencies() {
 	const dependencies = useContext(DependenciesContext);
 	if (!dependencies) throw new Error("AppProviders is missing");
 	return dependencies;
 }
+
 function RuntimeFeedback() {
 	const messages = useSyncExternalStore(
 		runtimeNotices.subscribe,
@@ -43,6 +45,7 @@ function RuntimeFeedback() {
 		</aside>
 	);
 }
+
 export function AppProviders({
 	children,
 	dependencies,

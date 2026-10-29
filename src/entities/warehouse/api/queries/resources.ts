@@ -1,5 +1,6 @@
 import type { WarehouseCommand } from "../../model/commands/commands";
 import type { Warehouse } from "../../model/warehouse/schemas";
+
 export type WarehouseResource =
 	| "metadata"
 	| "map"
@@ -9,6 +10,7 @@ export type WarehouseResource =
 	| "history"
 	| "robots"
 	| "all";
+
 export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	metadata: [
 		"name",
@@ -43,6 +45,7 @@ export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	robots: ["robots"],
 	all: [],
 };
+
 export function commandResources(
 	action: WarehouseCommand["action"],
 ): WarehouseResource[] {

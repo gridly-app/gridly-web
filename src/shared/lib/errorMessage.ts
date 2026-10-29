@@ -6,6 +6,7 @@ type Issue = {
 	cell_key?: string | undefined;
 	route_id?: string | undefined;
 };
+
 export function errorMessage(error: unknown): string {
 	if (!(error instanceof Error)) return "Не удалось выполнить действие";
 	if (

@@ -7,6 +7,7 @@ import { availableStorage, browserStorage } from "@/shared/lib/browserStorage";
 import { clearFormDraftScope } from "@/shared/lib/forms/formDraftStorage";
 
 export type AppDependencies = ReturnType<typeof createDependencies>;
+
 export function createDependencies() {
 	const options = {
 		defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },

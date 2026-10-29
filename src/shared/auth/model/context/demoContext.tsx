@@ -7,6 +7,7 @@ import {
 import type { ServerDemoSession } from "../ServerDemoSession";
 
 const DemoContext = createContext<ServerDemoSession | null>(null);
+
 export function DemoSessionProvider({
 	session,
 	children,
@@ -18,6 +19,7 @@ export function DemoSessionProvider({
 		<DemoContext.Provider value={session}>{children}</DemoContext.Provider>
 	);
 }
+
 export function useDemoSession() {
 	const controller = useContext(DemoContext);
 	if (!controller) throw new Error("DemoSessionProvider is missing");
@@ -29,8 +31,10 @@ export function useDemoSession() {
 }
 
 export type WorkspaceMode = "standard" | "demo";
+
 const WorkspaceModeContext = createContext<WorkspaceMode>("standard");
 export const WorkspaceModeProvider = WorkspaceModeContext.Provider;
+
 export function useWorkspaceMode() {
 	return useContext(WorkspaceModeContext);
 }

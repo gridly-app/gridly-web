@@ -1,4 +1,5 @@
 import type { KeyValueStorage } from "../storage";
+
 export function formDraftPrefix(scope: readonly string[]) {
 	return `gridly.forms:${JSON.stringify(scope)}:`;
 }

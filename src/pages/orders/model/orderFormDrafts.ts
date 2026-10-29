@@ -17,13 +17,16 @@ const formValuesSchema = z.object({
 	),
 	manual: storedWorkflowPolicySchema,
 });
+
 const savedFormSchema = z.object({
 	version: z.literal(2).default(2),
 	id: z.string(),
 	updatedAt: z.iso.datetime(),
 	values: formValuesSchema,
 });
+
 export type OrderFormValues = z.infer<typeof formValuesSchema>;
+
 export type SavedOrderForm = z.infer<typeof savedFormSchema>;
 
 export function initialOrderForm(

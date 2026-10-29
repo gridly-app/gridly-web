@@ -8,6 +8,7 @@ import {
 } from "react";
 
 const activeContext = createContext(false);
+
 const actionContext = createContext<(_active: boolean) => void>(
 	() => undefined,
 );

@@ -68,7 +68,9 @@ export function resilientStorage(
 		},
 	};
 }
+
 const adapters = new Map<string, ReturnType<typeof resilientStorage>>();
+
 export function availableStorage(kind: "localStorage" | "sessionStorage") {
 	let adapter = adapters.get(kind);
 	if (!adapter) {
@@ -85,9 +87,11 @@ export function availableStorage(kind: "localStorage" | "sessionStorage") {
 	}
 	return adapter;
 }
+
 export function readPreference(key: string, fallback = ""): string {
 	return availableStorage("localStorage").storage.getItem(key) ?? fallback;
 }
+
 export function writePreference(key: string, value: string): void {
 	availableStorage("localStorage").storage.setItem(key, value);
 }

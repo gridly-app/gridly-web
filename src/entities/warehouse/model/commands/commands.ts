@@ -3,9 +3,13 @@ import type { Warehouse } from "../warehouse/schemas";
 import type { commandPayloads, warehouseCommandSchema } from "./commandSchemas";
 
 export type RobotInput = CommandPayloads["robot"];
+
 export type CategoryInput = CommandPayloads["category"];
+
 export type ProductInput = CommandPayloads["product"];
+
 export type OrderInput = CommandPayloads["order"];
+
 export type WarehouseInput = Pick<
 	Warehouse,
 	"name" | "width" | "height" | "timezone"

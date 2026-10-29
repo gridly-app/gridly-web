@@ -18,6 +18,7 @@ function files(directory: string): string[] {
 				: [];
 	});
 }
+
 test("catch blocks and Promise rejection handlers must do work, including when commented", () => {
 	const violations: string[] = [];
 	for (const file of [
@@ -57,6 +58,7 @@ test("catch blocks and Promise rejection handlers must do work, including when c
 	}
 	expect(violations).toEqual([]);
 });
+
 test("storage switches to memory once, retaining known values and new changes", () => {
 	const source = memoryStorage();
 	source.setItem("theme", "dark");
@@ -81,6 +83,7 @@ test("storage switches to memory once, retaining known values and new changes", 
 	expect(adapter.storage.getItem("theme")).toBeNull();
 	expect(warnings).toBe(1);
 });
+
 test("quota failure retains the new preference in memory", () => {
 	const source = memoryStorage();
 	source.setItem = () => {
@@ -96,6 +99,7 @@ test("quota failure retains the new preference in memory", () => {
 	expect(adapter.storage.getItem("theme")).toBe("dark");
 	expect(adapter.persistent).toBe(false);
 });
+
 test("repeated notices preserve a stable snapshot", () => {
 	runtimeNotices.report("test.dedup", "Повторите действие");
 	const snapshot = runtimeNotices.getSnapshot();

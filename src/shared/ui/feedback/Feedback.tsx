@@ -1,10 +1,12 @@
 import { IconAlertCircle } from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import styles from "./Feedback.module.css";
+
 export type FeedbackProps = ComponentProps<"div"> & {
 	tone?: ("error" | "success" | "loading" | "empty") | undefined;
 	fill?: boolean | undefined;
 };
+
 export function Feedback({
 	tone = "loading",
 	fill = false,

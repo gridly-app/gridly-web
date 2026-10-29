@@ -1,4 +1,5 @@
 import { Feedback } from "./Feedback";
+
 export interface ErrorNoticeProps {
 	message?: string | undefined;
 	className?: string | undefined;

@@ -1,4 +1,5 @@
 import { Button, Feedback } from "@/shared/ui";
+
 export function StartupFailure() {
 	function reload() {
 		window.location.reload();

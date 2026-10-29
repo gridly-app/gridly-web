@@ -1,4 +1,5 @@
 import type { Cell } from "../warehouse/schemas";
+
 export const cellKey = (cell: Pick<Cell, "x" | "y">) => `${cell.x},${cell.y}`;
 
 export function toggleZoneCell(

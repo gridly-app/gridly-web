@@ -38,6 +38,7 @@ export const warehouseSummarySchema = z.object({
 		})
 		.optional(),
 });
+
 export const selectionSummarySchema = z.object({
 	capacity: z.number(),
 	batchCount: z.number(),
@@ -229,17 +230,31 @@ export const warehouseLiveStateSchema = warehouseSchema
 	});
 
 export type CellType = z.infer<typeof cellTypeSchema>;
+
 export const storageCellTypes: readonly CellType[] = ["storage", "cold"];
+
 export type StorageZone = z.infer<typeof storageZoneSchema>;
+
 export type Cell = z.infer<typeof cellSchema>;
+
 export type GridPosition = z.infer<typeof gridPositionSchema>;
+
 export type BlockRoutePlan = z.infer<typeof blockRoutePlanSchema>;
+
 export type RobotTask = z.infer<typeof robotTaskSchema>;
+
 export type Robot = z.infer<typeof robotSchema>;
+
 export type Category = z.infer<typeof categorySchema>;
+
 export type Product = z.infer<typeof productSchema>;
+
 export type Stock = z.infer<typeof stockSchema>;
+
 export type Order = z.infer<typeof orderSchema>;
+
 export type Event = z.infer<typeof eventSchema>;
+
 export type Warehouse = z.infer<typeof warehouseSchema>;
+
 export type WarehouseLiveState = z.infer<typeof warehouseLiveStateSchema>;

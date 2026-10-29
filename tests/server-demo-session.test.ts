@@ -5,12 +5,14 @@ import { ServerDemoSession } from "../src/shared/auth/model/ServerDemoSession";
 import { warehousePath } from "../src/shared/config/workspacePaths";
 
 const base = "http://gridly-demo.test/api/v1";
+
 const credentials = (id = "first") => ({
 	session_id: id,
 	access_token: `demo-${id}`,
 	expires_at: new Date(Date.now() + 3600000).toISOString(),
 	initial_warehouse_id: `warehouse-${id}`,
 });
+
 function memory() {
 	const data = new Map<string, string>([
 		["gridly.user", "operator"],
@@ -27,10 +29,13 @@ function memory() {
 		},
 	};
 }
+
 const sessions: ServerDemoSession[] = [];
+
 afterEach(() => {
 	for (const s of sessions.splice(0)) s.end();
 });
+
 function setup(
 	transport: (
 		input: RequestInfo | URL,
@@ -50,6 +55,7 @@ function setup(
 	sessions.push(session);
 	return { storage, session, clears: () => clears };
 }
+
 describe("independent server demo", () => {
 	test("restart, expiration and exit clean only the ended session forms", async () => {
 		let created = 0;

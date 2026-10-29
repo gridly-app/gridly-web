@@ -1,17 +1,21 @@
 import { z } from "zod";
+
 export const workflowKeys = [
 	"confirmUnload",
 	"confirmPick",
 	"confirmPutaway",
 	"confirmLoad",
 ] as const;
+
 export const workflowPolicySchema = z.object({
 	confirmUnload: z.boolean(),
 	confirmPick: z.boolean(),
 	confirmPutaway: z.boolean(),
 	confirmLoad: z.boolean(),
 });
+
 export type WorkflowPolicy = z.infer<typeof workflowPolicySchema>;
+
 export function emptyWorkflowPolicy(): WorkflowPolicy {
 	return {
 		confirmUnload: false,
@@ -20,6 +24,7 @@ export function emptyWorkflowPolicy(): WorkflowPolicy {
 		confirmLoad: false,
 	};
 }
+
 export function legacyWorkflowPolicy(values: boolean[]): WorkflowPolicy {
 	return {
 		confirmUnload: values[0] ?? false,
@@ -28,6 +33,7 @@ export function legacyWorkflowPolicy(values: boolean[]): WorkflowPolicy {
 		confirmLoad: values[3] ?? false,
 	};
 }
+
 export const storedWorkflowPolicySchema = z.union([
 	workflowPolicySchema,
 	z.array(z.boolean()).max(4).transform(legacyWorkflowPolicy),

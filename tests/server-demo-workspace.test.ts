@@ -5,6 +5,7 @@ import { ServerDemoSession } from "../src/shared/auth/model/ServerDemoSession";
 
 const base = "http://gridly-demo.test/api/v1";
 const sessions: ServerDemoSession[] = [];
+
 afterEach(() => {
 	for (const session of sessions.splice(0)) session.end();
 });

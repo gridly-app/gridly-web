@@ -8,17 +8,22 @@ const active = new Set([
 	"working",
 	"carrying",
 ]);
+
 const warning = new Set(["waiting", "waiting_confirmation", "awaiting_load"]);
+
 const danger = new Set([
 	"blocked",
 	"expired",
 	"unavailable",
 	"received_with_losses",
 ]);
+
 const neutral = new Set(["draft", "neutral", "cancelled", "idle"]);
+
 export interface StatusBadgeProps {
 	value: string;
 }
+
 export function StatusBadge({ value }: StatusBadgeProps) {
 	const tone: BadgeTone = active.has(value)
 		? "accent"

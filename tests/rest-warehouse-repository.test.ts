@@ -22,6 +22,7 @@ const warehouseDto = {
 		confirm_load: false,
 	},
 };
+
 function fixture() {
 	const calls: string[] = [];
 	let stateVersion = "1";

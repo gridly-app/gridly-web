@@ -1,17 +1,22 @@
 export type EditorMode = "construction" | "routes";
+
 export type EditorOperation = "idle" | "saving" | "optimizing" | "discarding";
+
 export type EditorState =
 	| { view: "viewing"; mode: EditorMode; operation: "idle" }
 	| { view: "editing"; mode: EditorMode; operation: EditorOperation };
+
 export type EditorEvent =
 	| { type: "open"; mode: EditorState["mode"] }
 	| { type: "close" }
 	| { type: "operation"; operation: EditorState["operation"] };
+
 export const initialEditorState: EditorState = {
 	view: "viewing",
 	mode: "construction",
 	operation: "idle",
 };
+
 export function editorReducer(
 	state: EditorState,
 	event: EditorEvent,

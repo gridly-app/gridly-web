@@ -19,6 +19,7 @@ const pageResources: Record<string, WarehouseResource[]> = {
 	information: [],
 	warehouses: [],
 };
+
 export function WorkspaceResources({
 	scope,
 	page,

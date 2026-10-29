@@ -21,6 +21,7 @@ export function DemoEntry() {
 		/>
 	) : null;
 }
+
 function DemoWorkspace() {
 	const { demoClient, demoRepository } = useAppDependencies();
 	useEffect(
@@ -40,6 +41,7 @@ function DemoWorkspace() {
 		</QueryClientProvider>
 	);
 }
+
 export function DemoRoute() {
 	const { status, session, error, controller } = useDemoSession();
 	const navigate = useNavigate();

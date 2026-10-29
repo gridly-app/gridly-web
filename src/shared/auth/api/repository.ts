@@ -4,12 +4,15 @@ import { errorMessage, type KeyValueStorage } from "@/shared/lib";
 import { runtimeNotices } from "@/shared/lib/runtimeNotices";
 
 export type Credentials = { login: string; password: string };
+
 export type AuthMode = "login" | "register";
+
 export interface AccountSnapshot {
 	status: "restoring" | "active" | "ended" | "error";
 	user: string;
 	error: string;
 }
+
 export interface SessionRepository {
 	current(): string;
 	authenticate(mode: AuthMode, credentials: Credentials): Promise<string>;

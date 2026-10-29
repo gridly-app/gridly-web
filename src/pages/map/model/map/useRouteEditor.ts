@@ -11,6 +11,7 @@ import {
 import { errorMessage } from "@/shared/lib";
 import type { MapEditor } from "../layout/useMapEditor";
 import { useRouteDrag } from "./useRouteDrag";
+
 export function useRouteEditor(editor: MapEditor, warehouseId: string) {
 	const proposal = useRouteProposal(warehouseId);
 	async function optimize() {

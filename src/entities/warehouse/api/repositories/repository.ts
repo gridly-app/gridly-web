@@ -13,10 +13,12 @@ export interface MutationReceipt {
 	id: string;
 	applied: true;
 }
+
 export interface MutationOptions {
 	operationId: string;
 	warehouse?: Warehouse | undefined;
 }
+
 export interface WarehouseRepository {
 	proposeRoutes?(
 		id: string,

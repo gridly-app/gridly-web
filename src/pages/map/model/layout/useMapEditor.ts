@@ -12,7 +12,9 @@ import { errorMessage } from "@/shared/lib";
 import { editorReducer, initialEditorState } from "./editorState";
 import { useCellSelection } from "./useCellSelection";
 import { useEditHistory } from "./useEditHistory";
+
 export type MapEditor = ReturnType<typeof useMapEditor>;
+
 type Draft = {
 	categories: Category[];
 	cells: Cell[];
@@ -20,6 +22,7 @@ type Draft = {
 	baseVersion: number;
 	draftRevision?: number | undefined;
 };
+
 export function useMapEditor(warehouse: Warehouse, command: CommandExecutor) {
 	const initial = (): Draft =>
 		structuredClone({

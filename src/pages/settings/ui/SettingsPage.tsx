@@ -1,5 +1,6 @@
 import { useSettingsPage } from "../model/useSettingsPage";
 import { SettingsForm } from "./SettingsForm";
+
 export function SettingsPage() {
 	const { warehouse, execute, pending } = useSettingsPage();
 	return (
