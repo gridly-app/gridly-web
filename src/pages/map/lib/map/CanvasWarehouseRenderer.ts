@@ -1,15 +1,10 @@
-import {
-	type Cell,
-	findWarehousePath,
-	type GridPosition,
-	type Warehouse,
-} from "@/entities/warehouse";
+import type { Cell, GridPosition, Warehouse } from "@/entities/warehouse";
+
 import { paintWarehouseLayout } from "./paintWarehouseLayout";
 import type { RobotMotionTrack } from "./robotMotion";
 import {
 	isRobotMotionActive,
 	prepareRobotMotionTrack,
-	remainingRobotMotionPath,
 	robotMotionPosition,
 } from "./robotMotion";
 import { sameLayout } from "./sameLayout";
@@ -21,12 +16,14 @@ export interface LayoutRenderState {
 	selectionKeys: string[];
 	size: number;
 	dark: boolean;
-	routeDragHandle?: { point: GridPosition; index: number } | null;
-	routeHandles?: "inbound" | "outbound";
-	routes?: {
-		inbound: GridPosition[];
-		outbound: GridPosition[];
-	};
+	routeDragHandle?: ({ point: GridPosition; index: number } | null) | undefined;
+	routeHandles?: ("inbound" | "outbound") | undefined;
+	routes?:
+		| {
+				inbound: GridPosition[];
+				outbound: GridPosition[];
+		  }
+		| undefined;
 }
 
 export interface MapRenderer {
@@ -34,7 +31,7 @@ export interface MapRenderer {
 	drawRobots(
 		warehouse: Pick<Warehouse, "width" | "height" | "robots" | "asOf">,
 		size: number,
-		selectedRobotId?: string | null,
+		selectedRobotId?: (string | null) | undefined,
 	): void;
 	findRobotAt(x: number, y: number, size: number): string | null;
 	dispose(): void;
@@ -56,8 +53,6 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 	private robotsCssHeight = 0;
 
 	private positions = new Map<string, GridPosition>();
-
-	private cells: Cell[] = [];
 
 	private tracks = new Map<string, RobotMotionTrack>();
 
@@ -157,7 +152,6 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 			sameLayout(this.layoutState, state)
 		)
 			return;
-		this.cells = state.cells;
 		const context = this.prepare(this.layoutCanvas, state.w, state.size);
 		paintWarehouseLayout(context, state);
 		this.layoutState = state;
@@ -167,7 +161,7 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 	drawRobots(
 		warehouse: Pick<Warehouse, "width" | "height" | "robots" | "asOf">,
 		size: number,
-		selectedRobotId?: string | null,
+		selectedRobotId?: (string | null) | undefined,
 	) {
 		if (this.frame !== null) {
 			cancelAnimationFrame(this.frame);
@@ -194,29 +188,27 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 			if (track && track.target.x === robot.x && track.target.y === robot.y) {
 				continue;
 			}
-			const remaining = track
-				? remainingRobotMotionPath(track, start)
-				: [robot];
-			const anchor = remaining[remaining.length - 1];
-			const path = findWarehousePath(this.cells, [anchor], [robot]);
+			const supplied = robot.motionPath ?? [];
+			const last = supplied.at(-1);
+			const path = last?.x === robot.x && last?.y === robot.y ? supplied : [];
 
 			const nextTrack = prepareRobotMotionTrack({
 				target: robot,
-				path: path.length ? [...remaining, ...path.slice(1)] : [robot],
+				path: path.length ? path : [robot],
 				startedAt: start,
-				duration: this.sampleDuration,
+				duration: path.length ? this.sampleDuration : 0,
 			});
 			this.tracks.set(robot.id, nextTrack);
 
 			const currentPosition = this.positions.get(robot.id);
 
 			if (currentPosition) {
-				currentPosition.x = remaining[0].x;
-				currentPosition.y = remaining[0].y;
+				currentPosition.x = path[0]?.x ?? robot.x;
+				currentPosition.y = path[0]?.y ?? robot.y;
 			} else {
 				this.positions.set(robot.id, {
-					x: remaining[0].x,
-					y: remaining[0].y,
+					x: path[0]?.x ?? robot.x,
+					y: path[0]?.y ?? robot.y,
 				});
 			}
 		}
@@ -234,6 +226,7 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 
 			for (let index = 0; index < warehouse.robots.length; index += 1) {
 				const robot = warehouse.robots[index];
+				if (!robot) continue;
 				const track = this.tracks.get(robot.id);
 				if (!track) continue;
 				let position = this.positions.get(robot.id);
