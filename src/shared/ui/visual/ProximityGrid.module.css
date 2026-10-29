@@ -27,14 +27,14 @@
 }
 
 .artGrid i {
-	background: var(--proximity-cell-bg, #414b38);
+	background: var(--proximity-cell-bg, #215d3e);
 }
 
 .artGrid .artShelf {
-	background: var(--proximity-shelf-bg, #7d8c65);
+	background: var(--proximity-shelf-bg, #6ea482);
 }
 
 .artGrid .artActive {
-	background: var(--proximity-active-bg, #ec8552);
-	box-shadow: var(--proximity-active-shadow, 4px 6px 0 #a35231);
+	background: var(--proximity-active-bg, #4aa66e);
+	box-shadow: var(--proximity-active-shadow, 4px 6px 0 #236b42);
 }

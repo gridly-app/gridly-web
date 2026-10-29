@@ -1,13 +1,14 @@
 import type { MotionValue } from "motion/react";
-import { motion, useSpring, useTransform } from "motion/react";
+import { LazyMotion, useSpring, useTransform } from "motion/react";
+import * as m from "motion/react-m";
 import { memo, useRef } from "react";
 import { useProximityGrid } from "@/shared/lib";
 import proximityStyles from "./ProximityGrid.module.css";
 
 export type ProximityGridProps = {
-	className?: string;
-	columns?: number;
-	rows?: number;
+	className?: string | undefined;
+	columns?: number | undefined;
+	rows?: number | undefined;
 };
 
 export type ProximityCellProps = {
@@ -63,7 +64,7 @@ const ProximityCell = memo(function ProximityCell({
 
 	return (
 		<span ref={anchor} className={proximityStyles.proximityCell}>
-			<motion.i
+			<m.i
 				className={
 					id % 7 === 0
 						? proximityStyles.artActive
@@ -77,6 +78,9 @@ const ProximityCell = memo(function ProximityCell({
 	);
 });
 
+const loadAnimationFeatures = () =>
+	import("./motionFeatures").then((module) => module.default);
+
 export function ProximityGrid({
 	className = "",
 	columns = 8,
@@ -87,17 +91,19 @@ export function ProximityGrid({
 		useProximityGrid();
 
 	return (
-		<div
-			className={`${proximityStyles.artGrid} ${className}`}
-			style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-			aria-hidden="true"
-			onPointerMove={handlePointerMove}
-			onPointerLeave={handlePointerLeave}
-			onPointerCancel={handlePointerLeave}
-		>
-			{cells.map((id) => (
-				<ProximityCell key={id} id={id} {...pointer} />
-			))}
-		</div>
+		<LazyMotion features={loadAnimationFeatures} strict>
+			<div
+				className={`${proximityStyles.artGrid} ${className}`}
+				style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+				aria-hidden="true"
+				onPointerMove={handlePointerMove}
+				onPointerLeave={handlePointerLeave}
+				onPointerCancel={handlePointerLeave}
+			>
+				{cells.map((id) => (
+					<ProximityCell key={id} id={id} {...pointer} />
+				))}
+			</div>
+		</LazyMotion>
 	);
 }
