@@ -1,8 +1,10 @@
 .timeline {
 	padding: 0 26px;
+	margin: 0;
+	list-style: none;
 }
 
-.timeline > div {
+.timeline > li {
 	display: flex;
 	gap: 18px;
 	padding: 24px 0;
@@ -36,7 +38,7 @@
 		padding: 0 16px;
 	}
 
-	.timeline > div {
+	.timeline > li {
 		flex-wrap: wrap;
 	}
 
