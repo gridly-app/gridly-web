@@ -1,11 +1,11 @@
-.order-link {
+.orderLink {
 	background: none;
 	border: none;
 	color: var(--brand-accent);
 	font-weight: 700;
 }
 
-.order-line {
+.orderLine {
 	padding: 0 12px 8px;
 	border: 1px solid var(--line);
 	border-radius: 8px;
@@ -16,27 +16,27 @@
 	flex: 1;
 }
 
-.order-line input {
+.orderLine input {
 	width: 100%;
 }
 
-.order-statistics {
+.orderStatistics {
 	display: flex;
 	flex-direction: column;
 	gap: 5px;
 	color: var(--text);
 }
 
-.order-statistics b {
+.orderStatistics b {
 	font-size: 11px;
 }
 
-.order-statistics small {
+.orderStatistics small {
 	color: var(--muted-foreground);
 	font-size: 9px;
 	font-weight: 500;
 }
 
-.order-link {
+.orderLink {
 	color: var(--brand-accent);
 }

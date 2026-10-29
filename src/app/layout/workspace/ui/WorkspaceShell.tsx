@@ -12,7 +12,7 @@ export function WorkspaceShell() {
 
 	return (
 		<ImmersiveProvider>
-			<SidebarProvider className={workspaceStyles["app-shell"]}>
+			<SidebarProvider className={workspaceStyles.appShell}>
 				<WorkspaceSidebar model={model.sidebar} />
 				<WorkspaceContent model={model.content} />
 				<WorkspaceNotification model={model.notice} />

@@ -35,22 +35,22 @@ export function MapNavigation({
 	navigation,
 }: MapNavigationProps) {
 	return (
-		<div ref={navigation} className={mapStyles["map-view-navigation"]}>
+		<div ref={navigation} className={mapStyles.mapViewNavigation}>
 			<nav aria-label="Управление картой">
-				<ul className={mapStyles["space-navigation-list"]}>
+				<ul className={mapStyles.spaceNavigationList}>
 					<li>
 						<Menu open={editor.menuOpen} onOpenChange={editor.setMenuOpen}>
 							<MenuTrigger
 								render={
 									<Button
 										variant="ghost"
-										className={mapStyles["space-navigation-trigger"]}
+										className={mapStyles.spaceNavigationTrigger}
 									/>
 								}
 							>
 								Редактирование <IconChevronDown size={14} />
 							</MenuTrigger>
-							<MenuPopup className={mapStyles["space-navigation-content"]}>
+							<MenuPopup className={mapStyles.spaceNavigationContent}>
 								<MenuItem
 									render={
 										<Button

@@ -34,7 +34,7 @@ export function ConnectionStatus({ model }: ConnectionStatusProps) {
 	}
 
 	return (
-		<div className={workspaceStyles["connection-status"]} role="status">
+		<div className={workspaceStyles.connectionStatus} role="status">
 			<span>Симуляция: {warehouse.running ? "включена" : "на паузе"}</span>
 			{warehouse.workerHealth && (
 				<span>

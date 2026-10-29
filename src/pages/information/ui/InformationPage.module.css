@@ -1,4 +1,4 @@
-.warehouse-information {
+.warehouseInformation {
 	padding: 28px;
 	max-width: none;
 	flex: 1;
@@ -10,7 +10,7 @@
 	background: var(--surface);
 }
 
-.information-name {
+.informationName {
 	display: flex;
 	align-items: center;
 	gap: 12px;
@@ -18,20 +18,20 @@
 	padding: 8px 0;
 }
 
-.information-name h2 {
+.informationName h2 {
 	margin: 0;
 	color: var(--text);
 	font-size: 22px;
 }
 
-.warehouse-information dl {
+.warehouseInformation dl {
 	margin: 24px 0;
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 0 40px;
 }
 
-.warehouse-information dl > div {
+.warehouseInformation dl > div {
 	display: flex;
 	justify-content: space-between;
 	gap: 10px;
@@ -41,29 +41,29 @@
 	flex-direction: column;
 }
 
-.warehouse-information dt {
+.warehouseInformation dt {
 	color: var(--muted-foreground);
 }
 
-.warehouse-information dd {
+.warehouseInformation dd {
 	margin: 0;
 	text-align: left;
 	font-size: 16px;
 	font-weight: 600;
 }
 
-.information-name > svg {
+.informationName > svg {
 	box-sizing: content-box;
 	padding: 14px;
 	background: var(--soft);
 	border-radius: 16px;
 }
 @media (width <= 580px) {
-	.warehouse-information {
+	.warehouseInformation {
 		padding: 20px 16px;
 	}
 
-	.warehouse-information dl {
+	.warehouseInformation dl {
 		grid-template-columns: 1fr;
 	}
 }

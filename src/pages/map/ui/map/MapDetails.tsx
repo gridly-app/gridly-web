@@ -13,7 +13,7 @@ export interface MapDetailsProps {
 export function MapDetails({ legend }: MapDetailsProps) {
 	const model = useMapSelection();
 	return (
-		<aside className={mapStyles["map-details"]}>
+		<aside className={mapStyles.mapDetails}>
 			<div className={localLayout["section-caption"]}>
 				{model.robot && !model.editing
 					? "РОБОТ"

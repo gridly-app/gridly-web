@@ -13,7 +13,7 @@ export default function ZonePanel(props: ZonePanelProps) {
 
 	return (
 		<Form
-			className={mapStyles["zone-form"]}
+			className={mapStyles.zoneForm}
 			onSubmit={(event) => {
 				void model.save(event);
 			}}

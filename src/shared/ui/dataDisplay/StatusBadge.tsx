@@ -18,19 +18,19 @@ export function StatusBadge({
 }: StatusBadgeProps) {
 	return (
 		<div
-			className={`${statusStyles["status-badge"]} ${compactOnMobile ? statusStyles.compact : ""}`}
+			className={`${statusStyles.statusBadge} ${compactOnMobile ? statusStyles.compact : ""}`}
 			data-status={status}
 		>
 			<span
-				className={`${statusStyles["status-indicator"]} ${animated ? statusStyles["status-animated"] : ""}`}
+				className={`${statusStyles.statusIndicator} ${animated ? statusStyles.statusAnimated : ""}`}
 				aria-hidden="true"
 			>
-				<span className={statusStyles["status-wave"]} />
-				<span className={statusStyles["status-dot"]} />
+				<span className={statusStyles.statusWave} />
+				<span className={statusStyles.statusDot} />
 			</span>
 			<b>{primaryText}</b>
 			{children && (
-				<span className={statusStyles["status-secondary"]}>{children}</span>
+				<span className={statusStyles.statusSecondary}>{children}</span>
 			)}
 		</div>
 	);

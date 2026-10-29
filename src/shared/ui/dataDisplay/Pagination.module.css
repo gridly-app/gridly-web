@@ -1,4 +1,4 @@
-.pagination-content {
+.paginationContent {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -8,12 +8,12 @@
 	list-style: none;
 }
 
-.pagination-content li {
+.paginationContent li {
 	flex-shrink: 0;
 }
 
 @media (width <= 700px) {
-	.pagination-content {
+	.paginationContent {
 		overflow-x: auto;
 	}
 }

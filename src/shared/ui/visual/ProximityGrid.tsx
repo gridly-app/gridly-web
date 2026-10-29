@@ -62,13 +62,13 @@ const ProximityCell = memo(function ProximityCell({
 	);
 
 	return (
-		<span ref={anchor} className={proximityStyles["proximity-cell"]}>
+		<span ref={anchor} className={proximityStyles.proximityCell}>
 			<motion.i
 				className={
 					id % 7 === 0
-						? proximityStyles["art-active"]
+						? proximityStyles.artActive
 						: id % 3 === 0
-							? proximityStyles["art-shelf"]
+							? proximityStyles.artShelf
 							: ""
 				}
 				style={{ y, scale, borderRadius, filter, boxShadow }}
@@ -88,7 +88,7 @@ export function ProximityGrid({
 
 	return (
 		<div
-			className={`${proximityStyles["art-grid"]} ${className}`}
+			className={`${proximityStyles.artGrid} ${className}`}
 			style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
 			aria-hidden="true"
 			onPointerMove={handlePointerMove}

@@ -27,7 +27,7 @@ function equalOption(item: ComboboxOption, value: ComboboxOption) {
 function renderOption(item: ComboboxOption) {
 	return (
 		<ComboboxPrimitive.Item
-			className={comboboxStyles["space-combobox-item"]}
+			className={comboboxStyles.spaceComboboxItem}
 			key={item.value}
 			value={item}
 		>
@@ -72,7 +72,7 @@ export function Combobox({
 			autoHighlight
 		>
 			<div
-				className={`${comboboxStyles["space-combobox-control"]} ${className}`}
+				className={`${comboboxStyles.spaceComboboxControl} ${className}`}
 				data-slot="combobox-control"
 			>
 				<ComboboxPrimitive.Input
@@ -81,7 +81,7 @@ export function Combobox({
 					placeholder={placeholder}
 				/>
 				<ComboboxPrimitive.Trigger
-					className={comboboxStyles["space-combobox-trigger"]}
+					className={comboboxStyles.spaceComboboxTrigger}
 					aria-label="Раскрыть список"
 				>
 					<IconSelector size={16} />
@@ -89,19 +89,19 @@ export function Combobox({
 			</div>
 			<ComboboxPrimitive.Portal>
 				<ComboboxPrimitive.Positioner
-					className={comboboxStyles["space-combobox-positioner"]}
+					className={comboboxStyles.spaceComboboxPositioner}
 					sideOffset={6}
 				>
 					<ComboboxPrimitive.Popup
-						className={comboboxStyles["space-combobox-popup"]}
+						className={comboboxStyles.spaceComboboxPopup}
 					>
 						<ComboboxPrimitive.Empty
-							className={comboboxStyles["space-combobox-empty"]}
+							className={comboboxStyles.spaceComboboxEmpty}
 						>
 							Ничего не найдено
 						</ComboboxPrimitive.Empty>
 						<ComboboxPrimitive.List
-							className={comboboxStyles["space-combobox-list"]}
+							className={comboboxStyles.spaceComboboxList}
 						>
 							{renderOption}
 						</ComboboxPrimitive.List>

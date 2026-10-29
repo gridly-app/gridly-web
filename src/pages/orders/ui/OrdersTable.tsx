@@ -42,7 +42,7 @@ export function OrdersTable({ model }: OrdersTableProps) {
 					<TableHead>Создан</TableHead>
 					<TableHead>Статус</TableHead>
 					<TableHead>
-						<div className={ordersStyles["order-statistics"]}>
+						<div className={ordersStyles.orderStatistics}>
 							<b>
 								{page === "inbound" ? "Поставок" : "Отгрузок"}:{" "}
 								{statistics.total}
@@ -63,7 +63,7 @@ export function OrdersTable({ model }: OrdersTableProps) {
 								<Button
 									size="sm"
 									variant="ghost"
-									className={ordersStyles["order-link"]}
+									className={ordersStyles.orderLink}
 									onClick={() => model.setDetail(o.id)}
 								>
 									{o.number}

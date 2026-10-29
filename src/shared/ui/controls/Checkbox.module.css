@@ -1,4 +1,4 @@
-.space-checkbox {
+.spaceCheckbox {
 	display: inline-flex;
 	flex-shrink: 0;
 	width: 18px;
@@ -12,17 +12,17 @@
 	cursor: pointer;
 }
 
-.space-checkbox[data-checked] {
+.spaceCheckbox[data-checked] {
 	background: var(--brand-accent);
 	border-color: var(--brand-accent);
 }
 
-.space-checkbox:focus-visible {
+.spaceCheckbox:focus-visible {
 	outline: 2px solid var(--brand-accent);
 	outline-offset: 3px;
 }
 
-.space-checkbox:disabled {
+.spaceCheckbox:disabled {
 	opacity: 0.45;
 	cursor: not-allowed;
 }

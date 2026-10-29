@@ -15,7 +15,7 @@ export function HistoryPage() {
 				<div className={historyStyles.timeline}>
 					{visibleEvents.map((e) => (
 						<div key={e.id}>
-							<span className={historyStyles["event-dot"]} />
+							<span className={historyStyles.eventDot} />
 							<div>
 								<b>{e.title}</b>
 								<p className={localLayout.muted}>{e.detail}</p>

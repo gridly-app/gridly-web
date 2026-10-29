@@ -19,7 +19,7 @@ export function MenuSubmenuTrigger({
 }: MenuPrimitive.SubmenuTrigger.Props) {
 	return (
 		<MenuPrimitive.SubmenuTrigger
-			className={mergeClassName(menuStyles["space-menu-item"], className)}
+			className={mergeClassName(menuStyles.spaceMenuItem, className)}
 			{...props}
 		/>
 	);
@@ -34,13 +34,13 @@ export function MenuPopup({
 	return (
 		<MenuPrimitive.Portal>
 			<MenuPrimitive.Positioner
-				className={menuStyles["space-menu-positioner"]}
+				className={menuStyles.spaceMenuPositioner}
 				side={side}
 				align={align}
 				sideOffset={6}
 			>
 				<MenuPrimitive.Popup
-					className={mergeClassName(menuStyles["space-menu-popup"], className)}
+					className={mergeClassName(menuStyles.spaceMenuPopup, className)}
 					data-slot="menu-popup"
 					{...props}
 				/>
@@ -55,7 +55,7 @@ export function MenuItem({
 }: MenuPrimitive.Item.Props) {
 	return (
 		<MenuPrimitive.Item
-			className={mergeClassName(menuStyles["space-menu-item"], className)}
+			className={mergeClassName(menuStyles.spaceMenuItem, className)}
 			data-slot="menu-item"
 			{...props}
 		/>

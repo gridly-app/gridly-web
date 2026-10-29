@@ -14,7 +14,7 @@
 	overflow: visible;
 }
 
-.landing-hero {
+.landingHero {
 	position: relative;
 	isolation: isolate;
 	display: grid;
@@ -26,13 +26,13 @@
 	clip-path: inset(0);
 }
 
-.hero-copy {
+.heroCopy {
 	width: 100%;
 	text-align: center;
 	pointer-events: none;
 }
 
-.hero-copy h1 {
+.heroCopy h1 {
 	margin: 0 0 22px;
 	font-size: clamp(78px, 11vw, 150px);
 	line-height: 1.1;
@@ -44,7 +44,7 @@
 	color: #e86536;
 }
 
-.hero-description {
+.heroDescription {
 	margin: 0 auto;
 	max-width: 740px;
 	color: #72786a;
@@ -54,15 +54,15 @@
 	letter-spacing: -0.4px;
 }
 
-.hero-description > span {
+.heroDescription > span {
 	display: block;
 }
 
-.hero-description > span:last-child {
+.heroDescription > span:last-child {
 	color: #909586;
 }
 
-.hero-actions {
+.heroActions {
 	display: flex;
 	justify-content: center;
 	gap: 12px;
@@ -85,12 +85,12 @@
 	background: #d9dfcb;
 }
 
-.landing-features {
+.landingFeatures {
 	padding: 50px max(6%, calc((100vw - 1200px) / 2)) 70px;
 	background: linear-gradient(#f3f2ed, #f0f1e9 70%, #f3f2ed);
 }
 
-.section-intro {
+.sectionIntro {
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 30px;
@@ -98,7 +98,7 @@
 	margin-bottom: 45px;
 }
 
-.section-intro h2 {
+.sectionIntro h2 {
 	font-size: clamp(28px, 3vw, 37px);
 	font-weight: 500;
 	letter-spacing: -1.5px;
@@ -106,63 +106,63 @@
 	margin: 0;
 }
 
-.section-intro p {
+.sectionIntro p {
 	color: #929889;
 	font-size: 12px;
 	padding-top: 10px;
 }
 
-.feature-grid {
+.featureGrid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 18px;
 }
 
-.feature-grid article {
+.featureGrid article {
 	border: 0;
 	border-radius: 20px;
 	padding: 30px;
 	background: #ffffff57;
 }
 
-.feature-top {
+.featureTop {
 	display: flex;
 	justify-content: space-between;
 	color: #7e8a6b;
 	margin-bottom: 35px;
 }
 
-.feature-top span {
+.featureTop span {
 	font-size: 10px;
 	color: #a4ad98;
 }
 
-.feature-grid h3 {
+.featureGrid h3 {
 	font-size: 22px;
 	font-weight: 500;
 	letter-spacing: -0.8px;
 	margin-bottom: 13px;
 }
 
-.feature-grid p {
+.featureGrid p {
 	color: #848b7b;
 	font-size: 12px;
 	line-height: 1.9;
 	margin-bottom: 0;
 }
 
-.landing-workflow {
+.landingWorkflow {
 	max-width: 1360px;
 	padding: 95px 6% 105px;
 	margin: auto;
 }
 
-.workflow-heading {
+.workflowHeading {
 	text-align: center;
 	margin-bottom: 45px;
 }
 
-.workflow-heading h2 {
+.workflowHeading h2 {
 	font-size: clamp(32px, 3.9vw, 48px);
 	font-weight: 500;
 	line-height: 1.22;
@@ -170,22 +170,22 @@
 	margin: 20px 0 0;
 }
 
-.workflow-heading h2 > .workflow-heading-muted {
+.workflowHeading h2 > .workflowHeadingMuted {
 	color: #939b86;
 }
 
-.workflow-body {
+.workflowBody {
 	display: grid;
 	grid-template-columns: 0.85fr 1.15fr;
 	gap: 65px;
 	align-items: center;
 }
 
-.workflow-copy {
+.workflowCopy {
 	padding: 10px 0;
 }
 
-.scenario-controls {
+.scenarioControls {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 3px;
@@ -210,11 +210,11 @@
 	box-shadow: 0 2px 6px #34422008;
 }
 
-.scenario-description {
+.scenarioDescription {
 	min-height: 175px;
 }
 
-.scenario-description h3 {
+.scenarioDescription h3 {
 	font-size: 28px;
 	font-weight: 500;
 	line-height: 1.3;
@@ -222,20 +222,20 @@
 	margin-bottom: 16px;
 }
 
-.scenario-description p {
+.scenarioDescription p {
 	color: #818975;
 	font-size: 13px;
 	line-height: 1.9;
 	max-width: 355px;
 }
 
-.scenario-preview {
+.scenarioPreview {
 	background: #e9ece0;
 	padding: 25px;
 	border-radius: 25px;
 }
 
-.scenario-preview-heading {
+.scenarioPreviewHeading {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -244,25 +244,25 @@
 	font-size: 11px;
 }
 
-.scenario-preview-heading > span {
+.scenarioPreviewHeading > span {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 }
 
-.scenario-preview-heading small {
+.scenarioPreviewHeading small {
 	color: #9aa38b;
 	font-size: 9px;
 }
 
-.scenario-map {
+.scenarioMap {
 	display: grid;
 	grid-template-columns: repeat(8, minmax(0, 1fr));
 	gap: 7px;
 	padding: 28px 12px;
 }
 
-.scenario-cell {
+.scenarioCell {
 	aspect-ratio: 1.2;
 	border-radius: 6px;
 	background: #f3f4ec;
@@ -271,17 +271,17 @@
 		box-shadow 0.3s;
 }
 
-.scenario-shelf {
+.scenarioShelf {
 	background: #cdd6b8;
 	box-shadow: inset 0 -4px #b5c39f;
 }
 
-.scenario-cell-active {
+.scenarioCellActive {
 	background: #ec9c71;
 	box-shadow: inset 0 -4px #d78459;
 }
 
-.scenario-location {
+.scenarioLocation {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -290,7 +290,7 @@
 	padding: 0 12px 22px;
 }
 
-.scenario-steps {
+.scenarioSteps {
 	display: flex;
 	flex-direction: column;
 	gap: 13px;
@@ -299,7 +299,7 @@
 	padding: 18px;
 }
 
-.scenario-steps > div {
+.scenarioSteps > div {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -307,7 +307,7 @@
 	font-size: 11px;
 }
 
-.scenario-steps > div > span:first-child {
+.scenarioSteps > div > span:first-child {
 	display: grid;
 	place-items: center;
 	color: #809669;
@@ -317,7 +317,7 @@
 	height: 20px;
 }
 
-.landing-cta {
+.landingCta {
 	max-width: 1200px;
 	margin: 0 auto 28px;
 	background: #e86536;
@@ -328,12 +328,12 @@
 	overflow: hidden;
 }
 
-.sandbox-copy {
+.sandboxCopy {
 	position: relative;
 	z-index: 1;
 }
 
-.landing-cta h2 {
+.landingCta h2 {
 	font-size: clamp(35px, 4vw, 52px);
 	font-weight: 500;
 	letter-spacing: -2px;
@@ -341,7 +341,7 @@
 	margin: 22px 0 20px;
 }
 
-.landing-cta p {
+.landingCta p {
 	color: #ffdfcc;
 	font-size: 13px;
 	line-height: 1.8;
@@ -357,14 +357,14 @@
 	background: #ffe4cc;
 }
 
-.sandbox-note {
+.sandboxNote {
 	display: block;
 	margin-top: 14px;
 	color: #ffc7aa;
 	font-size: 10px;
 }
 
-.cta-pixels {
+.ctaPixels {
 	position: absolute;
 	right: 8%;
 	top: 25%;
@@ -374,23 +374,23 @@
 	transform: rotate(-15deg);
 }
 
-.cta-pixels i {
+.ctaPixels i {
 	aspect-ratio: 1;
 	border-radius: 14px;
 	background: #fa9d69;
 	box-shadow: 0 8px 0 #c7562d;
 }
 
-.cta-pixels i:nth-child(2) {
+.ctaPixels i:nth-child(2) {
 	transform: translateY(-20px);
 	background: #ffd5a4;
 }
 
-.cta-pixels i:nth-child(3) {
+.ctaPixels i:nth-child(3) {
 	opacity: 0.6;
 }
 
-.landing-footer {
+.landingFooter {
 	max-width: 1360px;
 	margin: auto;
 	display: flex;
@@ -402,7 +402,7 @@
 	font-size: 10px;
 }
 
-.landing-wordmark {
+.landingWordmark {
 	font-size: 24px;
 	font-weight: 800;
 	letter-spacing: -1px;
@@ -410,25 +410,25 @@
 }
 
 @media (width <= 1320px) {
-	.landing-cta {
+	.landingCta {
 		margin-inline: 6%;
 	}
 }
 
 @media (width <= 1000px) {
-	.section-intro {
+	.sectionIntro {
 		grid-template-columns: 1fr;
 	}
 
-	.section-intro > p {
+	.sectionIntro > p {
 		display: none;
 	}
 
-	.feature-grid article {
+	.featureGrid article {
 		padding: 23px;
 	}
 
-	.workflow-body {
+	.workflowBody {
 		gap: 35px;
 	}
 
@@ -436,34 +436,34 @@
 		padding-inline: 10px;
 	}
 
-	.scenario-description h3 {
+	.scenarioDescription h3 {
 		font-size: 25px;
 	}
 }
 
 @media (width <= 700px) {
-	.landing-hero {
+	.landingHero {
 		min-height: min(760px, 100svh);
 		padding: 100px 20px 125px;
 	}
 
-	.hero-copy h1 {
+	.heroCopy h1 {
 		font-size: clamp(76px, 17vw, 105px);
 		letter-spacing: -6px;
 		margin-bottom: 20px;
 	}
 
-	.hero-description {
+	.heroDescription {
 		font-size: clamp(11px, 3.1vw, 15px);
 		letter-spacing: -0.2px;
 		line-height: 1.9;
 	}
 
-	.hero-description > span {
+	.heroDescription > span {
 		white-space: nowrap;
 	}
 
-	.hero-actions {
+	.heroActions {
 		margin-top: 26px;
 		gap: 9px;
 	}
@@ -474,57 +474,57 @@
 		padding: 11px 19px;
 	}
 
-	.landing-features {
+	.landingFeatures {
 		padding: 25px 6% 40px;
 	}
 
-	.section-intro {
+	.sectionIntro {
 		display: block;
 		margin-bottom: 30px;
 	}
 
-	.section-intro h2 {
+	.sectionIntro h2 {
 		margin-top: 20px;
 		font-size: 31px;
 	}
 
-	.feature-grid {
+	.featureGrid {
 		grid-template-columns: 1fr;
 		gap: 12px;
 	}
 
-	.feature-grid article {
+	.featureGrid article {
 		padding: 28px;
 	}
 
-	.feature-top {
+	.featureTop {
 		margin-bottom: 25px;
 	}
 
-	.landing-workflow {
+	.landingWorkflow {
 		padding: 55px 6% 60px;
 	}
 
-	.workflow-heading {
+	.workflowHeading {
 		text-align: left;
 		margin-bottom: 30px;
 	}
 
-	.workflow-heading h2 {
+	.workflowHeading h2 {
 		font-size: 32px;
 		letter-spacing: -1.3px;
 	}
 
-	.workflow-body {
+	.workflowBody {
 		grid-template-columns: 1fr;
 		gap: 27px;
 	}
 
-	.scenario-description {
+	.scenarioDescription {
 		min-height: 130px;
 	}
 
-	.scenario-controls {
+	.scenarioControls {
 		margin-bottom: 22px;
 	}
 
@@ -532,55 +532,55 @@
 		padding-inline: 14px;
 	}
 
-	.scenario-preview {
+	.scenarioPreview {
 		padding: 20px;
 		border-radius: 20px;
 	}
 
-	.scenario-map {
+	.scenarioMap {
 		padding: 25px 0;
 		gap: 5px;
 	}
 
-	.scenario-cell {
+	.scenarioCell {
 		border-radius: 4px;
 	}
 
-	.landing-cta {
+	.landingCta {
 		padding: 35px 26px;
 		margin-bottom: 15px;
 	}
 
-	.landing-cta h2 {
+	.landingCta h2 {
 		font-size: 37px;
 		letter-spacing: -1.6px;
 	}
 
-	.landing-cta p {
+	.landingCta p {
 		font-size: 12px;
 	}
 
-	.landing-cta p br {
+	.landingCta p br {
 		display: none;
 	}
 
-	.cta-pixels {
+	.ctaPixels {
 		right: -70px;
 		top: 16%;
 		opacity: 0.17;
 	}
 
-	.sandbox-note {
+	.sandboxNote {
 		font-size: 9px;
 	}
 
-	.landing-footer {
+	.landingFooter {
 		padding-block: 25px 35px;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.scenario-cell {
+	.scenarioCell {
 		transition: none;
 	}
 }

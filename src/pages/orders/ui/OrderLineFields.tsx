@@ -21,7 +21,7 @@ export function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 	const { products, kind } = model;
 
 	return (
-		<div className={ordersStyles["order-line"]}>
+		<div className={ordersStyles.orderLine}>
 			<Field className={orderLayout.lineField} label="Товар">
 				<Combobox
 					value={line.product}

@@ -87,11 +87,11 @@ export function WarehouseMap(props: WarehouseMapProps) {
 			data-map-workspace=""
 			ref={immersiveRegion}
 			tabIndex={-1}
-			className={`${mapStyles["map-workspace"]} ${
-				view.viewing ? mapStyles["map-fullscreen"] : ""
+			className={`${mapStyles.mapWorkspace} ${
+				view.viewing ? mapStyles.mapFullscreen : ""
 			} ${
 				editor.selection.selected || robot || editing
-					? mapStyles["map-show-details"]
+					? mapStyles.mapShowDetails
 					: ""
 			}`}
 		>
@@ -113,7 +113,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					}}
 				/>
 			) : (
-				<div className={mapStyles["map-toolbar"]}>
+				<div className={mapStyles.mapToolbar}>
 					<StatusBadge
 						compactOnMobile
 						status={warehouse.running ? "online" : "offline"}
@@ -122,7 +122,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					>
 						/ {warehouse.robots.length} роботов
 					</StatusBadge>
-					<div className={mapStyles["toolbar-actions"]}>
+					<div className={mapStyles.toolbarActions}>
 						{simulation.supported && (
 							<Button
 								className={mapStyles.toolbarButton}
@@ -177,7 +177,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					running={warehouse.running}
 				/>
 			)}
-			<div className={mapStyles["map-layout"]}>
+			<div className={mapStyles.mapLayout}>
 				<MapCanvas
 					model={canvas}
 					viewing={view.viewing}

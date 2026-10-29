@@ -25,14 +25,14 @@ export function MapCanvas({ model, viewing, editorMode }: MapCanvasProps) {
 	} = model;
 
 	return (
-		<div className={mapStyles["map-panel"]}>
+		<div className={mapStyles.mapPanel}>
 			<div
 				data-editing={model.editing}
 				data-viewing={viewing}
 				data-editor={editorMode}
 				ref={scroll}
 				data-map-scroll=""
-				className={`${mapStyles["map-scroll"]} ${model.panning ? mapStyles["is-panning"] : ""}`}
+				className={`${mapStyles.mapScroll} ${model.panning ? mapStyles["is-panning"] : ""}`}
 				onWheel={handlers.onWheel}
 				onPointerDown={handlers.onPointerDown}
 				onPointerMove={handlers.onPointerMove}
@@ -41,7 +41,7 @@ export function MapCanvas({ model, viewing, editorMode }: MapCanvasProps) {
 			>
 				<div
 					ref={stack}
-					className={mapStyles["canvas-stack"]}
+					className={mapStyles.canvasStack}
 					style={{
 						transform: `translate(${model.panOffset.x}px, ${model.panOffset.y}px)`,
 						width: width * size + 48,
@@ -63,7 +63,7 @@ export function MapCanvas({ model, viewing, editorMode }: MapCanvasProps) {
 					<canvas ref={dynamic} className={mapStyles.dynamic} inert />
 				</div>
 			</div>
-			<div className={mapStyles["map-bottom"]}>
+			<div className={mapStyles.mapBottom}>
 				<div className={mapStyles.zoomActions}>
 					<Button
 						size="sm"

@@ -14,9 +14,9 @@ export function DataPanel({
 	empty = false,
 }: DataPanelProps) {
 	return (
-		<div className={`${panelStyles.panel} ${panelStyles["data-panel"]}`}>
-			<div className={panelStyles["table-toolbar"]}>{toolbar}</div>
-			<div className={panelStyles["table-scroll"]}>
+		<div className={`${panelStyles.panel} ${panelStyles.dataPanel}`}>
+			<div className={panelStyles.tableToolbar}>{toolbar}</div>
+			<div className={panelStyles.tableScroll}>
 				{children}
 				{empty && (
 					<div className={feedbackStyles.empty}>

@@ -14,7 +14,7 @@ export function PaginationContent({
 }: ComponentProps<"ul"> & { variant?: "default" | "fitted" }) {
 	return (
 		<ul
-			className={`${paginationStyles["pagination-content"]} ${variant === "fitted" ? paginationStyles.fitted : ""} ${className}`}
+			className={`${paginationStyles.paginationContent} ${variant === "fitted" ? paginationStyles.fitted : ""} ${className}`}
 			data-slot="pagination-content"
 			{...props}
 		/>

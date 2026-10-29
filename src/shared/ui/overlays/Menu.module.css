@@ -1,9 +1,9 @@
-.space-menu-positioner {
+.spaceMenuPositioner {
 	z-index: 120;
 	outline: none;
 }
 
-.space-menu-popup {
+.spaceMenuPopup {
 	min-width: 180px;
 	max-height: var(--available-height);
 	overflow-y: auto;
@@ -16,7 +16,7 @@
 	outline: none;
 }
 
-.space-menu-item {
+.spaceMenuItem {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -32,10 +32,10 @@
 	color: inherit;
 }
 
-.space-menu-item span {
+.spaceMenuItem span {
 	flex: 1;
 }
 
-.space-menu-item[data-highlighted] {
+.spaceMenuItem[data-highlighted] {
 	background: var(--soft);
 }

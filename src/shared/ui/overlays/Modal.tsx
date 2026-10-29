@@ -30,7 +30,7 @@ export function Modal({ title, children, onClose, finalFocus }: ModalProps) {
 					className={modalStyles.modal}
 					finalFocus={finalFocus ?? (() => opener)}
 				>
-					<div className={modalStyles["modal-head"]}>
+					<div className={modalStyles.modalHead}>
 						<Dialog.Title>{title}</Dialog.Title>
 						<Dialog.Close
 							render={

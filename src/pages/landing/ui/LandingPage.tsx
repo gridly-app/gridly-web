@@ -41,8 +41,8 @@ export function LandingPage() {
 				<LandingWorkflow />
 				<LandingSandbox />
 			</main>
-			<footer className={landingStyles["landing-footer"]}>
-				<Link className={landingStyles["landing-wordmark"]} href="#">
+			<footer className={landingStyles.landingFooter}>
+				<Link className={landingStyles.landingWordmark} href="#">
 					<StaticText text="gridly." />
 				</Link>
 				<span>

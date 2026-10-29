@@ -1,16 +1,16 @@
-.proximity-cell {
+.proximityCell {
 	display: block;
 	aspect-ratio: 1;
 }
 
-.art-grid i {
+.artGrid i {
 	display: block;
 	width: 100%;
 	aspect-ratio: 1;
 	border-radius: 5px;
 }
 
-.art-grid {
+.artGrid {
 	display: grid;
 	grid-template-columns: repeat(8, 1fr);
 	gap: 7px;
@@ -21,20 +21,20 @@
 	isolation: isolate;
 }
 
-.proximity-cell:hover {
+.proximityCell:hover {
 	position: relative;
 	z-index: 1;
 }
 
-.art-grid i {
+.artGrid i {
 	background: var(--proximity-cell-bg, #414b38);
 }
 
-.art-grid .art-shelf {
+.artGrid .artShelf {
 	background: var(--proximity-shelf-bg, #7d8c65);
 }
 
-.art-grid .art-active {
+.artGrid .artActive {
 	background: var(--proximity-active-bg, #ec8552);
 	box-shadow: var(--proximity-active-shadow, 4px 6px 0 #a35231);
 }

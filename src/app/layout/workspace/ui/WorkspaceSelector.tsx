@@ -19,16 +19,16 @@ export function WorkspaceSelector({ model }: WorkspaceSelectorProps) {
 
 	return (
 		<>
-			<span className={workspaceSidebarStyles["sidebar-label"]}>
+			<span className={workspaceSidebarStyles.sidebarLabel}>
 				РАБОЧЕЕ ПРОСТРАНСТВО
 			</span>
-			<div className={workspaceSidebarStyles["workspace-dropdown"]}>
+			<div className={workspaceSidebarStyles.workspaceDropdown}>
 				<IconBuildingWarehouse size={19} aria-hidden="true" />
 				<Select
 					options={items}
 					value={warehouseId}
 					onValueChange={changeWarehouse}
-					className={workspaceSidebarStyles["workspace-select-trigger"]}
+					className={workspaceSidebarStyles.workspaceSelectTrigger}
 					aria-label="Рабочее пространство — выбор склада"
 				/>
 			</div>

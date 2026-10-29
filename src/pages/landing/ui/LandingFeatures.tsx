@@ -25,18 +25,18 @@ const features = [
 
 export function LandingFeatures() {
 	return (
-		<section id="platform" className={landingStyles["landing-features"]}>
-			<div className={landingStyles["section-intro"]}>
+		<section id="platform" className={landingStyles.landingFeatures}>
+			<div className={landingStyles.sectionIntro}>
 				<h2>
 					<StaticText text="Порядок, который" />
 					<br />
 					<StaticText text="чувствуется в работе." />
 				</h2>
 			</div>
-			<div className={landingStyles["feature-grid"]}>
+			<div className={landingStyles.featureGrid}>
 				{features.map(({ id, icon: Icon, title, text }) => (
 					<article key={id}>
-						<div className={landingStyles["feature-top"]}>
+						<div className={landingStyles.featureTop}>
 							<Icon size={28} stroke={1.5} />
 						</div>
 						<h3>

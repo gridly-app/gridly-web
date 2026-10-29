@@ -7,8 +7,8 @@ export function LandingSandbox() {
 	const { openDemo, pending, error } = useLandingDemo();
 
 	return (
-		<section id="sandbox" className={landingStyles["landing-cta"]}>
-			<div className={landingStyles["sandbox-copy"]}>
+		<section id="sandbox" className={landingStyles.landingCta}>
+			<div className={landingStyles.sandboxCopy}>
 				<h2>
 					<StaticText text="Давайте приведём" />
 					<br />
@@ -30,11 +30,11 @@ export function LandingSandbox() {
 				>
 					Открыть демо <IconArrowUpRight size={19} />
 				</Button>
-				<small className={landingStyles["sandbox-note"]}>
+				<small className={landingStyles.sandboxNote}>
 					<StaticText text="Без регистрации · Демо-данные в вашем браузере" />
 				</small>
 			</div>
-			<div className={landingStyles["cta-pixels"]} aria-hidden="true">
+			<div className={landingStyles.ctaPixels} aria-hidden="true">
 				<i />
 				<i />
 				<i />

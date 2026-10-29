@@ -8,7 +8,7 @@ export type CheckboxProps = CheckboxPrimitive.Root.Props;
 export function Checkbox({ className = "", ...props }: CheckboxProps) {
 	return (
 		<CheckboxPrimitive.Root
-			className={mergeClassName(checkboxStyles["space-checkbox"], className)}
+			className={mergeClassName(checkboxStyles.spaceCheckbox, className)}
 			data-slot="checkbox"
 			{...props}
 		>

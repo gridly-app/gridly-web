@@ -29,12 +29,12 @@ export function WorkspaceSidebar({ model }: WorkspaceSidebarProps) {
 			className={workspaceSidebarStyles.workspace}
 		>
 			<SidebarHeader>
-				<div className={workspaceSidebarStyles["sidebar-brand-row"]}>
+				<div className={workspaceSidebarStyles.sidebarBrandRow}>
 					<Link
 						render={<NavLink to="/" />}
 						className={workspaceSidebarStyles.brand}
 					>
-						<div className={workspaceSidebarStyles["brand-icon"]}>
+						<div className={workspaceSidebarStyles.brandIcon}>
 							<IconBuildingWarehouse size={24} />
 						</div>
 						Gridly
@@ -48,7 +48,7 @@ export function WorkspaceSidebar({ model }: WorkspaceSidebarProps) {
 			<SidebarContent>
 				<WarehouseNavigation model={model.navigation} />
 			</SidebarContent>
-			<SidebarFooter className={workspaceSidebarStyles["sidebar-bottom"]}>
+			<SidebarFooter className={workspaceSidebarStyles.sidebarBottom}>
 				<ProfileMenu
 					user={model.profile.user}
 					isDemo={model.profile.isDemo}

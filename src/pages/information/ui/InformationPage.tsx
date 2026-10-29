@@ -7,8 +7,8 @@ export function InformationPage() {
 	const { warehouse, openSettings } = useInformationPage();
 
 	return (
-		<section className={informationStyles["warehouse-information"]}>
-			<div className={informationStyles["information-name"]}>
+		<section className={informationStyles.warehouseInformation}>
+			<div className={informationStyles.informationName}>
 				<IconBuildingWarehouse size={28} />
 				<h2>{warehouse.name}</h2>
 			</div>

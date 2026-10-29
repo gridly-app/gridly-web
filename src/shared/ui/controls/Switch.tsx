@@ -7,10 +7,10 @@ export type SwitchProps = SwitchPrimitive.Root.Props;
 export function Switch({ className = "", ...props }: SwitchProps) {
 	return (
 		<SwitchPrimitive.Root
-			className={mergeClassName(switchStyles["space-switch"], className)}
+			className={mergeClassName(switchStyles.spaceSwitch, className)}
 			{...props}
 		>
-			<SwitchPrimitive.Thumb className={switchStyles["space-switch-thumb"]} />
+			<SwitchPrimitive.Thumb className={switchStyles.spaceSwitchThumb} />
 		</SwitchPrimitive.Root>
 	);
 }

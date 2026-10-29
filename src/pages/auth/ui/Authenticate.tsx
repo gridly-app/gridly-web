@@ -29,12 +29,12 @@ export function Authenticate() {
 					fade: authStyles.backdropFade,
 				}}
 			/>
-			<Link className={authStyles["auth-back"]} render={<RouterLink to="/" />}>
+			<Link className={authStyles.authBack} render={<RouterLink to="/" />}>
 				На главную
 			</Link>
-			<div className={authStyles["auth-form"]}>
+			<div className={authStyles.authForm}>
 				<Link
-					className={authStyles["auth-brand"]}
+					className={authStyles.authBrand}
 					render={<RouterLink to="/" />}
 					aria-label="Gridly — главная"
 				>
@@ -104,7 +104,7 @@ export function Authenticate() {
 						</Button>
 					</Form>
 				</SignInBlock>
-				<div className={authStyles["auth-demo"]}>
+				<div className={authStyles.authDemo}>
 					<Button
 						variant="secondary"
 						size="lg"

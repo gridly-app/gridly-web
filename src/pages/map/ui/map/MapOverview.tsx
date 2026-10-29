@@ -7,7 +7,7 @@ export type MapOverviewProps = { editing: boolean };
 export function MapOverview({ editing }: MapOverviewProps) {
 	return (
 		<>
-			<div className={mapStyles["overview-icon"]}>
+			<div className={mapStyles.overviewIcon}>
 				<IconHandStop size={30} />
 			</div>
 			<h3>{editing ? "Выберите клетки" : "Выберите клетку"}</h3>

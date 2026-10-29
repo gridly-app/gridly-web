@@ -46,17 +46,17 @@ export function Select({
 			</Primitive.Trigger>
 			<Primitive.Portal>
 				<Primitive.Positioner
-					className={styles["space-combobox-positioner"]}
+					className={styles.spaceComboboxPositioner}
 					sideOffset={6}
 					alignItemWithTrigger={false}
 				>
-					<Primitive.Popup className={styles["space-combobox-popup"]}>
-						<Primitive.List className={styles["space-combobox-list"]}>
+					<Primitive.Popup className={styles.spaceComboboxPopup}>
+						<Primitive.List className={styles.spaceComboboxList}>
 							{options.map((option) => (
 								<Primitive.Item
 									key={option.value}
 									value={option.value}
-									className={styles["space-combobox-item"]}
+									className={styles.spaceComboboxItem}
 								>
 									<Primitive.ItemText>{option.label}</Primitive.ItemText>
 									<Primitive.ItemIndicator>

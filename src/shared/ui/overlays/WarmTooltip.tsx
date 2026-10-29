@@ -34,14 +34,14 @@ export function WarmTooltip({
 				<Tooltip.Positioner
 					side={side}
 					sideOffset={8}
-					className={tooltipStyles["warm-tooltip-positioner"]}
+					className={tooltipStyles.warmTooltipPositioner}
 				>
 					<Tooltip.Popup
-						className={tooltipStyles["warm-tooltip-popup"]}
+						className={tooltipStyles.warmTooltipPopup}
 						role="tooltip"
 					>
 						{content}
-						<Tooltip.Arrow className={tooltipStyles["warm-tooltip-arrow"]} />
+						<Tooltip.Arrow className={tooltipStyles.warmTooltipArrow} />
 					</Tooltip.Popup>
 				</Tooltip.Positioner>
 			</Tooltip.Portal>

@@ -16,29 +16,29 @@ const cells = Array.from({ length: 48 }, (_, id) => ({
 export function ScenarioPreview({ scenario }: ScenarioPreviewProps) {
 	return (
 		<section
-			className={landingStyles["scenario-preview"]}
+			className={landingStyles.scenarioPreview}
 			aria-label="Иллюстрация складского сценария"
 		>
-			<div className={landingStyles["scenario-preview-heading"]}>
+			<div className={landingStyles.scenarioPreviewHeading}>
 				<StaticText text="Центральный склад" />
 			</div>
-			<div className={landingStyles["scenario-map"]} aria-hidden="true">
+			<div className={landingStyles.scenarioMap} aria-hidden="true">
 				{cells.map(({ id, shelf }) => (
 					<span
 						key={id}
-						className={`${landingStyles["scenario-cell"]} ${shelf ? landingStyles["scenario-shelf"] : ""} ${
+						className={`${landingStyles.scenarioCell} ${shelf ? landingStyles.scenarioShelf : ""} ${
 							scenario.activeCells.includes(id)
-								? landingStyles["scenario-cell-active"]
+								? landingStyles.scenarioCellActive
 								: ""
 						}`}
 					/>
 				))}
 			</div>
-			<div className={landingStyles["scenario-location"]}>
+			<div className={landingStyles.scenarioLocation}>
 				<IconArrowRight size={16} />
 				<StaticText text={scenario.location} />
 			</div>
-			<div className={landingStyles["scenario-steps"]}>
+			<div className={landingStyles.scenarioSteps}>
 				{scenario.steps.map((step) => (
 					<div key={step}>
 						<span>

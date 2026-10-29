@@ -63,7 +63,7 @@ export function SettingsForm(props: SettingsFormProps) {
 			</p>
 			{confirmations.map((confirmation) => (
 				<label
-					className={settingsStyles["switch-row"]}
+					className={settingsStyles.switchRow}
 					key={confirmation.label}
 					htmlFor={`${controlId}-${confirmation.index}`}
 				>

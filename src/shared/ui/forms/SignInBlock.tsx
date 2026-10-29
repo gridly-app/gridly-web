@@ -17,7 +17,7 @@ export function SignInBlock({
 }: SignInBlockProps) {
 	return (
 		<section>
-			<header className={signInStyles["sign-in-header"]}>
+			<header className={signInStyles.signInHeader}>
 				<h2>{title}</h2>
 				<p className={localLayout.muted}>{description}</p>
 			</header>

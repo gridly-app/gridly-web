@@ -1,4 +1,4 @@
-.space-combobox-control {
+.spaceComboboxControl {
 	display: flex;
 	align-items: center;
 	width: 100%;
@@ -6,13 +6,13 @@
 	position: relative;
 }
 
-.space-combobox-control input {
+.spaceComboboxControl input {
 	width: 100%;
 	min-width: 0;
 	padding-right: 36px;
 }
 
-.space-combobox-trigger {
+.spaceComboboxTrigger {
 	position: absolute;
 	right: 5px;
 	width: 28px;
@@ -26,16 +26,16 @@
 	cursor: pointer;
 }
 
-.space-combobox-trigger:hover {
+.spaceComboboxTrigger:hover {
 	background: var(--muted);
 }
 
-.space-combobox-positioner {
+.spaceComboboxPositioner {
 	z-index: 120;
 	outline: none;
 }
 
-.space-combobox-popup {
+.spaceComboboxPopup {
 	min-width: var(--anchor-width);
 	max-width: min(480px, var(--available-width));
 	border: 1px solid var(--line);
@@ -46,13 +46,13 @@
 	box-shadow: 0 12px 40px #0003;
 }
 
-.space-combobox-list {
+.spaceComboboxList {
 	max-height: min(300px, var(--available-height));
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
 
-.space-combobox-item {
+.spaceComboboxItem {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -64,16 +64,16 @@
 	outline: none;
 }
 
-.space-combobox-item[data-highlighted] {
+.spaceComboboxItem[data-highlighted] {
 	background: var(--soft);
 }
 
-.space-combobox-empty {
+.spaceComboboxEmpty {
 	padding: 12px;
 	color: var(--muted-foreground);
 }
 
-.space-combobox-trigger:focus-visible {
+.spaceComboboxTrigger:focus-visible {
 	outline: 2px solid var(--brand-accent);
 	outline-offset: 3px;
 }

@@ -2,14 +2,14 @@
 	font-size: 25px;
 }
 
-.modal-head {
+.modalHead {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	margin-bottom: 16px;
 }
 
-.modal-head h2 {
+.modalHead h2 {
 	margin: 0;
 	font-size: 22px;
 	letter-spacing: -0.7px;

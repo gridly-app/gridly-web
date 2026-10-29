@@ -6,7 +6,7 @@ export type LinkProps = useRender.ComponentProps<"a">;
 
 export function Link({ render, className = "", ...props }: LinkProps) {
 	const defaults = {
-		className: `${linkStyles["space-link"]} ${className}`,
+		className: `${linkStyles.spaceLink} ${className}`,
 		"data-slot": "link",
 	};
 

@@ -1,4 +1,4 @@
-.auth-back {
+.authBack {
 	display: inline-block;
 	margin-bottom: 36px;
 }
@@ -22,7 +22,7 @@
 	opacity: 0.65;
 }
 
-.auth-back {
+.authBack {
 	position: absolute;
 	top: 30px;
 	left: 35px;
@@ -31,18 +31,18 @@
 	margin: 0;
 }
 
-.auth-back:hover {
+.authBack:hover {
 	color: #535d47;
 }
 
-.auth-form {
+.authForm {
 	margin: 0;
 	width: min(100%, 380px);
 	max-width: 380px;
 	padding: 0;
 }
 
-.auth-brand {
+.authBrand {
 	display: block;
 	text-align: center;
 	font-size: 46px;
@@ -51,7 +51,7 @@
 	margin-bottom: 36px;
 }
 
-.auth-brand > span:last-child {
+.authBrand > span:last-child {
 	color: #e86536;
 }
 
@@ -86,7 +86,7 @@
 	min-height: 38px;
 }
 
-.auth-demo {
+.authDemo {
 	text-align: center;
 	margin-top: 28px;
 }
@@ -116,12 +116,12 @@
 		padding: 90px 27px 50px;
 	}
 
-	.auth-back {
+	.authBack {
 		top: 25px;
 		left: 27px;
 	}
 
-	.auth-brand {
+	.authBrand {
 		font-size: 42px;
 		margin-bottom: 32px;
 	}

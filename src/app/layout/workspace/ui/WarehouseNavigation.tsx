@@ -15,7 +15,7 @@ export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
 	return (
 		<>
 			<span
-				className={`${workspaceSidebarStyles["sidebar-label"]} ${workspaceSidebarStyles["warehouse-section-label"]}`}
+				className={`${workspaceSidebarStyles.sidebarLabel} ${workspaceSidebarStyles.warehouseSectionLabel}`}
 			>
 				ВЫБРАННЫЙ СКЛАД
 			</span>
@@ -44,7 +44,7 @@ export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
 									<small>{robotCount}</small>
 								)}
 								{key === "inbound" && hasWaitingInbound && (
-									<i className={workspaceSidebarStyles["notification-dot"]} />
+									<i className={workspaceSidebarStyles.notificationDot} />
 								)}
 							</SidebarMenuButton>
 						</SidebarMenuItem>

@@ -6,7 +6,7 @@
 .wrap {
 	flex-wrap: wrap;
 }
-.section-caption {
+.sectionCaption {
 	font-size: 9px;
 	color: var(--muted-foreground);
 	font-weight: 800;
@@ -18,7 +18,7 @@
 }
 
 @media (width <= 580px) {
-	.section-caption {
+	.sectionCaption {
 		font-size: 8px;
 		letter-spacing: 0.5px;
 	}

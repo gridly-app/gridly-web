@@ -32,12 +32,12 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 			className={`${editorStyles.editor} ${props.className ?? ""}`}
 		>
 			<Pagination
-				className={editorStyles["category-pagination"]}
+				className={editorStyles.categoryPagination}
 				aria-label="Категории строительства"
 			>
 				<PaginationContent
 					variant="fitted"
-					className={editorStyles["editor-pill"]}
+					className={editorStyles.editorPill}
 				>
 					<PaginationItem>
 						<PaginationPrevious
@@ -69,7 +69,7 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 				</PaginationContent>
 			</Pagination>
 			<div
-				className={`${editorStyles["editor-controls"]} ${editorStyles["editor-pill"]}`}
+				className={`${editorStyles.editorControls} ${editorStyles.editorPill}`}
 			>
 				<div className={`${editorStyles.controlsRow} ${editorStyles.toolsRow}`}>
 					{tools.map((tool) => (
@@ -143,7 +143,7 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 						aria-label="Отменить все изменения"
 					>
 						<IconRotate
-							className={editor.resetting ? editorStyles["reset-spinning"] : ""}
+							className={editor.resetting ? editorStyles.resetSpinning : ""}
 							size={16}
 						/>
 					</Button>

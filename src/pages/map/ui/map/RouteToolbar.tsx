@@ -17,9 +17,9 @@ export function RouteToolbar({
 	className = "",
 }: RouteToolbarProps) {
 	return (
-		<div className={`${editorStyles["route-editor-toolbar"]} ${className}`}>
+		<div className={`${editorStyles.routeEditorToolbar} ${className}`}>
 			<div
-				className={`${editorStyles.controlsRow} ${editorStyles.routeRow} ${editorStyles["editor-pill"]}`}
+				className={`${editorStyles.controlsRow} ${editorStyles.routeRow} ${editorStyles.editorPill}`}
 			>
 				<Button
 					size="compact"

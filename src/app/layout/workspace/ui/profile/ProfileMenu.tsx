@@ -35,7 +35,7 @@ export default function ProfileMenu(props: ProfileMenuProps) {
 				render={
 					<Button
 						variant="ghost"
-						className={workspaceSidebarStyles["profile-trigger"]}
+						className={workspaceSidebarStyles.profileTrigger}
 						data-demo={props.isDemo || undefined}
 					/>
 				}
@@ -50,7 +50,7 @@ export default function ProfileMenu(props: ProfileMenuProps) {
 						)}
 					</AvatarFallback>
 				</Avatar>
-				<span className={workspaceSidebarStyles["profile-name"]}>
+				<span className={workspaceSidebarStyles.profileName}>
 					<b>{props.isDemo ? "Демо-режим" : user}</b>
 					<small>{props.isDemo ? "Gridly" : "Оператор склада"}</small>
 				</span>

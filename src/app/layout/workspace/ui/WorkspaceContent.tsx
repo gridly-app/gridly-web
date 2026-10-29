@@ -21,7 +21,7 @@ export function WorkspaceContent({ model }: WorkspaceContentProps) {
 	} = model;
 
 	return (
-		<main className={workspaceStyles["workspace-main"]}>
+		<main className={workspaceStyles.workspaceMain}>
 			<div className={workspaceStyles.content}>
 				{warehouse && <ConnectionStatus model={{ ...model, warehouse }} />}
 				{warehouseId === "new" ? (

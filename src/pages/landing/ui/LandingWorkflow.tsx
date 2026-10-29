@@ -7,21 +7,21 @@ export function LandingWorkflow() {
 	const { scenarios, selected, selectScenario } = useLandingScenario();
 
 	return (
-		<section id="workflow" className={landingStyles["landing-workflow"]}>
-			<div className={landingStyles["workflow-heading"]}>
+		<section id="workflow" className={landingStyles.landingWorkflow}>
+			<div className={landingStyles.workflowHeading}>
 				<h2>
 					<StaticText text="Весь путь товара." />
 					<br />
 					<StaticText
-						className={landingStyles["workflow-heading-muted"]}
+						className={landingStyles.workflowHeadingMuted}
 						text="В одном пространстве."
 					/>
 				</h2>
 			</div>
-			<div className={landingStyles["workflow-body"]}>
-				<div className={landingStyles["workflow-copy"]}>
+			<div className={landingStyles.workflowBody}>
+				<div className={landingStyles.workflowCopy}>
 					<section
-						className={landingStyles["scenario-controls"]}
+						className={landingStyles.scenarioControls}
 						aria-label="Складские сценарии"
 					>
 						{scenarios.map((scenario) => (
@@ -37,7 +37,7 @@ export function LandingWorkflow() {
 						))}
 					</section>
 					<div
-						className={landingStyles["scenario-description"]}
+						className={landingStyles.scenarioDescription}
 						aria-live="polite"
 						aria-atomic="true"
 					>

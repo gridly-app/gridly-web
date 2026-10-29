@@ -35,20 +35,20 @@ export function ConfirmDialog({
 		<AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
 			<AlertDialog.Portal>
 				<AlertDialog.Backdrop
-					className={confirmationStyles["confirmation-backdrop"]}
+					className={confirmationStyles.confirmationBackdrop}
 				/>
 				<AlertDialog.Viewport
-					className={confirmationStyles["confirmation-viewport"]}
+					className={confirmationStyles.confirmationViewport}
 				>
 					<AlertDialog.Popup
-						className={confirmationStyles["confirmation-popup"]}
+						className={confirmationStyles.confirmationPopup}
 					>
-						<div className={confirmationStyles["confirmation-header"]}>
+						<div className={confirmationStyles.confirmationHeader}>
 							<AlertDialog.Title>{title}</AlertDialog.Title>
 							<AlertDialog.Description>{description}</AlertDialog.Description>
 							<ErrorNotice message={error} />
 						</div>
-						<div className={confirmationStyles["confirmation-footer"]}>
+						<div className={confirmationStyles.confirmationFooter}>
 							<Button variant="ghost" disabled={pending} onClick={onCancel}>
 								Продолжить редактирование
 							</Button>
@@ -61,7 +61,7 @@ export function ConfirmDialog({
 								{pending && (
 									<IconRotate
 										size={16}
-										className={confirmationStyles["reset-spinning"]}
+										className={confirmationStyles.resetSpinning}
 									/>
 								)}
 								{pending ? "Сбрасываем…" : confirmLabel}

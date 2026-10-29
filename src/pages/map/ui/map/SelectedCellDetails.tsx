@@ -27,21 +27,21 @@ export function SelectedCellDetails() {
 					<div className={localLayout["section-caption"]}>
 						СКЛАДСКАЯ ЗОНА · {inspectedCells.length} КЛ.
 					</div>
-					<div className={mapStyles["detail-line"]}>
+					<div className={mapStyles.detailLine}>
 						<span>Тип хранения</span>
 						<b>{cellLabels[selected.type]}</b>
 					</div>
-					<div className={mapStyles["detail-line"]}>
+					<div className={mapStyles.detailLine}>
 						<span>Категория</span>
 						<b>{inspectedCategory?.name || "Не назначена"}</b>
 					</div>
 				</>
 			)}
-			<div className={mapStyles["detail-line"]}>
+			<div className={mapStyles.detailLine}>
 				<span>Вместимость</span>
 				<b>{inspectedCapacity} м³</b>
 			</div>
-			<div className={mapStyles["detail-line"]}>
+			<div className={mapStyles.detailLine}>
 				<span>Партий</span>
 				<b>{stocked.length}</b>
 			</div>
@@ -57,15 +57,15 @@ export function SelectedCellDetails() {
 				</MiniCard>
 			))}
 			{!model.editing && storageCellTypes.includes(selected.type) && (
-				<div className={mapStyles["map-routes-summary"]}>
+				<div className={mapStyles.mapRoutesSummary}>
 					<div className={localLayout["section-caption"]}>МАРШРУТЫ РОБОТА</div>
-					<p className={mapStyles["route-inbound"]}>
+					<p className={mapStyles.routeInbound}>
 						Разгрузка → блок:{" "}
 						{model.routes.inbound.length
 							? `${model.routes.inbound.length - 1} шагов`
 							: "Нет пути"}
 					</p>
-					<p className={mapStyles["route-outbound"]}>
+					<p className={mapStyles.routeOutbound}>
 						Блок → погрузка:{" "}
 						{model.routes.outbound.length
 							? `${model.routes.outbound.length - 1} шагов`
