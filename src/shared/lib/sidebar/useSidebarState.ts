@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { readPreference, writePreference } from "@/shared/lib/browserStorage";
 
 export function useSidebarState() {
 	const [desktopOpen, setDesktopOpen] = useState(
-		() => localStorage.getItem("gridly.sidebar") !== "false",
+		() => readPreference("gridly.sidebar") !== "false",
 	);
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [mobile, setMobile] = useState(
@@ -15,7 +16,7 @@ export function useSidebarState() {
 	}
 
 	useEffect(() => {
-		localStorage.setItem("gridly.sidebar", String(desktopOpen));
+		writePreference("gridly.sidebar", String(desktopOpen));
 	}, [desktopOpen]);
 
 	useEffect(() => {

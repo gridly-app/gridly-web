@@ -5,9 +5,9 @@ export interface ComboboxOption {
 
 export interface ComboboxOptions {
 	options: ComboboxOption[];
-	value?: string;
-	defaultValue?: string;
-	onValueChange?: (value: string) => void;
+	value?: string | undefined;
+	defaultValue?: string | undefined;
+	onValueChange?: ((value: string) => void) | undefined;
 }
 
 export function useCombobox({

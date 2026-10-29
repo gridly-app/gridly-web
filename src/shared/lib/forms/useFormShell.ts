@@ -5,8 +5,8 @@ import { errorMessage } from "../errorMessage";
 export interface FormShellOptions {
 	children: ReactNode;
 	onSubmit: (data: FormData) => Promise<void>;
-	pending?: boolean;
-	submitLabel?: string;
+	pending?: boolean | undefined;
+	submitLabel?: string | undefined;
 }
 
 export function useFormShell({

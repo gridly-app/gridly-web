@@ -8,7 +8,9 @@ import {
 } from "react";
 
 const activeContext = createContext(false);
-const actionContext = createContext<(_active: boolean) => void>(() => {});
+const actionContext = createContext<(_active: boolean) => void>(
+	() => undefined,
+);
 
 export function ImmersiveProvider({ children }: { children: ReactNode }) {
 	const [active, setActive] = useState(false);
@@ -26,7 +28,7 @@ export function useImmersiveState() {
 export function useImmersiveRegion(
 	active: boolean,
 	region: RefObject<HTMLElement | null>,
-	returnFocus?: RefObject<HTMLElement | null>,
+	returnFocus?: RefObject<HTMLElement | null> | undefined,
 ) {
 	const setActive = useContext(actionContext);
 	useEffect(() => {
