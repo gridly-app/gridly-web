@@ -12,14 +12,14 @@ export const cellLabels: Record<CellType, string> = {
 };
 
 export const cellColors: Record<CellType, string> = {
-	empty: "#fafaf5",
-	aisle: "#ebece2",
-	storage: "#cdd8b6",
-	cold: "#bce0d8",
+	empty: "#f8fbf9",
+	aisle: "#e6efea",
+	storage: "#acd6bc",
+	cold: "#b9e0e6",
 	unload: "#f3c6a1",
 	load: "#d6cbe5",
-	charge: "#c0d7a1",
-	wall: "#68715e",
+	charge: "#b9decc",
+	wall: "#567564",
 };
 
 export const statuses: Record<string, string> = {

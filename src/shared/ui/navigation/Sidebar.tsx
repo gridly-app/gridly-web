@@ -107,7 +107,11 @@ function getSidebarToggleLabel(open: boolean, mobile: boolean) {
 	return open ? "Свернуть сайдбар" : "Развернуть сайдбар";
 }
 
-export function SidebarTrigger({ className = "" }: { className?: string }) {
+export function SidebarTrigger({
+	className = "",
+}: {
+	className?: string | undefined;
+}) {
 	const { toggleSidebar, open, mobile } = useContext(sidebarContext);
 	const label = getSidebarToggleLabel(open, mobile);
 

@@ -9,8 +9,8 @@ export interface ConfirmDialogProps {
 	title: string;
 	description: string;
 	confirmLabel: string;
-	pending?: boolean;
-	error?: string;
+	pending?: boolean | undefined;
+	error?: string | undefined;
 	onConfirm: () => void | Promise<void>;
 	onCancel: () => void;
 }
@@ -40,9 +40,7 @@ export function ConfirmDialog({
 				<AlertDialog.Viewport
 					className={confirmationStyles.confirmationViewport}
 				>
-					<AlertDialog.Popup
-						className={confirmationStyles.confirmationPopup}
-					>
+					<AlertDialog.Popup className={confirmationStyles.confirmationPopup}>
 						<div className={confirmationStyles.confirmationHeader}>
 							<AlertDialog.Title>{title}</AlertDialog.Title>
 							<AlertDialog.Description>{description}</AlertDialog.Description>

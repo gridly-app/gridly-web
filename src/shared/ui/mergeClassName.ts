@@ -5,7 +5,7 @@ type StatefulClassName<State> =
 	| ((state: State) => string | null | undefined);
 
 export function mergeClassName<State>(
-	baseClassName: string,
+	baseClassName: string | undefined,
 	className: StatefulClassName<State>,
 ): (state: State) => string {
 	return (state) => {

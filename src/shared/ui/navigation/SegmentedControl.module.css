@@ -31,7 +31,8 @@
 	outline-offset: 2px;
 }
 .input:disabled + .item {
-	opacity: 0.45;
+	opacity: 1;
+	color: var(--muted-foreground);
 	cursor: not-allowed;
 }
 

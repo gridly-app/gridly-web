@@ -2,8 +2,14 @@ import { ProximityGrid } from "./ProximityGrid";
 import tileStyles from "./TileBackdrop.module.css";
 
 export interface TileBackdropProps {
-	rows?: number;
-	classNames?: { root?: string; grid?: string; fade?: string };
+	rows?: number | undefined;
+	classNames?:
+		| {
+				root?: string | undefined;
+				grid?: string | undefined;
+				fade?: string | undefined;
+		  }
+		| undefined;
 }
 
 export function TileBackdrop({ rows = 8, classNames = {} }: TileBackdropProps) {

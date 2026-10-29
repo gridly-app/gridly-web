@@ -7,15 +7,15 @@ import comboboxStyles from "./Combobox.module.css";
 
 export interface ComboboxProps {
 	options: ComboboxOption[];
-	className?: string;
-	name?: string;
-	value?: string;
-	defaultValue?: string;
-	onValueChange?: (value: string) => void;
-	required?: boolean;
-	disabled?: boolean;
-	placeholder?: string;
-	"aria-label"?: string;
+	className?: string | undefined;
+	name?: string | undefined;
+	value?: string | undefined;
+	defaultValue?: string | undefined;
+	onValueChange?: ((value: string) => void) | undefined;
+	required?: boolean | undefined;
+	disabled?: boolean | undefined;
+	placeholder?: string | undefined;
+	"aria-label"?: string | undefined;
 }
 
 export type { ComboboxOption } from "@/shared/lib";

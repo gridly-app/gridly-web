@@ -1,13 +1,13 @@
-import feedbackStyles from "./Feedback.module.css";
+import { Feedback } from "./Feedback";
 export interface ErrorNoticeProps {
-	message?: string;
-	className?: string;
+	message?: string | undefined;
+	className?: string | undefined;
 }
 
 export function ErrorNotice({ message, className = "" }: ErrorNoticeProps) {
 	return message ? (
-		<p className={`${feedbackStyles.error} ${className}`} role="alert">
+		<Feedback tone="error" className={className}>
 			{message}
-		</p>
+		</Feedback>
 	) : null;
 }

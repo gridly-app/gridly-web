@@ -4,12 +4,12 @@ import { WarmTooltip } from "../overlays/WarmTooltip";
 import buttonStyles from "./Button.module.css";
 
 export interface ButtonProps extends useRender.ComponentProps<"button"> {
-	variant?: "default" | "secondary" | "ghost" | "text";
-	size?: "sm" | "md" | "lg" | "icon" | "compact";
-	fullWidth?: boolean;
-	selected?: boolean;
-	loading?: boolean;
-	tooltip?: string;
+	variant?: ("default" | "secondary" | "ghost" | "text") | undefined;
+	size?: ("sm" | "md" | "lg" | "icon" | "compact") | undefined;
+	fullWidth?: boolean | undefined;
+	selected?: boolean | undefined;
+	loading?: boolean | undefined;
+	tooltip?: string | false | undefined;
 }
 
 export function Button({
@@ -40,7 +40,8 @@ export function Button({
 		render,
 		props: mergeProps<"button">(defaultProps, props),
 	});
-	const hint = tooltip || title || props["aria-label"];
+	const hint =
+		tooltip === false ? undefined : tooltip || title || props["aria-label"];
 
 	return hint ? <WarmTooltip content={hint}>{element}</WarmTooltip> : element;
 }

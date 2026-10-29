@@ -5,7 +5,7 @@ export function Badge({
 	tone = "success",
 	className = "",
 	...props
-}: ComponentProps<"span"> & { tone?: BadgeTone }) {
+}: ComponentProps<"span"> & { tone?: BadgeTone | undefined }) {
 	return (
 		<span
 			className={`${styles.badge} ${styles[tone]} ${className}`}

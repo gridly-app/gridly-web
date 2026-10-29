@@ -4,7 +4,7 @@ import styles from "./SegmentedControl.module.css";
 interface SegmentedControlItem<T extends string> {
 	value: T;
 	label: string;
-	disabled?: boolean;
+	disabled?: boolean | undefined;
 }
 
 export interface SegmentedControlProps<T extends string> {
@@ -12,7 +12,7 @@ export interface SegmentedControlProps<T extends string> {
 	onValueChange: (value: T) => void;
 	items: readonly SegmentedControlItem<T>[];
 	"aria-label": string;
-	disabled?: boolean;
+	disabled?: boolean | undefined;
 }
 
 function getNextIndex(

@@ -6,9 +6,9 @@ import localLayout from "./Layout.module.css";
 
 export interface FieldProps {
 	label: string;
-	accessibleLabel?: string;
+	accessibleLabel?: string | undefined;
 	children: ReactNode;
-	className?: string;
+	className?: string | undefined;
 }
 
 export function Field({
@@ -22,7 +22,7 @@ export function Field({
 			<FieldPrimitive.Label>
 				<span aria-hidden={accessibleLabel ? true : undefined}>{label}</span>
 				{accessibleLabel && (
-					<span className={localLayout["sr-only"]}>{accessibleLabel}</span>
+					<span className={localLayout.srOnly}>{accessibleLabel}</span>
 				)}
 			</FieldPrimitive.Label>
 			{children}

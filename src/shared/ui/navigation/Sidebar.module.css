@@ -67,7 +67,7 @@
 }
 .menuButton > small {
 	background: var(--sidebar-badge);
-	color: var(--sidebar-fg);
+	color: #fff;
 	padding: 2px 6px;
 	border-radius: 4px;
 }
@@ -114,4 +114,14 @@
 	.sidebar {
 		transition: none;
 	}
+}
+
+.sidebar :focus-visible {
+	outline: 3px solid var(--sidebar-trigger-fg);
+	outline-offset: 3px;
+}
+
+.sidebar .trigger:hover {
+	background: var(--sidebar-hover);
+	color: var(--sidebar-fg);
 }

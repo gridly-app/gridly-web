@@ -11,7 +11,7 @@ export function PaginationContent({
 	variant = "default",
 	className = "",
 	...props
-}: ComponentProps<"ul"> & { variant?: "default" | "fitted" }) {
+}: ComponentProps<"ul"> & { variant?: ("default" | "fitted") | undefined }) {
 	return (
 		<ul
 			className={`${paginationStyles.paginationContent} ${variant === "fitted" ? paginationStyles.fitted : ""} ${className}`}

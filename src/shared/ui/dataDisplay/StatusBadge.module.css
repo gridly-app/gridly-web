@@ -18,19 +18,19 @@
 	display: inline-flex;
 	width: 8px;
 	height: 8px;
-	color: #40a77b;
+	color: var(--success-text);
 }
 
 .statusBadge[data-status="offline"] .statusIndicator {
-	color: #99a4b7;
+	color: var(--muted-foreground);
 }
 
 .statusBadge[data-status="info"] .statusIndicator {
-	color: #6e7dd3;
+	color: var(--info-text);
 }
 
 .statusBadge[data-status="busy"] .statusIndicator {
-	color: #d26b63;
+	color: var(--danger-text);
 }
 
 .statusDot,

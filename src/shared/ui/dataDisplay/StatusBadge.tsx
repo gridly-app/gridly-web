@@ -4,9 +4,9 @@ import statusStyles from "./StatusBadge.module.css";
 export type StatusBadgeProps = {
 	status: "online" | "offline" | "busy" | "info";
 	primaryText: string;
-	children?: ReactNode;
-	animated?: boolean;
-	compactOnMobile?: boolean;
+	children?: ReactNode | undefined;
+	animated?: boolean | undefined;
+	compactOnMobile?: boolean | undefined;
 };
 
 export function StatusBadge({

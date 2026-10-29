@@ -78,7 +78,10 @@
 	transform: translateY(1px);
 }
 .root:disabled {
-	opacity: 0.45;
+	opacity: 1;
+	background: var(--muted);
+	color: var(--muted-foreground);
+	box-shadow: inset 0 0 0 1px var(--control-border);
 	cursor: not-allowed;
 }
 .root[aria-busy="true"] {

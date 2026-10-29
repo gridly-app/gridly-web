@@ -3,8 +3,8 @@ import { mergeClassName } from "../mergeClassName";
 import menuStyles from "./Menu.module.css";
 
 export type MenuPopupProps = MenuPrimitive.Popup.Props & {
-	side?: MenuPrimitive.Positioner.Props["side"];
-	align?: MenuPrimitive.Positioner.Props["align"];
+	side?: MenuPrimitive.Positioner.Props["side"] | undefined;
+	align?: MenuPrimitive.Positioner.Props["align"] | undefined;
 };
 
 export const Menu = MenuPrimitive.Root;

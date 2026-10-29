@@ -7,7 +7,7 @@ export interface ModalProps {
 	title: string;
 	children: ReactNode;
 	onClose: () => void;
-	finalFocus?: Dialog.Popup.Props["finalFocus"];
+	finalFocus?: Dialog.Popup.Props["finalFocus"] | undefined;
 }
 
 export function Modal({ title, children, onClose, finalFocus }: ModalProps) {
@@ -36,6 +36,7 @@ export function Modal({ title, children, onClose, finalFocus }: ModalProps) {
 							render={
 								<Button
 									variant="ghost"
+									tooltip={false}
 									size="icon"
 									className={modalStyles.close}
 								/>

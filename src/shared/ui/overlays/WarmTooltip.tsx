@@ -5,8 +5,8 @@ import tooltipStyles from "./WarmTooltip.module.css";
 export interface WarmTooltipProps {
 	content: ReactNode;
 	children: ReactElement;
-	side?: "top" | "bottom" | "left" | "right";
-	disabled?: boolean;
+	side?: ("top" | "bottom" | "left" | "right") | undefined;
+	disabled?: boolean | undefined;
 }
 
 export function WarmTooltipGroup({ children }: PropsWithChildren) {

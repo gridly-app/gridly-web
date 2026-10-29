@@ -1,6 +1,6 @@
 export interface StaticTextProps {
 	text: string;
-	className?: string;
+	className?: string | undefined;
 }
 
 export function StaticText({ text, className = "" }: StaticTextProps) {

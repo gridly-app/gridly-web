@@ -13,8 +13,8 @@ export interface SelectProps {
 	value: string;
 	onValueChange: (value: string) => void;
 	"aria-label": string;
-	className?: string;
-	disabled?: boolean;
+	className?: string | undefined;
+	disabled?: boolean | undefined;
 }
 
 export function Select({

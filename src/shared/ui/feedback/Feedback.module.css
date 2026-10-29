@@ -1,8 +1,11 @@
 .error,
 .success {
-	padding: 12px;
+	padding: 14px 16px;
+	border: 1px solid;
+	font-weight: 600;
+	overflow-wrap: anywhere;
 	border-radius: 6px;
-	font-size: 12px;
+	font-size: 13px;
 	line-height: 1.6;
 }
 
@@ -21,11 +24,35 @@
 }
 
 .error {
+	border-color: var(--danger-border);
 	background: var(--danger-bg);
 	color: var(--danger-text);
 }
 
 .success {
+	border-color: var(--success-text);
 	background: var(--success-bg);
 	color: var(--success-text);
+}
+
+.error {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	min-width: 0;
+	margin-block: 12px;
+	border-inline-start: 3px solid var(--danger-text);
+	border-radius: 12px;
+	box-shadow: 0 2px 8px #82151008;
+}
+.errorIcon {
+	flex: 0 0 20px;
+	margin-top: 1px;
+}
+.errorMessage {
+	flex: 1;
+	min-width: 0;
+}
+.errorMessage > :last-child {
+	margin-bottom: 0;
 }
