@@ -15,7 +15,6 @@ export function memoryStorage(): KeyValueStorage {
 	};
 }
 
-/** Preferences may degrade to memory; form drafts use browserStorage directly. */
 export function resilientStorage(
 	source: () => KeyValueStorage,
 	onFallback: () => void,
@@ -46,7 +45,6 @@ export function resilientStorage(
 			memory.setItem(key, value);
 		},
 		removeItem(key) {
-			// Retry persistent removal even after fallback so saved credentials are not left silently.
 			try {
 				source().removeItem(key);
 			} catch {
@@ -94,7 +92,6 @@ export function writePreference(key: string, value: string): void {
 	availableStorage("localStorage").storage.setItem(key, value);
 }
 
-// Delay access to the Storage getter so unavailable storage becomes a recoverable form error.
 export function browserStorage(
 	kind: "localStorage" | "sessionStorage",
 ): KeyValueStorage {

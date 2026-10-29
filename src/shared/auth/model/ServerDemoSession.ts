@@ -23,7 +23,6 @@ export interface DemoSnapshot {
 }
 const storageKey = "gridly.demo.session";
 
-/** Independent of account cookies, credentials, and refresh/logout. */
 export class ServerDemoSession {
 	private snapshot: DemoSnapshot;
 	private listeners = new Set<() => void>();
@@ -168,7 +167,6 @@ export class ServerDemoSession {
 		this.track(async () => {
 			if (!restart && this.snapshot.session) {
 				if (this.snapshot.status === "active") return;
-				// Restore is separate from creation: an expired session needs an explicit new start.
 				throw new Error("Сначала восстановите демо-сессию");
 			}
 			const generation = this.generation;
@@ -186,7 +184,6 @@ export class ServerDemoSession {
 					}),
 				);
 				this.assertGeneration(generation);
-				// Persist before invalidating the previous working session.
 				if (Date.parse(created.expires_at) <= Date.now())
 					throw new Error("Сервер вернул истёкшую демо-сессию");
 				this.storage.setItem(storageKey, JSON.stringify(created));

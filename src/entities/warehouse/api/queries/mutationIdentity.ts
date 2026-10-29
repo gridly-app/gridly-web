@@ -1,4 +1,3 @@
-// A saved form keeps its intent across remounts; edits to its payload start another operation.
 export async function mutationIdentity(
 	intent: string,
 	payload: string,

@@ -1,4 +1,3 @@
-/** User-facing consequences only: never store raw errors or credentials here. */
 class RuntimeNotices {
 	private messages = new Map<string, string>();
 	private snapshot: readonly string[] = [];

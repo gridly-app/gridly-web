@@ -58,7 +58,6 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 			setOperation(null);
 		}
 	}
-	// Revisions belong to the draft; another server update must not silently authorize an overwrite.
 	function refresh(section: "name" | "policy") {
 		setDraft((current) =>
 			section === "name"
