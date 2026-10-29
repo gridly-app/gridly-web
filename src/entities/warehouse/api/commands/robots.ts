@@ -9,22 +9,11 @@ export async function saveRobot(
 	const { warehouse, send } = context;
 	const r = command.value;
 	const old = warehouse.robots.find((x) => x.id === r.id);
-	const position = warehouse.cells.find(
-		(cell) =>
-			["aisle", "charge"].includes(cell.type) &&
-			!warehouse.robots.some((n) => n.x === cell.x && n.y === cell.y),
-	);
-
-	if (!old && !position) {
-		throw new Error("На опубликованной карте нет свободного места для робота");
-	}
 	const placement = old
 		? { revision: requireRevision(r.revision ?? old.revision) }
-		: position
-			? { x: position.x, y: position.y }
-			: {};
+		: {};
 	await send(
-		`/robots${old ? `/${r.id}` : ""}`,
+		`/robots${old ? `/${encodeURIComponent(r.id ?? "")}` : ""}`,
 		{
 			...placement,
 			name: r.name,
@@ -43,7 +32,7 @@ export async function deleteRobot(
 ): Promise<void> {
 	const { warehouse, base, mutate } = context;
 
-	await mutate(`${base}/robots/${command.value}`, {
+	await mutate(`${base}/robots/${encodeURIComponent(command.value)}`, {
 		method: "DELETE",
 		headers: {
 			"If-Match": `"${requireRevision(warehouse.robots.find((robot) => robot.id === command.value)?.revision)}"`,

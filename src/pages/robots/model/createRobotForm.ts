@@ -3,7 +3,7 @@ import { robotRoleOptions } from "@/entities/warehouse";
 import { robotFromForm } from "./robotFromForm";
 
 export interface RobotFormOptions {
-	robot?: Robot;
+	robot?: Robot | undefined;
 	onSave: (robot: RobotInput) => Promise<void>;
 }
 

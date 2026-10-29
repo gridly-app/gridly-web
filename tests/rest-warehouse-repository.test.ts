@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { RestWarehouseRepository } from "../src/entities/warehouse";
+
 import { ApiError, type RequestOptions } from "../src/shared/api";
 
 const warehouseDto = {
@@ -64,6 +65,7 @@ function fixture() {
 		},
 	};
 	return {
+		http,
 		repository: new RestWarehouseRepository(http),
 		calls,
 		setVersion: (value: string) => {
@@ -76,6 +78,128 @@ function fixture() {
 }
 
 describe("REST warehouse synchronization", () => {
+	test("route proposals preserve zone boundaries including new zones", async () => {
+		let body: unknown;
+		const repository = new RestWarehouseRepository({
+			async request(_path, options) {
+				body = options?.body;
+				return [];
+			},
+		});
+		await repository.proposeRoutes("w1", [
+			{
+				x: 0,
+				y: 0,
+				type: "storage",
+				capacity: 20,
+				zone: { id: "draft-a", name: "A", categoryId: "c1" },
+			},
+			{
+				x: 1,
+				y: 0,
+				type: "storage",
+				capacity: 20,
+				zone: { id: "draft-b", name: "B", categoryId: "c1" },
+			},
+		]);
+		expect(body).toMatchObject({
+			cells: [
+				{ zone: { client_id: "draft-a", name: "A", category_id: "c1" } },
+				{ zone: { client_id: "draft-b", name: "B", category_id: "c1" } },
+			],
+		});
+	});
+
+	test("rejects mixed metadata and layout versions or dimensions", async () => {
+		for (const layout of [
+			{ version: 2, width: 3, height: 3, cells: [] },
+			{ version: 1, width: 4, height: 4, cells: [] },
+		]) {
+			const base = fixture();
+			const repository = new RestWarehouseRepository({
+				async request(path, options) {
+					if (path.endsWith("/layout")) return layout;
+					if (path.endsWith("/map/state"))
+						return {
+							warehouse_id: "w1",
+							layout_version: layout.version,
+							state_version: "1",
+							tick: "1",
+							robots: [],
+						};
+					return base.http.request(path, options);
+				},
+			});
+			await expect(repository.get("w1")).rejects.toThrow("Карта изменилась");
+		}
+	});
+
+	test("a delayed full snapshot retains newer live motion paths", async () => {
+		const base = fixture();
+		let version = 1;
+		let delay = false;
+		let release!: () => void;
+		let started!: () => void;
+		const waiting = new Promise<void>((resolve) => {
+			started = resolve;
+		});
+		const repository = new RestWarehouseRepository({
+			async request(path, options) {
+				if (new URL(path, "http://localhost").pathname.endsWith("/robots"))
+					return [
+						{
+							id: "r1",
+							name: "Robot",
+							x: 0,
+							y: 0,
+							status: "moving",
+							roles: ["ship"],
+							speed: 1,
+							action_ticks: 1,
+							capacity_volume: "1",
+						},
+					];
+				if (new URL(path, "http://localhost").pathname.endsWith("/map/state"))
+					return {
+						warehouse_id: "w1",
+						layout_version: 1,
+						state_version: String(version),
+						tick: String(version),
+						robots: [
+							{
+								id: "r1",
+								x: version - 1,
+								y: 0,
+								status: "moving",
+								motion_path: [
+									{ x: 0, y: 0 },
+									{ x: version - 1, y: 0 },
+								],
+							},
+						],
+					};
+				if (
+					delay &&
+					new URL(path, "http://localhost").pathname.endsWith("/events")
+				) {
+					started();
+					await new Promise<void>((resolve) => {
+						release = resolve;
+					});
+				}
+				return base.http.request(path, options);
+			},
+		});
+		await repository.get("w1");
+		delay = true;
+		const old = repository.get("w1");
+		await waiting;
+		version = 2;
+		const live = await repository.getLive("w1");
+		release();
+		const snapshot = await old;
+		expect(snapshot.robots[0].motionPath).toEqual(live.robots[0].motionPath);
+	});
 	test("paginates collection envelopes and retains existing query parameters", async () => {
 		const { repository, calls } = fixture();
 		const warehouses = await repository.list();

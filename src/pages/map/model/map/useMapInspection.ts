@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
-import { cellKey, type Warehouse } from "@/entities/warehouse";
+import {
+	cellKey,
+	useSelectionSummary,
+	type Warehouse,
+} from "@/entities/warehouse";
+
 import type { MapEditor } from "../layout/useMapEditor";
 import { MapGeometry } from "./MapGeometry";
 import { getMapPresentation, inspectMapSelection } from "./mapPresentation";
@@ -30,7 +35,16 @@ export function useMapInspection({
 		? (geometry.cellIndex.get(cellKey(selection)) ?? null)
 		: null;
 	const inspectedCells = geometry.inspect(robot ? null : selected);
-	const inspection = inspectMapSelection(warehouse, inspectedCells);
+	const summary = useSelectionSummary(
+		warehouse.id,
+		inspectedCells.map(cellKey),
+		!editing,
+	);
+	const inspection = {
+		...inspectMapSelection(warehouse, inspectedCells),
+		capacity: summary.data?.capacity,
+		batchCount: summary.data?.batchCount,
+	};
 	const configuringRoutes = editing && editor.mode === "routes";
 	const presentation = getMapPresentation({
 		warehouse,

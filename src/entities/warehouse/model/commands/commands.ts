@@ -1,14 +1,17 @@
 import type { z } from "zod";
-import type { Robot, Warehouse } from "../warehouse/schemas";
+import type { Warehouse } from "../warehouse/schemas";
 import type { commandPayloads, warehouseCommandSchema } from "./commandSchemas";
 
-export type RobotInput = Omit<Robot, "x" | "y"> &
-	Partial<Pick<Robot, "x" | "y">>;
-
-export type WarehouseSettings = Pick<
+export type RobotInput = CommandPayloads["robot"];
+export type CategoryInput = CommandPayloads["category"];
+export type ProductInput = CommandPayloads["product"];
+export type OrderInput = CommandPayloads["order"];
+export type WarehouseInput = Pick<
 	Warehouse,
-	"name" | "timezone" | "policy" | "revision" | "policyRevision"
+	"name" | "width" | "height" | "timezone"
 >;
+
+export type WarehouseSettings = CommandPayloads["settings"];
 
 export type CommandPayloads = {
 	[K in keyof typeof commandPayloads]: z.infer<(typeof commandPayloads)[K]>;
@@ -16,13 +19,17 @@ export type CommandPayloads = {
 
 export type WarehouseCommand = z.infer<typeof warehouseCommandSchema>;
 
+export interface CommandIntent {
+	operationId: string;
+}
+
 export type CommandExecutor<Result = unknown> = <
 	K extends keyof CommandPayloads,
 >(
 	action: K,
 	...args: CommandPayloads[K] extends undefined
-		? [value?: undefined]
-		: [value: CommandPayloads[K]]
+		? [value?: undefined, intent?: CommandIntent]
+		: [value: CommandPayloads[K], intent?: CommandIntent]
 ) => Promise<Result>;
 
 export type CommandResult = { ok: true } | { ok: false; error: unknown };

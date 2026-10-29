@@ -1,40 +1,25 @@
-import { useState } from "react";
-import type {
-	AuthMode,
-	Credentials,
-	SessionRepository,
-} from "../api/repository";
+import { useEffect, useSyncExternalStore } from "react";
+import type { SessionRepository } from "../api/repository";
 import type { SessionState } from "./context/sessionContext";
 
-export function useSessionState(
-	repository: SessionRepository,
-	onLogout: () => void,
-): SessionState {
-	const [state, setState] = useState(() => ({
-		user: repository.current(),
-		isDemo: repository.isDemo(),
-	}));
-
-	function login(nextUser: string) {
-		repository.remember(nextUser);
-		setState({ user: nextUser, isDemo: repository.isDemo() });
-	}
-
-	async function authenticate(mode: AuthMode, credentials: Credentials) {
-		login(await repository.authenticate(mode, credentials));
-	}
-
-	async function enterDemo() {
-		await repository.enterDemo();
-		onLogout();
-		login("demo");
-	}
-
-	async function logout() {
-		await repository.clear();
-		onLogout();
-		setState({ user: "", isDemo: false });
-	}
-
-	return { ...state, login, authenticate, enterDemo, logout };
+export function useSessionState(repository: SessionRepository): SessionState {
+	const state = useSyncExternalStore(
+		repository.subscribe,
+		repository.getSnapshot,
+	);
+	useEffect(() => {
+		void repository.restore();
+	}, [repository]);
+	return {
+		...state,
+		user: state.status === "active" ? state.user : "",
+		login: (user) => repository.remember(user),
+		authenticate: async (mode, credentials) => {
+			await repository.authenticate(mode, credentials);
+		},
+		logout: async () => {
+			repository.clear();
+		},
+		restore: repository.restore,
+	};
 }

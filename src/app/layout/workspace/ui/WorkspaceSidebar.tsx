@@ -38,7 +38,6 @@ export function WorkspaceSidebar({ model }: WorkspaceSidebarProps) {
 							<IconBuildingWarehouse size={24} />
 						</div>
 						Gridly
-						<span className={workspaceSidebarStyles["brand-dot"]}>.</span>
 					</Link>
 					<SidebarTrigger className={workspaceSidebarStyles.trigger} />
 				</div>
@@ -50,10 +49,7 @@ export function WorkspaceSidebar({ model }: WorkspaceSidebarProps) {
 			</SidebarContent>
 			<SidebarFooter className={workspaceSidebarStyles.sidebarBottom}>
 				<ProfileMenu
-					user={model.profile.user}
-					isDemo={model.profile.isDemo}
-					dark={model.profile.dark}
-					setDark={model.profile.setDark}
+					{...model.profile}
 					logout={() => {
 						void model.profile.logout();
 					}}

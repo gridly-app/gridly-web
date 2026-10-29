@@ -14,7 +14,7 @@ export function MapDetails({ legend }: MapDetailsProps) {
 	const model = useMapSelection();
 	return (
 		<aside className={mapStyles.mapDetails}>
-			<div className={localLayout["section-caption"]}>
+			<div className={localLayout.sectionCaption}>
 				{model.robot && !model.editing
 					? "РОБОТ"
 					: model.selected

@@ -10,12 +10,12 @@ export async function saveProduct(
 	const old = warehouse.products.find((x) => x.id === product.id);
 
 	if (old && product.archived && !old.archived) {
-		await send(`/products/${product.id}/archive`, {
+		await send(`/products/${encodeURIComponent(product.id ?? "")}/archive`, {
 			revision: product.revision ?? old.revision,
 		});
 	} else {
 		await send(
-			`/products${old ? `/${product.id}` : ""}`,
+			`/products${old ? `/${encodeURIComponent(product.id ?? "")}` : ""}`,
 			{
 				...(old ? { revision: product.revision ?? old.revision } : {}),
 				name: product.name,
@@ -41,7 +41,7 @@ export async function saveCategory(
 	const old = warehouse.categories.find((x) => x.id === category.id);
 
 	await send(
-		`/categories${old ? `/${category.id}` : ""}`,
+		`/categories${old ? `/${encodeURIComponent(category.id ?? "")}` : ""}`,
 		{
 			...(old ? { revision: category.revision ?? old.revision } : {}),
 			name: category.name,

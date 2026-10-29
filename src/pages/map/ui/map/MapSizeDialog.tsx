@@ -19,8 +19,7 @@ export function MapSizeDialog({ model }: MapSizeDialogProps) {
 				}}
 			>
 				<p className={localLayout.muted}>
-					Поставьте симуляцию на паузу. Клетки с товарами и роботами
-					сохраняются.
+					Допустимость изменения размера проверяется при сохранении.
 				</p>
 				<Field label="Ширина">
 					<Input
@@ -44,10 +43,7 @@ export function MapSizeDialog({ model }: MapSizeDialogProps) {
 				</Field>
 				<ErrorNotice message={model.error} />
 				{!model.supported && (
-					<p role="alert">
-						Изменение размера доступно в демо. Текущий сервер не поддерживает
-						эту операцию.
-					</p>
+					<p role="alert">Изменение размера недоступно по данным сервера.</p>
 				)}
 				<Button
 					type="submit"

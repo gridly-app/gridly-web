@@ -19,16 +19,12 @@
 	height: 34px;
 	flex-shrink: 0;
 	border-radius: 11px;
-	background: var(--brand-orange);
-	color: white;
-}
-.brand-dot {
-	color: var(--sidebar-brand-dot);
-	margin-left: -10px;
+	background: #fff;
+	color: var(--sidebar-selected-fg);
 }
 .sidebarLabel {
 	display: block;
-	font-size: 9px;
+	font-size: 11px;
 	font-weight: 800;
 	letter-spacing: 1.2px;
 	padding: 14px 12px;
@@ -58,7 +54,7 @@
 	left: 11px;
 	z-index: 1;
 	pointer-events: none;
-	color: var(--brand-accent);
+	color: var(--sidebar-control-fg);
 }
 .workspaceSelectTrigger {
 	display: flex;
@@ -74,7 +70,7 @@
 	background: var(--sidebar-control-bg);
 	color: var(--sidebar-control-fg);
 	font: inherit;
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: 700;
 	cursor: pointer;
 }
@@ -84,7 +80,7 @@
 	white-space: nowrap;
 }
 .workspaceSelectTrigger:focus-visible {
-	outline: 2px solid var(--brand-accent);
+	outline: 2px solid var(--sidebar-trigger-fg);
 	outline-offset: 3px;
 }
 .workspaceSelectTrigger:hover {
@@ -120,7 +116,7 @@
 }
 .profileName small {
 	display: block;
-	font-size: 9px;
+	font-size: 11px;
 	font-weight: 400;
 	margin-top: 4px;
 	color: var(--sidebar-profile-muted);
@@ -164,7 +160,6 @@
 	padding: 0;
 	gap: 0;
 }
-.workspace[data-state="collapsed"] .brand-dot,
 .workspace[data-state="collapsed"] .sidebarLabel,
 .workspace[data-state="collapsed"] .workspaceDropdown,
 .workspace[data-state="collapsed"] .profileName,

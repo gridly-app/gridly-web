@@ -6,26 +6,55 @@ import {
 	orderSchema,
 	productSchema,
 	robotSchema,
-	storageZoneSchema,
 	warehouseSchema,
 } from "../warehouse/schemas";
 
-export const commandPayloads = {
+export const orderInputSchema = orderSchema
+	.pick({ kind: true, party: true, lines: true, manual: true })
+	.extend({ id: z.string().optional(), revision: z.number().optional() });
+export const robotInputSchema = robotSchema
+	.pick({
+		name: true,
+		roles: true,
+		speed: true,
+		duration: true,
+		capacity: true,
+	})
+	.extend({ id: z.string().optional(), revision: z.number().optional() });
+export const warehouseInputSchema = warehouseSchema.pick({
+	name: true,
+	width: true,
+	height: true,
+	timezone: true,
+});
+export const categoryInputSchema = categorySchema
+	.pick({ name: true, cold: true })
+	.extend({ id: z.string().optional(), revision: z.number().optional() });
+export const productInputSchema = productSchema
+	.omit({ id: true, allowedActions: true })
+	.extend({ id: z.string().optional() });
+export const layoutInputSchema = z.object({
+	cells: z.array(cellSchema),
 	routes: z.array(blockRoutePlanSchema),
+	baseVersion: z.number(),
+	categories: z
+		.array(categoryInputSchema.extend({ id: z.string() }))
+		.optional(),
+	draftRevision: z.number().optional(),
+});
+export const commandPayloads = {
+	saveMap: layoutInputSchema,
 	resize: z.object({
 		width: z.number().int().positive(),
 		height: z.number().int().positive(),
 	}),
 	simulation: z.undefined().optional(),
-	draft: z.array(cellSchema),
 	discard: z.undefined().optional(),
-	publish: z.array(cellSchema),
-	robot: robotSchema.partial({ x: true, y: true }),
+	robot: robotInputSchema,
 	deleteRobot: z.string(),
-	zone: z.object({ keys: z.array(z.string()), zone: storageZoneSchema }),
-	product: productSchema,
-	category: categorySchema,
-	order: orderSchema,
+	product: productInputSchema,
+	category: categoryInputSchema,
+	order: orderInputSchema,
 	start: z.string(),
 	confirm: z.string(),
 	cancel: z.string(),
@@ -47,13 +76,18 @@ export const commandPayloads = {
 		quantity: z.number(),
 		reason: z.string(),
 	}),
-	settings: warehouseSchema.pick({
-		name: true,
-		timezone: true,
-		policy: true,
-		revision: true,
-		policyRevision: true,
-	}),
+	settings: z.discriminatedUnion("section", [
+		z.object({
+			section: z.literal("name"),
+			name: warehouseSchema.shape.name,
+			revision: z.number().optional(),
+		}),
+		z.object({
+			section: z.literal("policy"),
+			policy: warehouseSchema.shape.policy,
+			policyRevision: z.number().optional(),
+		}),
+	]),
 };
 
 function command<K extends keyof typeof commandPayloads>(action: K) {
@@ -64,15 +98,12 @@ function command<K extends keyof typeof commandPayloads>(action: K) {
 }
 
 export const warehouseCommandSchema = z.discriminatedUnion("action", [
-	command("routes"),
+	command("saveMap"),
 	command("resize"),
 	command("simulation"),
-	command("draft"),
 	command("discard"),
-	command("publish"),
 	command("robot"),
 	command("deleteRobot"),
-	command("zone"),
 	command("product"),
 	command("category"),
 	command("order"),

@@ -40,7 +40,7 @@ export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
 					className={mapStyles.robotCurrentTask}
 					data-task-phase={task.phase}
 				>
-					<div className={localLayout["section-caption"]}>ТЕКУЩАЯ ЗАДАЧА</div>
+					<div className={localLayout.sectionCaption}>ТЕКУЩАЯ ЗАДАЧА</div>
 					<p className={mapStyles.robotTaskLabel}>{task.label}</p>
 					<div className={mapStyles.detailLine}>
 						<span>Заказ</span>
@@ -61,11 +61,8 @@ export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
 					</div>
 				</div>
 			) : robot.returnRoute?.length ? (
-				<div
-					className={mapStyles.robotCurrentTask}
-					data-task-phase="return"
-				>
-					<div className={localLayout["section-caption"]}>ТЕКУЩАЯ ЗАДАЧА</div>
+				<div className={mapStyles.robotCurrentTask} data-task-phase="return">
+					<div className={localLayout.sectionCaption}>ТЕКУЩАЯ ЗАДАЧА</div>
 					<p className={mapStyles.robotTaskLabel}>Возврат на стоянку</p>
 					<p>Осталось {Math.max(0, robot.returnRoute.length - 1)} клеток</p>
 				</div>

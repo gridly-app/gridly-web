@@ -1,38 +1,11 @@
-import { Navigate } from "react-router-dom";
-import { useSession } from "@/shared/auth";
-import { Button, Feedback, Link, StaticText } from "@/shared/ui";
-import { useLandingPage } from "../model/useLandingPage";
+import { Link, StaticText } from "@/shared/ui";
 import { LandingFeatures } from "./LandingFeatures";
 import { LandingHero } from "./LandingHero";
 import landingStyles from "./LandingPage.module.css";
 import { LandingSandbox } from "./LandingSandbox";
 import { LandingWorkflow } from "./LandingWorkflow";
 
-function WorkspaceEntry() {
-	const model = useLandingPage();
-
-	if (model.pending) {
-		return <Feedback tone="loading">Загружаем склады…</Feedback>;
-	}
-	if (model.error) {
-		return (
-			<Feedback tone="error" role="alert">
-				{model.error.message}
-				<Button onClick={model.retry}>Повторить</Button>
-			</Feedback>
-		);
-	}
-
-	return <Navigate replace to={model.target} />;
-}
-
 export function LandingPage() {
-	const { user } = useSession();
-
-	if (user) {
-		return <WorkspaceEntry />;
-	}
-
 	return (
 		<div className={landingStyles.landing} data-palette="warm">
 			<main>
@@ -43,7 +16,7 @@ export function LandingPage() {
 			</main>
 			<footer className={landingStyles.landingFooter}>
 				<Link className={landingStyles.landingWordmark} href="#">
-					<StaticText text="gridly." />
+					<StaticText text="Gridly" />
 				</Link>
 				<span>
 					<StaticText text={`© ${new Date().getFullYear()} Gridly`} />

@@ -1,17 +1,13 @@
 import { useState } from "react";
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
-import { environment } from "@/shared/config";
 import { errorMessage } from "@/shared/lib";
 
 export function useMapSimulation(
-	warehouse: Pick<Warehouse, "robots">,
+	warehouse: Pick<Warehouse, "robots" | "summary" | "allowedActions">,
 	command: CommandExecutor,
 ) {
 	const [error, setError] = useState("");
-	const activeRobots = warehouse.robots.filter(
-		(robot) => robot.status !== "idle",
-	).length;
-
+	const activeRobots = warehouse.summary?.activeRobots;
 	async function toggle() {
 		setError("");
 		try {
@@ -25,6 +21,6 @@ export function useMapSimulation(
 		error,
 		toggle,
 		activeRobots,
-		supported: environment.sandboxMode,
+		supported: !!warehouse.allowedActions?.includes("simulation"),
 	};
 }

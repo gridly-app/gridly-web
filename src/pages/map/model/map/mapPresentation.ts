@@ -1,5 +1,6 @@
 import type { Cell, Warehouse } from "@/entities/warehouse";
 import { cellKey, storageCellTypes } from "@/entities/warehouse";
+
 import type { LayoutRenderState } from "../../lib/map/CanvasWarehouseRenderer";
 import type { MapGeometry } from "./MapGeometry";
 
@@ -33,10 +34,9 @@ export function getMapPresentation({
 	if (configuringRoutes) {
 		routes = routeEditor.routes;
 	} else if (!editing && selected && storageCellTypes.includes(selected.type)) {
-		routes =
-			warehouse.routePlans?.find((plan) =>
-				plan.keys.includes(cellKey(selected)),
-			) || geometry.defaultRoutes(inspectedCells);
+		routes = warehouse.routePlans?.find((plan) =>
+			plan.keys.includes(cellKey(selected)),
+		) || { inbound: [], outbound: [] };
 	} else {
 		routes = {
 			inbound: [],
@@ -63,7 +63,7 @@ export function getMapPresentation({
 		zoneKeys.every((key) =>
 			storageCellTypes.some((type) => type === cellIndex.get(key)?.type),
 		);
-	const zonePanelKey = `${zoneKeys.join("|")}:${cellIndex.get(zoneKeys[0])?.type}`;
+	const zonePanelKey = `${zoneKeys.join("|")}:${cellIndex.get(zoneKeys[0] ?? "")?.type}`;
 
 	return {
 		routes,
@@ -80,10 +80,7 @@ export function inspectMapSelection(
 	inspectedCells: Cell[],
 ) {
 	const zone = inspectedCells[0]?.zone;
-	const capacity = inspectedCells.reduce(
-		(total, cell) => total + cell.capacity,
-		0,
-	);
+	const capacity: number | undefined = undefined;
 	const category = warehouse.categories.find(
 		(category) => category.id === zone?.categoryId,
 	);
@@ -100,5 +97,12 @@ export function inspectMapSelection(
 				}))
 		: [];
 
-	return { cells: inspectedCells, zone, capacity, category, stock };
+	return {
+		cells: inspectedCells,
+		zone,
+		capacity: capacity as number | undefined,
+		category,
+		stock,
+		batchCount: undefined as number | undefined,
+	};
 }

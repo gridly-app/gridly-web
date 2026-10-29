@@ -16,6 +16,7 @@ export function WriteOffForm({ stock, pending, onSave }: WriteOffFormProps) {
 			onSubmit={(data) => onSave(writeOffFromForm(data, stock))}
 		>
 			<p>Списание уменьшит остаток партии и добавит запись в историю.</p>
+			<p>Доступно к списанию: {stock.availableQuantity ?? "—"} шт.</p>
 			<Field label="Количество *">
 				<Input
 					name="quantity"

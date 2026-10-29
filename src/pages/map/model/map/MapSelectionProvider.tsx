@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
 import type {
+	Category,
 	Cell,
 	CommandExecutor,
 	Robot,
@@ -15,10 +16,12 @@ import type {
 interface MapSelectionContextValue {
 	warehouse: Warehouse;
 	command: CommandExecutor;
+	onCategory: (category: Category) => void;
 	cells: Cell[];
 	selected: Cell | null;
 	robot: Robot | null;
 	editing: boolean;
+	busy: boolean;
 	selectionKeys: string[];
 	selectionError: string;
 	clearSelection: () => void;
@@ -38,7 +41,16 @@ const MapSelectionContext = createContext<MapSelectionContextValue | null>(
 export interface MapSelectionProviderProps {
 	warehouse: Warehouse;
 	command: CommandExecutor;
-	editor: Pick<MapEditor, "cells" | "selection" | "mode" | "zoneSaved">;
+	editor: Pick<
+		MapEditor,
+		| "cells"
+		| "selection"
+		| "mode"
+		| "zoneSaved"
+		| "categories"
+		| "addCategory"
+		| "busy"
+	>;
 	presentation: ReturnType<typeof getMapPresentation>;
 	robot: Robot | null;
 	inspection: ReturnType<typeof inspectMapSelection>;
@@ -57,12 +69,21 @@ export function MapSelectionProvider({
 	children,
 }: MapSelectionProviderProps) {
 	const value: MapSelectionContextValue = {
-		warehouse,
+		warehouse: editing
+			? { ...warehouse, categories: editor.categories }
+			: warehouse,
+		onCategory: editor.addCategory,
 		command,
 		cells: editor.cells,
-		selected: editor.selection.selected,
+		selected:
+			editor.cells.find(
+				(c) =>
+					c.x === editor.selection.selected?.x &&
+					c.y === editor.selection.selected?.y,
+			) ?? null,
 		robot,
 		editing,
+		busy: editor.busy,
 		selectionKeys: editor.selection.selectionKeys,
 		selectionError: editor.selection.selectionError,
 		clearSelection: editor.selection.clearSelection,

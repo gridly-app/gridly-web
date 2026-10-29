@@ -4,7 +4,6 @@ import { InventoryTable } from "./InventoryTable";
 import { WriteOffForm } from "./WriteOffForm";
 
 export function InventoryPage() {
-	const model = useInventoryPage();
 	const {
 		empty,
 		search,
@@ -12,18 +11,29 @@ export function InventoryPage() {
 		filter,
 		changeFilter,
 		pending,
-		setSelected,
+		openWriteOff,
+		closeWriteOff,
 		selected,
 		writeOffStock,
-	} = model;
+		visibleStock,
+	} = useInventoryPage();
 
 	return (
 		<>
 			<DataPanel
-				empty={empty}
+				empty={visibleStock.length === 0}
+				emptyMessage={
+					empty
+						? "На складе пока нет остатков."
+						: "Ничего не найдено. Измените поиск или фильтр."
+				}
 				toolbar={
 					<>
-						<SearchField value={search} onChange={setSearch} />
+						<SearchField
+							aria-label="Поиск по остаткам"
+							value={search}
+							onChange={setSearch}
+						/>
 						<Combobox
 							aria-label="Фильтр остатков"
 							value={filter}
@@ -37,10 +47,14 @@ export function InventoryPage() {
 					</>
 				}
 			>
-				<InventoryTable model={model} />
+				<InventoryTable
+					items={visibleStock}
+					pending={pending}
+					onWriteOff={openWriteOff}
+				/>
 			</DataPanel>
 			{selected && (
-				<Modal title="Списание партии" onClose={() => setSelected(null)}>
+				<Modal title="Списание партии" onClose={closeWriteOff}>
 					<WriteOffForm
 						stock={selected}
 						pending={pending}

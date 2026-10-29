@@ -1,16 +1,9 @@
-import {
-	type Cell,
-	cellKey,
-	connectedBlock,
-	defaultBlockRoutes,
-} from "@/entities/warehouse";
+import { type Cell, cellKey, connectedBlock } from "@/entities/warehouse";
 
 export class MapGeometry {
 	readonly cellIndex: Map<string, Cell>;
 	private selected: Cell | null = null;
 	private block: Cell[] = [];
-	private routeBlock: Cell[] | null = null;
-	private routes: ReturnType<typeof defaultBlockRoutes> | null = null;
 
 	constructor(readonly cells: Cell[]) {
 		this.cellIndex = new Map(cells.map((cell) => [cellKey(cell), cell]));
@@ -25,15 +18,5 @@ export class MapGeometry {
 			this.block = connectedBlock(this.cells, selected);
 		}
 		return this.block;
-	}
-
-	defaultRoutes(block: Cell[]) {
-		if (this.routeBlock !== block || !this.routes) {
-			this.routeBlock = block;
-			this.routes = block.length
-				? defaultBlockRoutes(this.cells, block)
-				: { inbound: [], outbound: [] };
-		}
-		return this.routes;
 	}
 }

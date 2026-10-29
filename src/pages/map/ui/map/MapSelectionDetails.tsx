@@ -23,11 +23,12 @@ export function MapSelectionDetails() {
 		<>
 			{model.robot && !editing ? (
 				<RobotDetails robot={model.robot} warehouse={warehouse} />
-			) : canAssignZone ? (
+			) : canAssignZone && editing ? (
 				<>
 					{!editing && <SelectedCellDetails />}
 					<ZonePanel
 						showSummary={editing}
+						disabled={model.busy}
 						key={zonePanelKey}
 						w={warehouse}
 						cells={cells}
@@ -35,6 +36,7 @@ export function MapSelectionDetails() {
 						editing={constructing}
 						command={command}
 						onDraft={onDraft}
+						onCategory={model.onCategory}
 					/>
 				</>
 			) : selected ? (

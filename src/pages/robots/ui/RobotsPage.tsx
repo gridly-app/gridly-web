@@ -23,7 +23,16 @@ export function RobotsPage() {
 				empty={empty}
 				toolbar={
 					<>
-						<Button variant="default" onClick={() => setEditing("new")}>
+						<Button
+							variant="default"
+							disabled={!model.canCreate || pending}
+							title={
+								!model.canCreate
+									? "Создание недоступно по данным сервера"
+									: undefined
+							}
+							onClick={() => setEditing("new")}
+						>
 							<IconPlus size={18} />
 							Добавить робота
 						</Button>

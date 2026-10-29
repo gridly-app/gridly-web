@@ -1,4 +1,5 @@
 import { cellLabels, storageCellTypes } from "@/entities/warehouse";
+
 import { MiniCard } from "@/shared/ui";
 import { useMapSelection } from "../../model/map/MapSelectionProvider";
 import localLayout from "./Layout.module.css";
@@ -24,7 +25,7 @@ export function SelectedCellDetails() {
 			<h3>{inspectedZone?.name || cellLabels[selected.type]}</h3>
 			{inspectedZone && (
 				<>
-					<div className={localLayout["section-caption"]}>
+					<div className={localLayout.sectionCaption}>
 						СКЛАДСКАЯ ЗОНА · {inspectedCells.length} КЛ.
 					</div>
 					<div className={mapStyles.detailLine}>
@@ -39,17 +40,17 @@ export function SelectedCellDetails() {
 			)}
 			<div className={mapStyles.detailLine}>
 				<span>Вместимость</span>
-				<b>{inspectedCapacity} м³</b>
+				<b>{inspectedCapacity ?? "—"} м³</b>
 			</div>
 			<div className={mapStyles.detailLine}>
 				<span>Партий</span>
-				<b>{stocked.length}</b>
+				<b>{inspection.batchCount ?? "—"}</b>
 			</div>
 			{stocked.map((s) => (
 				<MiniCard key={s.id}>
 					<b>{s.productName}</b>
 					<p>
-						{s.quantity} шт. · резерв {s.reserved}
+						{s.quantity} шт. · резерв {s.reserved ?? "—"}
 					</p>
 					<span className={localLayout.muted}>
 						{s.expires || "Без срока годности"}
@@ -58,18 +59,18 @@ export function SelectedCellDetails() {
 			))}
 			{!model.editing && storageCellTypes.includes(selected.type) && (
 				<div className={mapStyles.mapRoutesSummary}>
-					<div className={localLayout["section-caption"]}>МАРШРУТЫ РОБОТА</div>
+					<div className={localLayout.sectionCaption}>МАРШРУТЫ РОБОТА</div>
 					<p className={mapStyles.routeInbound}>
 						Разгрузка → блок:{" "}
 						{model.routes.inbound.length
 							? `${model.routes.inbound.length - 1} шагов`
-							: "Нет пути"}
+							: "Маршрут не получен"}
 					</p>
 					<p className={mapStyles.routeOutbound}>
 						Блок → погрузка:{" "}
 						{model.routes.outbound.length
 							? `${model.routes.outbound.length - 1} шагов`
-							: "Нет пути"}
+							: "Маршрут не получен"}
 					</p>
 				</div>
 			)}

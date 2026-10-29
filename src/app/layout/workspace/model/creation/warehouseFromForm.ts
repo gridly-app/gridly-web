@@ -1,9 +1,10 @@
-import { createWarehouse, type Warehouse } from "@/entities/warehouse";
+import type { WarehouseInput } from "@/entities/warehouse";
+
 import { formNumber, formText } from "@/shared/lib";
 
 const MAX_WAREHOUSE_CELLS = 10_000;
 
-export function warehouseFromForm(data: FormData): Warehouse {
+export function warehouseFromForm(data: FormData): WarehouseInput {
 	const width = formNumber(data, "width");
 	const height = formNumber(data, "height");
 
@@ -18,5 +19,10 @@ export function warehouseFromForm(data: FormData): Warehouse {
 		throw new Error("Размеры должны быть целыми числами от 2 до 100");
 	}
 
-	return createWarehouse(formText(data, "name"), width, height);
+	return {
+		name: formText(data, "name"),
+		width,
+		height,
+		timezone: "Europe/Moscow",
+	};
 }

@@ -1,70 +1,95 @@
-import { useState } from "react";
-import type { Warehouse, WarehouseSettings } from "@/entities/warehouse";
-import { confirmationLabels } from "@/entities/warehouse";
-import { errorMessage, formText } from "@/shared/lib";
-
+import { useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import {
+	type CommandExecutor,
+	confirmationLabels,
+	type Warehouse,
+	warehouseKeys,
+	workflowKeys,
+} from "@/entities/warehouse";
+import { errorMessage } from "@/shared/lib";
 export interface SettingsFormOptions {
 	w: Warehouse;
-	save: (v: WarehouseSettings) => Promise<void>;
+	execute: CommandExecutor;
 	pending: boolean;
 }
-
-export function useSettingsForm({
-	w: warehouse,
-	save,
-	pending,
-}: SettingsFormOptions) {
-	const [policy, setPolicy] = useState(warehouse.policy);
-	const [revision] = useState(warehouse.revision);
-	const [policyRevision] = useState(warehouse.policyRevision);
-
-	const [error, setError] = useState("");
-	const [submitting, setSubmitting] = useState(false);
-
-	function updatePolicy(index: number, checked: boolean) {
-		setPolicy((current) =>
-			current.map((value, stageIndex) =>
-				index === stageIndex ? checked : value,
-			),
-		);
-	}
-
-	async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-		event.preventDefault();
-		if (pending || submitting) {
-			return;
-		}
-		const data = new FormData(event.currentTarget);
-
-		setError("");
-		setSubmitting(true);
-		try {
-			await save({
-				revision,
-				policyRevision,
-				name: formText(data, "name"),
-				timezone: formText(data, "timezone"),
-				policy,
-			});
-		} catch (error) {
-			setError(errorMessage(error));
-		} finally {
-			setSubmitting(false);
-		}
-	}
-
-	const confirmations = policy.map((checked, index) => ({
-		checked,
-		label: confirmationLabels[index],
-		index,
+export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
+	const cache = useQueryClient();
+	const [draft, setDraft] = useState(() => ({
+		name: w.name,
+		policy: { ...w.policy },
+		revision: w.revision,
+		policyRevision: w.policyRevision,
 	}));
-
+	const [operation, setOperation] = useState<"name" | "policy" | null>(null);
+	const inFlight = useRef(false);
+	const [messages, setMessages] = useState({ name: "", policy: "" });
+	async function save(section: "name" | "policy") {
+		if (pending || inFlight.current) return;
+		inFlight.current = true;
+		setOperation(section);
+		setMessages((current) => ({ ...current, [section]: "" }));
+		try {
+			await execute(
+				"settings",
+				section === "name"
+					? { section, name: draft.name.trim(), revision: draft.revision }
+					: {
+							section,
+							policy: draft.policy,
+							policyRevision: draft.policyRevision,
+						},
+			);
+			const updated = cache.getQueryData<Warehouse>(warehouseKeys.detail(w.id));
+			if (updated)
+				setDraft((current) =>
+					section === "name"
+						? { ...current, revision: updated.revision }
+						: { ...current, policyRevision: updated.policyRevision },
+				);
+			setMessages((current) => ({ ...current, [section]: "Сохранено" }));
+		} catch (error) {
+			setMessages((current) => ({
+				...current,
+				[section]: errorMessage(error),
+			}));
+		} finally {
+			inFlight.current = false;
+			setOperation(null);
+		}
+	}
+	// Revisions belong to the draft; another server update must not silently authorize an overwrite.
+	function refresh(section: "name" | "policy") {
+		setDraft((current) =>
+			section === "name"
+				? { ...current, name: w.name, revision: w.revision }
+				: {
+						...current,
+						policy: { ...w.policy },
+						policyRevision: w.policyRevision,
+					},
+		);
+		setMessages((current) => ({ ...current, [section]: "" }));
+	}
 	return {
-		confirmations,
-		handleSubmit,
-		w: warehouse,
-		updatePolicy,
-		error,
-		pending: pending || submitting,
+		w,
+		name: draft.name,
+		changeName: (name: string) => setDraft((current) => ({ ...current, name })),
+		confirmations: workflowKeys.map((key, index) => ({
+			key,
+			label: confirmationLabels[index],
+			checked: draft.policy[key],
+		})),
+		updatePolicy: (key: (typeof workflowKeys)[number], checked: boolean) =>
+			setDraft((current) => ({
+				...current,
+				policy: { ...current.policy, [key]: checked },
+			})),
+		save,
+		refresh,
+		messages,
+		pending: pending || operation !== null,
+		nameChanged: draft.name.trim() !== w.name,
+		policyChanged: JSON.stringify(draft.policy) !== JSON.stringify(w.policy),
 	};
 }

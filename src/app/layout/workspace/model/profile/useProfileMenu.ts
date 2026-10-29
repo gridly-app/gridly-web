@@ -6,6 +6,9 @@ export interface ProfileMenuOptions {
 	dark: boolean;
 	setDark: (dark: boolean) => void;
 	logout: () => void;
+	restartDemo: () => void;
+	landing: () => void;
+	account: () => void;
 }
 
 export function useProfileMenu({

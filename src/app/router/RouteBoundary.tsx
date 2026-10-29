@@ -1,6 +1,17 @@
 import { Component, type ReactNode, Suspense } from "react";
 import { Button, Feedback } from "@/shared/ui";
 
+export function RouteFailure() {
+	return (
+		<Feedback tone="error" role="alert">
+			Не удалось открыть страницу. Попробуйте загрузить её ещё раз.
+			<Button onClick={() => window.location.reload()}>
+				Перезагрузить страницу
+			</Button>
+		</Feedback>
+	);
+}
+
 export class RouteBoundary extends Component<
 	{ children: ReactNode },
 	{ failed: boolean }
@@ -11,18 +22,9 @@ export class RouteBoundary extends Component<
 		return { failed: true };
 	}
 
-	private reload(this: void) {
-		window.location.reload();
-	}
-
 	render() {
 		if (this.state.failed) {
-			return (
-				<Feedback tone="error" role="alert">
-					Не удалось открыть страницу. Попробуйте загрузить её ещё раз.
-					<Button onClick={this.reload}>Перезагрузить страницу</Button>
-				</Feedback>
-			);
+			return <RouteFailure />;
 		}
 
 		return (

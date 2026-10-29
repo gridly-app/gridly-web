@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
 import { cellLabels } from "@/entities/warehouse";
+
 import { useImmersiveRegion } from "@/shared/lib";
 import { Button, ConfirmDialog, ErrorNotice, StatusBadge } from "@/shared/ui";
 import { useMapEditor } from "../../model/layout/useMapEditor";
@@ -31,7 +32,7 @@ export interface WarehouseMapProps {
 export function WarehouseMap(props: WarehouseMapProps) {
 	const { pending, w: warehouse, command, dark } = props;
 	const editor = useMapEditor(warehouse, command);
-	const routeEditor = useRouteEditor(warehouse, command);
+	const routeEditor = useRouteEditor(editor, warehouse.id);
 	const sizeEditor = useMapSize({ w: warehouse, command });
 	const view = useMapView(editor.editing);
 	const { editing, viewing } = view;
@@ -101,6 +102,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					view={view}
 					editor={{
 						active: editing,
+						busy: editor.busy,
 						menuOpen,
 						setMenuOpen,
 						start: startEditor,
@@ -110,6 +112,8 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					routes={{
 						configuring: configuringRoutes,
 						optimize: routeEditor.optimize,
+						supported: !!warehouse.allowedActions?.includes("optimize-routes"),
+						optimizing: routeEditor.optimizing,
 					}}
 				/>
 			) : (
@@ -117,10 +121,10 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					<StatusBadge
 						compactOnMobile
 						status={warehouse.running ? "online" : "offline"}
-						primaryText={`${simulation.activeRobots} в работе`}
+						primaryText={`${simulation.activeRobots ?? "—"} в работе`}
 						animated={warehouse.running}
 					>
-						/ {warehouse.robots.length} роботов
+						/ {warehouse.summary?.robotCount ?? "—"} роботов
 					</StatusBadge>
 					<div className={mapStyles.toolbarActions}>
 						{simulation.supported && (
@@ -151,7 +155,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 			<ConfirmDialog
 				open={editor.discardOpen}
 				title="Сбросить изменения карты?"
-				description="Изменения строительства будут отменены. Редактор останется открытым."
+				description="Изменения карты, зон и маршрутов будут отменены. Редактор останется открытым."
 				confirmLabel="Сбросить изменения"
 				pending={editor.resetting}
 				error={editor.errors?.join(" · ")}
@@ -166,13 +170,14 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					pending={pending}
 					running={warehouse.running}
 					palette={legend.palette}
-					categories={warehouse.categories}
+					categories={editor.categories}
 				/>
 			)}
 			{configuringRoutes && (
 				<RouteToolbar
 					className={mapStyles.editorOverlay}
 					model={routeEditor}
+					editor={editor}
 					pending={pending}
 					running={warehouse.running}
 				/>

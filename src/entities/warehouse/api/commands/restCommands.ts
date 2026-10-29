@@ -4,7 +4,7 @@ import type { Warehouse } from "../../model/warehouse/schemas";
 import { saveCategory, saveProduct } from "./catalog";
 import type { RestCommandContext, SendMutation } from "./context";
 import { writeOffStock } from "./inventory";
-import { discardLayout, saveLayout } from "./layout";
+import { discardLayout, saveMap } from "./layout";
 import {
 	applyOrderAction,
 	confirmTask,
@@ -28,7 +28,7 @@ export class RestWarehouseCommands {
 		const base = `/warehouses/${encodeURIComponent(id)}`;
 		const send = (
 			path: string,
-			body?: unknown,
+			body?: unknown | undefined,
 			method: RequestOptions["method"] = "POST",
 			keyed = true,
 		) => this.sendMutation(`${base}${path}`, { method, body }, keyed);
@@ -41,14 +41,16 @@ export class RestWarehouseCommands {
 		};
 
 		switch (command.action) {
-			case "routes":
-				throw new Error(
-					"Сохранение маршрутов пока доступно только в демо: сервер не предоставляет этот API.",
-				);
+			case "saveMap":
+				return saveMap(context, command);
 			case "resize":
-				throw new Error(
-					"Текущий REST API не поддерживает изменение размера склада. Оно доступно в демо.",
-				);
+				if (!warehouse.allowedActions?.includes("resize"))
+					throw new Error("Изменение размера недоступно по данным сервера");
+				await send("/layout/resize", {
+					...command.value,
+					base_version: warehouse.version,
+				});
+				return;
 			case "simulation":
 				return setSimulation(context, command);
 			case "order":
@@ -61,7 +63,10 @@ export class RestWarehouseCommands {
 			case "taskAction":
 				return confirmTask(context, command);
 			case "confirm":
-				throw new Error("Выберите конкретное подтверждение в карточке заказа");
+				return applyOrderAction(context, {
+					action: "orderAction",
+					value: { id: command.value, action: "confirm" },
+				});
 			case "product":
 				return saveProduct(context, command);
 			case "category":
@@ -74,15 +79,8 @@ export class RestWarehouseCommands {
 				return writeOffStock(context, command);
 			case "settings":
 				return saveSettings(context, command);
-			case "draft":
-			case "publish":
-				return saveLayout(context, command);
 			case "discard":
 				return discardLayout(context, command);
-			case "zone":
-				throw new Error(
-					"Сохранение зон пока доступно только в демо: сервер не предоставляет этот API.",
-				);
 		}
 	}
 }

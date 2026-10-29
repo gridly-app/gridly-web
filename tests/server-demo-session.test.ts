@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { FetchHttpClient } from "../src/shared/api";
+import { BrowserSessionRepository } from "../src/shared/auth/api/repository";
 import { ServerDemoSession } from "../src/shared/auth/model/ServerDemoSession";
 import { warehousePath } from "../src/shared/config/workspacePaths";
 
@@ -326,6 +327,36 @@ describe("independent server demo", () => {
 		fail = false;
 		await session.restore();
 		expect(session.getSnapshot().status).toBe("active");
+	});
+
+	test("regular account requests still use their own token while demo is active", async () => {
+		let authorization: string | undefined;
+		const accountHttp = new FetchHttpClient(base, (async (url, options) => {
+			if (String(url).endsWith("/auth/login"))
+				return Response.json({
+					user: { login: "operator" },
+					access_token: "account-token",
+				});
+			authorization = ((options?.headers ?? {}) as Record<string, string>)
+				.Authorization;
+			return Response.json([]);
+		}) as (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>);
+		const { session, storage } = setup((async () =>
+			Response.json(credentials())) as (
+			input: RequestInfo | URL,
+			init?: RequestInit,
+		) => Promise<Response>);
+		const account = new BrowserSessionRepository(accountHttp, storage);
+		account.remember(
+			await account.authenticate("login", {
+				login: "operator",
+				password: "password",
+			}),
+		);
+		await session.start();
+		await accountHttp.request("/warehouses");
+		expect(authorization).toBe("Bearer account-token");
+		expect(account.current()).toBe("operator");
 	});
 
 	test("all workspace links use the explicit mode and encode the warehouse identity", () => {

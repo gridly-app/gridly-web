@@ -1,18 +1,23 @@
-import type { Order, Warehouse } from "@/entities/warehouse";
-import { formText, id } from "@/shared/lib";
+import type {
+	Order,
+	OrderInput,
+	Warehouse,
+	WorkflowPolicy,
+} from "@/entities/warehouse";
+import { formText } from "@/shared/lib";
 
 export interface OrderDraft {
 	kind: Order["kind"];
-	order?: Order;
+	order?: Order | undefined;
 	warehouse: Warehouse;
 	lines: Order["lines"];
-	manual: boolean[];
+	manual: WorkflowPolicy;
 }
 
 export function orderFromForm(
 	data: FormData,
-	{ kind, order, warehouse, lines, manual }: OrderDraft,
-): Order {
+	{ kind, order, lines, manual }: OrderDraft,
+): OrderInput {
 	if (
 		!lines.length ||
 		lines.some(
@@ -22,29 +27,13 @@ export function orderFromForm(
 	) {
 		throw new Error("Добавьте товар и целое положительное количество");
 	}
-	if (
-		kind === "inbound" &&
-		lines.some(
-			(line) =>
-				(warehouse.products.find((product) => product.id === line.product)
-					?.shelf || 0) > 0 && !line.expires,
-		)
-	) {
-		throw new Error("Укажите срок годности скоропортящихся партий");
-	}
 
 	return {
 		revision: order?.revision,
-		id: order?.id || id(),
-		number:
-			order?.number ||
-			`${kind === "inbound" ? "IN" : "OUT"}-${String(warehouse.orders.length + 25).padStart(4, "0")}`,
+		id: order?.id,
 		kind,
 		party: formText(data, "party"),
-		status: "draft",
 		lines,
 		manual,
-		stage: 0,
-		created: order?.created || new Date().toISOString(),
 	};
 }

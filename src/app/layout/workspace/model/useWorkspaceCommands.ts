@@ -2,10 +2,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { useWarehouse } from "@/entities/warehouse";
 import {
 	type CommandExecutor,
+	type MutationReceipt,
 	useWarehouseCommand,
-	type Warehouse,
 	type WarehouseCommand,
-	warehouseKeys,
 } from "@/entities/warehouse";
 import { errorMessage } from "@/shared/lib";
 import { createCommandHandler } from "./createCommandHandler";
@@ -28,13 +27,14 @@ export function useWorkspaceCommands({
 }: WorkspaceCommandOptions) {
 	const mutation = useWarehouseCommand(warehouseId);
 	const cache = useQueryClient();
-	const execute: CommandExecutor<Warehouse> = async (action, ...[value]) => {
+	const execute: CommandExecutor<MutationReceipt> = async (
+		action,
+		...[value, intent]
+	) => {
 		try {
 			if (
 				(requiresNetwork && !navigator.onLine) ||
 				snapshot.isError ||
-				cache.getQueryState(warehouseKeys.live(warehouseId))?.status ===
-					"error" ||
 				!snapshot.data ||
 				(snapshot.isFetching && !snapshot.dataUpdatedAt)
 			) {
@@ -43,8 +43,16 @@ export function useWorkspaceCommands({
 			const saved = await mutation.mutateAsync({
 				action,
 				value,
+				operationId: intent?.operationId,
 			} as WarehouseCommand);
-			notify("Изменения сохранены");
+			notify(
+				cache
+					.getQueryCache()
+					.findAll({ queryKey: ["warehouses", warehouseId, "resource"] })
+					.some((query) => query.state.status === "error")
+					? "Изменения сохранены. Не удалось обновить данные; повторите синхронизацию."
+					: "Изменения сохранены",
+			);
 			return saved;
 		} catch (error) {
 			notify(errorMessage(error));

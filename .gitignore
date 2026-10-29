@@ -22,7 +22,6 @@ pnpm-debug.log*
 # dotenv environment variable files
 .env*
 !.env.example
-!.env.demo
 
 # caches
 .eslintcache
@@ -40,6 +39,5 @@ playwright-report
 test-results
 *.local
 
-# Local CSS verification captures and recovery archive
+# Local generated files
 .artifacts/
-dist-demo/

@@ -8,7 +8,7 @@ export interface OrderDetailOptions {
 	w: Warehouse;
 	command: CommandExecutor;
 	pending: boolean;
-	onEdit?: () => void;
+	onEdit?: (() => void) | undefined;
 }
 
 export function useOrderDetail({
@@ -27,28 +27,17 @@ export function useOrderDetail({
 			setError(errorMessage(e));
 		}
 	};
-	const actions =
-		order.allowedActions ||
-		(["draft", "blocked"].includes(order.status)
-			? ["start", "cancel"]
-			: ["waiting", "running"].includes(order.status)
-				? ["cancel"]
-				: []);
-
-	const canEdit =
-		order.status === "draft" &&
-		(order.allowedActions === undefined || actions.includes("edit"));
+	const actions = order.allowedActions || [];
+	const canEdit = actions.includes("edit");
 	function runOrderAction(action: string) {
 		if (["abort", "write-off-expired"].includes(action)) {
 			setReasonAction(action);
-		} else if (order.allowedActions) {
+		} else {
 			void executeAction("orderAction", {
 				id: order.id,
 				action,
 				revision: order.revision,
 			});
-		} else {
-			void executeAction(action as "start" | "cancel", order.id);
 		}
 	}
 
@@ -82,7 +71,11 @@ export function useOrderDetail({
 	}
 
 	function confirmOrder() {
-		return executeAction("confirm", order.id);
+		return executeAction("orderAction", {
+			id: order.id,
+			action: "confirm",
+			revision: order.revision,
+		});
 	}
 
 	function closeReason() {
@@ -92,7 +85,7 @@ export function useOrderDetail({
 	return {
 		confirmOrder,
 		closeReason,
-		canConfirm: order.status === "waiting" && !order.allowedActions,
+		canConfirm: actions.includes("confirm"),
 		reasonLabel: actionLabels[reasonAction],
 		canEdit,
 		confirmTask,

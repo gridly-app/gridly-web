@@ -3,6 +3,7 @@ import {
 	type Warehouse,
 	type WarehouseLiveState,
 } from "@/entities/warehouse";
+
 import type { WorkspaceShellModel } from "../model/useWorkspaceShell";
 import workspaceStyles from "./WorkspaceShell.module.css";
 
@@ -19,7 +20,10 @@ const workerLabels: Record<string, string> = {
 	unavailable: "нет связи",
 };
 
-const selectConnection = (warehouse: Warehouse, live?: WarehouseLiveState) => ({
+const selectConnection = (
+	warehouse: Warehouse,
+	live?: WarehouseLiveState | undefined,
+) => ({
 	running: live?.running ?? warehouse.running,
 });
 

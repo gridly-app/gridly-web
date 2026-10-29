@@ -1,8 +1,6 @@
 import {
 	IconArrowBackUp,
 	IconArrowForwardUp,
-	IconCheck,
-	IconDeviceFloppy,
 	IconRotate,
 } from "@tabler/icons-react";
 import {
@@ -19,12 +17,12 @@ import { useEditLayoutToolbar } from "../../model/layout/useEditLayoutToolbar";
 import editorStyles from "./EditLayoutToolbar.module.css";
 
 export type EditLayoutToolbarProps = EditLayoutToolbarOptions & {
-	className?: string;
+	className?: string | undefined;
 };
 
 export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 	const { container, ...model } = useEditLayoutToolbar(props);
-	const { tools, editor, pending, canPublish, publishTitle } = model;
+	const { tools, editor, pending } = model;
 
 	return (
 		<div
@@ -35,10 +33,7 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 				className={editorStyles.categoryPagination}
 				aria-label="Категории строительства"
 			>
-				<PaginationContent
-					variant="fitted"
-					className={editorStyles.editorPill}
-				>
+				<PaginationContent variant="fitted" className={editorStyles.editorPill}>
 					<PaginationItem>
 						<PaginationPrevious
 							size="compact"
@@ -53,6 +48,7 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 								variant="ghost"
 								className={editorStyles.categoryButton}
 								selected={category.selected}
+								disabled={editor.busy}
 								onClick={() => editor.applyCategory(category)}
 							>
 								{category.name}
@@ -77,6 +73,7 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 							size="compact"
 							variant="ghost"
 							selected={tool.selected}
+							disabled={editor.busy}
 							key={tool.type}
 							onClick={() => editor.applyType(tool.type)}
 						>
@@ -106,38 +103,18 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 					</Button>
 					<Button
 						size="compact"
-						variant="ghost"
-						disabled={pending}
+						disabled={pending || editor.busy || !editor.canSave}
+						title={!editor.canSave ? editor.saveUnavailableReason : undefined}
 						onClick={() => {
 							void editor.save();
 						}}
-						aria-label="Сохранить"
 					>
-						<IconDeviceFloppy size={16} />
+						Сохранить изменения
 					</Button>
 					<Button
 						size="compact"
 						variant="ghost"
-						onClick={editor.validate}
-						aria-label="Проверить"
-					>
-						<IconCheck size={16} />
-					</Button>
-					<Button
-						size="compact"
-						variant="default"
-						disabled={!canPublish}
-						title={publishTitle}
-						onClick={() => {
-							void editor.publish();
-						}}
-					>
-						Опубликовать
-					</Button>
-					<Button
-						size="compact"
-						variant="ghost"
-						disabled={pending || editor.resetting}
+						disabled={pending || editor.busy}
 						aria-busy={editor.resetting}
 						onClick={editor.discard}
 						aria-label="Отменить все изменения"

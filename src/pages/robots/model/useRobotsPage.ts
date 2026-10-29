@@ -23,7 +23,8 @@ export function useRobotsPage() {
 		.filter((robot) => robot.name.toLowerCase().includes(searchQuery))
 		.map((robot) => ({
 			...robot,
-			canDelete: robot.status === "idle",
+			canEdit: !!robot.allowedActions?.includes("edit"),
+			canDelete: !!robot.allowedActions?.includes("delete"),
 			rolesLabel: robot.roles.map((role) => robotRoleLabels[role]).join(", "),
 		}));
 
@@ -32,6 +33,7 @@ export function useRobotsPage() {
 	}
 
 	return {
+		canCreate: !!warehouse.allowedActions?.includes("create-robot"),
 		removeRobot,
 		empty: warehouse.robots.length === 0,
 		editingRobot: editing === "new" ? undefined : editing || undefined,

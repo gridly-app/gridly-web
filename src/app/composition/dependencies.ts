@@ -1,55 +1,56 @@
 import { QueryClient } from "@tanstack/react-query";
-import { DevelopmentDemoSession } from "@/app/mocks/DevelopmentDemoSession";
-import {
-	HttpWarehouseRepository,
-	RestWarehouseRepository,
-} from "@/entities/warehouse";
+import { RestWarehouseRepository } from "@/entities/warehouse";
 import { FetchHttpClient } from "@/shared/api";
-import { BrowserSessionRepository } from "@/shared/auth";
+import { BrowserSessionRepository, ServerDemoSession } from "@/shared/auth";
 import { environment } from "@/shared/config";
-import { DemoSessionController } from "./DemoSessionController";
+import { availableStorage, browserStorage } from "@/shared/lib/browserStorage";
+import { clearFormDraftScope } from "@/shared/lib/forms/formDraftStorage";
 
 export type AppDependencies = ReturnType<typeof createDependencies>;
-
 export function createDependencies() {
-	const client = new QueryClient({
+	const options = {
 		defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
+	};
+	const client = new QueryClient(options);
+	const demoClient = new QueryClient(options);
+	const local = availableStorage("localStorage");
+	const session = availableStorage("sessionStorage");
+	let sessionRepository: BrowserSessionRepository;
+	const http = new FetchHttpClient(environment.apiBaseUrl, undefined, {
+		onUnauthorized: () => sessionRepository?.expire(),
 	});
-	const http = new FetchHttpClient(environment.apiBaseUrl);
-	const realRepository = new RestWarehouseRepository(http);
-	const mockRepository = new HttpWarehouseRepository(
-		new FetchHttpClient("/api/v1"),
+	const realRepository = new RestWarehouseRepository(http, client);
+	let demoRepository: RestWarehouseRepository;
+	const demoSession = new ServerDemoSession(
+		session.storage,
+		environment.apiBaseUrl,
+		() => {
+			void demoClient.cancelQueries();
+			demoClient.clear();
+			demoRepository.clear();
+		},
+		undefined,
+		(sessionId) =>
+			clearFormDraftScope(browserStorage("localStorage"), ["demo", sessionId]),
 	);
-	const sandbox = new DemoSessionController(sessionStorage);
-	const demoSession =
-		import.meta.env.DEV && environment.mockApi
-			? new DevelopmentDemoSession()
-			: sandbox;
-	const sessionRepository = new BrowserSessionRepository(
+	demoRepository = new RestWarehouseRepository(demoSession.http, demoClient);
+	sessionRepository = new BrowserSessionRepository(
 		http,
-		localStorage,
-		!environment.mockApi,
-		demoSession,
+		browserStorage("localStorage"),
+		clearAccountData,
 	);
-
-	function logout() {
+	function clearAccountData() {
+		void client.cancelQueries();
 		client.clear();
 		realRepository.clear();
 	}
-
-	async function restoreSession() {
-		if (demoSession.active()) {
-			await demoSession.start();
-		}
-	}
-
 	return {
 		client,
+		demoClient,
 		realRepository,
-		mockRepository,
-		demoRepository: sandbox.repository,
+		demoRepository,
+		demoSession,
 		sessionRepository,
-		restoreSession,
-		logout,
+		localStorage: local.storage,
 	};
 }

@@ -45,7 +45,6 @@ export function RobotForm({ robot, pending, onSave }: RobotFormProps) {
 						name="speed"
 						type="number"
 						min={1}
-						max={5}
 						defaultValue={robot?.speed || 2}
 						required
 					/>
@@ -55,7 +54,6 @@ export function RobotForm({ robot, pending, onSave }: RobotFormProps) {
 						name="duration"
 						type="number"
 						min={1}
-						max={20}
 						defaultValue={robot?.duration || 3}
 						required
 					/>

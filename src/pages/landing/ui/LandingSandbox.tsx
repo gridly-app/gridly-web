@@ -31,7 +31,7 @@ export function LandingSandbox() {
 					Открыть демо <IconArrowUpRight size={19} />
 				</Button>
 				<small className={landingStyles.sandboxNote}>
-					<StaticText text="Без регистрации · Демо-данные в вашем браузере" />
+					<StaticText text="Без регистрации · Готовый демо-склад" />
 				</small>
 			</div>
 			<div className={landingStyles.ctaPixels} aria-hidden="true">

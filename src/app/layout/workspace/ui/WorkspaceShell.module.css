@@ -56,3 +56,16 @@
 	min-height: 24px;
 	padding: 0 4px;
 }
+
+.demoNotice {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	padding: 0.75rem 1rem;
+	margin-bottom: 1rem;
+	border: 1px solid var(--demo-border);
+	border-radius: 0.75rem;
+	background: var(--warning-bg);
+	color: var(--warning-text);
+	flex-shrink: 0;
+}

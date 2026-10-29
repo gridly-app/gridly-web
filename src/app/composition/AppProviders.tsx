@@ -1,68 +1,73 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import { BrowserRouter } from "react-router-dom";
-import type { WarehouseRepository } from "@/entities/warehouse";
+import {
+	createContext,
+	type ReactNode,
+	useContext,
+	useSyncExternalStore,
+} from "react";
 import { WarehouseRepositoryProvider } from "@/entities/warehouse";
-import { SessionProvider, useSession } from "@/shared/auth";
-import { environment } from "@/shared/config";
+import { DemoSessionProvider, SessionProvider } from "@/shared/auth";
 import { ThemeProvider } from "@/shared/lib";
-import { WarmTooltipGroup } from "@/shared/ui";
+import { runtimeNotices } from "@/shared/lib/runtimeNotices";
+import { Button, Feedback, WarmTooltipGroup } from "@/shared/ui";
 import type { AppDependencies } from "./dependencies";
+import styles from "./RuntimeFeedback.module.css";
 
-export interface AppProvidersProps {
-	children: ReactNode;
-	dependencies: AppDependencies;
+const DependenciesContext = createContext<AppDependencies | null>(null);
+export function useAppDependencies() {
+	const dependencies = useContext(DependenciesContext);
+	if (!dependencies) throw new Error("AppProviders is missing");
+	return dependencies;
 }
-
-export interface WarehouseDataProviderProps {
-	children: ReactNode;
-	realRepository: WarehouseRepository;
-	mockRepository: WarehouseRepository;
-	demoRepository: WarehouseRepository;
-}
-
-function WarehouseDataProvider({
-	children,
-	realRepository,
-	mockRepository,
-	demoRepository,
-}: WarehouseDataProviderProps) {
-	const { isDemo } = useSession();
-
+function RuntimeFeedback() {
+	const messages = useSyncExternalStore(
+		runtimeNotices.subscribe,
+		runtimeNotices.getSnapshot,
+	);
+	if (!messages.length) return null;
 	return (
-		<WarehouseRepositoryProvider
-			repository={
-				environment.mockApi
-					? mockRepository
-					: isDemo
-						? demoRepository
-						: realRepository
-			}
-		>
-			{children}
-		</WarehouseRepositoryProvider>
+		<aside className={styles.notices} aria-label="Уведомления приложения">
+			{messages.map((message) => (
+				<Feedback key={message} tone="error">
+					<div className={styles.notice}>
+						<span>{message}</span>
+						<Button
+							type="button"
+							onClick={() => runtimeNotices.dismiss(message)}
+						>
+							Закрыть
+						</Button>
+					</div>
+				</Feedback>
+			))}
+		</aside>
 	);
 }
-
-export function AppProviders({ children, dependencies }: AppProvidersProps) {
+export function AppProviders({
+	children,
+	dependencies,
+}: {
+	children: ReactNode;
+	dependencies: AppDependencies;
+}) {
 	return (
-		<QueryClientProvider client={dependencies.client}>
-			<SessionProvider
-				repository={dependencies.sessionRepository}
-				onLogout={dependencies.logout}
-			>
-				<WarehouseDataProvider
-					realRepository={dependencies.realRepository}
-					mockRepository={dependencies.mockRepository}
-					demoRepository={dependencies.demoRepository}
-				>
-					<ThemeProvider storage={localStorage}>
-						<WarmTooltipGroup>
-							<BrowserRouter>{children}</BrowserRouter>
-						</WarmTooltipGroup>
-					</ThemeProvider>
-				</WarehouseDataProvider>
-			</SessionProvider>
-		</QueryClientProvider>
+		<DependenciesContext.Provider value={dependencies}>
+			<QueryClientProvider client={dependencies.client}>
+				<SessionProvider repository={dependencies.sessionRepository}>
+					<DemoSessionProvider session={dependencies.demoSession}>
+						<WarehouseRepositoryProvider
+							repository={dependencies.realRepository}
+						>
+							<ThemeProvider storage={dependencies.localStorage}>
+								<WarmTooltipGroup>
+									<RuntimeFeedback />
+									{children}
+								</WarmTooltipGroup>
+							</ThemeProvider>
+						</WarehouseRepositoryProvider>
+					</DemoSessionProvider>
+				</SessionProvider>
+			</QueryClientProvider>
+		</DependenciesContext.Provider>
 	);
 }

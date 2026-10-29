@@ -8,7 +8,7 @@ import type { RefObject } from "react";
 import { Button, Menu, MenuItem, MenuPopup, MenuTrigger } from "@/shared/ui";
 import type { MapEditor } from "../../model/layout/useMapEditor";
 import type { useMapView } from "../../model/map/useMapView";
-import type { useRouteEditor } from "../../model/map/useRouteEditor";
+
 import mapStyles from "./WarehouseMap.module.css";
 
 export interface MapNavigationProps {
@@ -16,6 +16,7 @@ export interface MapNavigationProps {
 	view: Pick<ReturnType<typeof useMapView>, "setViewing">;
 	editor: {
 		active: boolean;
+		busy: boolean;
 		menuOpen: boolean;
 		setMenuOpen: (open: boolean) => void;
 		start: MapEditor["startMode"];
@@ -24,7 +25,9 @@ export interface MapNavigationProps {
 	};
 	routes: {
 		configuring: boolean;
-		optimize: ReturnType<typeof useRouteEditor>["optimize"];
+		optimize: () => Promise<void>;
+		supported: boolean;
+		optimizing: boolean;
 	};
 }
 
@@ -41,6 +44,7 @@ export function MapNavigation({
 					<li>
 						<Menu open={editor.menuOpen} onOpenChange={editor.setMenuOpen}>
 							<MenuTrigger
+								disabled={editor.busy}
 								render={
 									<Button
 										variant="ghost"
@@ -52,6 +56,7 @@ export function MapNavigation({
 							</MenuTrigger>
 							<MenuPopup className={mapStyles.spaceNavigationContent}>
 								<MenuItem
+									nativeButton
 									render={
 										<Button
 											variant="ghost"
@@ -66,6 +71,7 @@ export function MapNavigation({
 									Размер
 								</MenuItem>
 								<MenuItem
+									nativeButton
 									render={
 										<Button
 											variant="ghost"
@@ -79,6 +85,7 @@ export function MapNavigation({
 									Строительство
 								</MenuItem>
 								<MenuItem
+									nativeButton
 									render={
 										<Button
 											variant="ghost"
@@ -94,13 +101,20 @@ export function MapNavigation({
 							</MenuPopup>
 						</Menu>
 					</li>
+
 					{routes.configuring && (
 						<li>
 							<Button
-								className={mapStyles.viewButton}
 								variant="ghost"
-								onClick={routes.optimize}
-								tooltip="Заново выбрать доки и кратчайшие пути для всех блоков склада"
+								disabled={!routes.supported || routes.optimizing}
+								title={
+									!routes.supported
+										? "Построение маршрутов недоступно по данным сервера"
+										: undefined
+								}
+								onClick={() => {
+									void routes.optimize();
+								}}
 							>
 								Оптимизация путей
 							</Button>
@@ -111,6 +125,7 @@ export function MapNavigation({
 							<Button
 								className={mapStyles.viewButton}
 								variant="ghost"
+								disabled={editor.busy}
 								onClick={editor.close}
 							>
 								Закрыть редактор

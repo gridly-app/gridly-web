@@ -23,7 +23,7 @@ export function OrderLinesFields({ model }: OrderLinesFieldsProps) {
 
 	return (
 		<>
-			<div className={localLayout["section-caption"]}>ПОЗИЦИИ ЗАКАЗА</div>
+			<div className={localLayout.sectionCaption}>ПОЗИЦИИ ЗАКАЗА</div>
 			{lines.map((line) => (
 				<OrderLineFields key={line.key} line={line} model={model} />
 			))}

@@ -1,13 +1,12 @@
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
-import { environment } from "@/shared/config";
 import { errorMessage } from "@/shared/lib";
 
 export function useMapSize({
 	w,
 	command,
 }: {
-	w: Pick<Warehouse, "width" | "height">;
+	w: Pick<Warehouse, "width" | "height" | "allowedActions">;
 	command: CommandExecutor;
 }) {
 	const [open, setOpen] = useState(false);
@@ -25,7 +24,7 @@ export function useMapSize({
 		}
 	}
 
-	async function submit(event: FormEvent<HTMLFormElement>) {
+	async function submit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 		const data = new FormData(event.currentTarget);
 
@@ -53,6 +52,6 @@ export function useMapSize({
 		error,
 		width: w.width,
 		height: w.height,
-		supported: environment.sandboxMode,
+		supported: !!w.allowedActions?.includes("resize"),
 	};
 }

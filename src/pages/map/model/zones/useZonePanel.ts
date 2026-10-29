@@ -1,6 +1,12 @@
-import { type ChangeEvent, useState } from "react";
-import type { Cell, CommandExecutor, Warehouse } from "@/entities/warehouse";
-import { assignZone, cellKey } from "@/entities/warehouse";
+import { type ChangeEvent, type SubmitEvent, useState } from "react";
+import type {
+	Category,
+	Cell,
+	CommandExecutor,
+	Warehouse,
+} from "@/entities/warehouse";
+import { cellKey } from "@/entities/warehouse";
+
 import { errorMessage, id } from "@/shared/lib";
 
 export interface ZonePanelOptions {
@@ -10,15 +16,15 @@ export interface ZonePanelOptions {
 	editing: boolean;
 	command: CommandExecutor;
 	onDraft: (cells: Cell[]) => void;
+	onCategory: (category: Category) => void;
 }
 
 export function useZonePanel({
 	w: warehouse,
 	cells,
 	keys,
-	editing,
 	onDraft,
-	command,
+	onCategory,
 }: ZonePanelOptions) {
 	const picked = cells.filter((cell) => keys.includes(cellKey(cell)));
 	const first = picked[0];
@@ -37,7 +43,7 @@ export function useZonePanel({
 	const [adding, setAdding] = useState(false);
 	const [newName, setNewName] = useState("");
 
-	async function save(e: React.FormEvent) {
+	async function save(e: SubmitEvent<HTMLFormElement>) {
 		e.preventDefault();
 		setError("");
 		setPending(true);
@@ -54,13 +60,10 @@ export function useZonePanel({
 				name,
 				categoryId: category,
 			};
-			const next = assignZone(cells, keys, zone, warehouse.categories);
-
-			if (editing) {
-				await command("draft", next);
-			} else {
-				await command("zone", { keys, zone });
-			}
+			const chosen = new Set(keys);
+			const next = cells.map((cell) =>
+				chosen.has(cellKey(cell)) ? { ...cell, zone } : cell,
+			);
 			onDraft(next);
 		} catch (e) {
 			setError(errorMessage(e));
@@ -79,7 +82,7 @@ export function useZonePanel({
 			}
 			const categoryId = id();
 
-			await command("category", {
+			onCategory({
 				id: categoryId,
 				name: newName.trim(),
 				cold: first.type === "cold",
@@ -94,11 +97,8 @@ export function useZonePanel({
 		}
 	}
 
-	const visibleCategories = warehouse.categories.filter(
-		(c) => (c.cold ? "cold" : "storage") === first?.type,
-	);
-
-	const capacity = picked.reduce((total, cell) => total + cell.capacity, 0);
+	const visibleCategories = warehouse.categories.filter((c) => !c.archived);
+	const capacity: number | undefined = undefined;
 
 	function changeName(event: ChangeEvent<HTMLInputElement>) {
 		setName(event.target.value);

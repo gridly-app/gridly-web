@@ -8,13 +8,12 @@ export async function writeOffStock(
 	const { warehouse, send } = context;
 	const stock = warehouse.stock.find((stock) => stock.id === command.value.id);
 
-	if (!stock || stock.cell.startsWith("robot:")) {
-		throw new Error("Выберите остаток в складской клетке.");
+	if (!stock) {
+		throw new Error("Остаток не найден.");
 	}
 	await send("/inventory/write-offs", {
-		batch_id: stock.batchId,
-		cell_x: Number(stock.cell.split(",")[0]),
-		cell_y: Number(stock.cell.split(",")[1]),
+		stock_id: stock.id,
+		revision: command.value.revision ?? stock.revision,
 		quantity: command.value.quantity,
 		reason: command.value.reason,
 	});

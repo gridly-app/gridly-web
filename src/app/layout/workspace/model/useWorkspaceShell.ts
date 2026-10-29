@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useWarehouse, useWarehouses } from "@/entities/warehouse";
-import { useSession } from "@/shared/auth";
-import { environment } from "@/shared/config";
+import { useDemoSession, useSession, useWorkspaceMode } from "@/shared/auth";
+import { warehousePath } from "@/shared/config";
 import { errorMessage, useOnlineStatus, useTheme } from "@/shared/lib";
+import { writePreference } from "@/shared/lib/browserStorage";
 import { useWarehouseCreation } from "./creation/useWarehouseCreation";
 import { useWorkspaceCommands } from "./useWorkspaceCommands";
 import { useWorkspaceNotice } from "./useWorkspaceNotice";
@@ -15,8 +16,31 @@ export function useWorkspaceShell() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const page = location.pathname.split("/").at(-1) || "map";
-	const { user, isDemo, logout: endSession } = useSession();
-	const requiresNetwork = !isDemo && !environment.mockApi;
+	const { user, logout: endSession } = useSession();
+	const mode = useWorkspaceMode();
+	const isDemo = mode === "demo";
+	const { controller: demo } = useDemoSession();
+	const requiresNetwork = true;
+	const [resetOpen, setResetOpen] = useState(false);
+	const [resetPending, setResetPending] = useState(false);
+	const [resetError, setResetError] = useState("");
+	async function restartDemo() {
+		if (resetPending) return;
+		setResetPending(true);
+		setResetError("");
+		try {
+			await demo.start(true);
+			const session = demo.getSnapshot().session;
+			if (session)
+				void navigate(warehousePath("demo", session.initial_warehouse_id), {
+					replace: true,
+				});
+		} catch (error) {
+			setResetError(errorMessage(error));
+		} finally {
+			setResetPending(false);
+		}
+	}
 	const { dark, setDark } = useTheme();
 	const list = useWarehouses();
 	const snapshot = useWarehouse(warehouseId);
@@ -30,7 +54,9 @@ export function useWorkspaceShell() {
 			warehouseId !== "new" &&
 			!list.data.some((warehouse) => warehouse.id === warehouseId)
 		) {
-			void navigate(`/warehouses/${list.data[0].id}/map`, { replace: true });
+			void navigate(warehousePath(mode, list.data[0]?.id ?? "new"), {
+				replace: true,
+			});
 		}
 	}, [
 		isDemo,
@@ -39,13 +65,15 @@ export function useWorkspaceShell() {
 		snapshot.isError,
 		warehouseId,
 		navigate,
+		mode,
 	]);
 	const notice = useWorkspaceNotice();
 	const creation = useWarehouseCreation(warehouseId);
 	const online = useOnlineStatus();
 	useEffect(() => {
-		if (!isDemo) localStorage.setItem("gridly.last", warehouseId);
-	}, [warehouseId, isDemo]);
+		if (!isDemo) writePreference("gridly.last", warehouseId);
+		else demo.rememberWarehouse(warehouseId);
+	}, [warehouseId, isDemo, demo]);
 	const commands = useWorkspaceCommands({
 		warehouseId,
 		snapshot,
@@ -56,14 +84,15 @@ export function useWorkspaceShell() {
 	const stale = snapshot.isError || (requiresNetwork && !online);
 	function changeWarehouse(value: string) {
 		if (value) {
-			void navigate(`/warehouses/${value}/${page}`);
+			void navigate(warehousePath(mode, value, page));
 		}
 	}
 
 	async function logout() {
 		try {
-			await endSession();
-			void navigate("/auth", { replace: true });
+			if (isDemo) demo.end();
+			else await endSession();
+			void navigate(isDemo ? "/" : "/auth", { replace: true });
 		} catch (error) {
 			notice.show(errorMessage(error));
 		}
@@ -81,20 +110,33 @@ export function useWorkspaceShell() {
 				pending: commands.pending || stale || snapshot.isFetching,
 			}
 		: null;
-	const hasWaitingInbound =
-		warehouse?.orders.some(
-			(order) => order.kind === "inbound" && order.status === "waiting",
-		) || false;
-
+	const hasWaitingInbound = warehouse?.summary?.hasWaitingInbound ?? false;
 	return {
 		sidebar: {
 			workspace: { warehouseId, changeWarehouse, list },
 			navigation: {
 				warehouseId,
-				robotCount: warehouse?.robots.length,
+				mode,
+				robotCount: warehouse?.summary?.robotCount,
 				hasWaitingInbound,
 			},
-			profile: { user, isDemo, dark, setDark, logout },
+			profile: {
+				user,
+				isDemo,
+				dark,
+				setDark,
+				logout,
+				restartDemo: () => {
+					setResetError("");
+					setResetOpen(true);
+				},
+				landing: () => {
+					void navigate("/");
+				},
+				account: () => {
+					void navigate("/app");
+				},
+			},
 		},
 		content: {
 			page,
@@ -108,5 +150,13 @@ export function useWorkspaceShell() {
 		},
 		notice: { message: notice.message, dismiss: notice.dismiss },
 		creation,
+		isDemo,
+		demoReset: {
+			open: resetOpen,
+			pending: resetPending,
+			error: resetError,
+			onConfirm: restartDemo,
+			onCancel: () => setResetOpen(false),
+		},
 	};
 }

@@ -13,9 +13,6 @@ export function writeOffFromForm(
 	if (!formText(data, "reason")) {
 		throw new Error("Укажите причину списания");
 	}
-	if (quantity > stock.quantity - stock.reserved) {
-		throw new Error("Количество превышает доступный запас");
-	}
 
 	return {
 		revision: stock.revision,

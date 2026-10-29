@@ -1,5 +1,6 @@
 import { IconBuildingWarehouse } from "@tabler/icons-react";
 import { NavLink } from "react-router-dom";
+import { warehousePath } from "@/shared/config";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/shared/ui";
 import type { WorkspaceShellModel } from "../model/useWorkspaceShell";
 import { navigation } from "./navigation";
@@ -10,7 +11,7 @@ export interface WarehouseNavigationProps {
 }
 
 export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
-	const { warehouseId, robotCount, hasWaitingInbound } = model;
+	const { warehouseId, robotCount, hasWaitingInbound, mode } = model;
 
 	return (
 		<>
@@ -24,7 +25,9 @@ export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
 					<SidebarMenuItem>
 						<SidebarMenuButton
 							tooltip="Информация о складе"
-							render={<NavLink to={`/warehouses/${warehouseId}/information`} />}
+							render={
+								<NavLink to={warehousePath(mode, warehouseId, "information")} />
+							}
 							aria-label="Информация"
 						>
 							<IconBuildingWarehouse size={20} />
@@ -35,7 +38,7 @@ export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
 						<SidebarMenuItem key={key}>
 							<SidebarMenuButton
 								tooltip={label}
-								render={<NavLink to={`/warehouses/${warehouseId}/${key}`} />}
+								render={<NavLink to={warehousePath(mode, warehouseId, key)} />}
 								aria-label={label}
 							>
 								<Icon size={20} />

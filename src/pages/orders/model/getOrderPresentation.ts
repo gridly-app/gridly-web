@@ -1,4 +1,5 @@
 import type { Order, Warehouse } from "@/entities/warehouse";
+import { workflowKeys } from "@/entities/warehouse";
 
 export function getOrderPresentation(
 	order: Order,
@@ -12,8 +13,8 @@ export function getOrderPresentation(
 	}));
 	const manualLabels = ["разгрузка", "отбор", "размещение", "погрузка"];
 	const confirmationsLabel =
-		order.manual
-			.map((enabled, index) => (enabled ? manualLabels[index] : ""))
+		workflowKeys
+			.map((key, index) => (order.manual[key] ? manualLabels[index] : ""))
 			.filter(Boolean)
 			.join(", ") || "не требуются";
 	const tasks = order.tasks?.map((task) => ({

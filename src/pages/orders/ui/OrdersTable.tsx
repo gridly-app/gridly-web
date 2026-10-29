@@ -1,5 +1,6 @@
 import { IconPlayerPlay } from "@tabler/icons-react";
 import { StatusBadge as Badge } from "@/entities/warehouse";
+
 import {
 	Button,
 	Table,
@@ -45,11 +46,11 @@ export function OrdersTable({ model }: OrdersTableProps) {
 						<div className={ordersStyles.orderStatistics}>
 							<b>
 								{page === "inbound" ? "Поставок" : "Отгрузок"}:{" "}
-								{statistics.total}
+								{statistics.total ?? "—"}
 							</b>
 							<small>
-								В работе: {statistics.active} · Завершено:{" "}
-								{statistics.completed}
+								В работе: {statistics.active ?? "—"} · Завершено:{" "}
+								{statistics.completed ?? "—"}
 							</small>
 						</div>
 					</TableHead>
@@ -71,7 +72,7 @@ export function OrdersTable({ model }: OrdersTableProps) {
 							</TableActions>
 						</TableCell>
 						<TableCell>{o.party}</TableCell>
-						<TableCell>{o.quantity} шт.</TableCell>
+						<TableCell>{o.quantity ?? "—"} шт.</TableCell>
 						<TableCell>{o.createdLabel}</TableCell>
 						<TableCell>
 							<Badge value={o.status} />

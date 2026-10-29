@@ -1,6 +1,7 @@
 import { IconArrowUpRight, IconPlayerPlay } from "@tabler/icons-react";
 import { useId } from "react";
 import { Link as RouterLink } from "react-router-dom";
+import { useSession } from "@/shared/auth";
 import {
 	Button,
 	Checkbox,
@@ -20,6 +21,7 @@ export function Authenticate() {
 	const controlId = useId();
 	const model = useAuthenticate();
 
+	const session = useSession();
 	return (
 		<div className={authStyles.auth} data-palette="warm">
 			<TileBackdrop
@@ -39,7 +41,6 @@ export function Authenticate() {
 					aria-label="Gridly — главная"
 				>
 					Gridly
-					<span aria-hidden="true">.</span>
 				</Link>
 				<SignInBlock
 					title={model.title}
@@ -49,6 +50,7 @@ export function Authenticate() {
 							variant="text"
 							className={authStyles.modeButton}
 							onClick={model.toggleMode}
+							disabled={model.pending || model.demoPending}
 						>
 							{model.modeLabel}
 						</Button>
@@ -87,9 +89,9 @@ export function Authenticate() {
 							/>
 							Показать пароль
 						</CheckLabel>
-						{model.error && (
+						{(model.error || session.error) && (
 							<Feedback role="alert" tone="error">
-								{model.error}
+								{model.error || session.error}
 							</Feedback>
 						)}
 						<Button

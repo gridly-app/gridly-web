@@ -1,5 +1,5 @@
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
-import { Modal } from "@/shared/ui";
+import { Button, Feedback, Modal } from "@/shared/ui";
 import type { useOrderDialogs } from "../model/useOrderDialogs";
 import { OrderDetail } from "./OrderDetail";
 import { OrderForm } from "./OrderForm";
@@ -7,6 +7,9 @@ import { OrderForm } from "./OrderForm";
 export interface OrderDetailDialogProps {
 	model: Pick<
 		ReturnType<typeof useOrderDialogs>,
+		| "detailOpen"
+		| "detailError"
+		| "retryDetail"
 		| "selected"
 		| "editing"
 		| "closeOrder"
@@ -29,6 +32,20 @@ export function OrderDetailDialog({ model }: OrderDetailDialogProps) {
 		editSelected,
 	} = model;
 
+	if (model.detailOpen && !selected)
+		return (
+			<Modal title="Карточка заказа" onClose={closeOrder}>
+				{model.detailError ? (
+					<Feedback tone="error">
+						{model.detailError}
+						<Button onClick={model.retryDetail}>Повторить</Button>
+					</Feedback>
+				) : (
+					<Feedback tone="loading">Загружаем заказ…</Feedback>
+				)}
+			</Modal>
+		);
+
 	return (
 		<>
 			{selected && (
@@ -42,7 +59,7 @@ export function OrderDetailDialog({ model }: OrderDetailDialogProps) {
 							kind={selected.kind}
 							order={selected}
 							warehouse={w}
-							pending={pending}
+							pending={pending || fetching}
 							onSave={saveDraft}
 						/>
 					) : (

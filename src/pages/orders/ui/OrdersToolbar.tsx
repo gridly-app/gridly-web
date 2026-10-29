@@ -7,17 +7,24 @@ import type { useOrdersPage } from "../model/useOrdersPage";
 export interface OrdersToolbarProps {
 	model: Pick<
 		ReturnType<typeof useOrdersPage>,
-		"page" | "search" | "setSearch"
+		"page" | "search" | "setSearch" | "canCreate"
 	> &
-		Pick<ReturnType<typeof useOrderDialogs>, "setCreating">;
+		Pick<ReturnType<typeof useOrderDialogs>, "openCreation">;
 }
 
 export function OrdersToolbar({ model }: OrdersToolbarProps) {
-	const { setCreating, page, search, setSearch } = model;
+	const { openCreation, page, search, setSearch } = model;
 
 	return (
 		<>
-			<Button variant="default" onClick={() => setCreating(true)}>
+			<Button
+				disabled={!model.canCreate}
+				title={
+					!model.canCreate ? "Создание недоступно по данным сервера" : undefined
+				}
+				variant="default"
+				onClick={openCreation}
+			>
 				<IconPlus size={18} />
 				{page === "inbound" ? "Новая поставка" : "Новый заказ"}
 			</Button>

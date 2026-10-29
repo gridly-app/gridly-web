@@ -4,8 +4,9 @@ import type { AuthMode, Credentials } from "../../api/repository";
 
 export interface SessionState {
 	user: string;
-	isDemo: boolean;
-	enterDemo: () => Promise<void>;
+	status: "restoring" | "active" | "ended" | "error";
+	error: string;
+	restore: () => Promise<void>;
 	login: (user: string) => void;
 	authenticate: (mode: AuthMode, credentials: Credentials) => Promise<void>;
 	logout: () => Promise<void>;

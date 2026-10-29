@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { workflowPolicySchema } from "./workflowPolicy";
 
 export const cellTypeSchema = z.union([
 	z.literal("empty"),
@@ -17,11 +18,36 @@ export const storageZoneSchema = z.object({
 	categoryId: z.string(),
 });
 
+export const warehouseSummarySchema = z.object({
+	robotCount: z.number().optional(),
+	productCount: z.number().optional(),
+	activeRobots: z.number().optional(),
+	hasWaitingInbound: z.boolean().optional(),
+	orders: z
+		.object({
+			inbound: z.object({
+				total: z.number(),
+				active: z.number(),
+				completed: z.number(),
+			}),
+			outbound: z.object({
+				total: z.number(),
+				active: z.number(),
+				completed: z.number(),
+			}),
+		})
+		.optional(),
+});
+export const selectionSummarySchema = z.object({
+	capacity: z.number(),
+	batchCount: z.number(),
+});
+
 export const cellSchema = z.object({
 	x: z.number(),
 	y: z.number(),
 	type: cellTypeSchema,
-	capacity: z.number(),
+	capacity: z.number().optional(),
 	zone: storageZoneSchema.optional(),
 });
 
@@ -58,6 +84,9 @@ export const robotTaskSchema = z.object({
 });
 
 export const robotSchema = z.object({
+	allowedActions: z.array(z.string()).optional(),
+	blockedReason: z.string().optional(),
+	motionPath: z.array(gridPositionSchema).optional(),
 	currentTask: robotTaskSchema.optional(),
 	returnRoute: z.array(gridPositionSchema).optional(),
 	revision: z.number().optional(),
@@ -73,6 +102,8 @@ export const robotSchema = z.object({
 });
 
 export const categorySchema = z.object({
+	allowedActions: z.array(z.string()).optional(),
+	productCount: z.number().optional(),
 	revision: z.number().optional(),
 	id: z.string(),
 	name: z.string(),
@@ -81,6 +112,7 @@ export const categorySchema = z.object({
 });
 
 export const productSchema = z.object({
+	allowedActions: z.array(z.string()).optional(),
 	revision: z.number().optional(),
 	id: z.string(),
 	name: z.string(),
@@ -93,41 +125,23 @@ export const productSchema = z.object({
 });
 
 export const stockSchema = z.object({
+	availableQuantity: z.number().optional(),
+	writeOffBlockedReason: z.string().optional(),
+	isExpired: z.boolean().optional(),
+	canWriteOff: z.boolean().optional(),
 	revision: z.number().optional(),
 	batchId: z.string().optional(),
 	cellId: z.string().optional(),
 	id: z.string(),
 	product: z.string(),
 	quantity: z.number(),
-	reserved: z.number(),
+	reserved: z.number().optional(),
 	expires: z.string(),
 	cell: z.string(),
 });
 
 export const orderSchema = z.object({
-	allocations: z
-		.array(
-			z.object({
-				lineIndex: z.number().int().nonnegative(),
-				stockId: z.string().optional(),
-				cell: z.string(),
-				quantity: z.number().positive(),
-				delivered: z.number().nonnegative(),
-			}),
-		)
-		.optional(),
-	deliveredTaskIds: z.array(z.string()).optional(),
-	putaways: z
-		.array(
-			z.object({
-				lineIndex: z.number(),
-				cell: z.string(),
-				quantity: z.number(),
-			}),
-		)
-		.optional(),
-	demoAutoStart: z.boolean().optional(),
-	processed: z.array(z.number()).optional(),
+	quantity: z.number().optional(),
 	revision: z.number().optional(),
 	allowedActions: z.array(z.string()).optional(),
 	blockedReason: z.string().optional(),
@@ -157,8 +171,8 @@ export const orderSchema = z.object({
 			writtenOff: z.number().optional(),
 		}),
 	),
-	manual: z.array(z.boolean()),
-	stage: z.number(),
+	manual: workflowPolicySchema,
+	stage: z.number().optional(),
 	created: z.string(),
 	reason: z.string().optional(),
 });
@@ -171,7 +185,9 @@ export const eventSchema = z.object({
 });
 
 export const warehouseSchema = z.object({
-	demoVersion: z.number().optional(),
+	allowedActions: z.array(z.string()).optional(),
+	summary: warehouseSummarySchema.optional(),
+	draftRoutes: z.array(blockRoutePlanSchema).optional(),
 	routePlans: z.array(blockRoutePlanSchema).optional(),
 	revision: z.number().optional(),
 	draftRevision: z.number().optional(),
@@ -197,7 +213,7 @@ export const warehouseSchema = z.object({
 	stock: z.array(stockSchema),
 	orders: z.array(orderSchema),
 	events: z.array(eventSchema),
-	policy: z.array(z.boolean()),
+	policy: workflowPolicySchema,
 	tick: z.string(),
 });
 
@@ -205,6 +221,7 @@ export const warehouseLiveStateSchema = warehouseSchema
 	.pick({ stateVersion: true, tick: true, robots: true, asOf: true })
 	.extend({
 		layoutVersion: z.number(),
+		summary: warehouseSummarySchema.optional(),
 		orders: z.array(orderSchema).optional(),
 		stock: z.array(stockSchema).optional(),
 		events: z.array(eventSchema).optional(),

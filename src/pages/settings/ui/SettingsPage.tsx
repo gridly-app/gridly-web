@@ -1,15 +1,13 @@
 import { useSettingsPage } from "../model/useSettingsPage";
 import { SettingsForm } from "./SettingsForm";
-
 export function SettingsPage() {
-	const { warehouse, saveSettings, pending, savedVersion } = useSettingsPage();
-
+	const { warehouse, execute, pending } = useSettingsPage();
 	return (
 		<SettingsForm
-			key={savedVersion}
+			key={warehouse.id}
 			w={warehouse}
+			execute={execute}
 			pending={pending}
-			save={saveSettings}
 		/>
 	);
 }

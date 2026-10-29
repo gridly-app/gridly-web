@@ -1,4 +1,5 @@
 import { StatusBadge as Badge } from "@/entities/warehouse";
+
 import {
 	Button,
 	Table,
@@ -9,19 +10,20 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui";
-import type { useInventoryPage } from "../model/useInventoryPage";
+import type { InventoryStock } from "../model/inventoryStock";
 import localLayout from "./Layout.module.css";
 
 export interface InventoryTableProps {
-	model: Pick<
-		ReturnType<typeof useInventoryPage>,
-		"visibleStock" | "pending" | "setSelected"
-	>;
+	items: readonly InventoryStock[];
+	pending: boolean;
+	onWriteOff: (stock: InventoryStock) => void;
 }
 
-export function InventoryTable({ model }: InventoryTableProps) {
-	const { visibleStock, pending } = model;
-
+export function InventoryTable({
+	items,
+	pending,
+	onWriteOff,
+}: InventoryTableProps) {
 	return (
 		<Table>
 			<TableHeader>
@@ -35,7 +37,7 @@ export function InventoryTable({ model }: InventoryTableProps) {
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{visibleStock.map((s) => (
+				{items.map((s) => (
 					<TableRow key={s.id}>
 						<TableCell>
 							<b>{s.productName}</b>
@@ -45,9 +47,13 @@ export function InventoryTable({ model }: InventoryTableProps) {
 						</TableCell>
 						<TableCell>{s.zoneName}</TableCell>
 						<TableCell>{s.quantity} шт.</TableCell>
-						<TableCell>{s.reserved} шт.</TableCell>
+						<TableCell>{s.reserved ?? "—"} шт.</TableCell>
 						<TableCell>
-							<Badge value={s.isExpired ? "expired" : "Годно"} />
+							{s.isExpired === undefined ? (
+								"—"
+							) : (
+								<Badge value={s.isExpired ? "expired" : "Годно"} />
+							)}
 							<small className={`${localLayout.block} ${localLayout.muted}`}>
 								{s.expires || "Без ограничения"}
 							</small>
@@ -57,8 +63,14 @@ export function InventoryTable({ model }: InventoryTableProps) {
 								<Button
 									size="sm"
 									variant="ghost"
+									title={
+										s.writeOffBlockedReason ||
+										(!s.canWriteOff
+											? "Списание недоступно по данным сервера"
+											: undefined)
+									}
 									disabled={pending || !s.canWriteOff}
-									onClick={() => model.setSelected(s)}
+									onClick={() => onWriteOff(s)}
 								>
 									Списать
 								</Button>

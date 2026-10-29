@@ -1,3 +1,9 @@
+import type {
+	KeyboardEventHandler,
+	PointerEventHandler,
+	RefObject,
+	WheelEventHandler,
+} from "react";
 import type { Warehouse } from "@/entities/warehouse";
 import type { MapEditor } from "../layout/useMapEditor";
 import { createMapHandlers } from "./createMapHandlers";
@@ -20,6 +26,30 @@ export interface MapCanvasOptions {
 	};
 }
 
+export interface MapCanvasModel {
+	ref: RefObject<HTMLCanvasElement | null>;
+	dynamic: RefObject<HTMLCanvasElement | null>;
+	scroll: RefObject<HTMLDivElement | null>;
+	stack: RefObject<HTMLDivElement | null>;
+	width: number;
+	height: number;
+	size: number;
+	panOffset: { x: number; y: number };
+	panning: boolean;
+	zoom: number;
+	editing: boolean;
+	changeZoom: (delta: number) => void;
+	resetZoom: () => void;
+	handlers: {
+		onWheel: WheelEventHandler<HTMLDivElement>;
+		onPointerDown: PointerEventHandler<HTMLElement>;
+		onPointerMove: PointerEventHandler<HTMLElement>;
+		onPointerUp: PointerEventHandler<HTMLElement>;
+		onPointerCancel: PointerEventHandler<HTMLElement>;
+		onKeyDown: KeyboardEventHandler<HTMLCanvasElement>;
+	};
+}
+
 export function useMapCanvas({
 	warehouse,
 	dark,
@@ -28,7 +58,7 @@ export function useMapCanvas({
 	camera,
 	editing,
 	inspection,
-}: MapCanvasOptions) {
+}: MapCanvasOptions): MapCanvasModel {
 	const { cells } = editor;
 	const { selected } = editor.selection;
 	const { presentation, selectedRobotId, selectRobot } = inspection;

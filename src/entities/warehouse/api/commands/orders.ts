@@ -9,8 +9,8 @@ async function runOrderAction(
 	context: RestCommandContext,
 	orderId: string,
 	action: string,
-	reason?: string,
-	revision?: number,
+	reason?: string | undefined,
+	revision?: number | undefined,
 ) {
 	const { http, base, send } = context;
 	const o = parseResponse(
@@ -21,10 +21,13 @@ async function runOrderAction(
 	if (!o.allowed_actions?.includes(action)) {
 		throw new Error("Действие больше недоступно. Обновите заказ.");
 	}
-	await send(`/orders/${encodeURIComponent(orderId)}/${action}`, {
-		revision: requireRevision(revision ?? o.revision),
-		...(reason ? { reason } : {}),
-	});
+	await send(
+		`/orders/${encodeURIComponent(orderId)}/${encodeURIComponent(action)}`,
+		{
+			revision: requireRevision(revision ?? o.revision),
+			...(reason ? { reason } : {}),
+		},
+	);
 }
 
 export async function saveOrder(
@@ -36,7 +39,7 @@ export async function saveOrder(
 	const existing = warehouse.orders.find((n) => n.id === order.id);
 
 	await send(
-		`/orders${existing ? `/${order.id}` : ""}`,
+		`/orders${existing ? `/${encodeURIComponent(order.id ?? "")}` : ""}`,
 		{
 			...(existing
 				? { revision: requireRevision(order.revision ?? existing.revision) }
@@ -100,7 +103,10 @@ export async function confirmTask(
 	if (!task?.allowed_actions?.includes(command.value.action)) {
 		throw new Error("Подтверждение задачи недоступно");
 	}
-	await send(`/tasks/${task.id}/${command.value.action}`, {
-		revision: command.value.revision ?? task.revision,
-	});
+	await send(
+		`/tasks/${encodeURIComponent(task.id)}/${encodeURIComponent(command.value.action)}`,
+		{
+			revision: command.value.revision ?? task.revision,
+		},
+	);
 }

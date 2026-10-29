@@ -5,16 +5,14 @@ import { SessionContext } from "./sessionContext";
 
 export interface SessionProviderProps {
 	repository: SessionRepository;
-	onLogout: () => void;
 	children: ReactNode;
 }
 
 export function SessionProvider({
 	repository,
-	onLogout,
 	children,
 }: SessionProviderProps) {
-	const session = useSessionState(repository, onLogout);
+	const session = useSessionState(repository);
 
 	return (
 		<SessionContext.Provider value={session}>

@@ -5,7 +5,7 @@ import { legacyMapStateDto, mapStateDto } from "../contracts/contract";
 export async function readMapState(
 	http: HttpClient,
 	path: string,
-	options: { signal?: AbortSignal },
+	options: { signal?: AbortSignal | undefined },
 ) {
 	const state = parseResponse(
 		z.union([mapStateDto, legacyMapStateDto, z.undefined()]),

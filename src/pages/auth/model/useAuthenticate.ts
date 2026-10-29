@@ -1,21 +1,21 @@
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useSession } from "@/shared/auth";
+import { useDemoSession, useSession } from "@/shared/auth";
+import { warehousePath } from "@/shared/config";
 import { errorMessage, formText } from "@/shared/lib";
 
 export function useAuthenticate() {
-	const { authenticate, enterDemo } = useSession();
+	const { authenticate } = useSession();
+	const { controller } = useDemoSession();
 	const navigate = useNavigate();
-	const [searchParams] = useSearchParams();
-	const [register, setRegister] = useState(
-		() => searchParams.get("mode") === "register",
-	);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const register = searchParams.get("mode") === "register";
 	const [show, changePasswordVisibility] = useState(false);
 	const [error, setError] = useState("");
 	const [pending, setPending] = useState(false);
 	const [demoPending, setDemoPending] = useState(false);
 
-	async function submit(e: FormEvent<HTMLFormElement>) {
+	async function submit(e: SubmitEvent<HTMLFormElement>) {
 		e.preventDefault();
 		if (pending || demoPending) {
 			return;
@@ -30,7 +30,7 @@ export function useAuthenticate() {
 				login: formText(data, "login"),
 				password: typeof password === "string" ? password : "",
 			});
-			await navigate("/", { replace: true });
+			navigate("/app", { replace: true });
 		} catch (e) {
 			setError(errorMessage(e));
 		} finally {
@@ -45,8 +45,19 @@ export function useAuthenticate() {
 		setDemoPending(true);
 		setError("");
 		try {
-			await enterDemo();
-			await navigate("/", { replace: true });
+			if (controller.getSnapshot().session) await controller.restore();
+			else await controller.start();
+			const current = controller.getSnapshot();
+			if (current.status === "error") throw new Error(current.error);
+			navigate(
+				current.status === "active" && current.session
+					? warehousePath(
+							"demo",
+							current.session.last_warehouse_id ||
+								current.session.initial_warehouse_id,
+						)
+					: "/demo",
+			);
 		} catch (error) {
 			setError(errorMessage(error));
 		} finally {
@@ -55,7 +66,17 @@ export function useAuthenticate() {
 	}
 
 	function toggleMode() {
-		setRegister((value) => !value);
+		if (pending || demoPending) return;
+		setError("");
+		setSearchParams((current) => {
+			const next = new URLSearchParams(current);
+			if (next.get("mode") === "register") {
+				next.delete("mode");
+			} else {
+				next.set("mode", "register");
+			}
+			return next;
+		});
 	}
 
 	const title = register ? "Создать аккаунт" : "Войти в пространство";

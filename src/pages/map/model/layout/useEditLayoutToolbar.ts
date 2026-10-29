@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Category } from "@/entities/warehouse";
 import { type CellType, cellLabels } from "@/entities/warehouse";
+
 import type { MapEditor } from "./useMapEditor";
 
 export interface EditLayoutToolbarOptions {
@@ -14,7 +15,6 @@ export interface EditLayoutToolbarOptions {
 export function useEditLayoutToolbar({
 	editor,
 	pending,
-	running,
 	palette,
 	categories,
 }: EditLayoutToolbarOptions) {
@@ -62,12 +62,12 @@ export function useEditLayoutToolbar({
 			categoryPages.push([]);
 			usedWidth = 0;
 		}
-		categoryPages[categoryPages.length - 1].push(category);
+		categoryPages.at(-1)?.push(category);
 		usedWidth += itemWidth;
 	}
 	const pages = categoryPages.length;
 	const activePage = Math.min(page, pages - 1);
-	const categoryTools = categoryPages[activePage].map((category) => ({
+	const categoryTools = (categoryPages[activePage] ?? []).map((category) => ({
 		...category,
 		selected: editor.categoryId === category.id,
 	}));
@@ -93,13 +93,5 @@ export function useEditLayoutToolbar({
 		changePage,
 		editor,
 		pending,
-		canPublish:
-			!pending &&
-			!running &&
-			editor.errors !== null &&
-			editor.errors.length === 0,
-		publishTitle: running
-			? "Поставьте склад на паузу"
-			: "Сначала проверьте карту",
 	};
 }

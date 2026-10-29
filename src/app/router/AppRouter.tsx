@@ -1,6 +1,18 @@
 import { lazy } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import {
+	createBrowserRouter,
+	Navigate,
+	Outlet,
+	RouterProvider,
+} from "react-router-dom";
+import { useWarehouses } from "@/entities/warehouse";
 import { useSession } from "@/shared/auth";
+import { warehousePath } from "@/shared/config";
+import { useOnlineStatus } from "@/shared/lib";
+import { readPreference } from "@/shared/lib/browserStorage";
+import { Button, Feedback } from "@/shared/ui";
+import { DemoEntry, DemoRoute } from "./DemoRoute";
+import { RouteBoundary, RouteFailure } from "./RouteBoundary";
 
 const WorkspaceShell = lazy(() =>
 	import("@/app/layout/workspace/ui/WorkspaceShell").then((module) => ({
@@ -54,41 +66,133 @@ const SettingsPage = lazy(() =>
 	})),
 );
 
-export function AppRouter() {
-	const { user } = useSession();
-
-	if (!user) {
+function AuthRoute() {
+	const online = useOnlineStatus();
+	const { error } = useSession();
+	if (!online)
 		return (
-			<Routes>
-				<Route path="/" element={<LandingPage />} />
-				<Route path="*" element={<AuthPage />} />
-			</Routes>
+			<Feedback role="status">
+				Нет соединения. Для входа подключитесь к сети.{error && <p>{error}</p>}
+			</Feedback>
 		);
-	}
+	return <AuthPage />;
+}
 
-	return (
-		<Routes>
-			<Route path="/warehouses/:warehouseId" element={<WorkspaceShell />}>
-				<Route path="map" element={<MapPage />} />
-				<Route path="catalog" element={<CatalogPage />} />
-				<Route path="robots" element={<RobotsPage />} />
-				<Route
-					path="inbound"
-					element={<OrdersPage key="inbound" kind="inbound" />}
-				/>
-				<Route
-					path="outbound"
-					element={<OrdersPage key="outbound" kind="outbound" />}
-				/>
-				<Route path="inventory" element={<InventoryPage />} />
-				<Route path="history" element={<HistoryPage />} />
-				<Route path="settings" element={<SettingsPage />} />
-				<Route path="information" element={<InformationPage />} />
-				<Route path="warehouses" element={<InformationPage />} />
-				<Route index element={<Navigate replace to="map" />} />
-				<Route path="*" element={<Navigate replace to="../map" />} />
-			</Route>
-			<Route path="*" element={<LandingPage />} />
-		</Routes>
-	);
+function WorkspaceRoute() {
+	const { user, status, error, restore } = useSession();
+	if (status === "restoring")
+		return <Feedback tone="loading">Восстанавливаем сессию…</Feedback>;
+	if (status === "error")
+		return (
+			<Feedback tone="error" role="alert">
+				{error}
+				<Button
+					onClick={() => {
+						void restore();
+					}}
+				>
+					Повторить
+				</Button>
+			</Feedback>
+		);
+
+	return user ? <WorkspaceShell /> : <AuthRoute />;
+}
+
+const warehouseChildren = () => [
+	{ path: "map", element: <MapPage /> },
+	{ path: "catalog", element: <CatalogPage /> },
+	{ path: "robots", element: <RobotsPage /> },
+	{ path: "inbound", element: <OrdersPage key="inbound" kind="inbound" /> },
+	{ path: "outbound", element: <OrdersPage key="outbound" kind="outbound" /> },
+	{ path: "inventory", element: <InventoryPage /> },
+	{ path: "history", element: <HistoryPage /> },
+	{ path: "settings", element: <SettingsPage /> },
+	{ path: "information", element: <InformationPage /> },
+	{ path: "warehouses", element: <InformationPage /> },
+	{ index: true, element: <Navigate replace to="map" /> },
+	{ path: "*", element: <Navigate replace to="../map" /> },
+];
+
+const router = createBrowserRouter([
+	{
+		element: (
+			<RouteBoundary>
+				<Outlet />
+			</RouteBoundary>
+		),
+		errorElement: <RouteFailure />,
+		children: [
+			{ path: "/", element: <LandingPage /> },
+			{ path: "/auth", element: <AuthRoute /> },
+			{ path: "/app", element: <AccountEntry /> },
+			{
+				path: "/warehouses/:warehouseId",
+				element: <WorkspaceRoute />,
+				children: warehouseChildren(),
+			},
+			{
+				path: "/demo",
+				element: <DemoRoute />,
+				children: [
+					{ index: true, element: <DemoEntry /> },
+					{
+						path: "warehouses/:warehouseId",
+						element: <WorkspaceShell />,
+						children: warehouseChildren(),
+					},
+					{ path: "*", element: <Navigate replace to="/demo" /> },
+				],
+			},
+			{ path: "*", element: <Navigate replace to="/" /> },
+		],
+	},
+]);
+
+function WorkspaceEntry() {
+	const query = useWarehouses();
+	const last = readPreference("gridly.last");
+	if (query.isPending)
+		return <Feedback tone="loading">Загружаем склады…</Feedback>;
+	if (query.error)
+		return (
+			<Feedback tone="error" role="alert">
+				{query.error.message}
+				<Button
+					onClick={() => {
+						void query.refetch();
+					}}
+				>
+					Повторить
+				</Button>
+			</Feedback>
+		);
+	const id =
+		query.data?.find((warehouse) => warehouse.id === last)?.id ??
+		query.data?.[0]?.id ??
+		"new";
+	return <Navigate replace to={warehousePath("standard", id)} />;
+}
+
+function AccountEntry() {
+	const { user, status, error, restore } = useSession();
+	if (status === "restoring")
+		return <Feedback tone="loading">Восстанавливаем сессию…</Feedback>;
+	if (status === "error")
+		return (
+			<Feedback tone="error" role="alert">
+				{error}
+				<Button
+					onClick={() => {
+						void restore();
+					}}
+				>
+					Повторить
+				</Button>
+			</Feedback>
+		);
+	return user ? <WorkspaceEntry /> : <AuthRoute />;
+}
+export function AppRouter() {
+	return <RouterProvider router={router} />;
 }

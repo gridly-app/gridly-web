@@ -18,20 +18,10 @@ export function useOrdersPage({
 	const [search, setSearch] = useState("");
 	const searchQuery = search.toLowerCase();
 	const orders = warehouse.orders.filter((order) => order.kind === page);
-	const statistics = {
-		total: orders.length,
-		active: orders.filter((order) =>
-			[
-				"running",
-				"waiting",
-				"in_progress",
-				"awaiting_load",
-				"aborting",
-			].includes(order.status),
-		).length,
-		completed: orders.filter((order) =>
-			["received", "received_with_losses", "shipped"].includes(order.status),
-		).length,
+	const statistics = warehouse.summary?.orders?.[page] || {
+		total: undefined,
+		active: undefined,
+		completed: undefined,
 	};
 	const visibleOrders = orders
 		.filter((order) =>
@@ -39,12 +29,10 @@ export function useOrdersPage({
 		)
 		.map((order) => ({
 			...order,
-			quantity: order.lines.reduce((total, line) => total + line.quantity, 0),
-			canConfirm: order.status === "waiting",
+			quantity: order.quantity,
+			canConfirm: !!order.allowedActions?.includes("confirm"),
 			createdLabel: new Date(order.created).toLocaleDateString("ru"),
-			canStart: order.allowedActions
-				? order.allowedActions.includes("start")
-				: order.status === "draft",
+			canStart: !!order.allowedActions?.includes("start"),
 		}));
 
 	function startOrder(orderId: string) {
@@ -52,10 +40,11 @@ export function useOrdersPage({
 	}
 
 	function confirmOrder(orderId: string) {
-		return command("confirm", orderId);
+		return command("orderAction", { id: orderId, action: "confirm" });
 	}
 
 	return {
+		canCreate: !!warehouse.allowedActions?.includes(`create-${page}-order`),
 		empty: orders.length === 0,
 		visibleOrders,
 		statistics,

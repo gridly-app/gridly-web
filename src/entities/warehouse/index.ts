@@ -2,52 +2,50 @@ export { WarehouseRepositoryProvider } from "./api/context/context";
 export {
 	useCreateWarehouse,
 	useOrder,
+	useRouteProposal,
+	useSelectionSummary,
 	useWarehouse,
 	useWarehouseCommand,
 	useWarehouseLiveSelection,
+	useWarehouseResources,
 	useWarehouses,
 } from "./api/queries/queries";
 export { warehouseKeys } from "./api/queries/queryKeys";
-export type { WarehouseRepository } from "./api/repositories/repository";
-export { HttpWarehouseRepository } from "./api/repositories/repository";
+export type { WarehouseResource } from "./api/queries/resources";
+export type {
+	MutationOptions,
+	MutationReceipt,
+	WarehouseRepository,
+} from "./api/repositories/repository";
 export { RestWarehouseRepository } from "./api/repositories/restRepository";
 export { warehouseCommandSchema } from "./model/commands/commandSchemas";
 export type {
+	CategoryInput,
 	CommandExecutor,
 	CommandHandler,
+	CommandIntent,
 	CommandPayloads,
 	CommandResult,
+	OrderInput,
+	ProductInput,
 	RobotInput,
 	WarehouseCommand,
+	WarehouseInput,
 	WarehouseSettings,
 } from "./model/commands/commands";
 export {
 	connectedBlock,
 	defaultBlockRoutes,
-	optimizeWarehouseRoutes,
 	routeThrough,
-	validateRoutePlans,
 } from "./model/layout/blockRoutes";
 export {
 	createWarehousePathfinder,
 	findWarehousePath,
 } from "./model/layout/findWarehousePath";
-export { resizeWarehouse } from "./model/layout/resizeWarehouse";
-export { validateMap } from "./model/layout/validateMap";
 export {
-	assignZone,
 	cellKey,
-	migrateZones,
-	storageCells,
 	toggleZoneCell,
 } from "./model/layout/zones";
-export {
-	cancelOrder,
-	commitTaskDelivery,
-	completeOrder,
-	occupiedStorageVolume,
-	startOrder,
-} from "./model/orders/orderLifecycle";
 export {
 	selectHistoryLive,
 	selectInventoryLive,
@@ -56,14 +54,13 @@ export {
 	selectRobotsLive,
 } from "./model/scope/liveSelectors";
 export { WarehouseScopeProvider } from "./model/scope/WarehouseScopeProvider";
+export type { WarehouseScope } from "./model/scope/warehouseScope";
 export {
 	useLiveWarehouseScope,
 	useWarehouseCommands,
 	useWarehouseScope,
 	useWarehouseSnapshot,
 } from "./model/scope/warehouseScope";
-export { createWarehouse } from "./model/warehouse/createWarehouse";
-export { expired } from "./model/warehouse/expired";
 export type {
 	BlockRoutePlan,
 	Category,
@@ -85,6 +82,14 @@ export {
 	warehouseLiveStateSchema,
 	warehouseSchema,
 } from "./model/warehouse/schemas";
+export type { WorkflowPolicy } from "./model/warehouse/workflowPolicy";
+export {
+	emptyWorkflowPolicy,
+	legacyWorkflowPolicy,
+	storedWorkflowPolicySchema,
+	workflowKeys,
+	workflowPolicySchema,
+} from "./model/warehouse/workflowPolicy";
 export { StatusBadge } from "./ui/StatusBadge";
 export {
 	cellColors,

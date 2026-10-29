@@ -16,7 +16,7 @@ export function OrderConfirmations({ model }: OrderConfirmationsProps) {
 
 	return (
 		<>
-			<p className={localLayout["section-caption"]}>РУЧНЫЕ ПОДТВЕРЖДЕНИЯ</p>
+			<p className={localLayout.sectionCaption}>РУЧНЫЕ ПОДТВЕРЖДЕНИЯ</p>
 			<div className={`${localLayout.row} ${localLayout.wrap}`}>
 				{confirmations.map((confirmation) => (
 					<CheckLabel
@@ -27,7 +27,7 @@ export function OrderConfirmations({ model }: OrderConfirmationsProps) {
 							id={`${controlId}-${confirmation.index}`}
 							checked={confirmation.checked}
 							onCheckedChange={(checked) =>
-								model.updateManual(confirmation.index, checked)
+								model.updateManual(confirmation.key, checked)
 							}
 						/>
 						{confirmation.label}

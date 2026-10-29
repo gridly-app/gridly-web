@@ -5,7 +5,7 @@ import type {
 
 export function isApplicableLiveState(
 	snapshot: Warehouse,
-	live?: WarehouseLiveState,
+	live?: WarehouseLiveState | undefined,
 ): live is WarehouseLiveState {
 	return (
 		!!live?.stateVersion &&
@@ -17,7 +17,7 @@ export function isApplicableLiveState(
 
 export function mergeLiveState(
 	snapshot: Warehouse,
-	live?: WarehouseLiveState,
+	live?: WarehouseLiveState | undefined,
 ): Warehouse {
 	if (!isApplicableLiveState(snapshot, live)) return snapshot;
 	const positions = new Map(live.robots.map((robot) => [robot.id, robot]));
@@ -25,6 +25,10 @@ export function mergeLiveState(
 	return {
 		...snapshot,
 		...live,
+		running: live.running ?? snapshot.running,
+		orders: live.orders ?? snapshot.orders,
+		stock: live.stock ?? snapshot.stock,
+		events: live.events ?? snapshot.events,
 		robots: snapshot.robots.map((robot) => {
 			const position = positions.get(robot.id);
 
@@ -34,6 +38,7 @@ export function mergeLiveState(
 						x: position.x,
 						y: position.y,
 						status: position.status,
+						motionPath: position.motionPath,
 						currentTask: position.currentTask,
 						returnRoute: position.returnRoute,
 					}

@@ -1,12 +1,12 @@
 import { IconFocus2, IconZoomIn, IconZoomOut } from "@tabler/icons-react";
 import { Button } from "@/shared/ui";
-import type { useMapCanvas } from "../../model/map/useMapCanvas";
+import type { MapCanvasModel } from "../../model/map/useMapCanvas";
 import mapStyles from "./WarehouseMap.module.css";
 
 export interface MapCanvasProps {
-	model: ReturnType<typeof useMapCanvas>;
+	model: MapCanvasModel;
 	viewing: boolean;
-	editorMode?: "construction" | "routes";
+	editorMode?: ("construction" | "routes") | undefined;
 }
 
 export function MapCanvas({ model, viewing, editorMode }: MapCanvasProps) {
@@ -32,7 +32,7 @@ export function MapCanvas({ model, viewing, editorMode }: MapCanvasProps) {
 				data-editor={editorMode}
 				ref={scroll}
 				data-map-scroll=""
-				className={`${mapStyles.mapScroll} ${model.panning ? mapStyles["is-panning"] : ""}`}
+				className={`${mapStyles.mapScroll} ${model.panning ? mapStyles.isPanning : ""}`}
 				onWheel={handlers.onWheel}
 				onPointerDown={handlers.onPointerDown}
 				onPointerMove={handlers.onPointerMove}

@@ -33,11 +33,11 @@ export function InformationPage() {
 				</div>
 				<div>
 					<dt>Роботы</dt>
-					<dd>{warehouse.robots.length}</dd>
+					<dd>{warehouse.summary?.robotCount ?? "—"}</dd>
 				</div>
 				<div>
 					<dt>Товары</dt>
-					<dd>{warehouse.products.length}</dd>
+					<dd>{warehouse.summary?.productCount ?? "—"}</dd>
 				</div>
 			</dl>
 			<Button variant="ghost" onClick={openSettings}>

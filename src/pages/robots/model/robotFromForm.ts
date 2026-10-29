@@ -1,7 +1,10 @@
 import type { Robot, RobotInput } from "@/entities/warehouse";
-import { formNumber, formText, id } from "@/shared/lib";
+import { formNumber, formText } from "@/shared/lib";
 
-export function robotFromForm(data: FormData, robot?: Robot): RobotInput {
+export function robotFromForm(
+	data: FormData,
+	robot?: Robot | undefined,
+): RobotInput {
 	const roles = data.getAll("roles").map(String);
 	const speed = formNumber(data, "speed");
 	const duration = formNumber(data, "duration");
@@ -10,12 +13,12 @@ export function robotFromForm(data: FormData, robot?: Robot): RobotInput {
 	if (!roles.length) {
 		throw new Error("Выберите хотя бы одну роль");
 	}
-	if (!Number.isInteger(speed) || speed < 1 || speed > 5) {
-		throw new Error("Скорость должна быть целым числом от 1 до 5");
+	if (!Number.isInteger(speed) || speed < 1) {
+		throw new Error("Скорость должна быть целым положительным числом");
 	}
-	if (!Number.isInteger(duration) || duration < 1 || duration > 20) {
+	if (!Number.isInteger(duration) || duration < 1) {
 		throw new Error(
-			"Длительность действия должна быть целым числом от 1 до 20",
+			"Длительность действия должна быть целым положительным числом",
 		);
 	}
 	if (
@@ -30,14 +33,11 @@ export function robotFromForm(data: FormData, robot?: Robot): RobotInput {
 
 	return {
 		revision: robot?.revision,
-		id: robot?.id || id(),
+		id: robot?.id,
 		name: formText(data, "name"),
 		roles,
-		x: robot?.x,
-		y: robot?.y,
 		speed,
 		duration,
 		capacity,
-		status: robot?.status || "idle",
 	};
 }

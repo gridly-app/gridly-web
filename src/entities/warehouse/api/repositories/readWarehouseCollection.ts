@@ -5,7 +5,7 @@ export async function readWarehouseCollection<T>(
 	http: HttpClient,
 	path: string,
 	schema: z.ZodType<T>,
-	signal?: AbortSignal,
+	signal?: AbortSignal | undefined,
 ): Promise<T[]> {
 	const items: T[] = [];
 

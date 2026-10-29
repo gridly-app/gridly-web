@@ -1,3 +1,4 @@
+import { ApiError } from "@/shared/api";
 import type {
 	Category,
 	Cell,
@@ -21,6 +22,12 @@ import type {
 } from "../contracts/contract";
 import { policyFromDto, wireKinds } from "../contracts/contractMappers";
 
+function requireValue<T>(value: T | undefined, field: string): T {
+	if (value === undefined)
+		throw new ApiError(`Сервер не вернул ${field}`, 502, "INVALID_RESPONSE");
+	return value;
+}
+
 export function cellsFromDto(layout: LayoutDto): Cell[] {
 	const cells = new Map(
 		(layout.cells || []).map((cell) => [`${cell.x},${cell.y}`, cell]),
@@ -39,7 +46,8 @@ export function cellsFromDto(layout: LayoutDto): Cell[] {
 						(kind) => wireKinds[kind] === cell.kind,
 					) || "empty"
 				: "empty",
-			capacity: cell ? Number(cell.capacity_volume) : 20,
+			capacity: cell ? Number(cell.capacity_volume) : undefined,
+			zone: cell?.zone,
 		};
 	});
 }
@@ -47,6 +55,8 @@ export function cellsFromDto(layout: LayoutDto): Cell[] {
 export function warehouseFromDto(d: WarehouseDto): Warehouse {
 	return {
 		id: d.id,
+		allowedActions: d.allowed_actions,
+		summary: d.summary,
 		name: d.name,
 		location: "",
 		width: d.width,
@@ -63,7 +73,12 @@ export function warehouseFromDto(d: WarehouseDto): Warehouse {
 		tick: String(d.tick),
 		policy: d.workflow_policy
 			? policyFromDto(d.workflow_policy)
-			: [false, false, false, false],
+			: {
+					confirmUnload: false,
+					confirmPick: false,
+					confirmPutaway: false,
+					confirmLoad: false,
+				},
 		policyRevision: d.workflow_policy?.revision,
 		cells: [],
 		draft: null,
@@ -80,7 +95,8 @@ export function orderFromDto(o: OrderDto): Order {
 	return {
 		id: o.id,
 		revision: o.revision,
-		number: o.number || o.id.slice(0, 8).toUpperCase(),
+		number: o.number ?? "—",
+		quantity: o.quantity,
 		kind: o.kind,
 		party: o.counterparty_text,
 		status: o.status,
@@ -89,12 +105,7 @@ export function orderFromDto(o: OrderDto): Order {
 		allowedActions: o.allowed_actions,
 		blockedReason: o.blocked_reason,
 		tasks: o.tasks,
-		stage:
-			o.status === "draft"
-				? 0
-				: ["received", "received_with_losses", "shipped"].includes(o.status)
-					? 3
-					: 2,
+		stage: o.stage,
 		lines: (o.lines || []).map((l) => ({
 			id: l.id,
 			product: l.product_id,
@@ -108,16 +119,21 @@ export function orderFromDto(o: OrderDto): Order {
 
 export function robotFromDto(
 	r: RobotDto,
-	position?: MapStateDto["robots"][number],
+	position?: MapStateDto["robots"][number] | undefined,
 ): Robot {
 	return {
 		id: r.id,
+		allowedActions: r.allowed_actions,
+		blockedReason: r.blocked_reason,
+		currentTask: r.current_task,
+		returnRoute: r.return_route,
+		motionPath: position?.motion_path ?? r.motion_path,
 		revision: r.revision,
 		name: r.name,
-		roles: r.roles || r.specializations || [],
+		roles: requireValue(r.roles ?? r.specializations, "roles"),
 		x: position?.x ?? r.x,
 		y: position?.y ?? r.y,
-		speed: r.speed ?? r.speed_cells_per_tick ?? 1,
+		speed: requireValue(r.speed ?? r.speed_cells_per_tick, "speed"),
 		duration: r.action_ticks,
 		capacity: String(r.capacity_volume),
 		status: position?.status || r.status,
@@ -127,6 +143,8 @@ export function robotFromDto(
 export function categoryFromDto(c: CategoryDto): Category {
 	return {
 		id: c.id,
+		allowedActions: c.allowed_actions,
+		productCount: c.product_count,
 		revision: c.revision,
 		name: c.name,
 		cold: c.storage_kind === "cold",
@@ -137,26 +155,39 @@ export function categoryFromDto(c: CategoryDto): Category {
 export function productFromDto(p: ProductDto): Product {
 	return {
 		id: p.id,
+		allowedActions: p.allowed_actions,
 		revision: p.revision,
 		name: p.name,
 		sku: p.sku,
 		category: p.category_id,
-		volume: String(p.unit_volume ?? p.volume_per_unit ?? 0),
+		volume: String(
+			requireValue(p.unit_volume ?? p.volume_per_unit, "unit_volume"),
+		),
 		price: p.price === null ? "" : String(p.price),
-		shelf: p.default_shelf_life_days ?? p.standard_shelf_life_days ?? 0,
+		shelf:
+			requireValue(
+				p.default_shelf_life_days !== undefined
+					? p.default_shelf_life_days
+					: p.standard_shelf_life_days,
+				"default_shelf_life_days",
+			) ?? 0,
 		archived: p.is_archived || !!p.archived_at,
 	};
 }
 
 export function stockFromDto(s: StockDto): Stock {
 	return {
+		availableQuantity: s.available_quantity,
+		writeOffBlockedReason: s.write_off_blocked_reason,
+		isExpired: s.is_expired,
+		canWriteOff: s.can_write_off,
 		id: s.id,
 		revision: s.revision,
 		batchId: s.batch_id,
 		cellId: s.cell_id,
 		product: s.product_id,
 		quantity: s.quantity,
-		reserved: s.reserved_quantity ?? 0,
+		reserved: s.reserved_quantity,
 		expires: s.expires_on || "",
 		cell: s.robot_id ? `robot:${s.robot_id}` : `${s.cell_x},${s.cell_y}`,
 	};

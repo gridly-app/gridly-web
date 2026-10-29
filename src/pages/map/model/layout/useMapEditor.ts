@@ -1,237 +1,238 @@
-import { useState } from "react";
+import { useReducer, useRef, useState } from "react";
 import {
-	assignZone,
+	type BlockRoutePlan,
 	type Category,
 	type Cell,
 	type CellType,
 	type CommandExecutor,
 	cellKey,
-	validateMap,
 	type Warehouse,
 } from "@/entities/warehouse";
 import { errorMessage } from "@/shared/lib";
+import { editorReducer, initialEditorState } from "./editorState";
 import { useCellSelection } from "./useCellSelection";
 import { useEditHistory } from "./useEditHistory";
-
 export type MapEditor = ReturnType<typeof useMapEditor>;
-
+type Draft = {
+	categories: Category[];
+	cells: Cell[];
+	routes: BlockRoutePlan[];
+	baseVersion: number;
+	draftRevision?: number | undefined;
+};
 export function useMapEditor(warehouse: Warehouse, command: CommandExecutor) {
-	const [editedCells, setCells] = useState(warehouse.draft || warehouse.cells);
-	const [mode, setMode] = useState<"construction" | "routes">("construction");
-	const [editing, setEditing] = useState(false);
-	const [categoryId, setCategoryId] = useState<string | null>(null);
+	const initial = (): Draft =>
+		structuredClone({
+			categories: warehouse.categories,
+			cells: warehouse.draft ?? warehouse.cells,
+			routes: warehouse.draftRoutes ?? warehouse.routePlans ?? [],
+			baseVersion: warehouse.version,
+			draftRevision: warehouse.draftRevision,
+		});
+	const [draft, setDraft] = useState(initial);
+	const [state, dispatch] = useReducer(editorReducer, initialEditorState);
+	const editing = state.view === "editing";
+	const mode = state.mode;
+	const saving = state.operation === "saving";
+	const resetting = state.operation === "discarding";
+	const optimizing = state.operation === "optimizing";
 	const [brush, setBrush] = useState<CellType>("aisle");
+	const [categoryId, setCategoryId] = useState<string | null>(null);
 	const [errors, setErrors] = useState<string[] | null>(null);
 	const [discardOpen, setDiscardOpen] = useState(false);
-	const [resetting, setResetting] = useState(false);
+
+	const inFlight = useRef(false);
 	const [dirty, setDirty] = useState(false);
-	const history = useEditHistory<Cell[]>();
-	const cells = editing ? editedCells : warehouse.draft || warehouse.cells;
+	const history = useEditHistory<Draft>();
+	const cells = editing ? draft.cells : warehouse.cells;
+	const routes = editing ? draft.routes : (warehouse.routePlans ?? []);
 	const selection = useCellSelection({ cells, editing, mode });
-	const {
-		selected,
-		selectionKeys,
-		setSelected,
-		cancelSelection,
-		clearSelection,
-	} = selection;
-
-	function applyCells(next: Cell[], dirty = true) {
-		history.record(cells);
-		setCells(next);
-		setDirty(dirty);
+	function apply(next: Draft) {
+		if (inFlight.current) return;
+		history.record(draft);
+		setDraft(next);
+		setDirty(true);
 		setErrors(null);
-		setSelected(
-			next.find((cell) => selected && cellKey(cell) === cellKey(selected)) ||
-				null,
-		);
 	}
-
+	function applyCells(next: Cell[]) {
+		apply({ ...draft, cells: next });
+	}
+	function addCategory(category: Category) {
+		apply({ ...draft, categories: [...draft.categories, category] });
+	}
+	function setRoutes(next: BlockRoutePlan[]) {
+		apply({ ...draft, routes: next });
+	}
 	function applyType(type: CellType) {
+		if (inFlight.current) return;
 		setBrush(type);
-		if (!editing || !selectionKeys.length) {
-			return;
-		}
-		const keys = new Set(selectionKeys);
-		const next = cells.map((cell) =>
-			keys.has(cellKey(cell))
-				? { ...cell, type, zone: cell.type === type ? cell.zone : undefined }
-				: cell,
+		if (!editing || !selection.selectionKeys.length) return;
+		const keys = new Set(selection.selectionKeys);
+		applyCells(
+			cells.map((c) =>
+				keys.has(cellKey(c))
+					? { ...c, type, zone: c.type === type ? c.zone : undefined }
+					: c,
+			),
 		);
-
-		applyCells(next);
 	}
-
-	async function persist(task: () => Promise<void>) {
-		try {
-			await task();
-			setErrors(null);
-		} catch (error) {
-			setErrors([errorMessage(error)]);
-		}
-	}
-
-	function cancelDiscard() {
-		if (!resetting) {
-			setDiscardOpen(false);
-		}
-	}
-
-	function discard() {
-		setDiscardOpen(true);
-	}
-
-	function startMode(next: "construction" | "routes") {
-		if (dirty && next !== mode) {
-			setErrors(["Сохраните изменения перед переключением режима"]);
-
-			return;
-		}
-		if (!editing) setCells(warehouse.draft || warehouse.cells);
-		setMode(next);
-		setEditing(true);
-		clearSelection();
-	}
-
-	function toggleEditor() {
-		if (dirty) {
-			setErrors(["Сохраните или сбросьте изменения перед закрытием редактора"]);
-
-			return;
-		}
-		cancelSelection();
-		clearSelection();
-		setEditing(!editing);
-		setCells(warehouse.draft || warehouse.cells);
-	}
-
 	function applyCategory(category: Category) {
+		if (inFlight.current) return;
 		setCategoryId(category.id);
 		setBrush(category.cold ? "cold" : "storage");
-		if (!selectionKeys.length) {
-			return;
-		}
-		try {
-			const next = assignZone(
-				cells.map((cell) =>
-					selectionKeys.includes(cellKey(cell))
-						? {
-								...cell,
-								type: category.cold ? ("cold" as const) : ("storage" as const),
-							}
-						: cell,
-				),
-				selectionKeys,
-				{
-					id: `zone-${selectionKeys.slice().sort()[0]}`,
-					name: `${category.name} · ${selectionKeys[0]}`,
-					categoryId: category.id,
-				},
-				warehouse.categories,
-			);
-
-			applyCells(next);
-		} catch (error) {
-			setErrors([errorMessage(error)]);
-		}
+		const keys = new Set(selection.selectionKeys);
+		if (!keys.size) return;
+		const zone = {
+			id: `draft-zone-${[...keys].sort()[0]}`,
+			name: `${category.name} · ${[...keys][0]}`,
+			categoryId: category.id,
+		};
+		applyCells(
+			cells.map((c) =>
+				keys.has(cellKey(c))
+					? { ...c, type: category.cold ? "cold" : "storage", zone }
+					: c,
+			),
+		);
 	}
-
+	function startMode(next: typeof mode) {
+		if (inFlight.current) return;
+		if (!editing) {
+			setDraft(initial());
+			history.reset();
+			setDirty(false);
+		}
+		dispatch({ type: "open", mode: next });
+		selection.clearSelection();
+	}
 	function closeEditor() {
+		if (inFlight.current) return;
 		if (dirty) {
-			setErrors(["Сохраните или сбросьте изменения перед закрытием редактора"]);
-
+			setErrors(["Сохраните или отмените изменения перед закрытием редактора"]);
 			return;
 		}
-		setEditing(false);
-		cancelSelection();
-		clearSelection();
+		dispatch({ type: "close" });
+		selection.clearSelection();
 	}
-
 	function undo() {
-		const previous = history.undo(cells);
-
-		if (previous) {
-			setCells(previous);
-			setDirty(true);
-			setErrors(null);
-		}
-	}
-
-	function redo() {
-		const next = history.redo(cells);
-
+		if (inFlight.current) return;
+		const next = history.undo(draft);
 		if (next) {
-			setCells(next);
+			setDraft(next);
 			setDirty(true);
 			setErrors(null);
 		}
 	}
-
-	function validate() {
-		setErrors(validateMap(cells, warehouse.width, warehouse.height));
+	function redo() {
+		if (inFlight.current) return;
+		const next = history.redo(draft);
+		if (next) {
+			setDraft(next);
+			setDirty(true);
+			setErrors(null);
+		}
 	}
-
-	function save() {
-		return persist(async () => {
-			await command("draft", cells);
-			setDirty(false);
-		});
-	}
-
-	function publish() {
-		return persist(async () => {
-			await command("publish", cells);
-			setDirty(false);
-			setEditing(false);
-		});
-	}
-
-	async function confirmDiscard() {
-		setResetting(true);
+	async function save() {
+		if (inFlight.current) return;
+		inFlight.current = true;
+		dispatch({ type: "operation", operation: "saving" });
+		setErrors(null);
 		try {
-			await command("discard");
-			setCells(warehouse.cells);
+			await command("saveMap", draft);
 			setDirty(false);
 			history.reset();
-			clearSelection();
-			setErrors(null);
-			setDiscardOpen(false);
-		} catch (error) {
-			setErrors([errorMessage(error)]);
+			dispatch({ type: "operation", operation: "idle" });
+			dispatch({ type: "close" });
+			selection.clearSelection();
+		} catch (e) {
+			setErrors([errorMessage(e)]);
 		} finally {
-			setResetting(false);
+			inFlight.current = false;
+			dispatch({ type: "operation", operation: "idle" });
 		}
 	}
-
-	function zoneSaved(next: Cell[]) {
-		applyCells(next, false);
+	async function optimizeRoutes(
+		propose: (cells: Cell[]) => Promise<BlockRoutePlan[]>,
+	) {
+		if (inFlight.current || !editing) return;
+		inFlight.current = true;
+		dispatch({ type: "operation", operation: "optimizing" });
+		try {
+			const next = await propose(draft.cells);
+			history.record(draft);
+			setDraft({ ...draft, routes: next });
+			setDirty(true);
+			setErrors(null);
+		} finally {
+			inFlight.current = false;
+			dispatch({ type: "operation", operation: "idle" });
+		}
 	}
-
+	async function confirmDiscard() {
+		if (inFlight.current) return;
+		inFlight.current = true;
+		dispatch({ type: "operation", operation: "discarding" });
+		try {
+			if (draft.draftRevision !== undefined) await command("discard");
+			setDraft(
+				structuredClone({
+					categories: warehouse.categories,
+					cells: warehouse.cells,
+					routes: warehouse.routePlans ?? [],
+					baseVersion: warehouse.version,
+				}),
+			);
+			setDirty(false);
+			history.reset();
+			setErrors(null);
+			setDiscardOpen(false);
+			selection.clearSelection();
+		} catch (e) {
+			setErrors([errorMessage(e)]);
+		} finally {
+			inFlight.current = false;
+			dispatch({ type: "operation", operation: "idle" });
+		}
+	}
 	return {
 		selection,
 		mode,
-		resetting,
-		discardOpen,
-		cancelDiscard,
-		discard,
-		startMode,
 		cells,
+		routes,
+		categories: editing ? draft.categories : warehouse.categories,
+		addCategory,
 		editing,
 		brush,
 		errors,
-		toggleEditor,
-		applyType,
+		dirty,
+		saving,
+		optimizing,
+		busy: saving || resetting || optimizing,
+		optimizeRoutes,
 		categoryId,
+		resetting,
+		discardOpen,
+		setRoutes,
+		applyType,
 		applyCategory,
+		startMode,
 		closeEditor,
-		canUndo: history.canUndo,
-		canRedo: history.canRedo,
+		toggleEditor: () => (editing ? closeEditor() : startMode("construction")),
 		undo,
 		redo,
-		validate,
+		canUndo: history.canUndo && !saving && !resetting && !optimizing,
+		canRedo: history.canRedo && !saving && !resetting && !optimizing,
 		save,
-		publish,
+		zoneSaved: applyCells,
+		discard: () => {
+			if (!inFlight.current) setDiscardOpen(true);
+		},
+		cancelDiscard: () => {
+			if (!resetting) setDiscardOpen(false);
+		},
 		confirmDiscard,
-		zoneSaved,
+		canSave: !!warehouse.allowedActions?.includes("save-map"),
+		saveUnavailableReason:
+			"Сохранение карты недоступно: сервер не предоставляет эту возможность",
 	};
 }

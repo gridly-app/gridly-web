@@ -76,9 +76,18 @@ export default function ProfileMenu(props: ProfileMenuProps) {
 						</MenuItem>
 					</MenuPopup>
 				</MenuSubmenu>
+				{props.isDemo && (
+					<>
+						<MenuItem onClick={props.restartDemo}>Начать заново</MenuItem>
+						<MenuItem onClick={props.landing}>На лендинг</MenuItem>
+						{props.user && (
+							<MenuItem onClick={props.account}>Мои склады</MenuItem>
+						)}
+					</>
+				)}
 				<MenuItem onClick={logout}>
 					<IconLogout size={18} />
-					<span>{props.isDemo ? "Выйти из демо-режима" : "Выйти"}</span>
+					<span>{props.isDemo ? "Выйти из демо" : "Выйти"}</span>
 				</MenuItem>
 			</MenuPopup>
 		</Menu>

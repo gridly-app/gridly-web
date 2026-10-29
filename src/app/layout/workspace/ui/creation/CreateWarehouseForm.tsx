@@ -1,10 +1,10 @@
-import type { Warehouse } from "@/entities/warehouse";
+import type { WarehouseInput } from "@/entities/warehouse";
 import { Field, FormGrid, FormShell, Input } from "@/shared/ui";
 import { warehouseFromForm } from "../../model/creation/warehouseFromForm";
 import localLayout from "./Layout.module.css";
 
 export interface CreateWarehouseFormProps {
-	onSave: (warehouse: Warehouse) => Promise<void>;
+	onSave: (warehouse: WarehouseInput) => Promise<void>;
 	pending: boolean;
 }
 

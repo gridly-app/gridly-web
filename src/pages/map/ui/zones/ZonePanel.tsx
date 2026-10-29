@@ -6,7 +6,10 @@ import { ZoneCategoryForm } from "./ZoneCategoryForm";
 import { ZoneFields } from "./ZoneFields";
 import { ZoneSummary } from "./ZoneSummary";
 
-export type ZonePanelProps = ZonePanelOptions & { showSummary?: boolean };
+export type ZonePanelProps = ZonePanelOptions & {
+	showSummary?: boolean | undefined;
+	disabled?: boolean | undefined;
+};
 
 export default function ZonePanel(props: ZonePanelProps) {
 	const model = useZonePanel(props);
@@ -19,18 +22,23 @@ export default function ZonePanel(props: ZonePanelProps) {
 			}}
 		>
 			{props.showSummary !== false && <ZoneSummary model={model} />}
-			<ZoneFields model={model} />
-			<ZoneCategoryForm model={model} />
-			<ErrorNotice message={model.error} />
-			<Button
-				className={`${mapStyles.zoneButton} ${mapStyles.zoneSubmit}`}
-				variant="default"
-				type="submit"
-				fullWidth
-				disabled={model.pending}
+			<fieldset
+				className={mapStyles.zoneFields}
+				disabled={props.disabled || model.pending}
 			>
-				{model.pending ? "Сохраняем…" : "Сохранить зону"}
-			</Button>
+				<ZoneFields model={model} />
+				<ZoneCategoryForm model={model} />
+				<ErrorNotice message={model.error} />
+				<Button
+					className={`${mapStyles.zoneButton} ${mapStyles.zoneSubmit}`}
+					variant="default"
+					type="submit"
+					fullWidth
+					disabled={props.disabled || model.pending}
+				>
+					{model.pending ? "Сохраняем…" : "Применить к черновику"}
+				</Button>
+			</fieldset>
 		</Form>
 	);
 }

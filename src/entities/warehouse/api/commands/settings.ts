@@ -23,25 +23,30 @@ export async function saveSettings(
 ): Promise<void> {
 	const { warehouse, send } = context;
 
-	if (command.value.timezone !== warehouse.timezone) {
-		throw new Error(
-			"API не определяет изменение часового пояса существующего склада",
+	if (command.value.section === "name") {
+		if (command.value.name === warehouse.name) return;
+		await send(
+			"",
+			{
+				revision: requireRevision(command.value.revision ?? warehouse.revision),
+				name: command.value.name,
+			},
+			"PATCH",
+		);
+	} else {
+		if (
+			JSON.stringify(command.value.policy) === JSON.stringify(warehouse.policy)
+		)
+			return;
+		await send(
+			"/workflow-policy",
+			{
+				revision: requireRevision(
+					command.value.policyRevision ?? warehouse.policyRevision,
+				),
+				...policyToDto(command.value.policy),
+			},
+			"PATCH",
 		);
 	}
-	await send(
-		"",
-		{
-			revision: requireRevision(command.value.revision ?? warehouse.revision),
-			name: command.value.name,
-		},
-		"PATCH",
-	);
-	await send(
-		"/workflow-policy",
-		{
-			revision: command.value.policyRevision ?? warehouse.policyRevision,
-			...policyToDto(command.value.policy),
-		},
-		"PATCH",
-	);
 }

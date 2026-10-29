@@ -1,5 +1,6 @@
 import { IconRobot } from "@tabler/icons-react";
 import { StatusBadge as Badge } from "@/entities/warehouse";
+
 import {
 	Button,
 	Table,
@@ -56,6 +57,7 @@ export function RobotsTable({ model }: RobotsTableProps) {
 								<Button
 									size="sm"
 									variant="ghost"
+									disabled={pending || !r.canEdit}
 									onClick={() => model.setEditing(r)}
 								>
 									Изменить
@@ -64,7 +66,9 @@ export function RobotsTable({ model }: RobotsTableProps) {
 									size="sm"
 									variant="ghost"
 									disabled={!r.canDelete || pending}
-									title="Удаление доступно только свободным роботам"
+									title={
+										r.blockedReason || "Доступность удаления определяет сервер"
+									}
 									onClick={() => void model.removeRobot(r.id)}
 								>
 									Удалить

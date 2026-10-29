@@ -1,4 +1,5 @@
 import type { CellType } from "../../model/warehouse/schemas";
+import type { WorkflowPolicy } from "../../model/warehouse/workflowPolicy";
 import type { PolicyDto } from "./contract";
 
 export const wireKinds: Record<CellType, string> = {
@@ -12,20 +13,22 @@ export const wireKinds: Record<CellType, string> = {
 	wall: "wall",
 };
 
-export function policyToDto(values: boolean[]): PolicyDto {
+export function policyToDto(values: WorkflowPolicy): PolicyDto {
 	return {
-		confirm_unload: values[0],
-		confirm_pick: values[1],
-		confirm_putaway: values[2],
-		confirm_load: values[3],
+		confirm_unload: values.confirmUnload,
+		confirm_pick: values.confirmPick,
+		confirm_putaway: values.confirmPutaway,
+		confirm_load: values.confirmLoad,
 	};
 }
 
-export function policyFromDto(p: Partial<PolicyDto>) {
-	return [
-		!!p.confirm_unload,
-		!!p.confirm_pick,
-		!!p.confirm_putaway,
-		!!p.confirm_load,
-	];
+export function policyFromDto(
+	p: { [K in keyof PolicyDto]?: PolicyDto[K] | undefined },
+) {
+	return {
+		confirmUnload: !!p.confirm_unload,
+		confirmPick: !!p.confirm_pick,
+		confirmPutaway: !!p.confirm_putaway,
+		confirmLoad: !!p.confirm_load,
+	};
 }

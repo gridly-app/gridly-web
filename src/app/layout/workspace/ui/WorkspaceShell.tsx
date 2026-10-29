@@ -1,5 +1,5 @@
 import { ImmersiveProvider } from "@/shared/lib";
-import { SidebarProvider } from "@/shared/ui";
+import { ConfirmDialog, SidebarProvider } from "@/shared/ui";
 import { useWorkspaceShell } from "../model/useWorkspaceShell";
 import { WarehouseCreationDialog } from "./creation/WarehouseCreationDialog";
 import { WorkspaceContent } from "./WorkspaceContent";
@@ -17,6 +17,14 @@ export function WorkspaceShell() {
 				<WorkspaceContent model={model.content} />
 				<WorkspaceNotification model={model.notice} />
 				<WarehouseCreationDialog model={model.creation} />
+				{model.isDemo && (
+					<ConfirmDialog
+						{...model.demoReset}
+						title="Начать демо заново?"
+						description="Все изменения в текущем демо будут потеряны. Откроется новый готовый склад."
+						confirmLabel="Начать заново"
+					/>
+				)}
 			</SidebarProvider>
 		</ImmersiveProvider>
 	);

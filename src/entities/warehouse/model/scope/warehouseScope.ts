@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
 import {
+	useWarehouseLivePolling,
 	useWarehouseLiveSelection,
 	type WarehouseLiveSelector,
 } from "../../api/queries/queries";
+import type { MutationReceipt } from "../../api/repositories/repository";
 import type { CommandExecutor, CommandHandler } from "../commands/commands";
 import type { Warehouse } from "../warehouse/schemas";
+import { selectMapLive, selectRobotsLive } from "./liveSelectors";
 
 export interface WarehouseScope {
 	warehouse: Warehouse;
-	execute: CommandExecutor<Warehouse>;
+	execute: CommandExecutor<MutationReceipt>;
 	command: CommandHandler;
 	pending: boolean;
 }
@@ -49,6 +52,8 @@ export function useLiveWarehouseScope<T extends Partial<Warehouse>>(
 	select: WarehouseLiveSelector<T>,
 ) {
 	const scope = useWarehouseScope();
+	const needsLive = select === selectMapLive || select === selectRobotsLive;
+	useWarehouseLivePolling(scope.warehouse.id, needsLive);
 	const live = useWarehouseLiveSelection(scope.warehouse, select);
 	return {
 		...scope,
@@ -56,6 +61,6 @@ export function useLiveWarehouseScope<T extends Partial<Warehouse>>(
 			...scope.warehouse,
 			...(live.data ?? select(scope.warehouse)),
 		},
-		pending: scope.pending || live.isError,
+		pending: scope.pending || (needsLive && live.isError),
 	};
 }

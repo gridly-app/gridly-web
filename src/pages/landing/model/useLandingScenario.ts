@@ -6,7 +6,8 @@ export function useLandingScenario() {
 	const [selectedId, selectScenario] = useState<LandingScenarioId>("inbound");
 	const selected =
 		landingScenarios.find((scenario) => scenario.id === selectedId) ||
-		landingScenarios[0];
+		landingScenarios.find((scenario) => scenario.id === "inbound");
+	if (!selected) throw new Error("Landing scenario is missing");
 
 	return { scenarios: landingScenarios, selected, selectScenario };
 }

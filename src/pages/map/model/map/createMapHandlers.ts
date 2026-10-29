@@ -7,7 +7,7 @@ import type { useRouteEditor } from "./useRouteEditor";
 
 export interface MapInteractionOptions {
 	warehouse: Pick<Warehouse, "width" | "height" | "robots">;
-	editor: Pick<MapEditor, "selection" | "closeEditor">;
+	editor: Pick<MapEditor, "selection" | "closeEditor" | "busy">;
 	cellIndex: ReadonlyMap<string, Cell>;
 	routeEditor: Pick<ReturnType<typeof useRouteEditor>, "select" | "drag">;
 	editing: boolean;
@@ -39,6 +39,7 @@ export function createMapHandlers({
 		return cellIndex.get(`${x},${y}`);
 	}
 	function handlePointerUp(event: React.PointerEvent<HTMLElement>) {
+		if (editor.busy) return;
 		if (configuringRoutes) {
 			if (routeEditor.drag.finishDrag()) {
 				return;
@@ -77,6 +78,7 @@ export function createMapHandlers({
 	}
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLCanvasElement>) {
+		if (editor.busy) return;
 		if (e.key === "Escape") {
 			editor.closeEditor();
 		}
@@ -107,6 +109,7 @@ export function createMapHandlers({
 	}
 
 	function handlePointerDown(e: React.PointerEvent<HTMLElement>) {
+		if (editor.busy) return;
 		if (e.button !== 0) {
 			return;
 		}
@@ -133,6 +136,7 @@ export function createMapHandlers({
 	}
 
 	function handlePointerMove(e: React.PointerEvent<HTMLElement>) {
+		if (editor.busy) return;
 		if (!editing) {
 			pan.move(e);
 

@@ -103,7 +103,7 @@ export function useCellSelection({
 		}
 	}
 
-	function finishSelection(cell?: Cell) {
+	function finishSelection(cell?: Cell | undefined) {
 		const current = gesture.current;
 
 		if (current && cell) {

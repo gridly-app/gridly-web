@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
-import { WarehouseScopeProvider } from "@/entities/warehouse";
+import { useWorkspaceMode } from "@/shared/auth";
 import { Button, Feedback } from "@/shared/ui";
 import type { WorkspaceShellModel } from "../model/useWorkspaceShell";
 import { ConnectionStatus } from "./ConnectionStatus";
+import { WorkspaceResources } from "./WorkspaceResources";
 import workspaceStyles from "./WorkspaceShell.module.css";
 
 export interface WorkspaceContentProps {
@@ -11,6 +12,7 @@ export interface WorkspaceContentProps {
 }
 
 export function WorkspaceContent({ model }: WorkspaceContentProps) {
+	const isDemo = useWorkspaceMode() === "demo";
 	const {
 		warehouse,
 		warehouseId,
@@ -23,6 +25,12 @@ export function WorkspaceContent({ model }: WorkspaceContentProps) {
 	return (
 		<main className={workspaceStyles.workspaceMain}>
 			<div className={workspaceStyles.content}>
+				{isDemo && (
+					<aside className={workspaceStyles.demoNotice} aria-label="Демо-режим">
+						<strong>Демо-режим</strong>
+						<span>Учебные данные. Изменения не затрагивают ваши склады.</span>
+					</aside>
+				)}
 				{warehouse && <ConnectionStatus model={{ ...model, warehouse }} />}
 				{warehouseId === "new" ? (
 					<Button variant="default" onClick={openCreation}>
@@ -41,7 +49,11 @@ export function WorkspaceContent({ model }: WorkspaceContentProps) {
 					</Feedback>
 				) : (
 					scope && (
-						<WarehouseScopeProvider value={scope}>
+						<WorkspaceResources
+							key={warehouseId}
+							scope={scope}
+							page={model.page}
+						>
 							<Suspense
 								fallback={
 									<Feedback tone="loading" fill role="status">
@@ -51,7 +63,7 @@ export function WorkspaceContent({ model }: WorkspaceContentProps) {
 							>
 								<Outlet key={warehouseId} />
 							</Suspense>
-						</WarehouseScopeProvider>
+						</WorkspaceResources>
 					)
 				)}
 			</div>

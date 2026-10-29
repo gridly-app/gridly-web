@@ -17,7 +17,7 @@ export function MapLegend({ model }: MapLegendProps) {
 	return (
 		<div className={mapStyles.legend}>
 			<div
-				className={`${localLayout["section-caption"]} ${mapStyles.legendCaption}`}
+				className={`${localLayout.sectionCaption} ${mapStyles.legendCaption}`}
 			>
 				ОБОЗНАЧЕНИЯ
 			</div>

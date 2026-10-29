@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+	blockRoutePlanSchema,
+	robotTaskSchema,
+	storageZoneSchema,
+	warehouseSummarySchema,
+} from "../../model/warehouse/schemas";
 
 const revision = z.number().int().nonnegative().optional();
 const identity = { id: z.string(), revision };
@@ -20,6 +26,8 @@ export const policyDto = z.object({
 export const warehouseDto = z
 	.object({
 		...identity,
+		allowed_actions: z.array(z.string()).optional(),
+		summary: warehouseSummarySchema.optional(),
 		name: z.string(),
 		width: z.number().int().positive(),
 		height: z.number().int().positive(),
@@ -49,6 +57,7 @@ export const cellDto = z.object({
 	]),
 	code: nullableText,
 	capacity_volume: decimal,
+	zone: storageZoneSchema.optional(),
 });
 export const layoutDto = z
 	.object({
@@ -57,6 +66,7 @@ export const layoutDto = z
 		width: z.number().int().positive(),
 		height: z.number().int().positive(),
 		cells: z.array(cellDto),
+		routes: z.array(blockRoutePlanSchema).optional(),
 	})
 	.refine(
 		(l) =>
@@ -65,6 +75,11 @@ export const layoutDto = z
 		"Invalid map bounds",
 	);
 export const robotDto = z.object({
+	allowed_actions: z.array(z.string()).optional(),
+	blocked_reason: optionalText,
+	current_task: robotTaskSchema.optional(),
+	return_route: z.array(z.object({ x: z.number(), y: z.number() })).optional(),
+	motion_path: z.array(z.object({ x: z.number(), y: z.number() })).optional(),
 	...identity,
 	name: z.string(),
 	x: z.number(),
@@ -78,6 +93,8 @@ export const robotDto = z.object({
 	status: z.string(),
 });
 export const categoryDto = z.object({
+	allowed_actions: z.array(z.string()).optional(),
+	product_count: optionalNumber,
 	...identity,
 	name: z.string(),
 	storage_kind: z.enum(["general", "cold"]),
@@ -85,6 +102,7 @@ export const categoryDto = z.object({
 	is_archived: z.boolean().optional(),
 });
 export const productDto = z.object({
+	allowed_actions: z.array(z.string()).optional(),
 	...identity,
 	name: z.string(),
 	sku: z.string(),
@@ -104,6 +122,8 @@ export const taskDto = z.object({
 	allowed_actions: z.array(z.string()).optional(),
 });
 export const orderDto = z.object({
+	quantity: optionalNumber,
+	stage: optionalNumber,
 	...identity,
 	number: optionalText,
 	kind: z.enum(["inbound", "outbound"]),
@@ -134,6 +154,10 @@ export const orderDto = z.object({
 		.optional(),
 });
 export const stockDto = z.object({
+	available_quantity: optionalNumber,
+	write_off_blocked_reason: optionalText,
+	is_expired: z.boolean().optional(),
+	can_write_off: z.boolean().optional(),
 	...identity,
 	batch_id: z.string(),
 	product_id: z.string(),
@@ -146,6 +170,7 @@ export const stockDto = z.object({
 	robot_id: optionalText,
 });
 const positionDto = z.object({
+	motion_path: z.array(z.object({ x: z.number(), y: z.number() })).optional(),
 	id: z.string(),
 	x: z.number(),
 	y: z.number(),
@@ -179,7 +204,9 @@ export const validationDto = z.object({
 	issues: z.array(z.object({ message: z.string() })),
 });
 
-export type Revisioned = z.infer<typeof createdDto> & { revision?: number };
+export type Revisioned = z.infer<typeof createdDto> & {
+	revision?: number | undefined;
+};
 export type PolicyDto = z.infer<typeof policyDto>;
 export type WarehouseDto = z.infer<typeof warehouseDto>;
 export type CellDto = z.infer<typeof cellDto>;
