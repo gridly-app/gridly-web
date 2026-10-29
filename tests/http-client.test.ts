@@ -8,6 +8,36 @@ function clientWith(
 }
 
 describe("HTTP session lifecycle", () => {
+	test("login invalidates an older refresh and its original request", async () => {
+		let finishRefresh!: (response: Response) => void;
+		let refreshStarted!: () => void;
+		const started = new Promise<void>((resolve) => {
+			refreshStarted = resolve;
+		});
+		const tokens: string[] = [];
+		const client = clientWith(async (url, options) => {
+			if (url.endsWith("/auth/login"))
+				return Response.json({ access_token: "new-account" });
+			if (url.endsWith("/auth/refresh")) {
+				refreshStarted();
+				return new Promise<Response>((resolve) => {
+					finishRefresh = resolve;
+				});
+			}
+			const token = (options.headers as Record<string, string>).Authorization;
+			tokens.push(token);
+			return token
+				? Response.json({ ok: true })
+				: Response.json({}, { status: 401 });
+		});
+		const old = client.request("/warehouses").catch((error) => error);
+		await started;
+		await client.request("/auth/login", { method: "POST" });
+		finishRefresh(Response.json({ access_token: "old-account" }));
+		expect(await old).toHaveProperty("name", "AbortError");
+		await client.request("/warehouses");
+		expect(tokens.at(-1)).toBe("Bearer new-account");
+	});
 	test("concurrent unauthorized requests share one refresh and retry with its token", async () => {
 		let refreshes = 0;
 		const client = clientWith(async (url, options) => {

@@ -1,16 +1,24 @@
 import { ApiError } from "./ApiError";
 
 export type RequestOptions = {
-	method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
-	body?: unknown;
-	signal?: AbortSignal;
-	headers?: Record<string, string>;
-	idempotencyKey?: string;
+	detached?: boolean | undefined;
+	method?: ("GET" | "POST" | "PATCH" | "PUT" | "DELETE") | undefined;
+	body?: unknown | undefined;
+	signal?: AbortSignal | undefined;
+	headers?: Record<string, string> | undefined;
+	idempotencyKey?: string | undefined;
 };
 
 export interface HttpClient {
 	clearSession?(): void;
-	request(path: string, options?: RequestOptions): Promise<unknown>;
+	request(path: string, options?: RequestOptions | undefined): Promise<unknown>;
+}
+
+export interface HttpSessionPolicy {
+	credentials?: RequestCredentials | undefined;
+	accessToken?: (() => string) | undefined;
+	refresh?: boolean | undefined;
+	onUnauthorized?: (() => void) | undefined;
 }
 
 export class FetchHttpClient implements HttpClient {
@@ -22,7 +30,11 @@ export class FetchHttpClient implements HttpClient {
 
 	constructor(
 		private readonly baseUrl = "/api/v1",
-		private readonly transport: typeof fetch = (...args) => fetch(...args),
+		private readonly transport: (
+			input: RequestInfo | URL,
+			init?: RequestInit | undefined,
+		) => Promise<Response> = (...args) => fetch(...args),
+		private readonly policy: HttpSessionPolicy = {},
 	) {}
 
 	clearSession() {
@@ -38,7 +50,7 @@ export class FetchHttpClient implements HttpClient {
 		const request = this.request("/auth/refresh", {
 			method: "POST",
 		})
-			.then(() => {})
+			.then(() => undefined)
 			.finally(() => {
 				if (this.refreshRequest === request) {
 					this.refreshRequest = null;
@@ -59,15 +71,14 @@ export class FetchHttpClient implements HttpClient {
 		if (body !== undefined) {
 			headers["Content-Type"] = "application/json";
 		}
-		if (!auth && this.token) {
-			headers.Authorization = `Bearer ${this.token}`;
-		}
+		const token = this.policy.accessToken?.() ?? this.token;
+		if (!auth && token) headers.Authorization = `Bearer ${token}`;
 		if (options.idempotencyKey) {
 			headers["Idempotency-Key"] = options.idempotencyKey;
 		}
 		const assertActive = () => {
 			signal?.throwIfAborted();
-			if (generation !== this.sessionGeneration) {
+			if (!options.detached && generation !== this.sessionGeneration) {
 				throw new DOMException("Сессия завершена", "AbortError");
 			}
 		};
@@ -77,15 +88,15 @@ export class FetchHttpClient implements HttpClient {
 			return this.transport(`${this.baseUrl}${path}`, {
 				method,
 				headers,
-				credentials: "include",
-				signal,
-				body: body === undefined ? undefined : JSON.stringify(body),
+				credentials: this.policy.credentials ?? "include",
+				...(signal ? { signal } : {}),
+				...(body === undefined ? {} : { body: JSON.stringify(body) }),
 			});
 		};
 		let response = await send();
 
 		assertActive();
-		if (response.status === 401 && !auth) {
+		if (response.status === 401 && !auth && this.policy.refresh !== false) {
 			await this.refresh();
 			assertActive();
 			headers.Authorization = `Bearer ${this.token}`;
@@ -110,6 +121,8 @@ export class FetchHttpClient implements HttpClient {
 
 		assertActive();
 		if (!response.ok) {
+			if (response.status === 401 && (!auth || path === "/auth/refresh"))
+				this.policy.onUnauthorized?.();
 			const envelope = isRecord(data) ? data : {};
 			const error = isRecord(envelope.error) ? envelope.error : envelope;
 
@@ -136,8 +149,18 @@ export class FetchHttpClient implements HttpClient {
 				);
 			}
 		}
-		if (auth && isRecord(data) && typeof data.access_token === "string")
+		if (
+			auth &&
+			!options.detached &&
+			isRecord(data) &&
+			typeof data.access_token === "string"
+		) {
+			if (path === "/auth/login") {
+				this.sessionGeneration++;
+				this.refreshRequest = null;
+			}
 			this.token = data.access_token;
+		}
 
 		return data;
 	}
