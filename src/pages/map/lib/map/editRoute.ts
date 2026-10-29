@@ -4,6 +4,7 @@ import {
 	type GridPosition,
 	routeThrough,
 } from "@/entities/warehouse";
+import { requiredAt } from "@/shared/lib/requiredAt";
 
 export function moveRouteCell(
 	cells: Cell[],
@@ -18,15 +19,15 @@ export function moveRouteCell(
 		return routeThrough(cells, [target, last]);
 	}
 	if (index === path.length - 1) {
-		return routeThrough(cells, [path[0], target]);
+		return routeThrough(cells, [requiredAt(path, 0), target]);
 	}
-	if (cellKey(path[index]) === cellKey(target)) {
+	if (cellKey(requiredAt(path, index)) === cellKey(target)) {
 		return path;
 	}
 	const replacement = routeThrough(
 		cells,
-		[path[index - 1], target, path[index + 1]],
-		new Set([cellKey(path[index])]),
+		[requiredAt(path, index - 1), target, requiredAt(path, index + 1)],
+		new Set([cellKey(requiredAt(path, index))]),
 	);
 	const result = [
 		...path.slice(0, index - 1),

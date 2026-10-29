@@ -1,4 +1,5 @@
 import type { GridPosition } from "@/entities/warehouse";
+import { requiredAt } from "@/shared/lib/requiredAt";
 
 export interface RobotMotionTrack {
 	readonly target: Readonly<GridPosition>;
@@ -27,8 +28,8 @@ function getMotionMetrics(track: RobotMotionTrack): RobotMotionMetrics {
 	let totalLength = 0;
 
 	for (let index = 1; index < track.path.length; index += 1) {
-		const previous = track.path[index - 1];
-		const point = track.path[index];
+		const previous = requiredAt(track.path, index - 1);
+		const point = requiredAt(track.path, index);
 		const length = Math.hypot(point.x - previous.x, point.y - previous.y);
 
 		segmentLengths.push(length);
@@ -68,11 +69,11 @@ export function remainingRobotMotionPath(
 	let distance = totalLength * progress;
 
 	for (let index = 0; index < segmentLengths.length; index += 1) {
-		const length = segmentLengths[index];
+		const length = requiredAt(segmentLengths, index);
 
 		if (length > 0 && distance < length) {
-			const from = track.path[index];
-			const to = track.path[index + 1];
+			const from = requiredAt(track.path, index);
+			const to = requiredAt(track.path, index + 1);
 			const fraction = distance / length;
 
 			return [
@@ -92,10 +93,10 @@ export function remainingRobotMotionPath(
 export function robotMotionPosition(
 	track: RobotMotionTrack,
 	now: number,
-	output?: GridPosition,
+	output?: GridPosition | undefined,
 ): GridPosition {
 	const position = output || { x: track.target.x, y: track.target.y };
-	const first = track.path[0];
+	const first = requiredAt(track.path, 0);
 
 	if (!first) {
 		return copyPosition(position, track.target);
@@ -124,23 +125,24 @@ export function robotMotionPosition(
 	while (low < high) {
 		const middle = Math.floor((low + high) / 2);
 
-		if (cumulativeLengths[middle] < targetDistance) {
+		if (requiredAt(cumulativeLengths, middle) < targetDistance) {
 			low = middle + 1;
 		} else {
 			high = middle;
 		}
 	}
 
-	const from = track.path[low - 1];
-	const to = track.path[low];
-	const segmentLength = cumulativeLengths[low] - cumulativeLengths[low - 1];
+	const from = requiredAt(track.path, low - 1);
+	const to = requiredAt(track.path, low);
+	const segmentLength =
+		requiredAt(cumulativeLengths, low) - requiredAt(cumulativeLengths, low - 1);
 
 	if (segmentLength === 0) {
 		return copyPosition(position, to);
 	}
 
 	const fraction =
-		(targetDistance - cumulativeLengths[low - 1]) / segmentLength;
+		(targetDistance - requiredAt(cumulativeLengths, low - 1)) / segmentLength;
 
 	position.x = from.x + (to.x - from.x) * fraction;
 	position.y = from.y + (to.y - from.y) * fraction;

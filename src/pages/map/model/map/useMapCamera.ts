@@ -85,7 +85,7 @@ function useMapViewport(viewing: boolean) {
 		const observer = new ResizeObserver(([entry]) =>
 			workspace?.style.setProperty(
 				"--map-navigation-height",
-				`${entry.borderBoxSize[0]?.blockSize || entry.contentRect.height}px`,
+				`${entry?.borderBoxSize[0]?.blockSize || entry?.contentRect.height || 0}px`,
 			),
 		);
 
@@ -105,8 +105,8 @@ function useMapViewport(viewing: boolean) {
 		}
 		const observer = new ResizeObserver(([entry]) =>
 			setViewport({
-				width: entry.contentRect.width,
-				height: entry.contentRect.height,
+				width: entry?.contentRect.width ?? 0,
+				height: entry?.contentRect.height ?? 0,
 			}),
 		);
 

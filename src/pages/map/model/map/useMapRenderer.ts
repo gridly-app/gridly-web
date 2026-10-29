@@ -8,7 +8,7 @@ import {
 
 export interface MapRendererOptions extends LayoutRenderState {
 	robots: Warehouse["robots"];
-	asOf?: string;
+	asOf?: string | undefined;
 	selectedRobotId: string | null;
 }
 

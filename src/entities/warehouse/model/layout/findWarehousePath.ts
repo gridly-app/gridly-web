@@ -1,3 +1,4 @@
+import { requiredAt } from "@/shared/lib/requiredAt";
 import type { Cell, GridPosition } from "../warehouse/schemas";
 import { cellKey } from "./zones";
 
@@ -32,7 +33,7 @@ export function createWarehousePathfinder(cells: readonly Cell[]) {
 		);
 
 		for (let i = 0; i < queue.length; i++) {
-			const key = queue[i];
+			const key = requiredAt(queue, i);
 
 			if (goal.has(key)) {
 				const path: Cell[] = [];
@@ -55,7 +56,7 @@ export function createWarehousePathfinder(cells: readonly Cell[]) {
 				[-1, 0],
 				[0, 1],
 				[0, -1],
-			]) {
+			] as const) {
 				const next = `${cell.x + dx},${cell.y + dy}`;
 
 				if (index.has(next) && !blocked.has(next) && !parents.has(next)) {

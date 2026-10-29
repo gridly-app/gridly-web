@@ -105,7 +105,8 @@ export function paintWarehouseLayout(
 			}
 		});
 		ctx.stroke();
-		const end = path[path.length - 1];
+		const end = path.at(-1);
+		if (!end) continue;
 
 		ctx.fillStyle = color;
 		ctx.beginPath();
@@ -157,6 +158,7 @@ export function paintWarehouseLayout(
 			ctx.stroke();
 		}
 		for (const [index, point] of handles.entries()) {
+			if (!point) continue;
 			const x = 32 + (point.x + 0.5) * size;
 			const y = 32 + (point.y + 0.5) * size;
 

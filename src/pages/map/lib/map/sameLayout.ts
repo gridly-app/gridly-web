@@ -1,8 +1,10 @@
 import type { GridPosition } from "@/entities/warehouse";
 import type { LayoutRenderState } from "./CanvasWarehouseRenderer";
 
-const samePoint = (a?: GridPosition | null, b?: GridPosition | null) =>
-	a === b || (a?.x === b?.x && a?.y === b?.y);
+const samePoint = (
+	a?: (GridPosition | null) | undefined,
+	b?: (GridPosition | null) | undefined,
+) => a === b || (a?.x === b?.x && a?.y === b?.y);
 
 function samePath(a: GridPosition[] = [], b: GridPosition[] = []) {
 	return (
