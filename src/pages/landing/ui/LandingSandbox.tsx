@@ -15,7 +15,7 @@ export function LandingSandbox() {
 					<StaticText text="всё в движение." />
 				</h2>
 				<p>
-					<StaticText text="Готовый демо-склад с товарами, роботами и заказами." />
+					<StaticText text="Готовый демо-склад с товарами, роботами и заказами. " />
 					<br />
 					<StaticText text="Исследуйте платформу и пробуйте свои сценарии." />
 				</p>
@@ -26,19 +26,13 @@ export function LandingSandbox() {
 					onClick={() => {
 						void openDemo();
 					}}
-					disabled={pending}
+					loading={pending}
 				>
 					Открыть демо <IconArrowUpRight size={19} />
 				</Button>
 				<small className={landingStyles.sandboxNote}>
 					<StaticText text="Без регистрации · Готовый демо-склад" />
 				</small>
-			</div>
-			<div className={landingStyles.ctaPixels} aria-hidden="true">
-				<i />
-				<i />
-				<i />
-				<i />
 			</div>
 		</section>
 	);

@@ -1,4 +1,4 @@
-import { Button, StaticText } from "@/shared/ui";
+import { SegmentedControl, StaticText } from "@/shared/ui";
 import { useLandingScenario } from "../model/useLandingScenario";
 import landingStyles from "./LandingPage.module.css";
 import { ScenarioPreview } from "./ScenarioPreview";
@@ -20,22 +20,17 @@ export function LandingWorkflow() {
 			</div>
 			<div className={landingStyles.workflowBody}>
 				<div className={landingStyles.workflowCopy}>
-					<section
-						className={landingStyles.scenarioControls}
-						aria-label="Складские сценарии"
-					>
-						{scenarios.map((scenario) => (
-							<Button
-								className={landingStyles.scenarioButton}
-								key={scenario.id}
-								variant="ghost"
-								aria-pressed={selected.id === scenario.id}
-								onClick={() => selectScenario(scenario.id)}
-							>
-								<StaticText text={scenario.label} />
-							</Button>
-						))}
-					</section>
+					<div className={landingStyles.scenarioControls}>
+						<SegmentedControl
+							aria-label="Складские сценарии"
+							value={selected.id}
+							onValueChange={selectScenario}
+							items={scenarios.map((scenario) => ({
+								value: scenario.id,
+								label: scenario.label,
+							}))}
+						/>
+					</div>
 					<div
 						className={landingStyles.scenarioDescription}
 						aria-live="polite"

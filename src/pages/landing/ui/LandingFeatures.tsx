@@ -35,16 +35,12 @@ export function LandingFeatures() {
 			</div>
 			<div className={landingStyles.featureGrid}>
 				{features.map(({ id, icon: Icon, title, text }) => (
-					<article key={id}>
-						<div className={landingStyles.featureTop}>
-							<Icon size={28} stroke={1.5} />
-						</div>
-						<h3>
-							<StaticText text={title} />
-						</h3>
-						<p>
-							<StaticText text={text} />
-						</p>
+					<article key={id} className={landingStyles.featureCard}>
+						<span className={landingStyles.featureIcon}>
+							<Icon aria-hidden="true" size={24} stroke={1.6} />
+						</span>
+						<h3>{title}</h3>
+						<p>{text}</p>
 					</article>
 				))}
 			</div>

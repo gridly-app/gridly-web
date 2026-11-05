@@ -1,604 +1,412 @@
-.landing main {
-	flex: 1;
-	min-width: 0;
-}
-
 .landing {
-	background: var(--bg);
-	color: var(--text);
+	background: var(--background);
+	color: var(--foreground);
 	overflow: clip;
 }
-
 .landing main {
 	height: auto;
+	min-width: 0;
 	overflow: visible;
 }
-
 .landingHero {
 	position: relative;
 	isolation: isolate;
 	display: grid;
 	place-items: center;
-	min-height: min(880px, 100svh);
-	padding: 100px 24px 135px;
+	grid-template-columns: minmax(0, 1fr);
+	min-height: min(800px, 100svh);
+	padding: 96px 24px 128px;
 	overflow: clip;
 	contain: paint;
-	clip-path: inset(0);
 }
-
 .heroCopy {
+	min-width: 0;
+	container-type: inline-size;
 	width: 100%;
 	text-align: center;
 	pointer-events: none;
 }
-
+.eyebrow {
+	display: inline-block;
+	color: var(--primary);
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 16px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
 .heroCopy h1 {
-	margin: 0 0 22px;
-	font-size: clamp(78px, 11vw, 150px);
+	margin: 0 0 24px;
+	font-size: clamp(80px, 11vw, 144px);
 	line-height: 1.1;
 	font-weight: 700;
 	letter-spacing: -0.075em;
 }
-
 .heroDescription {
 	margin: 0 auto;
-	max-width: 740px;
-	color: #72786a;
-	font-size: clamp(13px, 1.7vw, 20px);
+	max-width: 60ch;
+	font-size: clamp(16px, 1.7vw, 20px);
 	font-weight: 500;
-	line-height: 1.8;
-	letter-spacing: -0.4px;
+	line-height: 1.6;
+	color: var(--muted-foreground);
 }
-
 .heroDescription > span {
 	display: block;
 }
-
-.heroDescription > span:last-child {
-	color: #909586;
-}
-
 .heroActions {
 	display: flex;
+	flex-wrap: wrap;
 	justify-content: center;
 	gap: 12px;
-	margin-top: 30px;
+	margin-top: 32px;
 }
-
 .heroButton {
-	min-width: 133px;
+	min-width: 136px;
 	min-height: 48px;
 	pointer-events: auto;
-	padding: 13px 24px;
+	padding: 12px 24px;
 }
-
 .heroSecondary {
-	background: #e5e7dc;
-	color: #525b47;
+	background: var(--card);
+	border-color: var(--border);
 }
-
-.heroSecondary:hover {
-	background: #d9dfcb;
+.landingFeatures,
+.landingWorkflow {
+	width: min(1200px, calc(100% - 48px));
+	margin: 0 auto;
+	padding: 64px 0;
 }
-
-.landingFeatures {
-	padding: 50px max(6%, calc((100vw - 1200px) / 2)) 70px;
-	background: linear-gradient(#f3f2ed, #f0f1e9 70%, #f3f2ed);
-}
-
 .sectionIntro {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 30px;
-	align-items: start;
-	margin-bottom: 45px;
+	margin-bottom: 32px;
 }
-
-.sectionIntro h2 {
-	font-size: clamp(28px, 3vw, 37px);
-	font-weight: 500;
-	letter-spacing: -1.5px;
-	line-height: 1.25;
+.sectionIntro h2,
+.workflowHeading h2 {
+	font-size: clamp(28px, 3.5vw, 40px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1.2;
 	margin: 0;
 }
-
-.sectionIntro p {
-	color: #929889;
-	font-size: 12px;
-	padding-top: 10px;
-}
-
 .featureGrid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 18px;
+	gap: 16px;
 }
-
-.featureGrid article {
-	border: 0;
-	border-radius: 20px;
-	padding: 30px;
-	background: #ffffff57;
+.featureCard {
+	padding: 32px;
+	border: 1px solid var(--border);
+	border-radius: 24px;
+	background: var(--card);
+	box-shadow: var(--shadow-panel);
 }
-
-.featureTop {
-	display: flex;
-	justify-content: space-between;
-	color: #7e8a6b;
-	margin-bottom: 35px;
+.featureIcon {
+	display: grid;
+	place-items: center;
+	width: 48px;
+	height: 48px;
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	background: var(--accent-bg);
+	color: var(--primary);
+	margin-bottom: 24px;
 }
-
-.featureTop span {
-	font-size: 10px;
-	color: #a4ad98;
+.featureCard h3 {
+	font-size: 20px;
+	line-height: 28px;
+	margin: 0 0 12px;
+	letter-spacing: -0.02em;
 }
-
-.featureGrid h3 {
-	font-size: 22px;
-	font-weight: 500;
-	letter-spacing: -0.8px;
-	margin-bottom: 13px;
+.featureCard p {
+	margin: 0;
+	font-size: 14px;
+	line-height: 24px;
+	color: var(--muted-foreground);
 }
-
-.featureGrid p {
-	color: #848b7b;
-	font-size: 12px;
-	line-height: 1.9;
-	margin-bottom: 0;
-}
-
-.landingWorkflow {
-	max-width: 1360px;
-	padding: 95px 6% 105px;
-	margin: auto;
-}
-
 .workflowHeading {
 	text-align: center;
-	margin-bottom: 45px;
+	margin-bottom: 48px;
 }
-
-.workflowHeading h2 {
-	font-size: clamp(32px, 3.9vw, 48px);
-	font-weight: 500;
-	line-height: 1.22;
-	letter-spacing: -2px;
-	margin: 20px 0 0;
+.workflowHeadingMuted {
+	color: var(--muted-foreground);
 }
-
-.workflowHeading h2 > .workflowHeadingMuted {
-	color: #939b86;
-}
-
 .workflowBody {
 	display: grid;
 	grid-template-columns: 0.85fr 1.15fr;
-	gap: 65px;
+	gap: 64px;
 	align-items: center;
 }
-
-.workflowCopy {
-	padding: 10px 0;
-}
-
 .scenarioControls {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 3px;
-	background: #e9ebe0;
-	padding: 5px;
-	border-radius: 13px;
+	gap: 4px;
+	padding: 0;
 	width: fit-content;
-	margin-bottom: 30px;
+	margin-bottom: 32px;
 }
-
 .scenarioButton {
-	font-size: 11px;
-	min-height: 36px;
-	padding: 9px 14px;
-	color: #89917b;
-	border-radius: 9px;
+	min-height: 40px;
+	padding: 8px 12px;
 }
-
-.scenarioButton[aria-pressed="true"] {
-	background: #fffefb;
-	color: #4d5840;
-	box-shadow: 0 2px 6px #34422008;
-}
-
 .scenarioDescription {
-	min-height: 175px;
+	min-height: 192px;
 }
-
 .scenarioDescription h3 {
-	font-size: 28px;
-	font-weight: 500;
-	line-height: 1.3;
-	letter-spacing: -1px;
-	margin-bottom: 16px;
+	font-size: 24px;
+	line-height: 32px;
+	font-weight: 600;
+	letter-spacing: -0.025em;
+	margin: 0 0 16px;
 }
-
 .scenarioDescription p {
-	color: #818975;
-	font-size: 13px;
-	line-height: 1.9;
-	max-width: 355px;
+	font-size: 16px;
+	line-height: 24px;
+	max-width: 42ch;
+	color: var(--muted-foreground);
+	margin: 0;
 }
-
 .scenarioPreview {
-	background: #e9ece0;
-	padding: 25px;
-	border-radius: 25px;
+	min-width: 0;
+	padding: 24px;
+	border: 1px solid var(--border);
+	border-radius: 24px;
+	background: var(--card);
+	box-shadow: var(--shadow-floating);
 }
-
 .scenarioPreviewHeading {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: 10px;
-	color: #656f57;
-	font-size: 11px;
-}
-
-.scenarioPreviewHeading > span {
-	display: flex;
-	align-items: center;
 	gap: 8px;
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 600;
 }
-
-.scenarioPreviewHeading small {
-	color: #9aa38b;
-	font-size: 9px;
+.previewStatus {
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 500;
+	color: var(--primary);
 }
-
 .scenarioMap {
-	display: grid;
-	grid-template-columns: repeat(8, minmax(0, 1fr));
-	gap: 7px;
-	padding: 28px 12px;
+	margin: 24px 0;
+	padding: 16px;
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	background: var(--background);
 }
-
 .scenarioCell {
-	aspect-ratio: 1.2;
-	border-radius: 6px;
-	background: #f3f4ec;
+	aspect-ratio: 1;
+	border: 1px solid color-mix(in srgb, var(--tile-shadow) 18%, transparent);
+	border-radius: 4px;
+	background: var(--tile-cell-bg);
 	transition:
-		background 0.3s,
-		box-shadow 0.3s;
+		background-color var(--duration-panel),
+		box-shadow var(--duration-panel),
+		transform 600ms var(--ease-out);
 }
-
 .scenarioShelf {
-	background: #cdd6b8;
-	box-shadow: inset 0 -4px #b5c39f;
+	background: var(--tile-shelf-bg);
 }
-
-.scenarioCellActive {
-	background: #ec9c71;
-	box-shadow: inset 0 -4px #d78459;
+.scenarioGrid[data-revealed="true"] .scenarioCell[data-active="true"] {
+	box-shadow: 0 3px 0 var(--tile-shadow);
+	transform: translateY(-6.3829787%);
 }
-
 .scenarioLocation {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	color: #7c876b;
-	font-size: 10px;
-	padding: 0 12px 22px;
+	gap: 8px;
+	color: var(--primary);
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 500;
+	margin-bottom: 16px;
 }
-
 .scenarioSteps {
-	display: flex;
-	flex-direction: column;
-	gap: 13px;
-	background: #f7f8f2;
-	border-radius: 14px;
-	padding: 18px;
+	display: grid;
+	gap: 8px;
 }
-
 .scenarioSteps > div {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	color: #717d60;
-	font-size: 11px;
+	gap: 8px;
+	font-size: 14px;
+	line-height: 20px;
 }
-
-.scenarioSteps > div > span:first-child {
-	display: grid;
-	place-items: center;
-	color: #809669;
-	background: #e9efde;
-	border-radius: 50%;
-	width: 20px;
-	height: 20px;
+.scenarioSteps svg {
+	color: var(--primary);
+	flex-shrink: 0;
 }
-
 .landingCta {
-	max-width: 1200px;
-	margin: 0 auto 28px;
-	background: #e86536;
-	color: #fff4e9;
-	border-radius: 26px;
-	padding: 56px;
-	position: relative;
-	overflow: hidden;
+	width: min(1200px, calc(100% - 48px));
+	margin: 64px auto 32px;
+	padding: 64px 24px;
+	text-align: center;
 }
-
-.sandboxCopy {
-	position: relative;
-	z-index: 1;
-}
-
 .landingCta h2 {
-	font-size: clamp(35px, 4vw, 52px);
-	font-weight: 500;
-	letter-spacing: -2px;
-	line-height: 1.13;
-	margin: 22px 0 20px;
+	font-size: clamp(28px, 3.5vw, 40px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1.2;
+	margin: 16px 0 24px;
 }
-
 .landingCta p {
-	color: #ffdfcc;
-	font-size: 13px;
-	line-height: 1.8;
-	margin-bottom: 25px;
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--muted-foreground);
+	margin: 0 auto 24px;
+	max-width: 48ch;
 }
-
-.ctaButton {
-	background: #fff4e9;
-	color: #a54a28;
+.sandboxCopy {
+	min-width: 0;
 }
-
-.ctaButton:hover {
-	background: #ffe4cc;
-}
-
 .sandboxNote {
 	display: block;
-	margin-top: 14px;
-	color: #ffc7aa;
-	font-size: 10px;
+	margin-top: 16px;
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--muted-foreground);
 }
-
-.ctaPixels {
-	position: absolute;
-	right: 8%;
-	top: 25%;
-	display: grid;
-	grid-template-columns: repeat(2, 90px);
-	gap: 12px;
-	transform: rotate(-15deg);
+.ctaButton {
+	margin-top: 8px;
 }
-
-.ctaPixels i {
-	aspect-ratio: 1;
-	border-radius: 14px;
-	background: #fa9d69;
-	box-shadow: 0 8px 0 #c7562d;
-}
-
-.ctaPixels i:nth-child(2) {
-	transform: translateY(-20px);
-	background: #ffd5a4;
-}
-
-.ctaPixels i:nth-child(3) {
-	opacity: 0.6;
-}
-
 .landingFooter {
-	max-width: 1360px;
+	width: min(1200px, calc(100% - 48px));
 	margin: auto;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	gap: 20px;
-	padding: 30px 6% 40px;
-	color: #8e9583;
-	font-size: 10px;
+	gap: 24px;
+	padding: 32px 0;
+	color: var(--muted-foreground);
+	font-size: 12px;
+	line-height: 16px;
 }
-
 .landingWordmark {
 	font-size: 24px;
-	font-weight: 800;
-	letter-spacing: -1px;
-	color: #434c37;
+	line-height: 32px;
+	font-weight: 700;
+	letter-spacing: -0.04em;
+	color: var(--foreground);
 }
-
-@media (width <= 1320px) {
-	.landingCta {
-		margin-inline: 6%;
-	}
-}
-
 @media (width <= 1000px) {
-	.sectionIntro {
-		grid-template-columns: 1fr;
-	}
-
-	.sectionIntro > p {
-		display: none;
-	}
-
-	.featureGrid article {
-		padding: 23px;
-	}
-
 	.workflowBody {
-		gap: 35px;
+		gap: 32px;
 	}
-
-	.scenarioButton {
-		padding-inline: 10px;
+	.featureCard {
+		padding: 24px;
 	}
-
-	.scenarioDescription h3 {
-		font-size: 25px;
+	.landingCta {
+		padding: 32px;
+		gap: 32px;
 	}
 }
-
 @media (width <= 700px) {
 	.landingHero {
-		min-height: min(760px, 100svh);
-		padding: 100px 20px 125px;
+		min-height: min(720px, 100svh);
+		padding: 96px 24px;
 	}
-
 	.heroCopy h1 {
-		font-size: clamp(76px, 17vw, 105px);
-		letter-spacing: -6px;
-		margin-bottom: 20px;
+		font-size: min(clamp(76px, 17vw, 104px), 32cqi);
 	}
-
 	.heroDescription {
-		font-size: clamp(11px, 3.1vw, 15px);
-		letter-spacing: -0.2px;
-		line-height: 1.9;
+		font-size: 16px;
 	}
-
-	.heroDescription > span {
-		white-space: nowrap;
-	}
-
 	.heroActions {
-		margin-top: 26px;
-		gap: 9px;
+		gap: 8px;
 	}
-
 	.heroButton {
-		min-width: 115px;
-		min-height: 44px;
-		padding: 11px 19px;
+		min-width: 0;
+		padding-inline: 16px;
 	}
-
-	.landingFeatures {
-		padding: 25px 6% 40px;
-	}
-
-	.sectionIntro {
-		display: block;
-		margin-bottom: 30px;
-	}
-
-	.sectionIntro h2 {
-		margin-top: 20px;
-		font-size: 31px;
-	}
-
-	.featureGrid {
-		grid-template-columns: 1fr;
-		gap: 12px;
-	}
-
-	.featureGrid article {
-		padding: 28px;
-	}
-
-	.featureTop {
-		margin-bottom: 25px;
-	}
-
+	.landingFeatures,
 	.landingWorkflow {
-		padding: 55px 6% 60px;
+		width: calc(100% - 32px);
+		padding: 40px 0;
 	}
-
+	.featureGrid,
+	.workflowBody,
+	.landingCta {
+		grid-template-columns: minmax(0, 1fr);
+	}
 	.workflowHeading {
 		text-align: left;
-		margin-bottom: 30px;
+		margin-bottom: 32px;
 	}
-
-	.workflowHeading h2 {
-		font-size: 32px;
-		letter-spacing: -1.3px;
-	}
-
-	.workflowBody {
-		grid-template-columns: 1fr;
-		gap: 27px;
-	}
-
 	.scenarioDescription {
-		min-height: 130px;
+		min-height: 160px;
 	}
-
 	.scenarioControls {
-		margin-bottom: 22px;
+		margin-bottom: 24px;
 	}
-
-	.scenarioButton {
-		padding-inline: 14px;
-	}
-
 	.scenarioPreview {
-		padding: 20px;
-		border-radius: 20px;
+		padding: 16px;
 	}
-
 	.scenarioMap {
-		padding: 25px 0;
-		gap: 5px;
+		gap: 4px;
+		padding: 12px;
 	}
-
-	.scenarioCell {
-		border-radius: 4px;
-	}
-
 	.landingCta {
-		padding: 35px 26px;
-		margin-bottom: 15px;
+		width: calc(100% - 32px);
+		margin-top: 40px;
+		padding: 24px;
+		gap: 32px;
 	}
-
-	.landingCta h2 {
-		font-size: 37px;
-		letter-spacing: -1.6px;
-	}
-
-	.landingCta p {
-		font-size: 12px;
-	}
-
 	.landingCta p br {
 		display: none;
 	}
-
-	.ctaPixels {
-		right: -70px;
-		top: 16%;
-		opacity: 0.17;
-	}
-
-	.sandboxNote {
-		font-size: 9px;
-	}
-
 	.landingFooter {
-		padding-block: 25px 35px;
+		width: calc(100% - 32px);
 	}
 }
-
 @media (prefers-reduced-motion: reduce) {
 	.scenarioCell {
 		transition: none;
 	}
 }
 
-.heroGrid {
+.scenarioGrid {
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+	grid-template-rows: repeat(6, minmax(0, 1fr));
+	column-gap: 0.7556675%;
+	row-gap: 1.010101%;
+	aspect-ratio: 794 / 594;
+}
+.scenarioFlow {
+	opacity: 0;
+	transition: opacity 300ms 550ms;
 	position: absolute;
-	left: 50%;
-	top: 50%;
-	width: max(150vw, 150svh);
-	max-width: none;
-	transform: translate(-50%, -50%) perspective(2200px) rotateX(15deg)
-		rotateZ(-14deg);
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	pointer-events: none;
+	color: #e86536;
+}
+.scenarioFlow[data-direction="outbound"] {
+	color: #4f83c4;
+}
+.flowTrack {
+	stroke: currentColor;
+	stroke-width: 12;
+	stroke-linecap: round;
+	stroke-linejoin: round;
 }
 
-.heroFade {
-	background:
-		radial-gradient(
-			ellipse at 50% 44%,
-			#f3f2ed 0%,
-			#f3f2edf7 18%,
-			#f3f2edc9 37%,
-			#f3f2ed40 74%
-		),
-		linear-gradient(0deg, #f3f2ed 0%, transparent 28%);
+.heroSecondary {
+	color: var(--primary);
+}
+.heroSecondary:hover {
+	background: var(--action-secondary-hover);
+}
+
+.scenarioGrid[data-revealed="true"] .scenarioFlow {
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	.scenarioFlow {
+		transition: none;
+	}
 }

@@ -1,4 +1,4 @@
-import { Link, StaticText } from "@/shared/ui";
+import { AnimatedContent, Link, StaticText } from "@/shared/ui";
 import { LandingFeatures } from "./LandingFeatures";
 import { LandingHero } from "./LandingHero";
 import landingStyles from "./LandingPage.module.css";
@@ -7,12 +7,21 @@ import { LandingWorkflow } from "./LandingWorkflow";
 
 export function LandingPage() {
 	return (
-		<div className={landingStyles.landing} data-palette="warm">
+		<div
+			className={`public-page ${landingStyles.landing}`}
+			data-fixed-theme="light"
+		>
 			<main>
 				<LandingHero />
-				<LandingFeatures />
-				<LandingWorkflow />
-				<LandingSandbox />
+				<AnimatedContent>
+					<LandingFeatures />
+				</AnimatedContent>
+				<AnimatedContent>
+					<LandingWorkflow />
+				</AnimatedContent>
+				<AnimatedContent>
+					<LandingSandbox />
+				</AnimatedContent>
 			</main>
 			<footer className={landingStyles.landingFooter}>
 				<Link className={landingStyles.landingWordmark} href="#">

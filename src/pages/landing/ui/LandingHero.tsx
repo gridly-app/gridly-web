@@ -1,20 +1,20 @@
 import { Link } from "react-router-dom";
 import { useSession } from "@/shared/auth";
-import { Button, StaticText, TileBackdrop } from "@/shared/ui";
+import {
+	AnimatedContent,
+	Button,
+	ShapeBackdrop,
+	StableLabel,
+	StaticText,
+} from "@/shared/ui";
 import landingStyles from "./LandingPage.module.css";
 
 export function LandingHero() {
 	const { user } = useSession();
 	return (
 		<section className={landingStyles.landingHero}>
-			<TileBackdrop
-				rows={12}
-				classNames={{
-					grid: landingStyles.heroGrid,
-					fade: landingStyles.heroFade,
-				}}
-			/>
-			<div className={landingStyles.heroCopy}>
+			<ShapeBackdrop />
+			<AnimatedContent className={landingStyles.heroCopy} distance={24}>
 				<h1>
 					<StaticText text="Gridly" />
 				</h1>
@@ -28,7 +28,9 @@ export function LandingHero() {
 						className={landingStyles.heroButton}
 						render={<Link to={user ? "/app" : "/auth"} />}
 					>
-						{user ? "Мои склады" : "Войти"}
+						<StableLabel variants={["Мои склады", "Войти"]}>
+							{user ? "Мои склады" : "Войти"}
+						</StableLabel>
 					</Button>
 					{!user && (
 						<Button
@@ -41,7 +43,7 @@ export function LandingHero() {
 						</Button>
 					)}
 				</div>
-			</div>
+			</AnimatedContent>
 		</section>
 	);
 }

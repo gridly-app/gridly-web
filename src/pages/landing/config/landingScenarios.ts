@@ -8,6 +8,8 @@ export interface LandingScenario {
 	location: string;
 	steps: readonly string[];
 	activeCells: readonly number[];
+	routeCells?: readonly number[];
+	routeShelfCell?: number;
 }
 
 export const landingScenarios: readonly LandingScenario[] = [
@@ -19,7 +21,9 @@ export const landingScenarios: readonly LandingScenario[] = [
 			"Создайте поставку, подтвердите разгрузку и проследите, как товар попадает в зону хранения.",
 		location: "Зона приёмки → Хранение",
 		steps: ["Поставка создана", "Разгрузка подтверждена", "Товар размещён"],
-		activeCells: [24, 25, 26, 27, 19, 11],
+		activeCells: [9, 10, 11, 12, 17, 18, 19, 20],
+		routeCells: [24, 25, 26, 27],
+		routeShelfCell: 19,
 	},
 	{
 		id: "storage",
@@ -29,7 +33,7 @@ export const landingScenarios: readonly LandingScenario[] = [
 			"Смотрите остатки по ячейкам, выделяйте зоны на карте и держите структуру склада в порядке.",
 		location: "Хранение → Остатки",
 		steps: ["Зона выбрана", "Остатки проверены", "Размещение обновлено"],
-		activeCells: [10, 11, 12, 18, 19, 20],
+		activeCells: [9, 10, 11, 12, 17, 18, 19, 20],
 	},
 	{
 		id: "outbound",
@@ -39,6 +43,8 @@ export const landingScenarios: readonly LandingScenario[] = [
 			"Соберите заказ, запустите отбор и подтвердите погрузку. Все этапы остаются в истории.",
 		location: "Хранение → Зона отгрузки",
 		steps: ["Заказ собран", "Отбор выполнен", "Погрузка подтверждена"],
-		activeCells: [12, 20, 28, 29, 30, 31],
+		activeCells: [9, 10, 11, 12, 17, 18, 19, 20],
+		routeCells: [28, 29, 30, 31],
+		routeShelfCell: 20,
 	},
 ];
