@@ -6,6 +6,9 @@ import {
 	productPrice,
 	type Stock,
 	selectInventoryLive,
+	stockZoneCells,
+	stockZoneId,
+	stockZoneNames,
 	useLiveWarehouseScope,
 	useSimulationCadence,
 } from "@/entities/warehouse";
@@ -28,6 +31,18 @@ export function useInventoryPage() {
 			{ replace: true },
 		);
 	const [search, setSearch] = useState("");
+	const productFilter = params.get("product");
+	function setProduct(value: string) {
+		setParams(
+			(current) => {
+				const next = new URLSearchParams(current);
+				if (value === "all") next.delete("product");
+				else next.set("product", value);
+				return next;
+			},
+			{ replace: true },
+		);
+	}
 	const view =
 		params.get("view") === "writeoffs"
 			? "writeoffs"
@@ -42,18 +57,22 @@ export function useInventoryPage() {
 	const to = params.get("to") || "";
 	const [selected, setSelected] = useState<Stock | null>(null);
 	const searchQuery = search.trim().toLowerCase();
-	const productNames = useMemo(
-		() =>
-			new Map(warehouse.products.map((product) => [product.id, product.name])),
+	const products = useMemo(
+		() => new Map(warehouse.products.map((product) => [product.id, product])),
 		[warehouse.products],
 	);
-	const zoneNames = useMemo(
-		() =>
-			new Map(
-				warehouse.cells.map((cell) => [`${cell.x},${cell.y}`, cell.zone?.name]),
-			),
+	const zoneName = useMemo(
+		() => stockZoneNames(warehouse.cells),
 		[warehouse.cells],
 	);
+	const zoneCells = useMemo(
+		() => stockZoneCells(warehouse.cells),
+		[warehouse.cells],
+	);
+	const canEdit = !!warehouse.allowedActions?.includes("edit-inventory");
+	async function saveStock(stock: Stock) {
+		await execute("stock", stock);
+	}
 
 	async function writeOffStock(value: {
 		revision?: number | undefined;
@@ -75,49 +94,48 @@ export function useInventoryPage() {
 			})),
 		};
 	}
-	const replenishments = new Map(
-		warehouse.products.map((product) => [
-			product.id,
-			{
-				id: product.id,
-				incoming: replenishment(product.id),
-				name: product.name,
-				category: product.category,
-			},
-		]),
-	);
-	const expectedProducts = [...replenishments.values()].filter(
-		(item) =>
-			item.incoming.quantity > 0 &&
-			(category === "all" || item.category === category) &&
-			item.name.toLowerCase().includes(searchQuery),
-	);
+	const expectedProducts =
+		view === "incoming"
+			? warehouse.products
+					.filter(
+						(product) =>
+							(!productFilter || product.id === productFilter) &&
+							(category === "all" || product.category === category) &&
+							`${product.name} ${product.sku}`
+								.toLowerCase()
+								.includes(searchQuery),
+					)
+					.map((product) => ({
+						...product,
+						incoming: replenishment(product.id),
+					}))
+					.filter((item) => item.incoming.quantity > 0)
+			: [];
 
 	const visibleStock: InventoryStock[] = warehouse.stock
 		.filter(
 			(s) =>
-				s.quantity > 0 &&
-				(category === "all" ||
-					warehouse.products.find((p) => p.id === s.product)?.category ===
-						category),
+				(filter === "zero" ? s.quantity === 0 : s.quantity > 0) &&
+				(!productFilter || s.product === productFilter) &&
+				(category === "all" || products.get(s.product)?.category === category),
 		)
-		.map((stock) => ({
-			...stock,
-			productName: productNames.get(stock.product),
-			zoneName: zoneNames.get(stock.cell) || "Зона хранения",
-			incoming:
-				replenishments.get(stock.product)?.incoming ??
-				replenishment(stock.product),
-		}))
+		.map((stock) => {
+			const cell = zoneCells.get(stock.cell);
+			return {
+				...stock,
+				zoneKey: cell ? stockZoneId(cell) : zoneName(stock),
+				productName: products.get(stock.product)?.name,
+				zoneName: zoneName(stock),
+			};
+		})
 		.filter(
 			(stock) =>
-				(stock.productName || "").toLowerCase().includes(searchQuery) &&
+				`${stock.productName ?? ""} ${stock.zoneName} ${stock.batchId ?? stock.id} ${products.get(stock.product)?.sku ?? ""}`
+					.toLowerCase()
+					.includes(searchQuery) &&
 				(filter !== "unpriced" ||
 					(stock.quantity > 0 &&
-						productPrice(
-							warehouse.products.find((product) => product.id === stock.product)
-								?.price,
-						) === null)) &&
+						productPrice(products.get(stock.product)?.price) === null)) &&
 				(filter !== "expired" || stock.isExpired) &&
 				(filter !== "reserved" ||
 					(stock.reserved !== undefined && stock.reserved > 0)),
@@ -141,6 +159,7 @@ export function useInventoryPage() {
 			(current) => {
 				const next = new URLSearchParams();
 				if (value !== "stock") next.set("view", value);
+				if (productFilter) next.set("product", productFilter);
 				if (current.has("category")) next.set("category", category);
 				return next;
 			},
@@ -171,14 +190,13 @@ export function useInventoryPage() {
 	});
 	const writeOffs = (warehouse.writeOffs ?? [])
 		.filter((item) => {
-			const product = warehouse.products.find(
-				(product) => product.id === item.product,
-			);
+			const product = products.get(item.product);
 			const day = Number.isFinite(Date.parse(item.time))
 				? dayFormatter.format(new Date(item.time))
 				: "";
 			return (
 				(filter !== "unpriced" || item.price === null) &&
+				(!productFilter || item.product === productFilter) &&
 				item.quantity > 0 &&
 				(category === "all" || product?.category === category) &&
 				(!from || (!!day && day >= from)) &&
@@ -188,10 +206,15 @@ export function useInventoryPage() {
 		})
 		.map((item) => ({
 			...item,
-			productName: productNames.get(item.product) || item.product,
+			productName: products.get(item.product)?.name || item.product,
 		}));
 
 	return {
+		warehouse,
+		canEdit,
+		saveStock,
+		productFilter,
+		setProduct,
 		timezone: warehouse.timezone,
 		view,
 		changeView,
@@ -207,7 +230,7 @@ export function useInventoryPage() {
 		setCategory,
 		categories: warehouse.categories,
 		changeFilter,
-		empty: !warehouse.stock.some((stock) => stock.quantity > 0),
+		empty: !warehouse.stock.length,
 		visibleStock,
 		expectedProducts,
 		search,

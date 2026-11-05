@@ -1,11 +1,18 @@
+import { IconPlus } from "@tabler/icons-react";
+import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
+import type { Stock } from "@/entities/warehouse";
+import { useWorkspaceMode } from "@/shared/auth";
+import { warehousePath } from "@/shared/config";
 import {
 	Button,
 	DataPanel,
+	Feedback,
 	Field,
 	Input,
+	Link,
 	ListFilters,
 	Modal,
-	SearchField,
 	SegmentedControl,
 	Select,
 	Table,
@@ -14,14 +21,38 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
+	useTableColumns,
 	WarmTooltip,
 } from "@/shared/ui";
 import { useInventoryPage } from "../model/useInventoryPage";
 import { InventoryTable } from "./InventoryTable";
+import { StockCorrectionForm } from "./StockCorrectionForm";
+import { StockLinks } from "./StockLinks";
 import { WriteOffForm } from "./WriteOffForm";
 
 export function InventoryPage() {
 	const model = useInventoryPage();
+	const mode = useWorkspaceMode();
+	const [correction, setCorrection] = useState<Stock | "new" | null>(null);
+	const warehouse = model.warehouse;
+	const stockColumns = useTableColumns("stock", [
+		"Зона",
+		"Количество",
+		"Резерв",
+		"Годность",
+		"Действия",
+	]);
+	const incomingColumns = useTableColumns("incoming", [
+		"Ожидается",
+		"Поставка / поставщик",
+		"Срок",
+	]);
+	const writeOffColumns = useTableColumns("writeoffs", [
+		"Списано",
+		"Стоимость",
+		"Дата",
+		"Причина",
+	]);
 	const stockView = model.view === "stock";
 	const writeOffView = model.view === "writeoffs";
 	const empty = stockView
@@ -43,15 +74,19 @@ export function InventoryPage() {
 	return (
 		<>
 			{model.filter === "unpriced" && (
-				<div className="report-context">
-					<span>
-						{writeOffView ? "Списания без цены" : "Остатки без цены"}
-						{model.from && ` · ${model.from} — ${model.to}`}
-					</span>
-					<Button variant="text" size="sm" onClick={model.resetFilters}>
-						Сбросить фильтры отчёта
-					</Button>
-				</div>
+				<Feedback
+					tone="info"
+					className="workspace-alert"
+					action={
+						<Button variant="text" size="sm" onClick={model.resetFilters}>
+							Сбросить фильтры отчёта
+						</Button>
+					}
+				>
+					{writeOffView ? "Списания без цены" : "Остатки без цены"}
+					{model.from && ` · с ${model.from}`}
+					{model.to && ` · по ${model.to}`}
+				</Feedback>
 			)}
 			<DataPanel
 				empty={empty}
@@ -68,21 +103,36 @@ export function InventoryPage() {
 								{ value: "writeoffs", label: "Списания" },
 							]}
 						/>
-						<SearchField
-							aria-label={
-								writeOffView
+						{stockView && model.canEdit && (
+							<Button
+								onClick={() => setCorrection("new")}
+								disabled={model.pending}
+							>
+								<IconPlus size={18} /> Партия
+							</Button>
+						)}
+						{
+							(stockView
+								? stockColumns
+								: writeOffView
+									? writeOffColumns
+									: incomingColumns
+							).button
+						}
+						<ListFilters
+							search={{
+								"aria-label": writeOffView
 									? "Поиск по списаниям"
 									: stockView
 										? "Поиск по остаткам"
-										: "Поиск по ожидаемым поступлениям"
-							}
-							value={model.search}
-							onChange={model.setSearch}
-						/>
-						<ListFilters
+										: "Поиск по ожидаемым поступлениям",
+								value: model.search,
+								onChange: model.setSearch,
+							}}
 							count={
 								[
 									model.category !== "all",
+									!!model.productFilter,
 									model.filter !== "all",
 									!!model.from,
 									!!model.to,
@@ -91,14 +141,14 @@ export function InventoryPage() {
 							onReset={model.resetFilters}
 						>
 							<Select
-								aria-label="Категория остатков"
-								value={model.category}
-								onValueChange={model.setCategory}
+								aria-label="Товар"
+								value={model.productFilter ?? "all"}
+								onValueChange={model.setProduct}
 								options={[
-									{ value: "all", label: "Все категории" },
-									...model.categories.map((category) => ({
-										value: category.id,
-										label: category.name,
+									{ value: "all", label: "Все товары" },
+									...warehouse.products.map((product) => ({
+										value: product.id,
+										label: `${product.name} · ${product.sku}`,
 									})),
 								]}
 							/>
@@ -118,6 +168,7 @@ export function InventoryPage() {
 											? [
 													{ value: "expired", label: "Просрочено" },
 													{ value: "reserved", label: "В резерве" },
+													{ value: "zero", label: "Нулевые остатки" },
 												]
 											: []),
 										{ value: "unpriced", label: "Без цены" },
@@ -142,6 +193,18 @@ export function InventoryPage() {
 									</Field>
 								</>
 							)}
+							<Select
+								aria-label="Категория остатков"
+								value={model.category}
+								onValueChange={model.setCategory}
+								options={[
+									{ value: "all", label: "Все категории" },
+									...model.categories.map((category) => ({
+										value: category.id,
+										label: category.name,
+									})),
+								]}
+							/>
 						</ListFilters>
 					</>
 				}
@@ -149,6 +212,11 @@ export function InventoryPage() {
 				{stockView && model.visibleStock.length > 0 && (
 					<InventoryTable
 						items={model.visibleStock}
+						hiddenColumns={stockColumns.hiddenColumns}
+						warehouse={warehouse}
+						canEdit={model.canEdit}
+						onEdit={setCorrection}
+						onSave={model.saveStock}
 						pending={model.pending}
 						onWriteOff={model.openWriteOff}
 						highlightUnpriced={model.filter === "unpriced"}
@@ -157,7 +225,7 @@ export function InventoryPage() {
 				{writeOffView &&
 					model.writeOffsAvailable &&
 					model.writeOffs.length > 0 && (
-						<Table>
+						<Table hiddenColumns={writeOffColumns.hiddenColumns}>
 							<TableHeader>
 								<TableRow>
 									<TableHead>Товар</TableHead>
@@ -173,7 +241,14 @@ export function InventoryPage() {
 										key={item.id}
 										data-unpriced-highlight={model.filter === "unpriced"}
 									>
-										<TableCell>{item.productName}</TableCell>
+										<TableCell>
+											{item.productName}
+											<StockLinks
+												warehouseId={warehouse.id}
+												productId={item.product}
+												orders={warehouse.orders}
+											/>
+										</TableCell>
 										<TableCell>
 											{item.quantity.toLocaleString("ru-RU")} шт.
 										</TableCell>
@@ -197,7 +272,7 @@ export function InventoryPage() {
 						</Table>
 					)}
 				{model.view === "incoming" && model.expectedProducts.length > 0 && (
-					<Table>
+					<Table hiddenColumns={incomingColumns.hiddenColumns}>
 						<TableHeader>
 							<TableRow>
 								<TableHead>Товар</TableHead>
@@ -212,12 +287,34 @@ export function InventoryPage() {
 									<TableRow key={`${item.id}-${delivery.orderId}`}>
 										<TableCell>
 											<strong>{item.name}</strong>
+											<StockLinks
+												warehouseId={warehouse.id}
+												productId={item.id}
+												orders={warehouse.orders}
+											/>
 										</TableCell>
 										<TableCell>
 											+{delivery.quantity.toLocaleString("ru-RU")} шт.
 										</TableCell>
 										<TableCell>
-											<strong>{delivery.orderNumber}</strong>
+											<Link
+												render={
+													<RouterLink
+														to={{
+															pathname: warehousePath(
+																mode,
+																warehouse.id,
+																"inbound",
+															),
+															search: new URLSearchParams({
+																order: delivery.orderId,
+															}).toString(),
+														}}
+													/>
+												}
+											>
+												{delivery.orderNumber}
+											</Link>
 											<small className="table-note">{delivery.party}</small>
 										</TableCell>
 										<TableCell>
@@ -232,6 +329,26 @@ export function InventoryPage() {
 					</Table>
 				)}
 			</DataPanel>
+			{correction && model.canEdit && (
+				<Modal
+					title={
+						correction === "new" ? "Добавление партии" : "Корректировка партии"
+					}
+					onClose={() => setCorrection(null)}
+				>
+					<StockCorrectionForm
+						stock={correction === "new" ? null : correction}
+						warehouse={warehouse}
+						pending={model.pending}
+						onSave={async (stock) => {
+							await model.saveStock(stock);
+							setCorrection((current) =>
+								current === correction ? null : current,
+							);
+						}}
+					/>
+				</Modal>
+			)}
 			{model.selected && (
 				<Modal title="Списание партии" onClose={model.closeWriteOff}>
 					<WriteOffForm

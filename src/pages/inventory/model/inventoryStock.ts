@@ -1,16 +1,7 @@
-import type { incomingProduct, Stock } from "@/entities/warehouse";
-
-export type ProductReplenishment = Omit<
-	ReturnType<typeof incomingProduct>,
-	"deliveries"
-> & {
-	deliveries: (ReturnType<typeof incomingProduct>["deliveries"][number] & {
-		label: string;
-	})[];
-};
+import type { Stock } from "@/entities/warehouse";
 
 export interface InventoryStock extends Stock {
 	productName: string | undefined;
+	zoneKey: string;
 	zoneName: string;
-	incoming: ProductReplenishment;
 }
