@@ -1,4 +1,4 @@
-import { IconArrowUpRight, IconPlayerPlay } from "@tabler/icons-react";
+import { IconCheck, IconCircle } from "@tabler/icons-react";
 import { useId } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { useSession } from "@/shared/auth";
@@ -11,8 +11,8 @@ import {
 	Form,
 	Input,
 	Link,
+	ShapeBackdrop,
 	SignInBlock,
-	TileBackdrop,
 } from "@/shared/ui";
 import { useAuthenticate } from "../model/useAuthenticate";
 import authStyles from "./Authenticate.module.css";
@@ -23,14 +23,8 @@ export function Authenticate() {
 
 	const session = useSession();
 	return (
-		<div className={authStyles.auth} data-palette="warm">
-			<TileBackdrop
-				classNames={{
-					root: authStyles.backdrop,
-					grid: authStyles.backdropGrid,
-					fade: authStyles.backdropFade,
-				}}
-			/>
+		<div className={`public-page ${authStyles.auth}`} data-fixed-theme="light">
+			<ShapeBackdrop className={authStyles.backdrop} />
 			<Link className={authStyles.authBack} render={<RouterLink to="/" />}>
 				На главную
 			</Link>
@@ -46,42 +40,105 @@ export function Authenticate() {
 					title={model.title}
 					description={model.description}
 					footer={
-						<Button
-							variant="text"
-							className={authStyles.modeButton}
-							onClick={model.toggleMode}
-							disabled={model.pending || model.demoPending}
-						>
-							{model.modeLabel}
-						</Button>
+						<div className={authStyles.modeSwitch}>
+							<span>{model.modePrompt}</span>
+							<Button
+								variant="text"
+								onClick={model.toggleMode}
+								disabled={model.pending}
+							>
+								{model.modeLabel}
+							</Button>
+						</div>
 					}
 				>
 					<Form
+						key={model.register ? "register" : "login"}
+						onChange={(event) => {
+							if (
+								event.target instanceof HTMLInputElement &&
+								event.target.type !== "checkbox"
+							)
+								model.clearPasswordError(event.currentTarget);
+						}}
 						onSubmit={(event) => {
 							void model.submit(event);
 						}}
 					>
-						<Field className={authStyles.field} label="Логин">
+						<Field label="Логин">
 							<Input
-								className={authStyles.input}
 								name="login"
 								required
 								minLength={3}
 								maxLength={32}
 								autoComplete="username"
+								autoCapitalize="none"
+								spellCheck={false}
+								disabled={model.pending}
 							/>
 						</Field>
-						<Field className={authStyles.field} label="Пароль">
+						<Field label="Пароль">
 							<Input
-								className={authStyles.input}
 								name="password"
 								type={model.passwordType}
 								required
 								minLength={8}
 								autoComplete={model.passwordAutoComplete}
+								disabled={model.pending}
+								aria-describedby={
+									model.register ? `${controlId}-password-hint` : undefined
+								}
 							/>
 						</Field>
-						<CheckLabel className={authStyles.check} htmlFor={controlId}>
+
+						{model.register && (
+							<>
+								<div
+									id={`${controlId}-password-hint`}
+									className={authStyles.passwordHint}
+									data-complete={model.passwordLongEnough}
+									role="status"
+									aria-live="polite"
+								>
+									{model.passwordLongEnough ? (
+										<IconCheck size={16} />
+									) : (
+										<IconCircle size={16} />
+									)}
+									<span>Не менее 8 символов</span>
+								</div>
+								<Field label="Подтвердите пароль">
+									<Input
+										name="passwordConfirmation"
+										aria-describedby={`${controlId}-confirmation-hint`}
+										type={model.passwordType}
+										required
+										minLength={8}
+										autoComplete="new-password"
+										disabled={model.pending}
+									/>
+								</Field>
+								<div
+									id={`${controlId}-confirmation-hint`}
+									className={authStyles.passwordHint}
+									data-complete={model.passwordMatches}
+									role="status"
+									aria-live="polite"
+								>
+									{model.passwordMatches ? (
+										<IconCheck size={16} />
+									) : (
+										<IconCircle size={16} />
+									)}
+									<span>
+										{model.passwordMatches
+											? "Пароли совпадают"
+											: "Пароли должны совпадать"}
+									</span>
+								</div>
+							</>
+						)}
+						<CheckLabel htmlFor={controlId}>
 							<Checkbox
 								id={controlId}
 								checked={model.show}
@@ -94,34 +151,11 @@ export function Authenticate() {
 								{model.error || session.error}
 							</Feedback>
 						)}
-						<Button
-							type="submit"
-							fullWidth
-							size="lg"
-							className={authStyles.submit}
-							loading={model.pending}
-							disabled={model.demoPending}
-						>
+						<Button type="submit" fullWidth size="lg" loading={model.pending}>
 							{model.submitLabel}
 						</Button>
 					</Form>
 				</SignInBlock>
-				<div className={authStyles.authDemo}>
-					<Button
-						variant="secondary"
-						size="lg"
-						className={authStyles.demoButton}
-						onClick={() => {
-							void model.openDemo();
-						}}
-						loading={model.demoPending}
-						disabled={model.pending}
-					>
-						<IconPlayerPlay size={16} />
-						Открыть демо
-						<IconArrowUpRight size={16} />
-					</Button>
-				</div>
 			</div>
 		</div>
 	);

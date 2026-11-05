@@ -1,30 +1,43 @@
-import { type SubmitEvent, useState } from "react";
+import { type SubmitEvent, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useDemoSession, useSession } from "@/shared/auth";
-import { warehousePath } from "@/shared/config";
+import { useSession } from "@/shared/auth";
 import { errorMessage, formText } from "@/shared/lib";
 
 export function useAuthenticate() {
 	const { authenticate } = useSession();
-	const { controller } = useDemoSession();
 	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const register = searchParams.get("mode") === "register";
 	const [show, changePasswordVisibility] = useState(false);
 	const [error, setError] = useState("");
 	const [pending, setPending] = useState(false);
-	const [demoPending, setDemoPending] = useState(false);
+	const submitting = useRef(false);
+	const [passwordValue, setPasswordValue] = useState("");
+	const [confirmationValue, setConfirmationValue] = useState("");
 
 	async function submit(e: SubmitEvent<HTMLFormElement>) {
 		e.preventDefault();
-		if (pending || demoPending) {
+		if (submitting.current) {
 			return;
 		}
-		setPending(true);
 		setError("");
 		const data = new FormData(e.currentTarget);
 
 		const password = data.get("password");
+		if (register && password !== data.get("passwordConfirmation")) {
+			const confirmation = e.currentTarget.elements.namedItem(
+				"passwordConfirmation",
+			);
+			setError("Пароли не совпадают. Повторите пароль ещё раз.");
+			if (confirmation instanceof HTMLInputElement) {
+				confirmation.setCustomValidity("Пароли не совпадают");
+				confirmation.reportValidity();
+				confirmation.focus();
+			}
+			return;
+		}
+		submitting.current = true;
+		setPending(true);
 		try {
 			await authenticate(register ? "register" : "login", {
 				login: formText(data, "login"),
@@ -34,40 +47,17 @@ export function useAuthenticate() {
 		} catch (e) {
 			setError(errorMessage(e));
 		} finally {
+			submitting.current = false;
 			setPending(false);
 		}
 	}
 
-	async function openDemo() {
-		if (pending || demoPending) {
-			return;
-		}
-		setDemoPending(true);
-		setError("");
-		try {
-			if (controller.getSnapshot().session) await controller.restore();
-			else await controller.start();
-			const current = controller.getSnapshot();
-			if (current.status === "error") throw new Error(current.error);
-			navigate(
-				current.status === "active" && current.session
-					? warehousePath(
-							"demo",
-							current.session.last_warehouse_id ||
-								current.session.initial_warehouse_id,
-						)
-					: "/demo",
-			);
-		} catch (error) {
-			setError(errorMessage(error));
-		} finally {
-			setDemoPending(false);
-		}
-	}
-
 	function toggleMode() {
-		if (pending || demoPending) return;
+		if (submitting.current) return;
 		setError("");
+		changePasswordVisibility(false);
+		setPasswordValue("");
+		setConfirmationValue("");
 		setSearchParams((current) => {
 			const next = new URLSearchParams(current);
 			if (next.get("mode") === "register") {
@@ -90,14 +80,26 @@ export function useAuthenticate() {
 		: register
 			? "Зарегистрироваться"
 			: "Войти";
-	const modeLabel = register
-		? "Уже есть аккаунт? Войти"
-		: "Нет аккаунта? Зарегистрироваться";
+	const modePrompt = register ? "Уже есть аккаунт?" : "Нет аккаунта?";
+	const modeLabel = register ? "Войти" : "Зарегистрироваться";
+	function clearPasswordError(form: HTMLFormElement) {
+		const data = new FormData(form);
+		setPasswordValue(String(data.get("password") ?? ""));
+		setConfirmationValue(String(data.get("passwordConfirmation") ?? ""));
+		const confirmation = form.elements.namedItem("passwordConfirmation");
+		if (confirmation instanceof HTMLInputElement)
+			confirmation.setCustomValidity("");
+		setError("");
+	}
 
 	return {
 		submit,
-		openDemo,
-		demoPending,
+		register,
+		passwordLongEnough: passwordValue.length >= 8,
+		passwordMatches:
+			confirmationValue.length > 0 && passwordValue === confirmationValue,
+		modePrompt,
+		clearPasswordError,
 		show,
 		error,
 		pending,
