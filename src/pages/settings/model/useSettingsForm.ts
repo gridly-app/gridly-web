@@ -19,6 +19,7 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 	const cache = useQueryClient();
 	const [draft, setDraft] = useState(() => ({
 		name: w.name,
+		baselineName: w.name,
 		policy: { ...w.policy },
 		revision: w.revision,
 		policyRevision: w.policyRevision,
@@ -35,7 +36,12 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 			await execute(
 				"settings",
 				section === "name"
-					? { section, name: draft.name.trim(), revision: draft.revision }
+					? {
+							section,
+							name: draft.name.trim(),
+							revision:
+								w.name === draft.baselineName ? w.revision : draft.revision,
+						}
 					: {
 							section,
 							policy: draft.policy,
@@ -46,7 +52,11 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 			if (updated)
 				setDraft((current) =>
 					section === "name"
-						? { ...current, revision: updated.revision }
+						? {
+								...current,
+								revision: updated.revision,
+								baselineName: updated.name,
+							}
 						: { ...current, policyRevision: updated.policyRevision },
 				);
 			setMessages((current) => ({ ...current, [section]: "Сохранено" }));
@@ -63,7 +73,12 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 	function refresh(section: "name" | "policy") {
 		setDraft((current) =>
 			section === "name"
-				? { ...current, name: w.name, revision: w.revision }
+				? {
+						...current,
+						name: w.name,
+						baselineName: w.name,
+						revision: w.revision,
+					}
 				: {
 						...current,
 						policy: { ...w.policy },

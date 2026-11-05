@@ -1,40 +1,162 @@
 .settings {
 	flex: 1;
 	min-height: 0;
-	margin: 0;
-	overflow: auto;
-	padding: 28px;
-	background: var(--surface);
+	overflow: visible;
+	padding: var(--workspace-inset);
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
 }
-.field {
-	max-width: 560px;
+.settings > * {
+	flex-shrink: 0;
+	min-width: 0;
 }
-.settings hr {
-	border: none;
-	border-top: 1px solid var(--line);
-	margin: 25px 0;
+.heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+.heading h2 {
+	font-size: 24px;
+	line-height: 32px;
+	letter-spacing: -0.025em;
+}
+.heading p {
+	margin-top: 4px;
+	color: var(--muted-foreground);
+	font-size: var(--text-control);
+}
+.panel[hidden] {
+	display: none;
+}
+.settingsGrid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: start;
+	gap: 24px;
+}
+.sections {
+	min-width: 0;
+}
+.card,
+.sections > :global([data-slot="form"]) {
+	min-width: 0;
+	padding: 24px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-panel);
+	background: var(--card);
+	box-shadow: var(--shadow-panel);
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 }
 .settings h3 {
 	font-size: 18px;
-	letter-spacing: -0.5px;
+	line-height: 26px;
+	letter-spacing: -0.015em;
+}
+.settings p {
+	color: var(--muted-foreground);
+	font-size: var(--text-control);
+	line-height: 22px;
+}
+.settings :global([data-slot="form"]) {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-width: 0;
+}
+.settings :global([data-slot="select-trigger"]) {
+	width: 100%;
+	min-width: 0;
+}
+.settings :global([data-slot="label"]) {
+	font-size: var(--text-control);
+}
+.settings :global([role="status"]):empty {
+	display: none;
 }
 .switchRow {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	max-width: 560px;
-	padding: 17px 0;
-	border-bottom: 1px solid var(--line);
-	font-size: 12px;
-}
-.submit {
-	margin-top: 22px;
+	gap: 16px;
+	width: 100%;
+	padding: 12px 0;
+	border-bottom: 1px solid var(--border);
+	font-size: var(--text-control);
 }
 .switch {
 	margin: 0;
 }
+.formGrid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px;
+}
+.formGrid > :first-child {
+	grid-column: 1 / -1;
+}
+.dangerZone {
+	border-top: 1px solid var(--border);
+	padding-top: 16px;
+	margin-top: 8px;
+}
+.dangerZone > summary {
+	cursor: pointer;
+	color: var(--destructive-foreground);
+	font-size: var(--text-control);
+	font-weight: 600;
+}
+.dangerZone p {
+	margin: 12px 0;
+}
+.field {
+	max-width: 560px;
+}
+.submit {
+	margin-top: 16px;
+}
+@media (width <= 1080px) {
+	.settingsGrid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
 @media (width <= 580px) {
 	.settings {
-		padding: 20px 16px;
+		padding: 16px;
+		gap: 16px;
 	}
+	.card,
+	.sections > :global([data-slot="form"]) {
+		padding: 16px;
+	}
+	.formGrid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.settingsGrid {
+		gap: 16px;
+	}
+}
+
+.sections {
+	display: grid;
+	gap: 24px;
+}
+.mapSizeForm {
+	border-top: 1px solid var(--border);
+	padding-top: 20px;
+}
+.citySource {
+	color: var(--muted-foreground);
+	font-size: var(--text-caption);
+	width: fit-content;
+	cursor: help;
+}
+
+.pageScroll {
+	flex: 1;
+	min-height: 0;
 }
