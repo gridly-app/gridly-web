@@ -9,6 +9,6 @@ export function categoryFromForm(
 		revision: category?.revision,
 		id: category?.id,
 		name: formText(data, "name"),
-		cold: formText(data, "cold") === "true",
+		cold: category?.cold ?? false,
 	};
 }

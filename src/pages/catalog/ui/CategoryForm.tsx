@@ -1,5 +1,5 @@
 import type { Category, CategoryInput } from "@/entities/warehouse";
-import { Combobox, Field, FormShell, Input } from "@/shared/ui";
+import { Field, FormShell, Input } from "@/shared/ui";
 import { categoryFromForm } from "../model/categoryFromForm";
 
 export interface CategoryFormProps {
@@ -20,16 +20,6 @@ export function CategoryForm({ category, pending, onSave }: CategoryFormProps) {
 					defaultValue={category?.name}
 					required
 					maxLength={80}
-				/>
-			</Field>
-			<Field label="Тип хранения">
-				<Combobox
-					name="cold"
-					defaultValue={String(category?.cold || false)}
-					options={[
-						{ value: "false", label: "Обычное" },
-						{ value: "true", label: "Холодное" },
-					]}
 				/>
 			</Field>
 		</FormShell>

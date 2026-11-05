@@ -1,9 +1,7 @@
-import { IconPencil } from "@tabler/icons-react";
 import type { Category } from "@/entities/warehouse";
 import {
-	IconButton,
+	Button,
 	Table,
-	TableActions,
 	TableBody,
 	TableCell,
 	TableHead,
@@ -14,39 +12,32 @@ import type { CatalogCategory } from "../model/catalog";
 
 export interface CategoriesTableProps {
 	items: readonly CatalogCategory[];
-	onEdit: (category: Category) => void;
+	hiddenColumns: readonly number[];
+	onOpen: (category: Category) => void;
 }
 
-export function CategoriesTable({ items, onEdit }: CategoriesTableProps) {
+export function CategoriesTable({
+	items,
+	onOpen,
+	hiddenColumns,
+}: CategoriesTableProps) {
 	return (
-		<Table>
+		<Table hiddenColumns={hiddenColumns}>
 			<TableHeader>
 				<TableRow>
 					<TableHead>Категория</TableHead>
-					<TableHead>Хранение</TableHead>
 					<TableHead>Товаров</TableHead>
-					<TableHead />
 				</TableRow>
 			</TableHeader>
 			<TableBody>
 				{items.map((c) => (
 					<TableRow key={c.id}>
 						<TableCell>
-							<b>{c.name}</b>
+							<Button variant="text" size="sm" onClick={() => onOpen(c)}>
+								{c.name}
+							</Button>
 						</TableCell>
-						<TableCell>{c.cold ? "Холодное" : "Обычное"}</TableCell>
 						<TableCell>{c.productCount ?? "—"}</TableCell>
-						<TableCell>
-							<TableActions>
-								<IconButton
-									label="Изменить"
-									icon={<IconPencil size={16} />}
-									variant="secondary"
-									disabled={!c.allowedActions?.includes("edit")}
-									onClick={() => onEdit(c)}
-								/>
-							</TableActions>
-						</TableCell>
 					</TableRow>
 				))}
 			</TableBody>

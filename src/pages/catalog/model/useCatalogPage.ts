@@ -10,7 +10,6 @@ import type { CatalogCategory, CatalogProduct, CatalogTab } from "./catalog";
 export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
 	const [status, setStatus] = useState("all");
 	const [category, setCategory] = useState("all");
-	const [storage, setStorage] = useState("all");
 	const [search, setSearch] = useState("");
 	const [tab, setTab] = useState<CatalogTab>("products");
 	const searchQuery = search.trim().toLowerCase();
@@ -41,10 +40,7 @@ export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
 		.filter(
 			(p) =>
 				(status === "all" || (status === "archived") === !!p.archived) &&
-				(category === "all" || p.category === category) &&
-				(storage === "all" ||
-					warehouse.categories.find((c) => c.id === p.category)?.cold ===
-						(storage === "cold")),
+				(category === "all" || p.category === category),
 		)
 		.filter((product) =>
 			(product.name + product.sku).toLowerCase().includes(searchQuery),
@@ -63,11 +59,7 @@ export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
 		}));
 
 	const visibleCategories: CatalogCategory[] = warehouse.categories
-		.filter(
-			(c) =>
-				(status === "all" || (status === "archived") === !!c.archived) &&
-				(storage === "all" || c.cold === (storage === "cold")),
-		)
+		.filter((c) => status === "all" || (status === "archived") === !!c.archived)
 		.filter((category) => category.name.toLowerCase().includes(searchQuery))
 		.map((category) => ({
 			...category,
@@ -79,8 +71,6 @@ export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
 		setStatus,
 		category,
 		setCategory,
-		storage,
-		setStorage,
 		empty: !(tab === "products" ? warehouse.products : warehouse.categories)
 			.length,
 		noResults:
