@@ -56,17 +56,17 @@ export function commandResources(
 			return [];
 		case "deleteProduct":
 		case "deleteCategory":
-			return ["catalog", "map"];
+			return ["catalog", "map", "history"];
 		case "deleteOrder":
 			return ["orders", "inventory", "history", "metadata"];
 		case "stock":
 		case "deleteStock":
 			return ["inventory", "history", "metadata"];
 		case "cabinet":
-			return ["metadata"];
+			return ["metadata", "history"];
 		case "product":
 		case "category":
-			return ["catalog"];
+			return ["catalog", "history"];
 		case "order":
 		case "start":
 		case "confirm":
@@ -78,10 +78,10 @@ export function commandResources(
 			return ["inventory", "history", "metadata"];
 		case "robot":
 		case "deleteRobot":
-			return ["robots", "metadata"];
+			return ["robots", "metadata", "history"];
 		case "settings":
-			return ["metadata"];
+			return ["metadata", "history"];
 		default:
-			return ["map", "robots", "metadata"];
+			return ["map", "robots", "metadata", "history"];
 	}
 }

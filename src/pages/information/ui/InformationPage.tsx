@@ -29,6 +29,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
+	useTableColumns,
 } from "@/shared/ui";
 import { shortDay } from "../model/chartData";
 import {
@@ -63,6 +64,13 @@ export function InformationPage() {
 	const navigate = useNavigate();
 	const mode = useWorkspaceMode();
 	const operations = useRef<HTMLElement>(null);
+	const columns = useTableColumns("report-orders", [
+		"Направление",
+		"Контрагент",
+		"Количество",
+		"Статус",
+		"Дата",
+	]);
 	const [filters, setFilters] = useState<ReportFilters>(() => {
 		const to = warehouseDay(Date.now(), w.timezone);
 		return {
@@ -403,6 +411,7 @@ export function InformationPage() {
 								</div>
 								<div className={styles.headerActions}>
 									<Badge tone="neutral">{detailOrders.length} операций</Badge>
+									{detailOrders.length > 0 && columns.button}
 									{selectedRange && (
 										<Button
 											variant="text"
@@ -416,7 +425,7 @@ export function InformationPage() {
 							</div>
 							{detailOrders.length ? (
 								<div className={styles.tableScroll}>
-									<Table>
+									<Table hiddenColumns={columns.hiddenColumns}>
 										<TableHeader>
 											<TableRow>
 												<TableHead>Заказ</TableHead>

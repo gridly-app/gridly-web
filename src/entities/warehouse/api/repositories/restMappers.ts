@@ -198,6 +198,9 @@ export function stockFromDto(s: StockDto): Stock {
 export function eventFromDto(e: EventDto): Event {
 	return {
 		id: String(e.id),
+		warehouseId:
+			e.warehouse_id ??
+			/^warehouses?[:/]([^/]+)$/.exec(e.entity_locator ?? "")?.[1],
 		type: e.event_type,
 		entity: e.entity_locator,
 		time: e.created_at,

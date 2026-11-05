@@ -58,7 +58,7 @@
 .chartCard,
 .savedViews {
 	border: 1px solid var(--border);
-	border-radius: var(--radius-panel);
+	border-radius: 0;
 	background: var(--card);
 	box-shadow: var(--shadow-panel);
 }
@@ -126,6 +126,7 @@
 	gap: 16px;
 }
 .metrics :global([data-slot="card"]) {
+	border-radius: 0;
 	padding: 0;
 }
 .metrics :global([data-slot="card-panel"]) {
@@ -400,6 +401,18 @@
 	.chartGrid {
 		gap: 16px;
 	}
+	.filterMain > [data-rubber-segment]:first-child {
+		width: 100%;
+	}
+	.filterMain > [data-rubber-segment]:first-child > [role="radio"] {
+		flex: 1 1 0;
+		min-width: 0;
+		padding-inline: 4px;
+		font-size: var(--text-caption);
+		line-height: 16px;
+		white-space: normal;
+		text-align: center;
+	}
 	.categoryBars {
 		grid-template-columns: minmax(0, 1fr);
 	}
@@ -483,6 +496,7 @@
 	font-variant-numeric: tabular-nums;
 }
 .summary[data-slot="card"] {
+	border-radius: 0;
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
 	padding: 0;

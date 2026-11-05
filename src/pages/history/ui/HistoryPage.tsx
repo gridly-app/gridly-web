@@ -1,10 +1,10 @@
 import {
 	Badge,
 	DataPanel,
+	Feedback,
 	Field,
 	Input,
 	ListFilters,
-	SearchField,
 	Select,
 	Table,
 	TableBody,
@@ -12,12 +12,14 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
+	useTableColumns,
 } from "@/shared/ui";
 import { useHistoryPage } from "../model/useHistoryPage";
 import styles from "./HistoryPage.module.css";
 
 export function HistoryPage() {
 	const model = useHistoryPage();
+	const columns = useTableColumns("history", ["Раздел", "Когда"]);
 	const date = (value: string) =>
 		Number.isFinite(Date.parse(value))
 			? new Date(value).toLocaleDateString("ru-RU", {
@@ -40,20 +42,25 @@ export function HistoryPage() {
 		<DataPanel
 			empty={model.visibleEvents.length === 0}
 			emptyMessage={
-				!model.valid
-					? "Дата начала не должна быть позже даты окончания."
-					: model.empty
-						? "История операций пока пуста."
-						: "Нет событий с выбранными фильтрами."
+				!model.valid ? (
+					<Feedback tone="error">
+						Дата начала не должна быть позже даты окончания.
+					</Feedback>
+				) : model.empty ? (
+					"История операций пока пуста."
+				) : (
+					"Нет событий с выбранными фильтрами."
+				)
 			}
 			toolbar={
 				<>
-					<SearchField
-						aria-label="Поиск по истории"
-						value={model.search}
-						onChange={model.setSearch}
-					/>
+					{columns.button}
 					<ListFilters
+						search={{
+							"aria-label": "Поиск по истории",
+							value: model.search,
+							onChange: model.setSearch,
+						}}
 						count={
 							[
 								model.category !== "all",
@@ -106,7 +113,7 @@ export function HistoryPage() {
 			}
 		>
 			<div className={styles.log} data-history-log="">
-				<Table>
+				<Table hiddenColumns={columns.hiddenColumns}>
 					<TableHeader>
 						<TableRow>
 							<TableHead>Событие</TableHead>
@@ -121,9 +128,11 @@ export function HistoryPage() {
 									<div className={styles.event}>
 										<strong>{event.title}</strong>
 										{event.detail && <p>{event.detail}</p>}
-										<span className={styles.mobileBadge}>
-											<Badge tone="neutral">{event.groupLabel}</Badge>
-										</span>
+										{!columns.hiddenColumns.includes(1) && (
+											<span className={styles.mobileBadge}>
+												<Badge tone="neutral">{event.groupLabel}</Badge>
+											</span>
+										)}
 									</div>
 								</TableCell>
 								<TableCell className={styles.category}>

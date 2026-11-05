@@ -209,6 +209,7 @@ export const legacyMapStateDto = z.object({
 });
 
 export const eventDto = z.object({
+	warehouse_id: optionalText,
 	id: z.union([z.string(), z.number()]),
 	event_type: optionalText,
 	entity_locator: optionalText,

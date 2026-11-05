@@ -179,6 +179,7 @@ export const orderSchema = z.object({
 });
 
 export const eventSchema = z.object({
+	warehouseId: z.string().optional(),
 	type: z.string().optional(),
 	entity: z.string().optional(),
 	id: z.string(),

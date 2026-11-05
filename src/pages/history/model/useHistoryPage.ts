@@ -21,11 +21,18 @@ export function useHistoryPage() {
 		day: "2-digit",
 	});
 	const valid = !from || !to || from <= to;
-	const events = warehouse.events.map((event) => ({
-		...event,
-		group: group(event),
-		groupLabel: labels[group(event)] ?? "Склад",
-	}));
+	const events = warehouse.events
+		.filter(
+			(event) =>
+				(!event.warehouseId || event.warehouseId === warehouse.id) &&
+				event.title.trim() !== "Склад готов к работе" &&
+				event.detail.trim() !== "Загружены тестовые данные локального демо",
+		)
+		.map((event) => ({
+			...event,
+			group: group(event),
+			groupLabel: labels[group(event)] ?? "Склад",
+		}));
 	const visibleEvents = events
 		.filter((event) => {
 			const time = Date.parse(event.time);
@@ -64,7 +71,7 @@ export function useHistoryPage() {
 		setSort,
 		valid,
 		timezone: warehouse.timezone,
-		empty: warehouse.events.length === 0,
+		empty: events.length === 0,
 		groups: [...new Set(events.map((event) => event.group))].map((value) => ({
 			value,
 			label: labels[value] ?? "Склад",

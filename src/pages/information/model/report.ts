@@ -1,4 +1,9 @@
-import { type Order, productPrice, type Warehouse } from "@/entities/warehouse";
+import {
+	type Order,
+	productPrice,
+	stockZoneNames,
+	type Warehouse,
+} from "@/entities/warehouse";
 
 export { productPrice } from "@/entities/warehouse";
 
@@ -139,6 +144,7 @@ export function buildReport(w: Warehouse, filters: ReportFilters) {
 						: [],
 				),
 			);
+	const zoneName = stockZoneNames(w.cells);
 	const unpricedDetails: Record<UnpricedSection, UnpricedDetail[]> = {
 		inbound: orderDetails("inbound"),
 		outbound: orderDetails("outbound"),
@@ -152,7 +158,7 @@ export function buildReport(w: Warehouse, filters: ReportFilters) {
 				id: item.id,
 				productName: productName(item.product),
 				quantity: item.quantity,
-				source: `Партия ${item.id} · ячейка ${item.cell}`,
+				source: `Партия ${item.id} · ${zoneName(item)}`,
 			})),
 		writeOffs: (writeOffs ?? [])
 			.filter((item) => item.price === null && item.quantity > 0)
