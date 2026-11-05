@@ -12,21 +12,23 @@ export function OrderSummary({ model }: OrderSummaryProps) {
 
 	return (
 		<>
-			<div className={localLayout.row}>
-				<h3>{o.number}</h3>
-				<Badge value={o.status} />
+			<div className="grid gap-1">
+				<div className={`${localLayout.row} ${localLayout.wrap}`}>
+					<h3>{o.number}</h3>
+					<Badge value={o.status} />
+				</div>
+				<p>{o.party}</p>
 			</div>
-			<p>{o.party}</p>
 			{(o.blockedReason || o.reason) && (
 				<Feedback tone="error" role="alert">
 					{o.blockedReason || o.reason}
 				</Feedback>
 			)}
 			{o.status === "aborting" && (
-				<p>
+				<Feedback tone="info">
 					Груз возвращается на хранение. Док остаётся занят до завершения
 					возврата.
-				</p>
+				</Feedback>
 			)}
 		</>
 	);

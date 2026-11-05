@@ -50,6 +50,7 @@ export function OrderDetailDialog({ model }: OrderDetailDialogProps) {
 		<>
 			{selected && (
 				<Modal
+					wide={!editing}
 					title={editing ? "Исправить черновик" : "Карточка заказа"}
 					onClose={closeOrder}
 				>

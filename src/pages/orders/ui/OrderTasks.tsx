@@ -1,5 +1,4 @@
-import { StatusBadge as Badge } from "@/entities/warehouse";
-import { Button, MiniCard } from "@/shared/ui";
+import { Button } from "@/shared/ui";
 
 import type { getOrderPresentation } from "../model/getOrderPresentation";
 import type { useOrderDetail } from "../model/useOrderDetail";
@@ -12,26 +11,17 @@ export interface OrderTasksProps {
 export function OrderTasks({ model }: OrderTasksProps) {
 	const { tasks, pending } = model;
 
-	return (
-		<>
-			{tasks?.map((task) => (
-				<MiniCard key={task.id}>
-					<p>
-						Задание {task.id.slice(0, 8)} · {task.typeLabel} ·{" "}
-						<Badge value={task.status} />
-					</p>
-					{task.confirmationActions?.map((action) => (
-						<Button
-							variant="ghost"
-							disabled={pending}
-							key={action.id}
-							onClick={() => void model.confirmTask(task, action.id)}
-						>
-							{action.label}
-						</Button>
-					))}
-				</MiniCard>
-			))}
-		</>
+	return tasks?.flatMap(
+		(task) =>
+			task.confirmationActions?.map((action) => (
+				<Button
+					variant="secondary"
+					disabled={pending}
+					key={`${task.id}:${action.id}`}
+					onClick={() => void model.confirmTask(task, action.id)}
+				>
+					{action.label}
+				</Button>
+			)) ?? [],
 	);
 }

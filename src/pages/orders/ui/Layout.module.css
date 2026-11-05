@@ -12,7 +12,6 @@
 	color: var(--muted-foreground);
 	font-weight: 600;
 	letter-spacing: 0.06em;
-	margin: 0 0 16px;
 }
 .muted {
 	color: var(--muted-foreground);

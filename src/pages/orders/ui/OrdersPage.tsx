@@ -8,7 +8,13 @@ import {
 } from "@/entities/warehouse";
 import { useDemoSession, useSession, useWorkspaceMode } from "@/shared/auth";
 import { browserStorage } from "@/shared/lib/browserStorage";
-import { Button, DataPanel, ErrorNotice } from "@/shared/ui";
+import {
+	Button,
+	DataPanel,
+	ErrorNotice,
+	Feedback,
+	useTableColumns,
+} from "@/shared/ui";
 import { OrderFormDrafts } from "../model/orderFormDrafts";
 import { useOrderDialogs } from "../model/useOrderDialogs";
 import type { OrdersPageOptions } from "../model/useOrdersPage";
@@ -67,6 +73,14 @@ function OrdersPageContent({
 }) {
 	const model = useOrdersPage({ ...props, warehouse, command, pending });
 	const dialogs = useOrderDialogs(warehouse, execute, drafts);
+	const columns = useTableColumns(props.kind, [
+		props.kind === "inbound" ? "Поставщик" : "Получатель",
+		"Товаров",
+		"Стоимость",
+		"Создан",
+		"Статус",
+		"Действия",
+	]);
 
 	return (
 		<>
@@ -74,25 +88,34 @@ function OrdersPageContent({
 				<ErrorNotice message={dialogs.formError} />
 			)}
 			{(model.unpriced || model.from || model.to) && (
-				<div className="report-context">
-					<span>
-						{model.unpriced ? "Товары без цены" : "Из отчёта"}
-						{model.from && ` · ${model.from} — ${model.to}`}
-					</span>
-					<Button variant="text" size="sm" onClick={model.resetFilters}>
-						Сбросить фильтры отчёта
-					</Button>
-				</div>
+				<Feedback
+					tone="info"
+					className="workspace-alert"
+					action={
+						<Button variant="text" size="sm" onClick={model.resetFilters}>
+							Сбросить фильтры отчёта
+						</Button>
+					}
+				>
+					{model.unpriced ? "Товары без цены" : "Из отчёта"}
+					{model.from && ` · с ${model.from}`}
+					{model.to && ` · по ${model.to}`}
+				</Feedback>
 			)}
 			<DataPanel
 				empty={model.empty}
 				toolbar={
 					<OrdersToolbar
 						model={{ ...model, openCreation: dialogs.openCreation }}
+						columns={columns.button}
 					/>
 				}
 			>
-				<OrdersTable model={{ ...model, setDetail: dialogs.setDetail }} />
+				<OrdersTable
+					hiddenColumns={columns.hiddenColumns}
+					warehouse={warehouse}
+					model={{ ...model, setDetail: dialogs.setDetail }}
+				/>
 			</DataPanel>
 			<OrderCreationDialog
 				model={{ ...dialogs, page: props.kind, w: warehouse, pending }}

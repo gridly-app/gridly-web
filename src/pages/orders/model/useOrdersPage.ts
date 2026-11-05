@@ -2,12 +2,9 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
 	type CommandExecutor,
-	forecastLabel,
 	type Order,
-	orderCompletion,
 	orderValue,
 	productPrice,
-	useSimulationCadence,
 	type Warehouse,
 } from "@/entities/warehouse";
 
@@ -25,7 +22,6 @@ export function useOrdersPage({
 	command: CommandExecutor;
 	pending: boolean;
 }) {
-	const cadence = useSimulationCadence(warehouse);
 	const [params, setParams] = useSearchParams();
 	const status = params.get("status") || "all";
 	const category = params.get("category") || "all";
@@ -102,11 +98,6 @@ export function useOrdersPage({
 				order.quantity ??
 				order.lines.reduce((sum, line) => sum + line.quantity, 0),
 			cost: orderValue(order, warehouse.products),
-			forecast: orderCompletion(order, warehouse, cadence),
-			completionLabel: forecastLabel(
-				orderCompletion(order, warehouse, cadence),
-				warehouse.timezone,
-			),
 			canConfirm: !!order.allowedActions?.includes("confirm"),
 			createdLabel: new Date(order.created).toLocaleString("ru-RU", {
 				timeZone: warehouse.timezone,

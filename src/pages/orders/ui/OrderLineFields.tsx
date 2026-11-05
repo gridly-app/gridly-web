@@ -1,8 +1,6 @@
 import { IconTrash } from "@tabler/icons-react";
 import { Combobox, Field, IconButton, Input } from "@/shared/ui";
 import type { useOrderForm } from "../model/useOrderForm";
-import localLayout from "./Layout.module.css";
-import orderLayout from "./OrdersPage.module.css";
 import ordersStyles from "./OrdersPage.module.css";
 
 export interface OrderLineFieldsProps {
@@ -23,7 +21,7 @@ export function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 
 	return (
 		<div className={ordersStyles.orderLine}>
-			<Field className={orderLayout.lineField} label="Товар">
+			<Field className={ordersStyles.lineField} label="Товар">
 				<Combobox
 					value={line.product}
 					onValueChange={(product) => model.changeProduct(line.key, product)}
@@ -35,8 +33,8 @@ export function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 					}))}
 				/>
 			</Field>
-			<div className={localLayout.row}>
-				<Field className={orderLayout.lineField} label="Количество">
+			<div className={ordersStyles.lineControls}>
+				<Field className={ordersStyles.lineField} label="Количество">
 					<Input
 						type="number"
 						min={1}
@@ -46,7 +44,7 @@ export function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 					/>
 				</Field>
 				{kind === "inbound" && (
-					<Field className={orderLayout.lineField} label="Годность партии">
+					<Field className={ordersStyles.lineField} label="Годность партии">
 						<Input
 							type="date"
 							value={line.expires}

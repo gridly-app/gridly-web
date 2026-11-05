@@ -56,7 +56,7 @@ export function OrderCreationDialog({ model }: OrderCreationDialogProps) {
 					))}
 				</div>
 				<ErrorNotice message={model.formError} />
-				<Button onClick={model.newForm}>Новая форма</Button>
+				<Button onClick={model.newForm}>+ Форма</Button>
 			</Modal>
 		);
 	if (!model.creation) return null;
@@ -84,7 +84,7 @@ export function OrderCreationDialog({ model }: OrderCreationDialogProps) {
 		);
 	return (
 		<Modal
-			title={model.page === "inbound" ? "Новая поставка" : "Новый заказ"}
+			title={model.page === "inbound" ? "Поставка" : "Заказ"}
 			onClose={model.closeCreation}
 		>
 			<OrderForm

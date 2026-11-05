@@ -1,37 +1,40 @@
 import type { Order, Warehouse } from "@/entities/warehouse";
-import { productPrice, workflowKeys } from "@/entities/warehouse";
+import { productPrice } from "@/entities/warehouse";
 
 export function getOrderPresentation(
 	order: Order,
 	warehouse: Pick<Warehouse, "products">,
 ) {
-	const lines = order.lines.map((line) => ({
-		...line,
-		unpriced:
-			productPrice(
-				warehouse.products.find((product) => product.id === line.product)
-					?.price,
-			) === null,
-		category: warehouse.products.find((product) => product.id === line.product)
-			?.category,
-		productName:
-			warehouse.products.find((product) => product.id === line.product)?.name ||
-			line.product,
-	}));
-	const manualLabels = ["разгрузка", "отбор", "размещение", "погрузка"];
-	const confirmationsLabel =
-		workflowKeys
-			.map((key, index) => (order.manual[key] ? manualLabels[index] : ""))
-			.filter(Boolean)
-			.join(", ") || "не требуются";
+	const products = new Map(
+		warehouse.products.map((product) => [product.id, product]),
+	);
+	const lines = order.lines.map((line) => {
+		const product = products.get(line.product);
+		const unitPrice = productPrice(product?.price);
+		const processed =
+			order.status === "shipped" ||
+			order.status === "completed" ||
+			order.status === "received"
+				? line.quantity
+				: line.putaway !== undefined || line.writtenOff !== undefined
+					? (line.putaway ?? 0) + (line.writtenOff ?? 0)
+					: ["draft", "created"].includes(order.status)
+						? 0
+						: null;
+		return {
+			...line,
+			unitPrice,
+			processed,
+			remaining:
+				processed === null ? null : Math.max(0, line.quantity - processed),
+			unpriced: unitPrice === null,
+			category: product?.category,
+			sku: product?.sku,
+			productName: product?.name || line.product,
+		};
+	});
 	const tasks = order.tasks?.map((task) => ({
 		...task,
-		typeLabel:
-			task.type === "pick"
-				? "Отбор"
-				: task.type === "putaway"
-					? "Размещение"
-					: task.type,
 		confirmationActions: task.allowed_actions
 			?.filter((action) => ["confirm-pick", "confirm-putaway"].includes(action))
 			.map((action) => ({
@@ -43,5 +46,5 @@ export function getOrderPresentation(
 			})),
 	}));
 
-	return { lines, confirmationsLabel, tasks };
+	return { lines, tasks };
 }

@@ -1,11 +1,6 @@
 import { useSearchParams } from "react-router-dom";
-import {
-	forecastLabel,
-	orderCompletion,
-	orderValue,
-	useSimulationCadence,
-} from "@/entities/warehouse";
-import { Button, ErrorNotice, WarmTooltip } from "@/shared/ui";
+import { orderValue } from "@/entities/warehouse";
+import { Button, ErrorNotice } from "@/shared/ui";
 import { getOrderPresentation } from "../model/getOrderPresentation";
 import type { OrderDetailOptions } from "../model/useOrderDetail";
 import { useOrderDetail } from "../model/useOrderDetail";
@@ -20,9 +15,7 @@ export type OrderDetailProps = OrderDetailOptions;
 export function OrderDetail(props: OrderDetailProps) {
 	const model = useOrderDetail(props);
 	const [, setParams] = useSearchParams();
-	const cadence = useSimulationCadence(props.w);
 	const cost = orderValue(props.o, props.w.products);
-	const forecast = orderCompletion(props.o, props.w, cadence);
 	const presentation = getOrderPresentation(props.o, props.w);
 
 	return (
@@ -63,20 +56,7 @@ export function OrderDetail(props: OrderDetailProps) {
 						})}
 					</dd>
 				</div>
-				<div>
-					<dt>
-						{props.o.kind === "inbound"
-							? "Ожидаемое размещение"
-							: "Ожидаемая отгрузка"}
-					</dt>
-					<dd>
-						<WarmTooltip content={forecast.note} focusable>
-							<span>{forecastLabel(forecast, props.w.timezone)}</span>
-						</WarmTooltip>
-					</dd>
-				</div>
 			</dl>
-			<OrderLines model={presentation} />
 			<OrderActions model={model} />
 			<OrderTasks
 				model={{
@@ -87,6 +67,11 @@ export function OrderDetail(props: OrderDetailProps) {
 			/>
 			<ErrorNotice message={model.error} />
 			<OrderReasonForm model={model} />
+			<OrderLines
+				key={props.o.id}
+				warehouseId={props.w.id}
+				model={presentation}
+			/>
 		</>
 	);
 }

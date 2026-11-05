@@ -20,6 +20,9 @@ export function OrderActions({ model }: OrderActionsProps) {
 	const { onEdit, canEdit, pending, visibleActions, canConfirm, confirmOrder } =
 		model;
 
+	if (!(onEdit && canEdit) && !visibleActions.length && !canConfirm)
+		return null;
+
 	return (
 		<div className={`${localLayout.row} ${localLayout.wrap}`}>
 			{onEdit && canEdit && (

@@ -1,17 +1,13 @@
 import { IconPlus } from "@tabler/icons-react";
+import type { ReactNode } from "react";
 import { statusLabels } from "@/entities/warehouse";
-import {
-	Button,
-	ListFilters,
-	SearchField,
-	Select,
-	StableLabel,
-} from "@/shared/ui";
+import { Button, ListFilters, Select, StableLabel } from "@/shared/ui";
 
 import type { useOrderDialogs } from "../model/useOrderDialogs";
 import type { useOrdersPage } from "../model/useOrdersPage";
 
 export interface OrdersToolbarProps {
+	columns: ReactNode;
 	model: Pick<
 		ReturnType<typeof useOrdersPage>,
 		| "resetFilters"
@@ -29,7 +25,7 @@ export interface OrdersToolbarProps {
 		Pick<ReturnType<typeof useOrderDialogs>, "openCreation">;
 }
 
-export function OrdersToolbar({ model }: OrdersToolbarProps) {
+export function OrdersToolbar({ model, columns }: OrdersToolbarProps) {
 	const { openCreation, page, search, setSearch } = model;
 
 	return (
@@ -43,12 +39,13 @@ export function OrdersToolbar({ model }: OrdersToolbarProps) {
 				onClick={openCreation}
 			>
 				<IconPlus size={18} />
-				<StableLabel variants={["Новая поставка", "Новый заказ"]}>
-					{page === "inbound" ? "Новая поставка" : "Новый заказ"}
+				<StableLabel variants={["Поставка", "Заказ"]}>
+					{page === "inbound" ? "Поставка" : "Заказ"}
 				</StableLabel>
 			</Button>
-			<SearchField value={search} onChange={setSearch} />
+			{columns}
 			<ListFilters
+				search={{ value: search, onChange: setSearch }}
 				count={
 					[model.status !== "all", model.category !== "all"].filter(Boolean)
 						.length
