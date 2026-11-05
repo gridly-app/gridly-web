@@ -1,19 +1,23 @@
+import { IconRefresh } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
 import { errorMessage } from "@/shared/lib";
 import {
 	Button,
 	ErrorNotice,
+	Feedback,
 	Field,
 	Form,
 	FormActions,
 	FormGrid,
+	IconButton,
 	Input,
 	Select,
-	WarmTooltip,
 } from "@/shared/ui";
 import cities from "../config/cities.json";
 import styles from "./SettingsPage.module.css";
+
+const defaultMapSize = "10";
 
 function currentCity(w: Warehouse) {
 	const raw = (w.cabinet?.location || w.location || "").trim();
@@ -75,14 +79,14 @@ export function LocationAndMapSettings({
 		}
 	}
 	return (
-		<section className={styles.card} aria-label="Расположение и размеры карты">
+		<div className={styles.locationAndMap}>
 			<Form
 				onSubmit={(event) => {
 					event.preventDefault();
 					void save("city");
 				}}
 			>
-				<h3>Расположение</h3>
+				<h4>Расположение</h4>
 				<Field label="Город">
 					<Select
 						aria-label="Город склада"
@@ -94,18 +98,8 @@ export function LocationAndMapSettings({
 						disabled={busy || !canEdit}
 					/>
 				</Field>
-				<WarmTooltip
-					content={
-						<>
-							Справочник HFLabs / DaData, CC BY-SA 4.0. Поиск по городам России.
-						</>
-					}
-					focusable
-				>
-					<small className={styles.citySource}>Справочник городов России</small>
-				</WarmTooltip>
 				<ErrorNotice message={errors.city} />
-				<p role="status">{messages.city}</p>
+				{messages.city && <Feedback tone="success">{messages.city}</Feedback>}
 				<FormActions>
 					<Button
 						type="submit"
@@ -118,13 +112,12 @@ export function LocationAndMapSettings({
 				</FormActions>
 			</Form>
 			<Form
-				className={styles.mapSizeForm}
 				onSubmit={(event) => {
 					event.preventDefault();
 					void save("map");
 				}}
 			>
-				<h3>Размеры карты</h3>
+				<h4>Размеры карты</h4>
 				<FormGrid>
 					<Field label="Ширина, клеток">
 						<Input
@@ -135,7 +128,7 @@ export function LocationAndMapSettings({
 							required
 							value={width}
 							onChange={(event) => setWidth(event.target.value)}
-							disabled={busy || !canResize}
+							disabled={busy}
 						/>
 					</Field>
 					<Field label="Высота, клеток">
@@ -147,12 +140,12 @@ export function LocationAndMapSettings({
 							required
 							value={height}
 							onChange={(event) => setHeight(event.target.value)}
-							disabled={busy || !canResize}
+							disabled={busy}
 						/>
 					</Field>
 				</FormGrid>
 				<ErrorNotice message={errors.map} />
-				<p role="status">{messages.map}</p>
+				{messages.map && <Feedback tone="success">{messages.map}</Feedback>}
 				<FormActions>
 					<Button
 						type="submit"
@@ -168,8 +161,21 @@ export function LocationAndMapSettings({
 					>
 						Сохранить размеры
 					</Button>
+					<IconButton
+						type="button"
+						label="Сбросить размеры карты до 10 × 10"
+						tooltip="Сбросить размеры до 10 × 10"
+						icon={<IconRefresh size={16} />}
+						disabled={busy}
+						onClick={() => {
+							setWidth(defaultMapSize);
+							setHeight(defaultMapSize);
+							setErrors((current) => ({ ...current, map: "" }));
+							setMessages((current) => ({ ...current, map: "" }));
+						}}
+					/>
 				</FormActions>
 			</Form>
-		</section>
+		</div>
 	);
 }

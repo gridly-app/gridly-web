@@ -26,12 +26,19 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 	}));
 	const [operation, setOperation] = useState<"name" | "policy" | null>(null);
 	const inFlight = useRef(false);
-	const [messages, setMessages] = useState({ name: "", policy: "" });
+	const [messages, setMessages] = useState<
+		Partial<
+			Record<
+				"name" | "policy",
+				{ text: string; tone: "success" | "error" } | undefined
+			>
+		>
+	>({});
 	async function save(section: "name" | "policy") {
 		if (pending || inFlight.current) return;
 		inFlight.current = true;
 		setOperation(section);
-		setMessages((current) => ({ ...current, [section]: "" }));
+		setMessages((current) => ({ ...current, [section]: undefined }));
 		try {
 			await execute(
 				"settings",
@@ -59,11 +66,14 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 							}
 						: { ...current, policyRevision: updated.policyRevision },
 				);
-			setMessages((current) => ({ ...current, [section]: "Сохранено" }));
+			setMessages((current) => ({
+				...current,
+				[section]: { text: "Сохранено", tone: "success" },
+			}));
 		} catch (error) {
 			setMessages((current) => ({
 				...current,
-				[section]: errorMessage(error),
+				[section]: { text: errorMessage(error), tone: "error" },
 			}));
 		} finally {
 			inFlight.current = false;
@@ -85,7 +95,7 @@ export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {
 						policyRevision: w.policyRevision,
 					},
 		);
-		setMessages((current) => ({ ...current, [section]: "" }));
+		setMessages((current) => ({ ...current, [section]: undefined }));
 	}
 	return {
 		w,

@@ -15,7 +15,7 @@ const pageResources: Record<string, WarehouseResource[]> = {
 	outbound: ["orders", "catalog", "robots"],
 	inventory: ["inventory", "catalog", "map", "orders", "robots", "history"],
 	history: ["history"],
-	settings: ["map", "catalog", "robots", "orders", "inventory"],
+
 	information: ["orders", "catalog", "inventory", "history"],
 	warehouses: [],
 };

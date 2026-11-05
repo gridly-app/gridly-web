@@ -69,6 +69,20 @@
 .trigger {
 	flex-shrink: 0;
 }
+
+.workspace :global([data-slot="sidebar-header"]),
+.workspace :global([data-slot="sidebar-footer"]) {
+	padding-inline: 8px;
+}
+.brand,
+.sidebarLabel,
+.workspaceSelectTrigger,
+.profileTrigger {
+	padding-inline: 8px;
+}
+.profileTrigger {
+	gap: 8px;
+}
 :global([data-collapsible="icon"]) .sidebarLabel,
 :global([data-collapsible="icon"]) .profileName,
 :global([data-collapsible="icon"]) .brand {
@@ -77,7 +91,6 @@
 	display: none;
 }
 
-/* The collapsed rail has one centred 36px target per row, with 18px icons. */
 :global([data-collapsible="icon"]) .workspaceDropdown {
 	display: flex;
 	justify-content: center;
@@ -124,6 +137,9 @@
 	width: 32px;
 	height: 32px;
 }
+.railSelection + svg {
+	position: relative;
+}
 :global([data-collapsible="icon"]) .trigger > svg {
 	width: 18px;
 	height: 18px;
@@ -162,4 +178,43 @@
 .sidebarBottom {
 	flex-shrink: 0;
 	min-width: 0;
+}
+:global([data-collapsible="icon"]) .workspace .workspaceSelectTrigger,
+:global([data-collapsible="icon"]) .workspace .profileTrigger {
+	padding-inline: 0;
+}
+
+:global([data-collapsible="icon"])
+	.workspace
+	:global([data-slot="sidebar-menu-button"]) {
+	overflow: visible;
+}
+:global([data-collapsible="icon"])
+	.workspace
+	:global([data-slot="sidebar-menu-button"][aria-current="page"]) {
+	background: transparent;
+	box-shadow: none;
+}
+.railSelection {
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius-control);
+	background: var(--accent-bg);
+	pointer-events: none;
+}
+
+.railSeparator {
+	display: none;
+}
+:global([data-collapsible="icon"]) .railSeparator {
+	display: block;
+	width: 28px;
+	margin-inline: auto;
+}
+:global([data-collapsible="icon"]) .workspace .sidebarBottom {
+	padding-inline: 0;
+	align-items: center;
+}
+:global([data-collapsible="icon"]) .workspace .profileTrigger {
+	gap: 0;
 }

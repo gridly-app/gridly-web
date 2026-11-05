@@ -14,7 +14,7 @@ export function WarehouseCreationDialog({
 	return (
 		<>
 			{open && (
-				<Modal title="Новый склад" onClose={() => setOpen(false)}>
+				<Modal title="Создание склада" onClose={() => setOpen(false)}>
 					<CreateWarehouseForm pending={pending} onSave={save} />
 				</Modal>
 			)}

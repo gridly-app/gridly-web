@@ -69,7 +69,7 @@ export default function ProfileMenu(props: ProfileMenuProps) {
 				className={workspaceSidebarStyles.profileMenu}
 			>
 				<MenuSubmenu>
-					<MenuSubmenuTrigger className="[&>svg:last-child]:hidden">
+					<MenuSubmenuTrigger>
 						<IconPalette size={18} />
 						<span>Тема</span>
 					</MenuSubmenuTrigger>

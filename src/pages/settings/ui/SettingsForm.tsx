@@ -2,9 +2,11 @@ import { IconRefresh } from "@tabler/icons-react";
 import { useId } from "react";
 import {
 	Button,
+	Feedback,
 	Field,
 	Form,
 	FormActions,
+	FormGrid,
 	IconButton,
 	Input,
 	Label,
@@ -24,7 +26,12 @@ export function SettingsForm({
 	const id = useId();
 	const model = useSettingsForm(props);
 	return (
-		<div className={styles.sections}>
+		<section
+			className={
+				section === "general" ? `${styles.card} ${styles.general}` : styles.card
+			}
+		>
+			{section === "general" && <h3>Основные параметры</h3>}
 			{section === "general" && (
 				<Form
 					onSubmit={(event) => {
@@ -32,22 +39,27 @@ export function SettingsForm({
 						void model.save("name");
 					}}
 				>
-					<h3>Основные параметры</h3>
-					<Field label="Название склада">
-						<Input
-							name="name"
-							value={model.name}
-							onChange={(event) => model.changeName(event.target.value)}
-							required
-							maxLength={80}
-							disabled={model.pending}
-						/>
-					</Field>
+					<FormGrid>
+						<Field label="Название склада">
+							<Input
+								name="name"
+								value={model.name}
+								onChange={(event) => model.changeName(event.target.value)}
+								required
+								maxLength={80}
+								disabled={model.pending}
+							/>
+						</Field>
 
-					<Field label="Часовой пояс">
-						<Input value={model.w.timezone} readOnly />
-					</Field>
-					<p role="status">{model.messages.name}</p>
+						<Field label="Часовой пояс">
+							<Input value={model.w.timezone} readOnly />
+						</Field>
+					</FormGrid>
+					{model.messages.name && (
+						<Feedback tone={model.messages.name.tone}>
+							{model.messages.name.text}
+						</Feedback>
+					)}
 					<FormActions>
 						<Button
 							type="submit"
@@ -79,10 +91,6 @@ export function SettingsForm({
 					}}
 				>
 					<h3>Ручные подтверждения</h3>
-					<p>
-						Включите этапы, которые оператор должен подтверждать вручную.
-						Остальные выполняются автоматически.
-					</p>
 					{model.confirmations.map((item) => (
 						<Label
 							key={item.key}
@@ -100,7 +108,11 @@ export function SettingsForm({
 							/>
 						</Label>
 					))}
-					<p role="status">{model.messages.policy}</p>
+					{model.messages.policy && (
+						<Feedback tone={model.messages.policy.tone}>
+							{model.messages.policy.text}
+						</Feedback>
+					)}
 					<FormActions>
 						<Button
 							type="submit"
@@ -123,6 +135,6 @@ export function SettingsForm({
 					</FormActions>
 				</Form>
 			)}
-		</div>
+		</section>
 	);
 }

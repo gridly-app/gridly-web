@@ -71,3 +71,10 @@
 	padding: 0;
 	gap: 0;
 }
+
+@media (prefers-reduced-motion: reduce) {
+	.appShell :global([data-slot="sidebar-gap"]),
+	.appShell :global([data-slot="sidebar-container"]) {
+		transition: none;
+	}
+}

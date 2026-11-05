@@ -8,6 +8,7 @@ import {
 	SidebarHeader,
 	SidebarTrigger,
 } from "@/shared/ui";
+import { Separator } from "@/shared/ui/spaceui/separator";
 import type { WorkspaceShellModel } from "../model/useWorkspaceShell";
 import ProfileMenu from "./profile/ProfileMenu";
 import { WarehouseNavigation } from "./WarehouseNavigation";
@@ -42,6 +43,7 @@ export function WorkspaceSidebar({ model }: WorkspaceSidebarProps) {
 				</div>
 
 				<WorkspaceSelector model={model.workspace} />
+				<Separator className={workspaceSidebarStyles.railSeparator} />
 			</SidebarHeader>
 			<SidebarContent>
 				<WarehouseNavigation model={model.navigation} />
