@@ -1,7 +1,8 @@
+import { IconTrash } from "@tabler/icons-react";
 import { StatusBadge as Badge } from "@/entities/warehouse";
 
 import {
-	Button,
+	IconButton,
 	Table,
 	TableActions,
 	TableBody,
@@ -16,12 +17,14 @@ import localLayout from "./Layout.module.css";
 export interface InventoryTableProps {
 	items: readonly InventoryStock[];
 	pending: boolean;
+	highlightUnpriced?: boolean;
 	onWriteOff: (stock: InventoryStock) => void;
 }
 
 export function InventoryTable({
 	items,
 	pending,
+	highlightUnpriced,
 	onWriteOff,
 }: InventoryTableProps) {
 	return (
@@ -38,7 +41,7 @@ export function InventoryTable({
 			</TableHeader>
 			<TableBody>
 				{items.map((s) => (
-					<TableRow key={s.id}>
+					<TableRow key={s.id} data-unpriced-highlight={highlightUnpriced}>
 						<TableCell>
 							<b>{s.productName}</b>
 							<small className={`${localLayout.block} ${localLayout.muted}`}>
@@ -58,11 +61,13 @@ export function InventoryTable({
 								{s.expires || "Без ограничения"}
 							</small>
 						</TableCell>
+
 						<TableCell>
 							<TableActions>
-								<Button
-									size="sm"
-									variant="ghost"
+								<IconButton
+									label="Списать"
+									icon={<IconTrash size={16} />}
+									variant="destructive-outline"
 									title={
 										s.writeOffBlockedReason ||
 										(!s.canWriteOff
@@ -71,9 +76,7 @@ export function InventoryTable({
 									}
 									disabled={pending || !s.canWriteOff}
 									onClick={() => onWriteOff(s)}
-								>
-									Списать
-								</Button>
+								/>
 							</TableActions>
 						</TableCell>
 					</TableRow>

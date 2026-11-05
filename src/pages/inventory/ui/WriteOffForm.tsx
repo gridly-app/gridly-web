@@ -11,6 +11,7 @@ export interface WriteOffFormProps {
 export function WriteOffForm({ stock, pending, onSave }: WriteOffFormProps) {
 	return (
 		<FormShell
+			submitVariant="destructive"
 			pending={pending}
 			submitLabel="Подтвердить списание"
 			onSubmit={(data) => onSave(writeOffFromForm(data, stock))}
