@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
@@ -18,6 +19,18 @@ export default defineConfig(({ mode }) => {
 						if (/\/node_modules\/(react-router|react-router-dom)\//.test(id))
 							return "router";
 
+						if (
+							/\/node_modules\/(motion|framer-motion|motion-dom|motion-utils)\//.test(
+								id,
+							)
+						)
+							return "motion-runtime";
+						if (/\/node_modules\/@base-ui\//.test(id)) return "base-ui";
+						if (
+							/\/node_modules\/(lucide-react|@tabler\/icons-react)\//.test(id)
+						)
+							return "icons";
+
 						if (/\/node_modules\/zod\//.test(id)) return "validation";
 						if (/\/node_modules\/@tanstack\//.test(id)) return "query";
 					},
@@ -32,7 +45,7 @@ export default defineConfig(({ mode }) => {
 				},
 			},
 		},
-		plugins: [react()],
+		plugins: [react(), tailwindcss()],
 		resolve: {
 			alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
 		},

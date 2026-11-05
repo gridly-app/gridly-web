@@ -1,0 +1,38 @@
+[
+	{
+		"component": "ShapeGrid",
+		"reference": "https://reactbits.dev/c/backgrounds/shape-grid",
+		"source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-default/Backgrounds/ShapeGrid/ShapeGrid.tsx",
+		"originalSha256": "dcae3cc4eb8673c7ad4eb370f3ddf353c22840f7b806ed7f2b8065e898e17e84",
+		"file": "src/shared/ui/visual/ShapeGrid.tsx",
+		"adaptations": "Upstream canvas engine; strict tuples, theme wrapper, decorative accessibility.",
+		"retrievedAt": "2026-11-04"
+	},
+	{
+		"component": "GlideSelect",
+		"reference": "https://reactbits.dev/c/micro/glide-select",
+		"source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Micro/GlideSelect/GlideSelect.tsx",
+		"originalSha256": "10a52909351b1e727a0e6a7802ae9190c6859799dac85e71ba106b40b25c3660",
+		"file": "src/shared/ui/spaceui/select.tsx",
+		"adaptations": "Adapted corner popup and gliding highlight to the existing Base UI selection, focus and portal implementation.",
+		"retrievedAt": "2026-11-04"
+	},
+	{
+		"component": "RubberSegment",
+		"reference": "https://reactbits.dev/c/micro/rubber-segment",
+		"source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-tailwind/Micro/RubberSegment/RubberSegment.tsx",
+		"originalSha256": "673e8efd8f69f62e85b4e9185a8648bc515a25abf28ef395cc4a0eabd604a1ea",
+		"file": "src/shared/ui/navigation/SegmentedControl.tsx",
+		"adaptations": "Adapted independently animated edges to existing radio primitives; disabled items, keyboard and reduced motion retained.",
+		"retrievedAt": "2026-11-04"
+	},
+	{
+		"component": "AnimatedContent",
+		"reference": "https://reactbits.dev/c/animations/animated-content",
+		"source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-default/Animations/AnimatedContent/AnimatedContent.tsx",
+		"originalSha256": "9d39ac2d4d5db3701477f744b1c937e6ff4f26d30a40c4514fedec35b1419f5f",
+		"file": "src/shared/ui/visual/AnimatedContent.tsx",
+		"adaptations": "Adapted viewport reveal to installed Motion runtime; no additional GSAP dependency.",
+		"retrievedAt": "2026-11-04"
+	}
+]

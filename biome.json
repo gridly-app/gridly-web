@@ -16,7 +16,9 @@
 		"enabled": true,
 		"rules": {
 			"preset": "recommended",
-			"suspicious": { "noEmptyBlockStatements": "error" }
+			"suspicious": {
+				"noEmptyBlockStatements": "error"
+			}
 		}
 	},
 	"javascript": {
@@ -31,5 +33,28 @@
 				"organizeImports": "on"
 			}
 		}
-	}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true,
+			"cssModules": true
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["src/shared/ui/spaceui/**", "src/shared/lib/spaceui/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noEmptyBlockStatements": "off",
+						"noExplicitAny": "off"
+					},
+					"a11y": {
+						"useSemanticElements": "off",
+						"noStaticElementInteractions": "off"
+					}
+				}
+			}
+		}
+	]
 }

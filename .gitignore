@@ -22,6 +22,7 @@ pnpm-debug.log*
 # dotenv environment variable files
 .env*
 !.env.example
+!.env.mock
 
 # caches
 .eslintcache

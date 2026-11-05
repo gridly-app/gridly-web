@@ -1,0 +1,479 @@
+[
+	{
+		"registry": "primitives-alert",
+		"source": "https://www.spaceui.one/r/primitives-alert.json",
+		"file": "src/shared/ui/spaceui/alert.tsx",
+		"originalSha256": "f376de3411b2ee0fc363b49ef6ab37890f4c8209620ffca9c83afab80b7c149e",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-alert-dialog",
+		"source": "https://www.spaceui.one/r/primitives-alert-dialog.json",
+		"file": "src/shared/ui/spaceui/alert-dialog.tsx",
+		"originalSha256": "d6b7bc7d26d3a37820e9e0803d0967529021ef81390f8768d7d28a43e5178d74",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-avatar",
+		"source": "https://www.spaceui.one/r/primitives-avatar.json",
+		"file": "src/shared/ui/spaceui/avatar.tsx",
+		"originalSha256": "1c2ee34f67cfb40ca6ec8f63da0029e9964cb2fec40b148252e5d568a1416c85",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-badge",
+		"source": "https://www.spaceui.one/r/primitives-badge.json",
+		"file": "src/shared/ui/spaceui/badge.tsx",
+		"originalSha256": "a659ebc0edb423dfc913acc6026cee3a005ab7eb5b0bd6a2b33c4b2fe4ea2f23",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-button",
+		"source": "https://www.spaceui.one/r/primitives-button.json",
+		"file": "src/shared/ui/spaceui/button.tsx",
+		"originalSha256": "ccfd1885fdb974ccfca2dc8bfcc6fbfcaffa1bdf2a6131908a4232d1769d6db6",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-card",
+		"source": "https://www.spaceui.one/r/primitives-card.json",
+		"file": "src/shared/ui/spaceui/card.tsx",
+		"originalSha256": "21ecc5bf48dce9de6754dcdaae86a08cf008a9b0b7eb20d95b26bd7b996e9e04",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-checkbox",
+		"source": "https://www.spaceui.one/r/primitives-checkbox.json",
+		"file": "src/shared/ui/spaceui/checkbox.tsx",
+		"originalSha256": "fbd009a3e336014b264b3e736b65bd5e0391bf9773c5eab674f365e7fdf03ff7",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-combobox",
+		"source": "https://www.spaceui.one/r/primitives-combobox.json",
+		"file": "src/shared/ui/spaceui/combobox.tsx",
+		"originalSha256": "45fcc3857bc120da08fc875f81ffe0401d3dee39ae4ac673694e14d5ec4db166",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-dialog",
+		"source": "https://www.spaceui.one/r/primitives-dialog.json",
+		"file": "src/shared/ui/spaceui/dialog.tsx",
+		"originalSha256": "a5fcdcde382ce5dd26b1473a307229991982ee56f62e82c84596aea5349aa161",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-empty",
+		"source": "https://www.spaceui.one/r/primitives-empty.json",
+		"file": "src/shared/ui/spaceui/empty.tsx",
+		"originalSha256": "adf55e6b9bf0b7eb82fe42235c0ae94738862098ef27b9c362187e41432633e8",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-field",
+		"source": "https://www.spaceui.one/r/primitives-field.json",
+		"file": "src/shared/ui/spaceui/field.tsx",
+		"originalSha256": "b25465d8da07612c6361899235e5289956625c78c95d3bb25e8917731ef49d19",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-fieldset",
+		"source": "https://www.spaceui.one/r/primitives-fieldset.json",
+		"file": "src/shared/ui/spaceui/fieldset.tsx",
+		"originalSha256": "50e32b8e2752bad5624dd24174db924298f9c44d46fa258935f2dbcdc23a54cb",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-form",
+		"source": "https://www.spaceui.one/r/primitives-form.json",
+		"file": "src/shared/ui/spaceui/form.tsx",
+		"originalSha256": "ffb6c9c1ec609038ecbfca597d997ab37f53e28b95afc56635f457bd7e394065",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-input",
+		"source": "https://www.spaceui.one/r/primitives-input.json",
+		"file": "src/shared/ui/spaceui/input.tsx",
+		"originalSha256": "c0a2f73beb8f8e3d4f5b1e9b9e2da6bb7e87ac8b6659fc25765207e99675f852",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-input-group",
+		"source": "https://www.spaceui.one/r/primitives-input-group.json",
+		"file": "src/shared/ui/spaceui/input-group.tsx",
+		"originalSha256": "da63ed3c31e3e25b22b2c7c78776bfd9b18a90a1bb093e778476d3c404428e39",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-label",
+		"source": "https://www.spaceui.one/r/primitives-label.json",
+		"file": "src/shared/ui/spaceui/label.tsx",
+		"originalSha256": "42464082068ff6411ad3f220233720b16a8da8dd006857eee1ec699a0293646f",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-link",
+		"source": "https://www.spaceui.one/r/primitives-link.json",
+		"file": "src/shared/ui/spaceui/link.tsx",
+		"originalSha256": "8c89b578db7775cc39952dbfdfef2094b82c97ef1b1641aaa13666bf9004fe9f",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-menu",
+		"source": "https://www.spaceui.one/r/primitives-menu.json",
+		"file": "src/shared/ui/spaceui/menu.tsx",
+		"originalSha256": "9e73add33d514a0c59438b47b6c677e7804ace224b764e7a86cc5482915fcd9f",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-meter",
+		"source": "https://www.spaceui.one/r/primitives-meter.json",
+		"file": "src/shared/ui/spaceui/meter.tsx",
+		"originalSha256": "b09c43b5a769cae7bf36a455911d068f53d9306690ab859d89bf3ce1719a29f6",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-pagination",
+		"source": "https://www.spaceui.one/r/primitives-pagination.json",
+		"file": "src/shared/ui/spaceui/pagination.tsx",
+		"originalSha256": "001c8ec5474e83e894a20dfc42444f5f5c90fd5bb0a8eca169c7dcd4c66ed7d9",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-radio-group",
+		"source": "https://www.spaceui.one/r/primitives-radio-group.json",
+		"file": "src/shared/ui/spaceui/radio-group.tsx",
+		"originalSha256": "25a2bd610c83816f86f554677fd4542dbcc4bd781e1cdd4fae74d7fee9ef7e4d",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-scroll-area",
+		"source": "https://www.spaceui.one/r/primitives-scroll-area.json",
+		"file": "src/shared/ui/spaceui/scroll-area.tsx",
+		"originalSha256": "6e48961c5a0010d9c81dbec0e33387a8c3bfd95579f4518787e03ad6368ce24a",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-select",
+		"source": "https://www.spaceui.one/r/primitives-select.json",
+		"file": "src/shared/ui/spaceui/select.tsx",
+		"originalSha256": "9acf28d37b0a26db1c88abcd6b043610fa81274902c62636922f845987f34435",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Glide Select corner pop and moving highlight from https://reactbits.dev/c/micro/glide-select, adapted to Base UI selection and forms."
+		]
+	},
+	{
+		"registry": "primitives-separator",
+		"source": "https://www.spaceui.one/r/primitives-separator.json",
+		"file": "src/shared/ui/spaceui/separator.tsx",
+		"originalSha256": "e2593ecb272a4b6f4384428f0b5ca0d23e45f8370c26922a34c775f71ef60efc",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-sheet",
+		"source": "https://www.spaceui.one/r/primitives-sheet.json",
+		"file": "src/shared/ui/spaceui/sheet.tsx",
+		"originalSha256": "cdbc190180cc956fc5ee2e7b67d9c3fbd004565fbdfff9a9ba1dde4936f89d2b",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-sidebar",
+		"source": "https://www.spaceui.one/r/primitives-sidebar.json",
+		"file": "src/shared/ui/spaceui/sidebar.tsx",
+		"originalSha256": "7642148edda52eb541508a7b165d4b47d9964c3eb5bacbb731a7e9ab7f82d7bd",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Guard unsupported Cookie Store API; controlled state persists through the Gridly adapter."
+		]
+	},
+	{
+		"registry": "primitives-skeleton",
+		"source": "https://www.spaceui.one/r/primitives-skeleton.json",
+		"file": "src/shared/ui/spaceui/skeleton.tsx",
+		"originalSha256": "ea266261498fcd78822180d1132141a3e6165b4e1c754ee9a98bb68b5ef6b4c8",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-spinner",
+		"source": "https://www.spaceui.one/r/primitives-spinner.json",
+		"file": "src/shared/ui/spaceui/spinner.tsx",
+		"originalSha256": "920c4034b989f41a8b95697926f38d8d88526cf8a40b36556235512a761e86ba",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-switch",
+		"source": "https://www.spaceui.one/r/primitives-switch.json",
+		"file": "src/shared/ui/spaceui/switch.tsx",
+		"originalSha256": "fd65f2827cdabd5941d15f8d774fd15c50736b9569e511c364a8307f06108c5a",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-table",
+		"source": "https://www.spaceui.one/r/primitives-table.json",
+		"file": "src/shared/ui/spaceui/table.tsx",
+		"originalSha256": "8770f7b260f1c0c96f6d4d2041491183c652a737a287d6327e3c3b033af166c9",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Removed unused upstream import for noUnusedLocals compatibility."
+		]
+	},
+	{
+		"registry": "primitives-textarea",
+		"source": "https://www.spaceui.one/r/primitives-textarea.json",
+		"file": "src/shared/ui/spaceui/textarea.tsx",
+		"originalSha256": "cacd65ff257b091ecd7c2d1adbc7f6badf3917a18e81c1c27b1a81e1fcf61d0c",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-toast",
+		"source": "https://www.spaceui.one/r/primitives-toast.json",
+		"file": "src/shared/ui/spaceui/toast.tsx",
+		"originalSha256": "c11f50d0c8b6c326671673a7dbdd03f9581fb33e237404e8028ec99b75cdaaae",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Optional property types accept undefined for exactOptionalPropertyTypes compatibility."
+		]
+	},
+	{
+		"registry": "primitives-toolbar",
+		"source": "https://www.spaceui.one/r/primitives-toolbar.json",
+		"file": "src/shared/ui/spaceui/toolbar.tsx",
+		"originalSha256": "c63f9c1790c22b229d6b3d3f7c006f4bb7dc92271f9b5a0c8d7bc4e41d8e8c13",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "primitives-tooltip",
+		"source": "https://www.spaceui.one/r/primitives-tooltip.json",
+		"file": "src/shared/ui/spaceui/tooltip.tsx",
+		"originalSha256": "6c0df74288a47bdf82b3c2e8f20d7679e7fd08d0cd5e7a27760b1fe10881ccc2",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "components-spaceui-avatar-extended",
+		"source": "https://www.spaceui.one/r/components-spaceui-avatar-extended.json",
+		"file": "src/shared/ui/spaceui/avatar-extended.tsx",
+		"originalSha256": "f83f4e43f5a3d62e944395f36d93b6327169528b8c548159d865f610fa4d74dd",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "components-spaceui-status-badge",
+		"source": "https://www.spaceui.one/r/components-spaceui-status-badge.json",
+		"file": "src/shared/ui/spaceui/status-badge.tsx",
+		"originalSha256": "afe5069a8e8c1f4a8df2a509c252d89cf6ed95c6f07f7b553fd4a7b69fd08aff",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "hooks-browser-use-network",
+		"source": "https://www.spaceui.one/r/hooks-browser-use-network.json",
+		"file": "src/shared/lib/spaceui/use-network.ts",
+		"originalSha256": "ac34a11572683afb22a6cc88c28c16fc60c9729843fbbb39c02746576670347d",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "hooks-browser-use-prefers-theme",
+		"source": "https://www.spaceui.one/r/hooks-browser-use-prefers-theme.json",
+		"file": "src/shared/lib/spaceui/use-prefers-theme.ts",
+		"originalSha256": "50a71365c938f62eeaf4dfb659a96c66046525659022cbe7e0902623ffda9a19",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "hooks-browser-use-media-query",
+		"source": "https://www.spaceui.one/r/hooks-browser-use-media-query.json",
+		"file": "src/shared/lib/spaceui/use-media-query.ts",
+		"originalSha256": "6fee6eee3c3b30e1ad8fb22d68f59a814c3d56147d200f6dd4e8f76f0d5cd867",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "hooks-lifecycle-use-isomorphic-layout-effect",
+		"source": "https://www.spaceui.one/r/hooks-lifecycle-use-isomorphic-layout-effect.json",
+		"file": "src/shared/lib/spaceui/use-isomorphic-layout-effect.ts",
+		"originalSha256": "ec119055a9ee822d2dfd17b815f8b432a4129a878104a637415bd7950301267b",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "hooks-dom-use-event-listener",
+		"source": "https://www.spaceui.one/r/hooks-dom-use-event-listener.json",
+		"file": "src/shared/lib/spaceui/use-event-listener.ts",
+		"originalSha256": "d7b66c28a4cbe9e7f94ba55b71c7d7a268dd23fa1020cb64e009c6057d12a11a",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "lib-segmented-control",
+		"source": "https://www.spaceui.one/r/lib-segmented-control.json",
+		"file": "src/shared/lib/spaceui/segmented-control.ts",
+		"originalSha256": "96f08caf6e693864649db02d8765c7446018515edc2f6790d4853150276b4061",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	},
+	{
+		"registry": "lib-utils",
+		"source": "https://www.spaceui.one/r/lib-utils.json",
+		"file": "src/shared/lib/spaceui/utils.ts",
+		"originalSha256": "6aa71107ee63242aeece21f8ef9d3496700737a3043efda387bbd4f27f198cec",
+		"retrievedAt": "2026-11-04",
+		"installation": "shadcn CLI",
+		"adaptations": [
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+		]
+	}
+]

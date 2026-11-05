@@ -1,0 +1,6631 @@
+info:
+  name: Gridly API
+  type: mock
+mock:
+  port: 4000
+routes:
+  - name: Warehouses — unavailable
+    request:
+      method: GET
+      url: /api/v1/warehouses
+    response:
+      status: 503
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "message": "Тестовая недоступность API"
+            }
+          }
+    rules:
+      operator: AND
+      conditions:
+        - target: header
+          key: x-gridly-scenario
+          operator: equals
+          value: unavailable
+  - name: Warehouses — empty
+    request:
+      method: GET
+      url: /api/v1/warehouses
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [],
+            "total": 0
+          }
+    rules:
+      operator: AND
+      conditions:
+        - target: header
+          key: x-gridly-scenario
+          operator: equals
+          value: empty
+  - name: Login — admin
+    request:
+      method: POST
+      url: /api/v1/auth/login
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "access_token": "bruno-account-token",
+            "user": {
+              "login": "admin@gridly.local"
+            }
+          }
+    rules:
+      operator: AND
+      conditions:
+        - target: body
+          key: login
+          operator: equals
+          value: admin@gridly.local
+        - target: body
+          key: password
+          operator: equals
+          value: gridly-demo
+  - name: Login — invalid credentials
+    request:
+      method: POST
+      url: /api/v1/auth/login
+    response:
+      status: 401
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "INVALID_CREDENTIALS",
+              "message": "Используйте admin@gridly.local и пароль gridly-demo."
+            }
+          }
+  - name: Refresh account session
+    request:
+      method: POST
+      url: /api/v1/auth/refresh
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "access_token": "bruno-account-token"
+          }
+  - name: Logout
+    request:
+      method: POST
+      url: /api/v1/auth/logout
+    response:
+      status: 204
+  - name: Registration — unsupported in static mock
+    request:
+      method: POST
+      url: /api/v1/auth/register
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "message": "Статический мок Bruno не сохраняет новые аккаунты. Используйте тестовый вход."
+            }
+          }
+  - name: Create demo session
+    request:
+      method: POST
+      url: /api/v1/demo/sessions
+    response:
+      status: 201
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "session_id": "bruno-demo-session",
+            "access_token": "bruno-demo-token",
+            "expires_at": "2099-01-01T00:00:00Z",
+            "initial_warehouse_id": "warehouse-demo"
+          }
+  - name: Restore demo session
+    request:
+      method: GET
+      url: /api/v1/demo/session
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "session_id": "bruno-demo-session",
+            "access_token": "bruno-demo-token",
+            "expires_at": "2099-01-01T00:00:00Z",
+            "initial_warehouse_id": "warehouse-demo"
+          }
+  - name: End demo session
+    request:
+      method: DELETE
+      url: /api/v1/demo/session
+    response:
+      status: 204
+  - name: Warehouses
+    request:
+      method: GET
+      url: /api/v1/warehouses
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "warehouse-demo",
+                "name": "Центральный склад",
+                "width": 16,
+                "height": 11,
+                "time_zone": "Europe/Moscow",
+                "published_version": 1,
+                "revision": 1,
+                "simulation_mode": "paused",
+                "worker_health": "healthy",
+                "tick": "120",
+                "state_version": "120",
+                "as_of": "2026-11-02T08:38:46.491Z",
+                "workflow_policy": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "allowed_actions": [],
+                "summary": {
+                  "robotCount": 3,
+                  "productCount": 6,
+                  "activeRobots": 2,
+                  "hasWaitingInbound": true,
+                  "orders": {
+                    "inbound": {
+                      "total": 1,
+                      "active": 1,
+                      "completed": 0
+                    },
+                    "outbound": {
+                      "total": 2,
+                      "active": 1,
+                      "completed": 1
+                    }
+                  }
+                },
+                "cabinet_settings": {
+                  "location": "Москва, Центральный терминал",
+                  "placement": "fefo",
+                  "allowMixedCategories": false,
+                  "reserveOnStart": true,
+                  "lowStockThreshold": 10,
+                  "reportViews": []
+                }
+              },
+              {
+                "id": "warehouse-north",
+                "name": "Северный склад",
+                "width": 16,
+                "height": 11,
+                "time_zone": "Europe/Moscow",
+                "published_version": 1,
+                "revision": 1,
+                "simulation_mode": "paused",
+                "worker_health": "healthy",
+                "tick": "120",
+                "state_version": "120",
+                "as_of": "2026-11-02T08:38:46.491Z",
+                "workflow_policy": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "allowed_actions": [],
+                "summary": {
+                  "robotCount": 3,
+                  "productCount": 6,
+                  "activeRobots": 2,
+                  "hasWaitingInbound": true,
+                  "orders": {
+                    "inbound": {
+                      "total": 1,
+                      "active": 1,
+                      "completed": 0
+                    },
+                    "outbound": {
+                      "total": 2,
+                      "active": 1,
+                      "completed": 1
+                    }
+                  }
+                },
+                "cabinet_settings": {
+                  "location": "Санкт-Петербург, Северный терминал",
+                  "placement": "fifo",
+                  "allowMixedCategories": false,
+                  "reserveOnStart": true,
+                  "lowStockThreshold": 25,
+                  "reportViews": []
+                },
+                "write_offs": [
+                  {
+                    "id": "writeoff-1",
+                    "product": "prod-coffee",
+                    "quantity": 2,
+                    "time": "2026-11-02T08:00:00Z",
+                    "price": null,
+                    "reason": "Повреждена упаковка"
+                  }
+                ]
+              }
+            ],
+            "total": 2
+          }
+  - name: Warehouse details
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "warehouse-demo",
+            "name": "Центральный склад",
+            "width": 16,
+            "height": 11,
+            "time_zone": "Europe/Moscow",
+            "published_version": 1,
+            "revision": 1,
+            "simulation_mode": "paused",
+            "worker_health": "healthy",
+            "tick": "120",
+            "state_version": "120",
+            "as_of": "2026-11-02T08:38:46.491Z",
+            "workflow_policy": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "allowed_actions": [],
+            "summary": {
+              "robotCount": 3,
+              "productCount": 6,
+              "activeRobots": 2,
+              "hasWaitingInbound": true,
+              "orders": {
+                "inbound": {
+                  "total": 1,
+                  "active": 1,
+                  "completed": 0
+                },
+                "outbound": {
+                  "total": 2,
+                  "active": 1,
+                  "completed": 1
+                }
+              }
+            },
+            "cabinet_settings": {
+              "location": "Москва, Центральный терминал",
+              "placement": "fefo",
+              "allowMixedCategories": false,
+              "reserveOnStart": true,
+              "lowStockThreshold": 10,
+              "reportViews": []
+            },
+            "write_offs": [
+              {
+                "id": "writeoff-1",
+                "product": "prod-coffee",
+                "quantity": 2,
+                "time": "2026-11-02T08:00:00Z",
+                "price": null,
+                "reason": "Повреждена упаковка"
+              }
+            ]
+          }
+  - name: Published layout
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/layout
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "version": 1,
+            "width": 16,
+            "height": 11,
+            "cells": [
+              {
+                "x": 0,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 0,
+                "kind": "charging",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 1,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 2,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 2,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 2,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 3,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 3,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 3,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 4,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 4,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 4,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 5,
+                "kind": "receiving",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 5,
+                "kind": "shipping",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 6,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 6,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 6,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 7,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 7,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 7,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 8,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 8,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 8,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 9,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 9,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              }
+            ],
+            "routes": [
+              {
+                "id": "2,2",
+                "keys": [
+                  "2,2",
+                  "2,3",
+                  "2,4",
+                  "3,2",
+                  "3,3",
+                  "3,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 4
+                  },
+                  {
+                    "x": 2,
+                    "y": 3
+                  },
+                  {
+                    "x": 2,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 2,
+                    "y": 2
+                  },
+                  {
+                    "x": 3,
+                    "y": 2
+                  },
+                  {
+                    "x": 3,
+                    "y": 3
+                  },
+                  {
+                    "x": 3,
+                    "y": 4
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "5,2",
+                "keys": [
+                  "5,2",
+                  "5,3",
+                  "5,4",
+                  "6,2",
+                  "6,3",
+                  "6,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 4
+                  },
+                  {
+                    "x": 5,
+                    "y": 3
+                  },
+                  {
+                    "x": 5,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 5,
+                    "y": 2
+                  },
+                  {
+                    "x": 6,
+                    "y": 2
+                  },
+                  {
+                    "x": 6,
+                    "y": 3
+                  },
+                  {
+                    "x": 6,
+                    "y": 4
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "10,2",
+                "keys": [
+                  "10,2",
+                  "10,3",
+                  "10,4",
+                  "11,2",
+                  "11,3",
+                  "11,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 4
+                  },
+                  {
+                    "x": 10,
+                    "y": 3
+                  },
+                  {
+                    "x": 10,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 10,
+                    "y": 2
+                  },
+                  {
+                    "x": 11,
+                    "y": 2
+                  },
+                  {
+                    "x": 11,
+                    "y": 3
+                  },
+                  {
+                    "x": 11,
+                    "y": 4
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "13,2",
+                "keys": [
+                  "13,2",
+                  "13,3",
+                  "13,4",
+                  "14,2",
+                  "14,3",
+                  "14,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 4
+                  },
+                  {
+                    "x": 13,
+                    "y": 3
+                  },
+                  {
+                    "x": 13,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 13,
+                    "y": 2
+                  },
+                  {
+                    "x": 14,
+                    "y": 2
+                  },
+                  {
+                    "x": 14,
+                    "y": 3
+                  },
+                  {
+                    "x": 14,
+                    "y": 4
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "2,6",
+                "keys": [
+                  "2,6",
+                  "2,7",
+                  "2,8",
+                  "3,6",
+                  "3,7",
+                  "3,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 2,
+                    "y": 6
+                  },
+                  {
+                    "x": 3,
+                    "y": 6
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "5,6",
+                "keys": [
+                  "5,6",
+                  "5,7",
+                  "5,8",
+                  "6,6",
+                  "6,7",
+                  "6,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 5,
+                    "y": 6
+                  },
+                  {
+                    "x": 6,
+                    "y": 6
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "10,6",
+                "keys": [
+                  "10,6",
+                  "10,7",
+                  "10,8",
+                  "11,6",
+                  "11,7",
+                  "11,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 10,
+                    "y": 6
+                  },
+                  {
+                    "x": 11,
+                    "y": 6
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "13,6",
+                "keys": [
+                  "13,6",
+                  "13,7",
+                  "13,8",
+                  "14,6",
+                  "14,7",
+                  "14,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 13,
+                    "y": 6
+                  },
+                  {
+                    "x": 14,
+                    "y": 6
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              }
+            ]
+          }
+  - name: No draft layout
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/layout/draft
+    response:
+      status: 404
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "message": "Черновика карты нет."
+            }
+          }
+  - name: Map state
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/map/state
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "warehouse_id": "warehouse-demo",
+            "layout_version": 1,
+            "state_version": "120",
+            "tick": "120",
+            "as_of": "2026-11-02T08:38:46.491Z",
+            "robots": [
+              {
+                "id": "robot-1",
+                "x": 2,
+                "y": 2,
+                "status": "moving",
+                "motion_path": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 4
+                  },
+                  {
+                    "x": 2,
+                    "y": 3
+                  },
+                  {
+                    "x": 2,
+                    "y": 2
+                  }
+                ]
+              },
+              {
+                "id": "robot-2",
+                "x": 8,
+                "y": 5,
+                "status": "idle"
+              },
+              {
+                "id": "robot-3",
+                "x": 8,
+                "y": 0,
+                "status": "charging"
+              }
+            ]
+          }
+  - name: robots
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/robots
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "robot-1",
+                "name": "R-01 · Атлас",
+                "x": 1,
+                "y": 5,
+                "roles": [
+                  "inbound",
+                  "outbound"
+                ],
+                "speed": 1.2,
+                "action_ticks": 2,
+                "capacity_volume": "120",
+                "status": "working",
+                "revision": 1,
+                "allowed_actions": []
+              },
+              {
+                "id": "robot-2",
+                "name": "R-02 · Нова",
+                "x": 8,
+                "y": 5,
+                "roles": [
+                  "outbound"
+                ],
+                "speed": 1.5,
+                "action_ticks": 2,
+                "capacity_volume": "90",
+                "status": "idle",
+                "revision": 1,
+                "allowed_actions": []
+              },
+              {
+                "id": "robot-3",
+                "name": "R-03 · Пиксель",
+                "x": 8,
+                "y": 0,
+                "roles": [
+                  "inbound",
+                  "outbound"
+                ],
+                "speed": 1,
+                "action_ticks": 3,
+                "capacity_volume": "100",
+                "status": "charging",
+                "revision": 1,
+                "allowed_actions": []
+              }
+            ],
+            "total": 3
+          }
+  - name: categories
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/categories
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "cat-food",
+                "name": "Продукты",
+                "storage_kind": "general",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 3,
+                "allowed_actions": []
+              },
+              {
+                "id": "cat-house",
+                "name": "Для дома",
+                "storage_kind": "general",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 2,
+                "allowed_actions": []
+              },
+              {
+                "id": "cat-cold",
+                "name": "Охлаждённые",
+                "storage_kind": "cold",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 1,
+                "allowed_actions": []
+              }
+            ],
+            "total": 3
+          }
+  - name: products
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/products
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "prod-coffee",
+                "name": "Кофе в зёрнах",
+                "sku": "FOOD-001",
+                "category_id": "cat-food",
+                "unit_volume": 0.8,
+                "price": "890",
+                "default_shelf_life_days": 365,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-tea",
+                "name": "Чай зелёный",
+                "sku": "FOOD-002",
+                "category_id": "cat-food",
+                "unit_volume": 0.4,
+                "price": "420",
+                "default_shelf_life_days": 540,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-pasta",
+                "name": "Паста ригатони",
+                "sku": "FOOD-003",
+                "category_id": "cat-food",
+                "unit_volume": 0.6,
+                "price": "190",
+                "default_shelf_life_days": 720,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-lamp",
+                "name": "Лампа настольная",
+                "sku": "HOME-014",
+                "category_id": "cat-house",
+                "unit_volume": 2.5,
+                "price": "2490",
+                "default_shelf_life_days": 0,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-box",
+                "name": "Короб для хранения",
+                "sku": "HOME-021",
+                "category_id": "cat-house",
+                "unit_volume": 3.2,
+                "price": "1190",
+                "default_shelf_life_days": 0,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-milk",
+                "name": "Молоко 3.2%",
+                "sku": "COLD-004",
+                "category_id": "cat-cold",
+                "unit_volume": 1,
+                "price": "110",
+                "default_shelf_life_days": 14,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              }
+            ],
+            "total": 6
+          }
+  - name: inventory
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/inventory
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "stock-prod-coffee",
+                "batch_id": "batch-1",
+                "product_id": "prod-coffee",
+                "quantity": 42,
+                "reserved_quantity": 4,
+                "expires_on": "2027-01-31",
+                "cell_x": 2,
+                "cell_y": 2,
+                "cell_id": "cell-1",
+                "revision": 1,
+                "available_quantity": 38,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-tea",
+                "batch_id": "batch-2",
+                "product_id": "prod-tea",
+                "quantity": 28,
+                "reserved_quantity": 0,
+                "expires_on": "2027-01-31",
+                "cell_x": 3,
+                "cell_y": 3,
+                "cell_id": "cell-2",
+                "revision": 1,
+                "available_quantity": 28,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-pasta",
+                "batch_id": "batch-3",
+                "product_id": "prod-pasta",
+                "quantity": 64,
+                "reserved_quantity": 0,
+                "expires_on": "2027-01-31",
+                "cell_x": 5,
+                "cell_y": 4,
+                "cell_id": "cell-3",
+                "revision": 1,
+                "available_quantity": 64,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-lamp",
+                "batch_id": "batch-4",
+                "product_id": "prod-lamp",
+                "quantity": 12,
+                "reserved_quantity": 0,
+                "expires_on": null,
+                "cell_x": 6,
+                "cell_y": 6,
+                "cell_id": "cell-4",
+                "revision": 1,
+                "available_quantity": 12,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-box",
+                "batch_id": "batch-5",
+                "product_id": "prod-box",
+                "quantity": 19,
+                "reserved_quantity": 0,
+                "expires_on": null,
+                "cell_x": 10,
+                "cell_y": 7,
+                "cell_id": "cell-5",
+                "revision": 1,
+                "available_quantity": 19,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-milk",
+                "batch_id": "batch-6",
+                "product_id": "prod-milk",
+                "quantity": 31,
+                "reserved_quantity": 3,
+                "expires_on": "2026-11-07",
+                "cell_x": 13,
+                "cell_y": 8,
+                "cell_id": "cell-6",
+                "revision": 1,
+                "available_quantity": 28,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              }
+            ],
+            "total": 6
+          }
+  - name: orders
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/orders
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "order-in-1042",
+                "number": "ПР-1042",
+                "kind": "inbound",
+                "counterparty_text": "ООО «Северный путь»",
+                "status": "active",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 1,
+                "quantity": 36,
+                "stage": 1,
+                "allowed_actions": [],
+                "tasks": [
+                  {
+                    "id": "task-in-1",
+                    "type": "unload",
+                    "status": "active",
+                    "allowed_actions": []
+                  }
+                ],
+                "lines": [
+                  {
+                    "product_id": "prod-coffee",
+                    "quantity": 20,
+                    "expires_on": "2027-05-21"
+                  },
+                  {
+                    "product_id": "prod-tea",
+                    "quantity": 16,
+                    "expires_on": "2027-08-29"
+                  }
+                ]
+              },
+              {
+                "id": "order-out-2087",
+                "number": "ЗК-2087",
+                "kind": "outbound",
+                "counterparty_text": "Интернет-заказ #2087",
+                "status": "active",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 1,
+                "quantity": 3,
+                "stage": 2,
+                "allowed_actions": [],
+                "tasks": [
+                  {
+                    "id": "task-out-1",
+                    "type": "pick",
+                    "status": "active",
+                    "allowed_actions": []
+                  }
+                ],
+                "lines": [
+                  {
+                    "product_id": "prod-coffee",
+                    "quantity": 2,
+                    "expires_on": null
+                  },
+                  {
+                    "product_id": "prod-lamp",
+                    "quantity": 1,
+                    "expires_on": null
+                  }
+                ]
+              },
+              {
+                "id": "order-out-2079",
+                "number": "ЗК-2079",
+                "kind": "outbound",
+                "counterparty_text": "ИП Волкова",
+                "status": "completed",
+                "created_at": "2026-11-01T08:38:46.494Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 2,
+                "quantity": 6,
+                "stage": 3,
+                "allowed_actions": [],
+                "lines": [
+                  {
+                    "product_id": "prod-pasta",
+                    "quantity": 6,
+                    "expires_on": null
+                  }
+                ]
+              }
+            ],
+            "total": 3
+          }
+  - name: events
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/events
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "event-1",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "message": "Склад готов к работе",
+                "detail": "Загружены тестовые данные локального демо"
+              },
+              {
+                "id": "event-2",
+                "created_at": "2026-11-02T07:38:46.494Z",
+                "message": "Заказ ЗК-2079 собран",
+                "detail": "6 единиц товара переданы в зону отгрузки"
+              },
+              {
+                "id": "event-3",
+                "created_at": "2026-11-02T06:38:46.494Z",
+                "message": "Робот R-03 зарядился",
+                "detail": "Аккумулятор: 98%"
+              }
+            ],
+            "total": 3
+          }
+  - name: Order ПР-1042
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/orders/order-in-1042
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-in-1042",
+            "number": "ПР-1042",
+            "kind": "inbound",
+            "counterparty_text": "ООО «Северный путь»",
+            "status": "active",
+            "created_at": "2026-11-02T08:38:46.491Z",
+            "confirmations": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "revision": 1,
+            "quantity": 36,
+            "stage": 1,
+            "allowed_actions": [],
+            "tasks": [
+              {
+                "id": "task-in-1",
+                "type": "unload",
+                "status": "active",
+                "allowed_actions": []
+              }
+            ],
+            "lines": [
+              {
+                "product_id": "prod-coffee",
+                "quantity": 20,
+                "expires_on": "2027-05-21"
+              },
+              {
+                "product_id": "prod-tea",
+                "quantity": 16,
+                "expires_on": "2027-08-29"
+              }
+            ]
+          }
+  - name: Order ЗК-2087
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/orders/order-out-2087
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-out-2087",
+            "number": "ЗК-2087",
+            "kind": "outbound",
+            "counterparty_text": "Интернет-заказ #2087",
+            "status": "active",
+            "created_at": "2026-11-02T08:38:46.491Z",
+            "confirmations": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "revision": 1,
+            "quantity": 3,
+            "stage": 2,
+            "allowed_actions": [],
+            "tasks": [
+              {
+                "id": "task-out-1",
+                "type": "pick",
+                "status": "active",
+                "allowed_actions": []
+              }
+            ],
+            "lines": [
+              {
+                "product_id": "prod-coffee",
+                "quantity": 2,
+                "expires_on": null
+              },
+              {
+                "product_id": "prod-lamp",
+                "quantity": 1,
+                "expires_on": null
+              }
+            ]
+          }
+  - name: Order ЗК-2079
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/orders/order-out-2079
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-out-2079",
+            "number": "ЗК-2079",
+            "kind": "outbound",
+            "counterparty_text": "ИП Волкова",
+            "status": "completed",
+            "created_at": "2026-11-01T08:38:46.494Z",
+            "confirmations": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "revision": 2,
+            "quantity": 6,
+            "stage": 3,
+            "allowed_actions": [],
+            "lines": [
+              {
+                "product_id": "prod-pasta",
+                "quantity": 6,
+                "expires_on": null
+              }
+            ]
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses"
+    request:
+      method: POST
+      url: /api/v1/warehouses
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PATCH /api/v1/warehouses/warehouse-demo"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-demo
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PATCH /api/v1/warehouses/warehouse-demo/workflow-policy"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-demo/workflow-policy
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/layout/resize"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/layout/resize
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/layout/commit"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/layout/commit
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE /api/v1/warehouses/warehouse-demo/layout/draft"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-demo/layout/draft
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/simulation/pause"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/simulation/pause
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/simulation/resume"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/simulation/resume
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/robots"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/robots
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PATCH /api/v1/warehouses/warehouse-demo/robots/:id"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-demo/robots/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE /api/v1/warehouses/warehouse-demo/robots/:id"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-demo/robots/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/categories"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/categories
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PATCH /api/v1/warehouses/warehouse-demo/categories/:id"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-demo/categories/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE /api/v1/warehouses/warehouse-demo/categories/:id"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-demo/categories/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/products"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/products
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PATCH /api/v1/warehouses/warehouse-demo/products/:id"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-demo/products/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE /api/v1/warehouses/warehouse-demo/products/:id"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-demo/products/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/orders"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/orders
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PATCH /api/v1/warehouses/warehouse-demo/orders/:id"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-demo/orders/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE /api/v1/warehouses/warehouse-demo/orders/:id"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-demo/orders/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/products/:id/archive"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/products/:id/archive
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/orders/:id/:action"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/orders/:id/:action
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/tasks/:id/:action"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/tasks/:id/:action
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: inventory write-off"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/inventory/write-offs
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Unsupported static calculation: /api/v1/warehouses/warehouse-demo/map/selection-summary"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/map/selection-summary
+    response:
+      status: 501
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический пример Bruno не рассчитывает данные для произвольной карты."
+            }
+          }
+  - name: "Unsupported static calculation: /api/v1/warehouses/warehouse-demo/layout/routes/propose"
+    request:
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/layout/routes/propose
+    response:
+      status: 501
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический пример Bruno не рассчитывает данные для произвольной карты."
+            }
+          }
+  - name: "North: Warehouse details"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "warehouse-north",
+            "name": "Северный склад",
+            "width": 16,
+            "height": 11,
+            "time_zone": "Europe/Moscow",
+            "published_version": 1,
+            "revision": 1,
+            "simulation_mode": "paused",
+            "worker_health": "healthy",
+            "tick": "120",
+            "state_version": "120",
+            "as_of": "2026-11-02T08:38:46.491Z",
+            "workflow_policy": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "allowed_actions": [],
+            "summary": {
+              "robotCount": 3,
+              "productCount": 6,
+              "activeRobots": 2,
+              "hasWaitingInbound": true,
+              "orders": {
+                "inbound": {
+                  "total": 1,
+                  "active": 1,
+                  "completed": 0
+                },
+                "outbound": {
+                  "total": 2,
+                  "active": 1,
+                  "completed": 1
+                }
+              }
+            },
+            "cabinet_settings": {
+              "location": "Санкт-Петербург, Северный терминал",
+              "placement": "fifo",
+              "allowMixedCategories": false,
+              "reserveOnStart": true,
+              "lowStockThreshold": 25,
+              "reportViews": []
+            },
+            "write_offs": [
+              {
+                "id": "writeoff-1",
+                "product": "prod-coffee",
+                "quantity": 2,
+                "time": "2026-11-02T08:00:00Z",
+                "price": null,
+                "reason": "Повреждена упаковка"
+              }
+            ]
+          }
+  - name: "North: Published layout"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/layout
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "version": 1,
+            "width": 16,
+            "height": 11,
+            "cells": [
+              {
+                "x": 0,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 0,
+                "kind": "charging",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 1,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 2,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 2,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 2,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 3,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 3,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 3,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 4,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 4,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 4,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 5,
+                "kind": "receiving",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 5,
+                "kind": "shipping",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 6,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 6,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 6,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 7,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 7,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 7,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 8,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 8,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 8,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 9,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 9,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              }
+            ],
+            "routes": [
+              {
+                "id": "2,2",
+                "keys": [
+                  "2,2",
+                  "2,3",
+                  "2,4",
+                  "3,2",
+                  "3,3",
+                  "3,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 4
+                  },
+                  {
+                    "x": 2,
+                    "y": 3
+                  },
+                  {
+                    "x": 2,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 2,
+                    "y": 2
+                  },
+                  {
+                    "x": 3,
+                    "y": 2
+                  },
+                  {
+                    "x": 3,
+                    "y": 3
+                  },
+                  {
+                    "x": 3,
+                    "y": 4
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "5,2",
+                "keys": [
+                  "5,2",
+                  "5,3",
+                  "5,4",
+                  "6,2",
+                  "6,3",
+                  "6,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 4
+                  },
+                  {
+                    "x": 5,
+                    "y": 3
+                  },
+                  {
+                    "x": 5,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 5,
+                    "y": 2
+                  },
+                  {
+                    "x": 6,
+                    "y": 2
+                  },
+                  {
+                    "x": 6,
+                    "y": 3
+                  },
+                  {
+                    "x": 6,
+                    "y": 4
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "10,2",
+                "keys": [
+                  "10,2",
+                  "10,3",
+                  "10,4",
+                  "11,2",
+                  "11,3",
+                  "11,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 4
+                  },
+                  {
+                    "x": 10,
+                    "y": 3
+                  },
+                  {
+                    "x": 10,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 10,
+                    "y": 2
+                  },
+                  {
+                    "x": 11,
+                    "y": 2
+                  },
+                  {
+                    "x": 11,
+                    "y": 3
+                  },
+                  {
+                    "x": 11,
+                    "y": 4
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "13,2",
+                "keys": [
+                  "13,2",
+                  "13,3",
+                  "13,4",
+                  "14,2",
+                  "14,3",
+                  "14,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 4
+                  },
+                  {
+                    "x": 13,
+                    "y": 3
+                  },
+                  {
+                    "x": 13,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 13,
+                    "y": 2
+                  },
+                  {
+                    "x": 14,
+                    "y": 2
+                  },
+                  {
+                    "x": 14,
+                    "y": 3
+                  },
+                  {
+                    "x": 14,
+                    "y": 4
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "2,6",
+                "keys": [
+                  "2,6",
+                  "2,7",
+                  "2,8",
+                  "3,6",
+                  "3,7",
+                  "3,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 2,
+                    "y": 6
+                  },
+                  {
+                    "x": 3,
+                    "y": 6
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "5,6",
+                "keys": [
+                  "5,6",
+                  "5,7",
+                  "5,8",
+                  "6,6",
+                  "6,7",
+                  "6,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 5,
+                    "y": 6
+                  },
+                  {
+                    "x": 6,
+                    "y": 6
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "10,6",
+                "keys": [
+                  "10,6",
+                  "10,7",
+                  "10,8",
+                  "11,6",
+                  "11,7",
+                  "11,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 10,
+                    "y": 6
+                  },
+                  {
+                    "x": 11,
+                    "y": 6
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "13,6",
+                "keys": [
+                  "13,6",
+                  "13,7",
+                  "13,8",
+                  "14,6",
+                  "14,7",
+                  "14,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 13,
+                    "y": 6
+                  },
+                  {
+                    "x": 14,
+                    "y": 6
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              }
+            ]
+          }
+  - name: "North: No draft layout"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/layout/draft
+    response:
+      status: 404
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "message": "Черновика карты нет."
+            }
+          }
+  - name: "North: Map state"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/map/state
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "warehouse_id": "warehouse-north",
+            "layout_version": 1,
+            "state_version": "120",
+            "tick": "120",
+            "as_of": "2026-11-02T08:38:46.491Z",
+            "robots": [
+              {
+                "id": "robot-1",
+                "x": 2,
+                "y": 2,
+                "status": "moving",
+                "motion_path": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 4
+                  },
+                  {
+                    "x": 2,
+                    "y": 3
+                  },
+                  {
+                    "x": 2,
+                    "y": 2
+                  }
+                ]
+              },
+              {
+                "id": "robot-2",
+                "x": 8,
+                "y": 5,
+                "status": "idle"
+              },
+              {
+                "id": "robot-3",
+                "x": 8,
+                "y": 0,
+                "status": "charging"
+              }
+            ]
+          }
+  - name: "North: robots"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/robots
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "robot-1",
+                "name": "R-01 · Атлас",
+                "x": 1,
+                "y": 5,
+                "roles": [
+                  "inbound",
+                  "outbound"
+                ],
+                "speed": 1.2,
+                "action_ticks": 2,
+                "capacity_volume": "120",
+                "status": "working",
+                "revision": 1,
+                "allowed_actions": []
+              },
+              {
+                "id": "robot-2",
+                "name": "R-02 · Нова",
+                "x": 8,
+                "y": 5,
+                "roles": [
+                  "outbound"
+                ],
+                "speed": 1.5,
+                "action_ticks": 2,
+                "capacity_volume": "90",
+                "status": "idle",
+                "revision": 1,
+                "allowed_actions": []
+              },
+              {
+                "id": "robot-3",
+                "name": "R-03 · Пиксель",
+                "x": 8,
+                "y": 0,
+                "roles": [
+                  "inbound",
+                  "outbound"
+                ],
+                "speed": 1,
+                "action_ticks": 3,
+                "capacity_volume": "100",
+                "status": "charging",
+                "revision": 1,
+                "allowed_actions": []
+              }
+            ],
+            "total": 3
+          }
+  - name: "North: categories"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/categories
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "cat-food",
+                "name": "Продукты",
+                "storage_kind": "general",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 3,
+                "allowed_actions": []
+              },
+              {
+                "id": "cat-house",
+                "name": "Для дома",
+                "storage_kind": "general",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 2,
+                "allowed_actions": []
+              },
+              {
+                "id": "cat-cold",
+                "name": "Охлаждённые",
+                "storage_kind": "cold",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 1,
+                "allowed_actions": []
+              }
+            ],
+            "total": 3
+          }
+  - name: "North: products"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/products
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "prod-coffee",
+                "name": "Кофе в зёрнах",
+                "sku": "FOOD-001",
+                "category_id": "cat-food",
+                "unit_volume": 0.8,
+                "price": "890",
+                "default_shelf_life_days": 365,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-tea",
+                "name": "Чай зелёный",
+                "sku": "FOOD-002",
+                "category_id": "cat-food",
+                "unit_volume": 0.4,
+                "price": "420",
+                "default_shelf_life_days": 540,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-pasta",
+                "name": "Паста ригатони",
+                "sku": "FOOD-003",
+                "category_id": "cat-food",
+                "unit_volume": 0.6,
+                "price": "190",
+                "default_shelf_life_days": 720,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-lamp",
+                "name": "Лампа настольная",
+                "sku": "HOME-014",
+                "category_id": "cat-house",
+                "unit_volume": 2.5,
+                "price": "2490",
+                "default_shelf_life_days": 0,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-box",
+                "name": "Короб для хранения",
+                "sku": "HOME-021",
+                "category_id": "cat-house",
+                "unit_volume": 3.2,
+                "price": "1190",
+                "default_shelf_life_days": 0,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-milk",
+                "name": "Молоко 3.2%",
+                "sku": "COLD-004",
+                "category_id": "cat-cold",
+                "unit_volume": 1,
+                "price": "110",
+                "default_shelf_life_days": 14,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              }
+            ],
+            "total": 6
+          }
+  - name: "North: inventory"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/inventory
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "stock-prod-coffee",
+                "batch_id": "batch-1",
+                "product_id": "prod-coffee",
+                "quantity": 42,
+                "reserved_quantity": 4,
+                "expires_on": "2027-01-31",
+                "cell_x": 2,
+                "cell_y": 2,
+                "cell_id": "cell-1",
+                "revision": 1,
+                "available_quantity": 38,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-tea",
+                "batch_id": "batch-2",
+                "product_id": "prod-tea",
+                "quantity": 28,
+                "reserved_quantity": 0,
+                "expires_on": "2027-01-31",
+                "cell_x": 3,
+                "cell_y": 3,
+                "cell_id": "cell-2",
+                "revision": 1,
+                "available_quantity": 28,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-pasta",
+                "batch_id": "batch-3",
+                "product_id": "prod-pasta",
+                "quantity": 64,
+                "reserved_quantity": 0,
+                "expires_on": "2027-01-31",
+                "cell_x": 5,
+                "cell_y": 4,
+                "cell_id": "cell-3",
+                "revision": 1,
+                "available_quantity": 64,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-lamp",
+                "batch_id": "batch-4",
+                "product_id": "prod-lamp",
+                "quantity": 12,
+                "reserved_quantity": 0,
+                "expires_on": null,
+                "cell_x": 6,
+                "cell_y": 6,
+                "cell_id": "cell-4",
+                "revision": 1,
+                "available_quantity": 12,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-box",
+                "batch_id": "batch-5",
+                "product_id": "prod-box",
+                "quantity": 19,
+                "reserved_quantity": 0,
+                "expires_on": null,
+                "cell_x": 10,
+                "cell_y": 7,
+                "cell_id": "cell-5",
+                "revision": 1,
+                "available_quantity": 19,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-milk",
+                "batch_id": "batch-6",
+                "product_id": "prod-milk",
+                "quantity": 31,
+                "reserved_quantity": 3,
+                "expires_on": "2026-11-07",
+                "cell_x": 13,
+                "cell_y": 8,
+                "cell_id": "cell-6",
+                "revision": 1,
+                "available_quantity": 28,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              }
+            ],
+            "total": 6
+          }
+  - name: "North: orders"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/orders
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "order-in-1042",
+                "number": "ПР-1042",
+                "kind": "inbound",
+                "counterparty_text": "ООО «Северный путь»",
+                "status": "active",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 1,
+                "quantity": 36,
+                "stage": 1,
+                "allowed_actions": [],
+                "tasks": [
+                  {
+                    "id": "task-in-1",
+                    "type": "unload",
+                    "status": "active",
+                    "allowed_actions": []
+                  }
+                ],
+                "lines": [
+                  {
+                    "product_id": "prod-coffee",
+                    "quantity": 20,
+                    "expires_on": "2027-05-21"
+                  },
+                  {
+                    "product_id": "prod-tea",
+                    "quantity": 16,
+                    "expires_on": "2027-08-29"
+                  }
+                ]
+              },
+              {
+                "id": "order-out-2087",
+                "number": "ЗК-2087",
+                "kind": "outbound",
+                "counterparty_text": "Интернет-заказ #2087",
+                "status": "active",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 1,
+                "quantity": 3,
+                "stage": 2,
+                "allowed_actions": [],
+                "tasks": [
+                  {
+                    "id": "task-out-1",
+                    "type": "pick",
+                    "status": "active",
+                    "allowed_actions": []
+                  }
+                ],
+                "lines": [
+                  {
+                    "product_id": "prod-coffee",
+                    "quantity": 2,
+                    "expires_on": null
+                  },
+                  {
+                    "product_id": "prod-lamp",
+                    "quantity": 1,
+                    "expires_on": null
+                  }
+                ]
+              },
+              {
+                "id": "order-out-2079",
+                "number": "ЗК-2079",
+                "kind": "outbound",
+                "counterparty_text": "ИП Волкова",
+                "status": "completed",
+                "created_at": "2026-11-01T08:38:46.494Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 2,
+                "quantity": 6,
+                "stage": 3,
+                "allowed_actions": [],
+                "lines": [
+                  {
+                    "product_id": "prod-pasta",
+                    "quantity": 6,
+                    "expires_on": null
+                  }
+                ]
+              }
+            ],
+            "total": 3
+          }
+  - name: "North: events"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/events
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "event-1",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "message": "Склад готов к работе",
+                "detail": "Загружены тестовые данные локального демо"
+              },
+              {
+                "id": "event-2",
+                "created_at": "2026-11-02T07:38:46.494Z",
+                "message": "Заказ ЗК-2079 собран",
+                "detail": "6 единиц товара переданы в зону отгрузки"
+              },
+              {
+                "id": "event-3",
+                "created_at": "2026-11-02T06:38:46.494Z",
+                "message": "Робот R-03 зарядился",
+                "detail": "Аккумулятор: 98%"
+              }
+            ],
+            "total": 3
+          }
+  - name: "North: Order ПР-1042"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/orders/order-in-1042
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-in-1042",
+            "number": "ПР-1042",
+            "kind": "inbound",
+            "counterparty_text": "ООО «Северный путь»",
+            "status": "active",
+            "created_at": "2026-11-02T08:38:46.491Z",
+            "confirmations": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "revision": 1,
+            "quantity": 36,
+            "stage": 1,
+            "allowed_actions": [],
+            "tasks": [
+              {
+                "id": "task-in-1",
+                "type": "unload",
+                "status": "active",
+                "allowed_actions": []
+              }
+            ],
+            "lines": [
+              {
+                "product_id": "prod-coffee",
+                "quantity": 20,
+                "expires_on": "2027-05-21"
+              },
+              {
+                "product_id": "prod-tea",
+                "quantity": 16,
+                "expires_on": "2027-08-29"
+              }
+            ]
+          }
+  - name: "North: Order ЗК-2087"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/orders/order-out-2087
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-out-2087",
+            "number": "ЗК-2087",
+            "kind": "outbound",
+            "counterparty_text": "Интернет-заказ #2087",
+            "status": "active",
+            "created_at": "2026-11-02T08:38:46.491Z",
+            "confirmations": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "revision": 1,
+            "quantity": 3,
+            "stage": 2,
+            "allowed_actions": [],
+            "tasks": [
+              {
+                "id": "task-out-1",
+                "type": "pick",
+                "status": "active",
+                "allowed_actions": []
+              }
+            ],
+            "lines": [
+              {
+                "product_id": "prod-coffee",
+                "quantity": 2,
+                "expires_on": null
+              },
+              {
+                "product_id": "prod-lamp",
+                "quantity": 1,
+                "expires_on": null
+              }
+            ]
+          }
+  - name: "North: Order ЗК-2079"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/orders/order-out-2079
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-out-2079",
+            "number": "ЗК-2079",
+            "kind": "outbound",
+            "counterparty_text": "ИП Волкова",
+            "status": "completed",
+            "created_at": "2026-11-01T08:38:46.494Z",
+            "confirmations": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "revision": 2,
+            "quantity": 6,
+            "stage": 3,
+            "allowed_actions": [],
+            "lines": [
+              {
+                "product_id": "prod-pasta",
+                "quantity": 6,
+                "expires_on": null
+              }
+            ]
+          }
+  - name: "Read-only fixture: PATCH warehouse-demo/settings"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-demo/settings
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE warehouse-demo"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-demo
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PUT warehouse-demo/inventory/:id"
+    request:
+      method: PUT
+      url: /api/v1/warehouses/warehouse-demo/inventory/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE warehouse-demo/inventory/:id"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-demo/inventory/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PATCH warehouse-north/settings"
+    request:
+      method: PATCH
+      url: /api/v1/warehouses/warehouse-north/settings
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE warehouse-north"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-north
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: PUT warehouse-north/inventory/:id"
+    request:
+      method: PUT
+      url: /api/v1/warehouses/warehouse-north/inventory/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
+  - name: "Read-only fixture: DELETE warehouse-north/inventory/:id"
+    request:
+      method: DELETE
+      url: /api/v1/warehouses/warehouse-north/inventory/:id
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }
