@@ -1,5 +1,13 @@
 import { IconPlus } from "@tabler/icons-react";
-import { Button, DataPanel, Modal, SearchField } from "@/shared/ui";
+import { statusLabels } from "@/entities/warehouse";
+import {
+	Button,
+	DataPanel,
+	ListFilters,
+	Modal,
+	SearchField,
+	Select,
+} from "@/shared/ui";
 import { useRobotsPage } from "../model/useRobotsPage";
 import { RobotForm } from "./RobotForm";
 import { RobotsTable } from "./RobotsTable";
@@ -37,6 +45,38 @@ export function RobotsPage() {
 							Добавить робота
 						</Button>
 						<SearchField value={search} onChange={setSearch} />
+						<ListFilters
+							count={
+								[model.status !== "all", model.role !== "all"].filter(Boolean)
+									.length
+							}
+							onReset={() => {
+								model.setStatus("all");
+								model.setRole("all");
+							}}
+						>
+							<Select
+								aria-label="Статус робота"
+								value={model.status}
+								onValueChange={model.setStatus}
+								options={[
+									{ value: "all", label: "Все статусы" },
+									...model.statuses.map((s) => ({
+										value: s,
+										label: statusLabels[s] ?? s,
+									})),
+								]}
+							/>
+							<Select
+								aria-label="Специализация робота"
+								value={model.role}
+								onValueChange={model.setRole}
+								options={[
+									{ value: "all", label: "Все специализации" },
+									...model.roleOptions,
+								]}
+							/>
+						</ListFilters>
 					</>
 				}
 			>

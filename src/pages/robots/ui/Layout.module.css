@@ -1,7 +1,7 @@
 .row {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 }
 .wrap {
 	flex-wrap: wrap;
