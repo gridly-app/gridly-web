@@ -44,6 +44,12 @@ export {
 	findWarehousePath,
 } from "./model/layout/findWarehousePath";
 export {
+	stockZoneCells,
+	stockZoneId,
+	stockZoneName,
+	stockZoneNames,
+} from "./model/layout/stockZones";
+export {
 	cellKey,
 	toggleZoneCell,
 } from "./model/layout/zones";
