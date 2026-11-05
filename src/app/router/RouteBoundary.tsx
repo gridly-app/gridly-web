@@ -3,11 +3,20 @@ import { Button, Feedback } from "@/shared/ui";
 
 export function RouteFailure() {
 	return (
-		<Feedback tone="error" role="alert">
-			Не удалось открыть страницу. Попробуйте загрузить её ещё раз.
-			<Button onClick={() => window.location.reload()}>
-				Перезагрузить страницу
-			</Button>
+		<Feedback
+			tone="error"
+			title="Не удалось открыть страницу"
+			action={
+				<Button
+					variant="secondary"
+					size="sm"
+					onClick={() => window.location.reload()}
+				>
+					Перезагрузить страницу
+				</Button>
+			}
+		>
+			Попробуйте загрузить её ещё раз.
 		</Feedback>
 	);
 }

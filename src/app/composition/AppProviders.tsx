@@ -10,6 +10,7 @@ import { DemoSessionProvider, SessionProvider } from "@/shared/auth";
 import { ThemeProvider } from "@/shared/lib";
 import { runtimeNotices } from "@/shared/lib/runtimeNotices";
 import { Button, Feedback, WarmTooltipGroup } from "@/shared/ui";
+import { ToastProvider } from "@/shared/ui/spaceui/toast";
 import type { AppDependencies } from "./dependencies";
 import styles from "./RuntimeFeedback.module.css";
 
@@ -30,16 +31,21 @@ function RuntimeFeedback() {
 	return (
 		<aside className={styles.notices} aria-label="Уведомления приложения">
 			{messages.map((message) => (
-				<Feedback key={message} tone="error">
-					<div className={styles.notice}>
-						<span>{message}</span>
+				<Feedback
+					key={message}
+					tone="error"
+					action={
 						<Button
 							type="button"
+							variant="ghost"
+							size="sm"
 							onClick={() => runtimeNotices.dismiss(message)}
 						>
 							Закрыть
 						</Button>
-					</div>
+					}
+				>
+					{message}
 				</Feedback>
 			))}
 		</aside>
@@ -62,10 +68,12 @@ export function AppProviders({
 							repository={dependencies.realRepository}
 						>
 							<ThemeProvider storage={dependencies.localStorage}>
-								<WarmTooltipGroup>
-									<RuntimeFeedback />
-									{children}
-								</WarmTooltipGroup>
+								<ToastProvider>
+									<WarmTooltipGroup>
+										<RuntimeFeedback />
+										{children}
+									</WarmTooltipGroup>
+								</ToastProvider>
 							</ThemeProvider>
 						</WarehouseRepositoryProvider>
 					</DemoSessionProvider>

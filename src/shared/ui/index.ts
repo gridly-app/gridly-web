@@ -1,12 +1,15 @@
 export { Button } from "./controls/Button";
 export { Checkbox } from "./controls/Checkbox";
+export { IconButton } from "./controls/IconButton";
 export { Input } from "./controls/Input";
+export { StableLabel } from "./controls/StableLabel";
 export { Switch } from "./controls/Switch";
 export { Textarea } from "./controls/Textarea";
 export { Avatar, AvatarFallback } from "./dataDisplay/Avatar";
 export { Badge, type BadgeTone } from "./dataDisplay/Badge";
 export { MiniCard, TableIcon } from "./dataDisplay/Cards";
 export { DataPanel } from "./dataDisplay/DataPanel";
+export { ListFilters } from "./dataDisplay/ListFilters";
 export {
 	Pagination,
 	PaginationContent,
@@ -58,6 +61,30 @@ export {
 } from "./overlays/Menu";
 export { Modal } from "./overlays/Modal";
 export { WarmTooltip, WarmTooltipGroup } from "./overlays/WarmTooltip";
-export { ProximityGrid } from "./visual/ProximityGrid";
+export { Alert, AlertDescription, AlertTitle } from "./spaceui/alert";
+export {
+	Card,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardPanel,
+	CardTitle,
+} from "./spaceui/card";
+export {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "./spaceui/empty";
+export { Fieldset, FieldsetLegend } from "./spaceui/fieldset";
+export { Label } from "./spaceui/label";
+export { Meter, MeterLabel, MeterValue } from "./spaceui/meter";
+export { ScrollArea } from "./spaceui/scroll-area";
+export { Separator } from "./spaceui/separator";
+export { Skeleton } from "./spaceui/skeleton";
+export { Spinner } from "./spaceui/spinner";
+export { Toolbar, ToolbarGroup } from "./spaceui/toolbar";
+export { AnimatedContent } from "./visual/AnimatedContent";
+export { ShapeBackdrop } from "./visual/ShapeBackdrop";
 export { StaticText } from "./visual/StaticText";
-export { TileBackdrop } from "./visual/TileBackdrop";

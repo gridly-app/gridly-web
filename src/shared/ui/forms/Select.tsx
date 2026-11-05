@@ -1,33 +1,63 @@
-import { Select as Primitive } from "@base-ui/react/select";
-import { IconCheck, IconSelector } from "@tabler/icons-react";
-import control from "../controls/Control.module.css";
-import styles from "./Combobox.module.css";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { cn } from "@/shared/lib/spaceui/utils";
+import { Input } from "../controls/Input";
+import { WarmTooltip } from "../overlays/WarmTooltip";
+import {
+	Select as Root,
+	SelectItem,
+	SelectPopup,
+	SelectTrigger,
+	SelectValue,
+} from "../spaceui/select";
 
 interface SelectOption {
 	value: string;
 	label: string;
 }
-
 export interface SelectProps {
 	options: SelectOption[];
+	icon?: ReactNode;
 	value: string;
 	onValueChange: (value: string) => void;
 	"aria-label": string;
 	className?: string | undefined;
 	disabled?: boolean | undefined;
+	searchable?: boolean | undefined;
+	searchLabel?: string | undefined;
 }
-
 export function Select({
 	options,
+	icon,
 	value,
 	onValueChange,
-	className = "",
+	className,
 	disabled,
+	searchable,
+	searchLabel = "Поиск по списку",
 	"aria-label": label,
 }: SelectProps) {
+	const [open, setOpen] = useState(false);
+	const [search, setSearch] = useState("");
+	const searchRef = useRef<HTMLInputElement>(null);
+	const filtered = searchable
+		? options.filter((option) =>
+				option.label
+					.toLocaleLowerCase("ru")
+					.includes(search.trim().toLocaleLowerCase("ru")),
+			)
+		: options;
+	useEffect(() => {
+		if (!open || !searchable) return;
+		const frame = requestAnimationFrame(() => searchRef.current?.focus());
+		return () => cancelAnimationFrame(frame);
+	}, [open, searchable]);
 	return (
-		<Primitive.Root
+		<Root
 			items={options}
+			onOpenChange={(next) => {
+				setOpen(next);
+				if (!next) setSearch("");
+			}}
 			value={value}
 			onValueChange={(next) => {
 				if (next !== null) onValueChange(next);
@@ -35,39 +65,54 @@ export function Select({
 			disabled={disabled}
 			modal={false}
 		>
-			<Primitive.Trigger
-				className={`${control.control} ${className}`}
-				aria-label={label}
+			<WarmTooltip
+				content={
+					options.find((option) => option.value === value)?.label || label
+				}
+				disabled={open || disabled}
 			>
-				<Primitive.Value />
-				<Primitive.Icon>
-					<IconSelector size={16} />
-				</Primitive.Icon>
-			</Primitive.Trigger>
-			<Primitive.Portal>
-				<Primitive.Positioner
-					className={styles.spaceComboboxPositioner}
-					sideOffset={6}
-					alignItemWithTrigger={false}
+				<SelectTrigger
+					aria-label={label}
+					className={cn("w-50 min-w-0 max-w-full", className)}
 				>
-					<Primitive.Popup className={styles.spaceComboboxPopup}>
-						<Primitive.List className={styles.spaceComboboxList}>
-							{options.map((option) => (
-								<Primitive.Item
-									key={option.value}
-									value={option.value}
-									className={styles.spaceComboboxItem}
-								>
-									<Primitive.ItemText>{option.label}</Primitive.ItemText>
-									<Primitive.ItemIndicator>
-										<IconCheck size={15} />
-									</Primitive.ItemIndicator>
-								</Primitive.Item>
-							))}
-						</Primitive.List>
-					</Primitive.Popup>
-				</Primitive.Positioner>
-			</Primitive.Portal>
-		</Primitive.Root>
+					{icon}
+					<SelectValue />
+				</SelectTrigger>
+			</WarmTooltip>
+			<SelectPopup
+				alignItemWithTrigger={false}
+				header={
+					searchable ? (
+						<div className="glide-select-search">
+							<Input
+								nativeInput
+								ref={searchRef}
+								aria-label={searchLabel}
+								placeholder={searchLabel}
+								value={search}
+								onChange={(event) => setSearch(event.target.value)}
+								onKeyDown={(event) => {
+									if (event.key === "ArrowDown") {
+										event.preventDefault();
+										event.currentTarget
+											.closest('[data-slot="select-popup"]')
+											?.querySelector<HTMLElement>('[role="option"]')
+											?.focus();
+									} else if (event.key !== "Escape" && event.key !== "Tab")
+										event.stopPropagation();
+								}}
+							/>
+							{filtered.length === 0 && <p role="status">Ничего не найдено</p>}
+						</div>
+					) : undefined
+				}
+			>
+				{filtered.map((option) => (
+					<SelectItem key={option.value} value={option.value}>
+						{option.label}
+					</SelectItem>
+				))}
+			</SelectPopup>
+		</Root>
 	);
 }

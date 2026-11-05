@@ -1,29 +1,25 @@
 .grid {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-	gap: 14px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
 }
 .check {
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	font-size: 11px;
-	color: var(--muted-foreground);
+	gap: 0.5rem;
 }
 .actions {
+	border: 0;
+	background: transparent;
+	padding: 0;
 	display: flex;
 	justify-content: flex-end;
-	border-top: 1px solid var(--line);
-	background: var(--bg);
-	margin: 22px -22px -22px;
-	padding: 18px 22px;
+	flex-wrap: wrap;
+	gap: var(--space-3);
+	margin-top: var(--space-2);
 }
 @media (width <= 580px) {
 	.grid {
-		gap: 8px;
-	}
-	.actions {
-		margin-inline: -18px;
-		margin-bottom: -18px;
+		grid-template-columns: 1fr;
 	}
 }

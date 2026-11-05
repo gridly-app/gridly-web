@@ -1,16 +1,14 @@
 import {
 	IconCheck,
 	IconChevronDown,
-	IconChevronRight,
 	IconLogout,
 	IconMoon,
 	IconPalette,
-	IconPlayerPlay,
+	IconRefresh,
 	IconSun,
 } from "@tabler/icons-react";
 import {
 	Avatar,
-	AvatarFallback,
 	Button,
 	Menu,
 	MenuItem,
@@ -19,6 +17,10 @@ import {
 	MenuSubmenuTrigger,
 	MenuTrigger,
 } from "@/shared/ui";
+import {
+	AvatarExtended,
+	AvatarFallback as GeneratedAvatar,
+} from "@/shared/ui/spaceui/avatar-extended";
 import type { ProfileMenuOptions } from "../../model/profile/useProfileMenu";
 import { useProfileMenu } from "../../model/profile/useProfileMenu";
 import workspaceSidebarStyles from "../WorkspaceSidebar.module.css";
@@ -41,29 +43,41 @@ export default function ProfileMenu(props: ProfileMenuProps) {
 				}
 				aria-label="Меню профиля"
 			>
-				<Avatar className={workspaceSidebarStyles.avatar}>
-					<AvatarFallback>
-						{props.isDemo ? (
-							<IconPlayerPlay size={18} />
-						) : (
-							user.slice(0, 2).toUpperCase()
-						)}
-					</AvatarFallback>
-				</Avatar>
+				<AvatarExtended className={workspaceSidebarStyles.avatarWrapper}>
+					<Avatar className={workspaceSidebarStyles.avatar}>
+						<GeneratedAvatar
+							name={props.isDemo ? "gridly-demo" : user}
+							variant="bot"
+						>
+							{props.isDemo ? "Д" : user.slice(0, 2).toUpperCase()}
+						</GeneratedAvatar>
+					</Avatar>
+				</AvatarExtended>
 				<span className={workspaceSidebarStyles.profileName}>
 					<b>{props.isDemo ? "Демо-режим" : user}</b>
 					<small>{props.isDemo ? "Gridly" : "Оператор склада"}</small>
 				</span>
-				<IconChevronDown size={16} />
+				<IconChevronDown
+					className={workspaceSidebarStyles.profileChevron}
+					size={16}
+				/>
 			</MenuTrigger>
-			<MenuPopup side="top">
+			<MenuPopup
+				side="top"
+				align="start"
+				sideOffset={8}
+				className={workspaceSidebarStyles.profileMenu}
+			>
 				<MenuSubmenu>
-					<MenuSubmenuTrigger>
+					<MenuSubmenuTrigger className="[&>svg:last-child]:hidden">
 						<IconPalette size={18} />
 						<span>Тема</span>
-						<IconChevronRight size={15} />
 					</MenuSubmenuTrigger>
-					<MenuPopup side="right">
+					<MenuPopup
+						side="right"
+						sideOffset={8}
+						className={workspaceSidebarStyles.profileMenu}
+					>
 						<MenuItem onClick={() => selectTheme(false)}>
 							<IconSun size={18} />
 							<span>Светлая</span>
@@ -78,10 +92,24 @@ export default function ProfileMenu(props: ProfileMenuProps) {
 				</MenuSubmenu>
 				{props.isDemo && (
 					<>
-						<MenuItem onClick={props.restartDemo}>Начать заново</MenuItem>
-						<MenuItem onClick={props.landing}>На лендинг</MenuItem>
+						<MenuItem
+							onClick={() => {
+								setOpen(false);
+								props.restartDemo();
+							}}
+						>
+							<IconRefresh size={18} />
+							<span>Начать заново</span>
+						</MenuItem>
 						{props.user && (
-							<MenuItem onClick={props.account}>Мои склады</MenuItem>
+							<MenuItem
+								onClick={() => {
+									setOpen(false);
+									props.account();
+								}}
+							>
+								Мои склады
+							</MenuItem>
 						)}
 					</>
 				)}

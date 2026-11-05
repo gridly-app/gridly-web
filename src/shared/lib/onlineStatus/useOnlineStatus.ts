@@ -1,18 +1,4 @@
-import { useSyncExternalStore } from "react";
-
-function subscribe(notify: () => void) {
-	window.addEventListener("online", notify);
-	window.addEventListener("offline", notify);
-	return () => {
-		window.removeEventListener("online", notify);
-		window.removeEventListener("offline", notify);
-	};
-}
-
-function getSnapshot() {
-	return navigator.onLine;
-}
-
+import { useNetwork } from "../spaceui/use-network";
 export function useOnlineStatus() {
-	return useSyncExternalStore(subscribe, getSnapshot, () => true);
+	return useNetwork().isOnline;
 }

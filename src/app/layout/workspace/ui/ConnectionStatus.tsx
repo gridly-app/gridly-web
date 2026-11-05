@@ -3,6 +3,7 @@ import {
 	type Warehouse,
 	type WarehouseLiveState,
 } from "@/entities/warehouse";
+import { Alert, AlertDescription } from "@/shared/ui";
 
 import type { WorkspaceShellModel } from "../model/useWorkspaceShell";
 import workspaceStyles from "./WorkspaceShell.module.css";
@@ -38,27 +39,31 @@ export function ConnectionStatus({ model }: ConnectionStatusProps) {
 	}
 
 	return (
-		<div className={workspaceStyles.connectionStatus} role="status">
-			<span>Симуляция: {warehouse.running ? "включена" : "на паузе"}</span>
-			{warehouse.workerHealth && (
+		<Alert variant={stale ? "warning" : "info"} role="status">
+			<AlertDescription className={workspaceStyles.connectionStatus}>
+				<span>Симуляция: {warehouse.running ? "включена" : "на паузе"}</span>
+				{warehouse.workerHealth && (
+					<span>
+						Исполнитель:{" "}
+						{workerLabels[warehouse.workerHealth] || warehouse.workerHealth}
+					</span>
+				)}
 				<span>
-					Исполнитель:{" "}
-					{workerLabels[warehouse.workerHealth] || warehouse.workerHealth}
+					Последнее обновление:{" "}
+					{new Date(
+						Math.max(snapshot.dataUpdatedAt, live.dataUpdatedAt),
+					).toLocaleTimeString("ru-RU")}
 				</span>
-			)}
-			<span>
-				Последнее обновление:{" "}
-				{new Date(
-					Math.max(snapshot.dataUpdatedAt, live.dataUpdatedAt),
-				).toLocaleTimeString("ru-RU")}
-			</span>
-			{stale && <strong>Нет соединения, данные могут быть устаревшими</strong>}
-			{warehouse.lastTickAt && (
-				<span>
-					Последний тик:{" "}
-					{new Date(warehouse.lastTickAt).toLocaleTimeString("ru-RU")}
-				</span>
-			)}
-		</div>
+				{stale && (
+					<strong>Нет соединения, данные могут быть устаревшими</strong>
+				)}
+				{warehouse.lastTickAt && (
+					<span>
+						Последний тик:{" "}
+						{new Date(warehouse.lastTickAt).toLocaleTimeString("ru-RU")}
+					</span>
+				)}
+			</AlertDescription>
+		</Alert>
 	);
 }

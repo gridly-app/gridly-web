@@ -1,4 +1,3 @@
-import { IconBuildingWarehouse } from "@tabler/icons-react";
 import { NavLink } from "react-router-dom";
 import { useImmersiveState } from "@/shared/lib";
 import {
@@ -34,12 +33,12 @@ export function WorkspaceSidebar({ model }: WorkspaceSidebarProps) {
 						render={<NavLink to="/" />}
 						className={workspaceSidebarStyles.brand}
 					>
-						<div className={workspaceSidebarStyles.brandIcon}>
-							<IconBuildingWarehouse size={24} />
-						</div>
 						Gridly
 					</Link>
-					<SidebarTrigger className={workspaceSidebarStyles.trigger} />
+					<SidebarTrigger
+						aria-label="Переключить меню"
+						className={workspaceSidebarStyles.trigger}
+					/>
 				</div>
 
 				<WorkspaceSelector model={model.workspace} />

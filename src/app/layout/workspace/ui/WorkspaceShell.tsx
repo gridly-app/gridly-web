@@ -1,4 +1,5 @@
-import { ImmersiveProvider } from "@/shared/lib";
+import { useLayoutEffect } from "react";
+import { ImmersiveProvider, useTheme } from "@/shared/lib";
 import { ConfirmDialog, SidebarProvider } from "@/shared/ui";
 import { useWorkspaceShell } from "../model/useWorkspaceShell";
 import { WarehouseCreationDialog } from "./creation/WarehouseCreationDialog";
@@ -9,6 +10,16 @@ import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
 export function WorkspaceShell() {
 	const model = useWorkspaceShell();
+	const { dark } = useTheme();
+	useLayoutEffect(() => {
+		const root = document.documentElement;
+		root.dataset.theme = dark ? "dark" : "light";
+		root.classList.toggle("dark", dark);
+		return () => {
+			root.dataset.theme = "light";
+			root.classList.remove("dark");
+		};
+	}, [dark]);
 
 	return (
 		<ImmersiveProvider>

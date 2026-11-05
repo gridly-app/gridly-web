@@ -50,7 +50,7 @@ export function useWorkspaceShell() {
 			isDemo &&
 			snapshot.isError &&
 			!list.isFetching &&
-			list.data?.length &&
+			list.data !== undefined &&
 			warehouseId !== "new" &&
 			!list.data.some((warehouse) => warehouse.id === warehouseId)
 		) {

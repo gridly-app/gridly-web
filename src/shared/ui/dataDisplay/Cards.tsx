@@ -1,13 +1,13 @@
 import type { ComponentProps } from "react";
-import styles from "./DataPanel.module.css";
+import { Badge } from "../spaceui/badge";
 
-export function MiniCard({ className = "", ...props }: ComponentProps<"div">) {
-	return <div className={`${styles.miniCard} ${className}`} {...props} />;
-}
-
-export function TableIcon({
-	className = "",
-	...props
-}: ComponentProps<"span">) {
-	return <span className={`${styles.tableIcon} ${className}`} {...props} />;
+export { Card as MiniCard } from "../spaceui/card";
+export function TableIcon(props: ComponentProps<typeof Badge>) {
+	return (
+		<Badge
+			variant="secondary"
+			className="mr-2 inline-flex size-8 items-center justify-center align-middle"
+			{...props}
+		/>
+	);
 }

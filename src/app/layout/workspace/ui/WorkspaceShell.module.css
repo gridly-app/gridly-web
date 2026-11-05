@@ -10,10 +10,12 @@
 	flex: 1;
 	min-width: 0;
 	height: 100dvh;
-	background: var(--bg);
+
 	overflow: hidden;
 }
 .content {
+	padding: 0;
+	gap: 0;
 	flex: 1;
 	min-height: 0;
 	display: flex;
@@ -24,13 +26,11 @@
 	display: flex;
 	flex-wrap: wrap;
 	flex-shrink: 0;
-	gap: 8px 20px;
-	padding: 10px 16px;
+	gap: 8px 24px;
+	padding: 8px 16px;
 	margin: 0;
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: 8px;
-	font-size: 12px;
+
+	font-size: 14px;
 }
 .connectionStatus strong {
 	color: var(--warning-text);
@@ -40,16 +40,15 @@
 	bottom: 25px;
 	left: 50%;
 	transform: translateX(-50%);
-	background: var(--text);
+
 	color: var(--surface);
 	z-index: 30;
-	border-radius: 8px;
-	box-shadow: 0 8px 30px #0002;
-	padding: 13px 20px;
-	font-size: 12px;
+
+	padding: 12px 24px;
+	font-size: 14px;
 	display: flex;
 	align-items: center;
-	gap: 20px;
+	gap: 24px;
 }
 .toastClose {
 	color: inherit;
@@ -63,9 +62,12 @@
 	gap: 0.5rem 1rem;
 	padding: 0.75rem 1rem;
 	margin-bottom: 1rem;
-	border: 1px solid var(--demo-border);
-	border-radius: 0.75rem;
-	background: var(--warning-bg);
+
 	color: var(--warning-text);
 	flex-shrink: 0;
+}
+
+.content[data-page="map"] {
+	padding: 0;
+	gap: 0;
 }

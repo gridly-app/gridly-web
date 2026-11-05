@@ -84,15 +84,22 @@ function WorkspaceRoute() {
 		return <Feedback tone="loading">Восстанавливаем сессию…</Feedback>;
 	if (status === "error")
 		return (
-			<Feedback tone="error" role="alert">
+			<Feedback
+				tone="error"
+				title="Не удалось восстановить сессию"
+				action={
+					<Button
+						variant="secondary"
+						size="sm"
+						onClick={() => {
+							void restore();
+						}}
+					>
+						Повторить
+					</Button>
+				}
+			>
 				{error}
-				<Button
-					onClick={() => {
-						void restore();
-					}}
-				>
-					Повторить
-				</Button>
 			</Feedback>
 		);
 
@@ -156,15 +163,22 @@ function WorkspaceEntry() {
 		return <Feedback tone="loading">Загружаем склады…</Feedback>;
 	if (query.error)
 		return (
-			<Feedback tone="error" role="alert">
+			<Feedback
+				tone="error"
+				title="Не удалось загрузить склады"
+				action={
+					<Button
+						variant="secondary"
+						size="sm"
+						onClick={() => {
+							void query.refetch();
+						}}
+					>
+						Повторить
+					</Button>
+				}
+			>
 				{query.error.message}
-				<Button
-					onClick={() => {
-						void query.refetch();
-					}}
-				>
-					Повторить
-				</Button>
 			</Feedback>
 		);
 	const id =
@@ -180,15 +194,22 @@ function AccountEntry() {
 		return <Feedback tone="loading">Восстанавливаем сессию…</Feedback>;
 	if (status === "error")
 		return (
-			<Feedback tone="error" role="alert">
+			<Feedback
+				tone="error"
+				title="Не удалось восстановить сессию"
+				action={
+					<Button
+						variant="secondary"
+						size="sm"
+						onClick={() => {
+							void restore();
+						}}
+					>
+						Повторить
+					</Button>
+				}
+			>
 				{error}
-				<Button
-					onClick={() => {
-						void restore();
-					}}
-				>
-					Повторить
-				</Button>
 			</Feedback>
 		);
 	return user ? <WorkspaceEntry /> : <AuthRoute />;

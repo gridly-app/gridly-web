@@ -1,37 +1,30 @@
 import type { ReactNode } from "react";
-import statusStyles from "./StatusBadge.module.css";
-
+import { StatusBadge as SpaceStatus } from "../spaceui/status-badge";
+import type { BadgeTone } from "./Badge";
 export type StatusBadgeProps = {
-	status: "online" | "offline" | "busy" | "info";
+	status: "online" | "offline" | "busy" | "info" | "warning" | "error";
+	tone?: BadgeTone;
+	compact?: boolean;
 	primaryText: string;
 	children?: ReactNode | undefined;
 	animated?: boolean | undefined;
 	compactOnMobile?: boolean | undefined;
 };
-
 export function StatusBadge({
-	status,
-	primaryText,
-	children,
+	compactOnMobile,
+	tone,
+	compact,
 	animated = true,
-	compactOnMobile = false,
+	...props
 }: StatusBadgeProps) {
 	return (
-		<div
-			className={`${statusStyles.statusBadge} ${compactOnMobile ? statusStyles.compact : ""}`}
-			data-status={status}
-		>
-			<span
-				className={`${statusStyles.statusIndicator} ${animated ? statusStyles.statusAnimated : ""}`}
-				aria-hidden="true"
-			>
-				<span className={statusStyles.statusWave} />
-				<span className={statusStyles.statusDot} />
-			</span>
-			<b>{primaryText}</b>
-			{children && (
-				<span className={statusStyles.statusSecondary}>{children}</span>
-			)}
-		</div>
+		<SpaceStatus
+			{...props}
+			animated={animated}
+			data-tone={tone}
+			mode={compact ? "stack" : "inline"}
+			size={compact ? "sm" : "md"}
+			secondaryTextClassName={compactOnMobile ? "hidden sm:inline" : ""}
+		/>
 	);
 }

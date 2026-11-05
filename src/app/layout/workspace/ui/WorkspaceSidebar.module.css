@@ -3,203 +3,163 @@
 	pointer-events: none;
 }
 .brand {
-	font-size: 23px;
-	letter-spacing: -1.5px;
-	font-weight: 800;
+	color: var(--foreground);
+	font-weight: 400;
 	display: flex;
 	align-items: center;
-	gap: 7px;
+	gap: 0.5rem;
 	flex: 1;
 	min-width: 0;
 }
-.brandIcon {
-	display: grid;
-	place-items: center;
-	width: 33px;
-	height: 34px;
-	flex-shrink: 0;
-	border-radius: 11px;
-	background: #fff;
-	color: var(--sidebar-selected-fg);
+.sidebarBrandRow {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 .sidebarLabel {
 	display: block;
-	font-size: 11px;
-	font-weight: 800;
-	letter-spacing: 1.2px;
-	padding: 14px 12px;
-	color: var(--sidebar-caption);
+	padding: var(--space-6) var(--space-3) var(--space-2);
+	font-size: var(--text-caption);
+	font-weight: 600;
+	line-height: 18px;
+	letter-spacing: 0.06em;
+	color: var(--muted-foreground);
 }
 .warehouseSectionLabel {
-	padding-top: 20px;
-}
-.notificationDot {
-	flex: 0 0 6px;
-	width: 6px;
-	height: 6px;
-	background: var(--sidebar-notification);
-	border-radius: 50%;
+	padding-top: 1.5rem;
 }
 .workspaceDropdown {
-	position: relative;
 	display: flex;
 	align-items: center;
-	margin: 4px 0 14px;
+	gap: 0.5rem;
 	min-width: 0;
-	border: 1px solid var(--sidebar-control-border);
-	border-radius: 13px;
 }
-.workspaceDropdown > svg {
-	position: absolute;
-	left: 11px;
-	z-index: 1;
-	pointer-events: none;
-	color: var(--sidebar-control-fg);
+.workspaceIcon {
+	display: none;
 }
 .workspaceSelectTrigger {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
 	width: 100%;
 	min-width: 0;
-	min-height: 48px;
-	padding: 12px 10px 12px 38px;
-	border: 0;
-	border-radius: 13px;
-	background: var(--sidebar-control-bg);
-	color: var(--sidebar-control-fg);
-	font: inherit;
-	font-size: 12px;
-	font-weight: 700;
-	cursor: pointer;
-}
-.workspaceSelectTrigger > span:first-child {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-.workspaceSelectTrigger:focus-visible {
-	outline: 2px solid var(--sidebar-trigger-fg);
-	outline-offset: 3px;
-}
-.workspaceSelectTrigger:hover {
-	background: var(--sidebar-control-hover);
-	color: var(--sidebar-fg);
 }
 .sidebarBottom {
-	padding-top: 20px;
+	margin-top: auto;
 }
 .profileTrigger {
+	min-width: 0;
+	overflow: hidden;
 	justify-content: flex-start;
-	gap: 10px;
 	width: 100%;
-	padding: 12px 9px;
-	border-radius: 14px;
-	min-height: 40px;
-	color: var(--sidebar-control-fg);
-	background: var(--sidebar-control-bg);
-}
-.profileTrigger:hover {
-	background: var(--sidebar-hover);
+	height: auto;
+	white-space: normal;
 }
 .profileName {
 	flex: 1;
 	min-width: 0;
 	text-align: left;
-	font-size: 11px;
 }
-.profileName b {
+.profileName b,
+.profileName small {
 	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.profileName small {
-	display: block;
-	font-size: 11px;
-	font-weight: 400;
-	margin-top: 4px;
-	color: var(--sidebar-profile-muted);
-}
-.profileTrigger[data-demo] {
-	border: 1px solid var(--demo-border);
-	background: var(--demo-bg);
-}
-.profileTrigger[data-demo]:hover,
-.profileTrigger[data-demo][data-popup-open] {
-	border-color: var(--demo-hover-border);
-	background: var(--demo-hover-bg);
-}
 .avatar {
-	flex: 0 0 34px;
-	width: 34px;
-	height: 34px;
-	aspect-ratio: 1;
-	border-radius: 50%;
-}
-.profileTrigger[data-demo] .avatar {
-	color: var(--demo-avatar-fg);
-	background: var(--demo-avatar-bg);
-}
-.sidebarBrandRow {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding-bottom: 24px;
+	flex: 0 0 2rem;
 }
 .trigger {
-	margin: 0;
-	flex: 0 0 40px;
-	width: 40px;
-	height: 40px;
-	padding: 10px;
+	flex-shrink: 0;
 }
-.workspace[data-state="collapsed"] .brand {
-	font-size: 0;
-	flex: none;
-	padding: 0;
-	gap: 0;
-}
-.workspace[data-state="collapsed"] .sidebarLabel,
-.workspace[data-state="collapsed"] .workspaceDropdown,
-.workspace[data-state="collapsed"] .profileName,
-.workspace[data-state="collapsed"] .profileTrigger > svg {
+:global([data-collapsible="icon"]) .sidebarLabel,
+:global([data-collapsible="icon"]) .profileName,
+:global([data-collapsible="icon"]) .brand {
+	color: var(--foreground);
+	font-weight: 400;
 	display: none;
 }
-.workspace[data-state="collapsed"] .sidebarBrandRow {
-	flex-direction: column-reverse;
-	gap: 12px;
+
+/* The collapsed rail has one centred 36px target per row, with 18px icons. */
+:global([data-collapsible="icon"]) .workspaceDropdown {
+	display: flex;
+	justify-content: center;
+	width: 100%;
 }
-.workspace[data-state="collapsed"] .profileTrigger {
-	width: 40px;
-	height: 40px;
-	padding: 0;
-	margin-inline: auto;
-	gap: 0;
+:global([data-collapsible="icon"]) .sidebarBrandRow {
 	justify-content: center;
 }
-.workspace[data-state="collapsed"] .notificationDot {
-	position: absolute;
-	top: 6px;
-	right: 6px;
-	margin: 0;
+:global([data-collapsible="icon"]) .trigger,
+:global([data-collapsible="icon"]) .workspaceSelectTrigger,
+:global([data-collapsible="icon"]) .profileTrigger {
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	min-height: 36px;
+	padding: 0;
+	margin-inline: auto;
+	justify-content: center;
+	flex-shrink: 0;
 }
-.workspace[data-state="collapsed"] .brandIcon {
-	width: 40px;
-	height: 40px;
+:global([data-collapsible="icon"]) .workspaceSelectTrigger {
+	border-color: transparent;
+	background: transparent;
+	box-shadow: none;
+	gap: 0;
 }
-.workspace[data-state="collapsed"] .brandIcon svg {
-	width: 20px;
-	height: 20px;
+:global([data-collapsible="icon"]) .workspaceIcon {
+	display: block;
+	width: 18px;
+	height: 18px;
 }
-@media (width <= 850px) {
-	.brand {
-		font-size: 21px;
-	}
+:global([data-collapsible="icon"])
+	.workspaceSelectTrigger
+	:global([data-slot="select-value"]),
+:global([data-collapsible="icon"])
+	.workspaceSelectTrigger
+	:global([data-slot="select-icon"]),
+:global([data-collapsible="icon"]) .profileChevron {
+	display: none;
 }
-@media (width <= 580px) {
-	.workspace[data-state="expanded"] .brandIcon {
-		width: 29px;
-		height: 30px;
-	}
+:global([data-collapsible="icon"])
+	.profileTrigger
+	:global([data-slot="avatar"]) {
+	width: 32px;
+	height: 32px;
+}
+:global([data-collapsible="icon"]) .trigger > svg {
+	width: 18px;
+	height: 18px;
+}
+
+.profileMenu {
+	width: 168px;
+	max-width: calc(100vw - 24px);
+}
+.profileMenu > div {
+	padding: 4px;
+}
+.profileMenu :global([data-slot="menu-item"]),
+.profileMenu :global([data-slot="menu-sub-trigger"]) {
+	min-height: 30px;
+	padding: 5px 8px;
+	gap: 8px;
+	border-radius: 6px;
+	white-space: nowrap;
+}
+.profileMenu
+	:global([data-slot="menu-item"])
+	+ :global([data-slot="menu-item"]) {
+	margin-top: 2px;
+}
+
+.avatarWrapper {
+	flex: 0 0 32px;
+	width: 32px;
+	height: 32px;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border-radius: 50%;
+}
+.sidebarBottom {
+	flex-shrink: 0;
+	min-width: 0;
 }

@@ -23,8 +23,13 @@ export function WorkspaceSelector({ model }: WorkspaceSelectorProps) {
 				РАБОЧЕЕ ПРОСТРАНСТВО
 			</span>
 			<div className={workspaceSidebarStyles.workspaceDropdown}>
-				<IconBuildingWarehouse size={19} aria-hidden="true" />
 				<Select
+					icon={
+						<IconBuildingWarehouse
+							className={workspaceSidebarStyles.workspaceIcon}
+							aria-hidden="true"
+						/>
+					}
 					options={items}
 					value={warehouseId}
 					onValueChange={changeWarehouse}

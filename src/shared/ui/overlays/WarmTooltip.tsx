@@ -1,5 +1,10 @@
-import { Tooltip } from "@base-ui/react/tooltip";
 import type { PropsWithChildren, ReactElement, ReactNode } from "react";
+import {
+	Tooltip,
+	TooltipPopup,
+	TooltipPrimitive,
+	TooltipProvider,
+} from "../spaceui/tooltip";
 import tooltipStyles from "./WarmTooltip.module.css";
 
 export interface WarmTooltipProps {
@@ -7,13 +12,14 @@ export interface WarmTooltipProps {
 	children: ReactElement;
 	side?: ("top" | "bottom" | "left" | "right") | undefined;
 	disabled?: boolean | undefined;
+	focusable?: boolean | undefined;
 }
 
 export function WarmTooltipGroup({ children }: PropsWithChildren) {
 	return (
-		<Tooltip.Provider delay={400} timeout={300}>
+		<TooltipProvider delay={400} timeout={300}>
 			{children}
-		</Tooltip.Provider>
+		</TooltipProvider>
 	);
 }
 
@@ -22,29 +28,26 @@ export function WarmTooltip({
 	children,
 	side = "top",
 	disabled,
+	focusable,
 }: WarmTooltipProps) {
-	if (disabled || !content) {
+	if (!content) {
 		return children;
 	}
 
 	return (
-		<Tooltip.Root>
-			<Tooltip.Trigger render={children} />
-			<Tooltip.Portal>
-				<Tooltip.Positioner
-					side={side}
-					sideOffset={8}
-					className={tooltipStyles.warmTooltipPositioner}
-				>
-					<Tooltip.Popup
-						className={tooltipStyles.warmTooltipPopup}
-						role="tooltip"
-					>
-						{content}
-						<Tooltip.Arrow className={tooltipStyles.warmTooltipArrow} />
-					</Tooltip.Popup>
-				</Tooltip.Positioner>
-			</Tooltip.Portal>
-		</Tooltip.Root>
+		<Tooltip disabled={disabled} disableHoverablePopup={false}>
+			<TooltipPrimitive.Trigger
+				render={children}
+				{...(focusable ? { tabIndex: 0 } : {})}
+			/>
+			<TooltipPopup
+				data-warm-tooltip=""
+				side={side}
+				sideOffset={8}
+				className={tooltipStyles.warmTooltipPopup}
+			>
+				{content}
+			</TooltipPopup>
+		</Tooltip>
 	);
 }

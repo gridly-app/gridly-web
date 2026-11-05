@@ -9,14 +9,14 @@ import { Button, Feedback } from "@/shared/ui";
 
 const pageResources: Record<string, WarehouseResource[]> = {
 	map: ["map", "catalog"],
-	catalog: ["catalog"],
-	robots: ["robots"],
-	inbound: ["orders", "catalog"],
-	outbound: ["orders", "catalog"],
-	inventory: ["inventory", "catalog", "map"],
+	catalog: ["catalog", "inventory"],
+	robots: ["robots", "orders", "catalog"],
+	inbound: ["orders", "catalog", "robots"],
+	outbound: ["orders", "catalog", "robots"],
+	inventory: ["inventory", "catalog", "map", "orders", "robots", "history"],
 	history: ["history"],
-	settings: [],
-	information: [],
+	settings: ["map", "catalog", "robots", "orders", "inventory"],
+	information: ["orders", "catalog", "inventory", "history"],
 	warehouses: [],
 };
 
@@ -37,29 +37,45 @@ export function WorkspaceResources({
 		return <Feedback tone="loading">Загружаем раздел…</Feedback>;
 	if (resource.error && !resource.hasData)
 		return (
-			<Feedback role="alert" tone="error">
+			<Feedback
+				className="workspace-alert"
+				tone="error"
+				title="Не удалось загрузить раздел"
+				action={
+					<Button
+						variant="secondary"
+						size="sm"
+						onClick={() => {
+							void resource.retry();
+						}}
+					>
+						Повторить
+					</Button>
+				}
+			>
 				{resource.error.message}
-				<Button
-					onClick={() => {
-						void resource.retry();
-					}}
-				>
-					Повторить
-				</Button>
 			</Feedback>
 		);
 	return (
 		<>
 			{resource.error && (
-				<Feedback role="alert" tone="error">
-					Не удалось обновить раздел. Показаны последние загруженные данные.
-					<Button
-						onClick={() => {
-							void resource.retry();
-						}}
-					>
-						Повторить синхронизацию
-					</Button>
+				<Feedback
+					className="workspace-alert"
+					tone="warning"
+					title="Не удалось обновить раздел"
+					action={
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={() => {
+								void resource.retry();
+							}}
+						>
+							Повторить синхронизацию
+						</Button>
+					}
+				>
+					Показаны последние загруженные данные.
 				</Feedback>
 			)}
 			<WarehouseScopeProvider

@@ -1,11 +1,16 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, Navigate, Outlet, useNavigate } from "react-router-dom";
+import {
+	Navigate,
+	Outlet,
+	Link as RouterLink,
+	useNavigate,
+} from "react-router-dom";
 import { WarehouseRepositoryProvider } from "@/entities/warehouse";
 import { useDemoSession, WorkspaceModeProvider } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
 import { errorMessage } from "@/shared/lib";
-import { Button, Feedback } from "@/shared/ui";
+import { Button, Feedback, Link, StableLabel } from "@/shared/ui";
 import { useAppDependencies } from "../composition/AppProviders";
 import styles from "./DemoRoute.module.css";
 
@@ -86,15 +91,19 @@ export function DemoRoute() {
 							void launch();
 						}}
 					>
-						{status === "expired"
-							? "Начать новое демо"
-							: status === "error"
-								? "Повторить"
-								: "Начать демо"}
+						<StableLabel
+							variants={["Начать новое демо", "Повторить", "Начать демо"]}
+						>
+							{status === "expired"
+								? "Начать новое демо"
+								: status === "error"
+									? "Повторить"
+									: "Начать демо"}
+						</StableLabel>
 					</Button>
 				</>
 			)}
-			<Link to="/">На лендинг</Link>
+			<Link render={<RouterLink to="/" />}>На лендинг</Link>
 		</main>
 	);
 }

@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
-import feedbackStyles from "../feedback/Feedback.module.css";
-import panelStyles from "./DataPanel.module.css";
-
+import { Card, CardPanel } from "../spaceui/card";
+import { Empty, EmptyDescription } from "../spaceui/empty";
+import { ScrollArea } from "../spaceui/scroll-area";
+import { Toolbar } from "../spaceui/toolbar";
 export interface DataPanelProps {
 	toolbar: ReactNode;
 	children: ReactNode;
 	empty?: boolean | undefined;
 	emptyMessage?: ReactNode | undefined;
 }
-
 export function DataPanel({
 	toolbar,
 	children,
@@ -16,12 +16,23 @@ export function DataPanel({
 	emptyMessage = "Пока нет данных. Создайте первую запись с помощью кнопки выше.",
 }: DataPanelProps) {
 	return (
-		<div className={`${panelStyles.panel} ${panelStyles.dataPanel}`}>
-			<div className={panelStyles.tableToolbar}>{toolbar}</div>
-			<div className={panelStyles.tableScroll}>
-				{children}
-				{empty && <div className={feedbackStyles.empty}>{emptyMessage}</div>}
-			</div>
-		</div>
+		<Card className="data-panel min-w-0 min-h-0 flex-1">
+			<Toolbar
+				className="data-panel-toolbar flex-wrap border-0 p-4"
+				aria-label="Действия и фильтры"
+			>
+				{toolbar}
+			</Toolbar>
+			<ScrollArea className="min-h-0 flex-1">
+				<CardPanel className="data-panel-body min-w-0">
+					{children}
+					{empty && (
+						<Empty>
+							<EmptyDescription>{emptyMessage}</EmptyDescription>
+						</Empty>
+					)}
+				</CardPanel>
+			</ScrollArea>
+		</Card>
 	);
 }

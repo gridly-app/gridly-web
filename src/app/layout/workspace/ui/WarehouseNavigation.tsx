@@ -1,4 +1,4 @@
-import { IconBuildingWarehouse } from "@tabler/icons-react";
+import { IconLayoutDashboard } from "@tabler/icons-react";
 import { NavLink } from "react-router-dom";
 import { warehousePath } from "@/shared/config";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/shared/ui";
@@ -11,7 +11,7 @@ export interface WarehouseNavigationProps {
 }
 
 export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
-	const { warehouseId, robotCount, hasWaitingInbound, mode } = model;
+	const { warehouseId, mode } = model;
 
 	return (
 		<>
@@ -30,7 +30,7 @@ export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
 							}
 							aria-label="Информация"
 						>
-							<IconBuildingWarehouse size={20} />
+							<IconLayoutDashboard size={20} />
 							<span>Информация</span>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
@@ -43,12 +43,6 @@ export function WarehouseNavigation({ model }: WarehouseNavigationProps) {
 							>
 								<Icon size={20} />
 								<span>{label}</span>
-								{key === "robots" && robotCount !== undefined && (
-									<small>{robotCount}</small>
-								)}
-								{key === "inbound" && hasWaitingInbound && (
-									<i className={workspaceSidebarStyles.notificationDot} />
-								)}
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					))}

@@ -1,12 +1,22 @@
-import { type KeyboardEvent, useId, useRef } from "react";
-import styles from "./SegmentedControl.module.css";
+import {
+	animate,
+	motion,
+	useMotionValue,
+	useReducedMotion,
+	useTransform,
+} from "motion/react";
+import { useLayoutEffect, useRef } from "react";
+import {
+	segmentedControlItemVariants,
+	segmentedControlRootClassName,
+} from "@/shared/lib/spaceui/segmented-control";
+import { RadioGroup, RadioPrimitive } from "../spaceui/radio-group";
 
 interface SegmentedControlItem<T extends string> {
 	value: T;
 	label: string;
 	disabled?: boolean | undefined;
 }
-
 export interface SegmentedControlProps<T extends string> {
 	value: T;
 	onValueChange: (value: T) => void;
@@ -14,100 +24,103 @@ export interface SegmentedControlProps<T extends string> {
 	"aria-label": string;
 	disabled?: boolean | undefined;
 }
-
-function getNextIndex(
-	key: string,
-	currentIndex: number,
-	itemCount: number,
-	direction: number,
-) {
-	if (key === "Home") return 0;
-	if (key === "End") return itemCount - 1;
-
-	let step: number;
-	switch (key) {
-		case "ArrowRight":
-			step = direction;
-			break;
-		case "ArrowLeft":
-			step = -direction;
-			break;
-		case "ArrowDown":
-			step = 1;
-			break;
-		case "ArrowUp":
-			step = -1;
-			break;
-		default:
-			return null;
-	}
-
-	return (currentIndex + step + itemCount) % itemCount;
-}
-
 export function SegmentedControl<T extends string>({
 	value,
 	onValueChange,
 	items,
-	disabled = false,
+	disabled,
 	"aria-label": label,
 }: SegmentedControlProps<T>) {
-	const name = useId();
-	const inputs = useRef(new Map<T, HTMLInputElement>());
-	const enabledItems = items.filter((item) => !item.disabled);
-	const tabStopItem =
-		enabledItems.find((item) => item.value === value) ?? enabledItems[0];
-
-	function handleKey(event: KeyboardEvent<HTMLInputElement>, current: T) {
-		if (disabled || enabledItems.length === 0) return;
-
-		const textDirection =
-			getComputedStyle(event.currentTarget).direction === "rtl" ? -1 : 1;
-		const currentIndex = enabledItems.findIndex(
-			(item) => item.value === current,
-		);
-		const nextIndex = getNextIndex(
-			event.key,
-			currentIndex,
-			enabledItems.length,
-			textDirection,
-		);
-
-		if (nextIndex === null) return;
-		const nextItem = enabledItems[nextIndex];
-
-		if (!nextItem) return;
-		event.preventDefault();
-		onValueChange(nextItem.value);
-		inputs.current.get(nextItem.value)?.focus();
-	}
+	const track = useRef<HTMLDivElement>(null);
+	const left = useMotionValue(4);
+	const right = useMotionValue(4);
+	const width = useTransform(() => Math.max(0, right.get() - left.get()));
+	const reduce = useReducedMotion();
+	const initialized = useRef(false);
+	useLayoutEffect(() => {
+		const root = track.current;
+		if (!root || !items.some((item) => item.value === value)) return;
+		let stop = () => {
+			/* No animation is running yet. */
+		};
+		const measure = (instant: boolean) => {
+			const selected = root.querySelector<HTMLElement>("[data-checked]");
+			if (!selected) return;
+			const l = selected.offsetLeft;
+			const r = l + selected.offsetWidth;
+			stop();
+			if (instant || reduce || !initialized.current) {
+				left.jump(l);
+				right.jump(r);
+				initialized.current = true;
+				return;
+			}
+			// React Bits Rubber Segment: leading edge travels first; trailing edge catches up.
+			const forward = l > left.get();
+			const a = animate(left, l, {
+				type: "spring",
+				stiffness: 420,
+				damping: 30,
+				delay: forward ? 0.065 : 0,
+			});
+			const b = animate(right, r, {
+				type: "spring",
+				stiffness: 420,
+				damping: 30,
+				delay: forward ? 0 : 0.065,
+			});
+			stop = () => {
+				a.stop();
+				b.stop();
+			};
+		};
+		measure(false);
+		let firstResize = true;
+		const observer = new ResizeObserver(() => {
+			if (firstResize) {
+				firstResize = false;
+				return;
+			}
+			measure(true);
+		});
+		observer.observe(root);
+		for (const item of root.querySelectorAll('[role="radio"]'))
+			observer.observe(item);
+		return () => {
+			observer.disconnect();
+			stop();
+		};
+	}, [value, items, reduce, left, right]);
 	return (
-		<div
-			className={styles.root}
-			role="radiogroup"
+		<RadioGroup
+			ref={track}
+			data-rubber-segment=""
+			value={value}
+			onValueChange={(next) => onValueChange(next as T)}
+			disabled={disabled}
 			aria-label={label}
-			aria-disabled={disabled || undefined}
+			className={segmentedControlRootClassName}
 		>
+			{items.some((item) => item.value === value) && (
+				<motion.span
+					aria-hidden="true"
+					className="rubber-segment-thumb"
+					style={{ left, width }}
+				/>
+			)}
 			{items.map((item) => (
-				<label key={item.value} className={styles.option}>
-					<input
-						ref={(node) => {
-							if (node) inputs.current.set(item.value, node);
-							else inputs.current.delete(item.value);
-						}}
-						type="radio"
-						name={name}
-						value={item.value}
-						className={styles.input}
-						checked={value === item.value}
-						disabled={disabled || item.disabled}
-						tabIndex={!disabled && item === tabStopItem ? 0 : -1}
-						onChange={() => onValueChange(item.value)}
-						onKeyDown={(event) => handleKey(event, item.value)}
-					/>
-					<span className={styles.item}>{item.label}</span>
-				</label>
+				<RadioPrimitive.Root
+					key={item.value}
+					value={item.value}
+					disabled={item.disabled}
+					className={segmentedControlItemVariants({
+						size: "default",
+						state: "checked",
+					})}
+				>
+					{item.label}
+				</RadioPrimitive.Root>
 			))}
-		</div>
+		</RadioGroup>
 	);
 }
