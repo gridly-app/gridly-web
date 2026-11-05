@@ -25,7 +25,7 @@
 }
 .categoryPagination {
 	width: 100%;
-	justify-content: space-between;
+	justify-content: center;
 	gap: 8px;
 }
 .categories {
@@ -123,4 +123,27 @@
 	.resetSpinning {
 		animation: none;
 	}
+}
+
+.editor {
+	position: relative;
+}
+.measureViewport {
+	position: absolute;
+	visibility: hidden;
+	inset: 0;
+	overflow: hidden;
+}
+.measureCategories {
+	display: flex;
+	gap: 4px;
+	width: max-content;
+}
+.measureCategories > button {
+	flex: none;
+	max-width: none;
+	white-space: nowrap;
+}
+.categoryPagination[hidden] {
+	display: none;
 }

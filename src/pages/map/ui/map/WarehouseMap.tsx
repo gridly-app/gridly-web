@@ -74,7 +74,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const configuringRoutes = editing && editor.mode === "routes";
 	const legend = {
-		entries: Object.entries(cellLabels),
+		entries: Object.entries(cellLabels).filter(([type]) => type !== "cold"),
 		palette: mapThemes[dark ? "dark" : "light"].cells,
 	};
 

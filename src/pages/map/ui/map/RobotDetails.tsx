@@ -1,10 +1,15 @@
-import type { Robot, Warehouse } from "@/entities/warehouse";
+import {
+	cellLabels,
+	type GridPosition,
+	type Robot,
+	type Warehouse,
+} from "@/entities/warehouse";
 import localLayout from "./Layout.module.css";
 import mapStyles from "./WarehouseMap.module.css";
 
 export interface RobotDetailsProps {
 	robot: Robot;
-	warehouse: Pick<Warehouse, "products" | "orders">;
+	warehouse: Pick<Warehouse, "products" | "orders" | "cells">;
 }
 
 export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
@@ -14,14 +19,21 @@ export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
 	);
 	const order = warehouse.orders.find((order) => order.id === task?.orderId);
 
+	function locationName(point: GridPosition) {
+		const cell = warehouse.cells.find(
+			(item) => item.x === point.x && item.y === point.y,
+		);
+		return (
+			cell?.zone?.name || (cell ? cellLabels[cell.type] : "Зона не определена")
+		);
+	}
+
 	return (
 		<div data-robot-id={robot.id}>
 			<h3>{robot.name}</h3>
 			<div className={mapStyles.detailLine}>
 				<span>Положение</span>
-				<b>
-					{robot.x}, {robot.y}
-				</b>
+				<b>{locationName(robot)}</b>
 			</div>
 			<div className={mapStyles.detailLine}>
 				<span>Состояние</span>
@@ -43,7 +55,13 @@ export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
 					<div className={localLayout.sectionCaption}>ТЕКУЩАЯ ЗАДАЧА</div>
 					<p className={mapStyles.robotTaskLabel}>{task.label}</p>
 					<div className={mapStyles.detailLine}>
-						<span>Заказ</span>
+						<span>
+							{order?.kind === "inbound"
+								? "Поставка"
+								: order?.kind === "outbound"
+									? "Отгрузка"
+									: "Заказ"}
+						</span>
 						<b>{order?.number || task.orderId}</b>
 					</div>
 					<p>
@@ -51,9 +69,7 @@ export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
 					</p>
 					<div className={mapStyles.detailLine}>
 						<span>Цель</span>
-						<b>
-							{task.target.x}, {task.target.y}
-						</b>
+						<b>{locationName(task.target)}</b>
 					</div>
 					<div className={mapStyles.detailLine}>
 						<span>Осталось</span>

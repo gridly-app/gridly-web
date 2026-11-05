@@ -34,7 +34,7 @@ export function useZonePanel({
 			picked.length;
 	const [name, setName] = useState(
 		first?.zone
-			? `${first.zone.name}${partialZone ? ` · блок ${first.x},${first.y}` : ""}`
+			? `${first.zone.name}${partialZone ? " · часть зоны" : ""}`
 			: "",
 	);
 	const [category, changeCategory] = useState(first?.zone?.categoryId || "");

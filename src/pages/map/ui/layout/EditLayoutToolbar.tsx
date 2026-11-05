@@ -23,20 +23,37 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 			ref={container}
 			className={`${styles.editor} ${props.className ?? ""}`}
 		>
+			<div className={styles.measureViewport} aria-hidden="true" inert>
+				<div ref={model.measure} className={styles.measureCategories}>
+					{model.available.map((category) => (
+						<Button
+							key={category.id}
+							size="compact"
+							variant="ghost"
+							className={styles.categoryButton}
+						>
+							{category.name}
+						</Button>
+					))}
+				</div>
+			</div>
 			<Toolbar
 				data-variant="floating"
 				aria-label="Категории строительства"
 				className={styles.categoryPagination}
+				hidden={model.available.length === 0}
 			>
-				<Button
-					size="compact"
-					variant="ghost"
-					aria-label="Предыдущие категории"
-					disabled={model.page === 0 || editor.busy}
-					onClick={() => model.changePage(model.page - 1)}
-				>
-					<IconChevronLeft size={16} />
-				</Button>
+				{model.pages > 1 && (
+					<Button
+						size="compact"
+						variant="ghost"
+						aria-label="Предыдущие категории"
+						disabled={model.page === 0 || editor.busy}
+						onClick={() => model.changePage(model.page - 1)}
+					>
+						<IconChevronLeft size={16} />
+					</Button>
+				)}
 				<div className={styles.categories}>
 					{model.categoryTools.map((category) => (
 						<Button
@@ -52,15 +69,17 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 						</Button>
 					))}
 				</div>
-				<Button
-					size="compact"
-					variant="ghost"
-					aria-label="Следующие категории"
-					disabled={model.page + 1 === model.pages || editor.busy}
-					onClick={() => model.changePage(model.page + 1)}
-				>
-					<IconChevronRight size={16} />
-				</Button>
+				{model.pages > 1 && (
+					<Button
+						size="compact"
+						variant="ghost"
+						aria-label="Следующие категории"
+						disabled={model.page + 1 === model.pages || editor.busy}
+						onClick={() => model.changePage(model.page + 1)}
+					>
+						<IconChevronRight size={16} />
+					</Button>
+				)}
 			</Toolbar>
 			<Toolbar
 				data-variant="floating"

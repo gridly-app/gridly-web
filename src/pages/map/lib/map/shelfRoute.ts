@@ -1,6 +1,5 @@
 import { type Cell, cellKey, type GridPosition } from "@/entities/warehouse";
 
-/** Project only the displayed shelf connection. Robot motion uses the full server path. */
 export function shelfRoutePoints(
 	path: readonly GridPosition[],
 	block: readonly Cell[],
@@ -25,7 +24,6 @@ export function shelfRoutePoints(
 				originalShelfPoint && cellKey(cell) === cellKey(originalShelfPoint),
 		) ?? adjacent[0];
 	if (!shelf) return outside;
-	// Half a cell plus the shelf's 2px outer inset reaches its painted face.
 	const offset = 0.5 + 2 / size;
 	const edge = {
 		x: endpoint.x + (shelf.x - endpoint.x) * offset,
@@ -34,7 +32,6 @@ export function shelfRoutePoints(
 	return direction === "inbound" ? [...outside, edge] : [edge, ...outside];
 }
 
-/** Keep the stored approach on exterior cells; the pickup leg belongs to the robot task. */
 export function exteriorShelfRoute(
 	path: readonly GridPosition[],
 	block: readonly Cell[],

@@ -16,10 +16,6 @@ export function ZoneSummary({ model }: ZoneSummaryProps) {
 				СКЛАДСКАЯ ЗОНА · {picked.length} КЛ.
 			</div>
 			<div className={mapStyles.detailLine}>
-				<span>Тип хранения</span>
-				<b>{first?.type === "cold" ? "Холодное" : "Обычное"}</b>
-			</div>
-			<div className={mapStyles.detailLine}>
 				<span>Вместимость</span>
 				<b>{capacity ?? "—"} м³</b>
 			</div>
