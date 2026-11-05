@@ -55,6 +55,8 @@ export function cellsFromDto(layout: LayoutDto): Cell[] {
 export function warehouseFromDto(d: WarehouseDto): Warehouse {
 	return {
 		id: d.id,
+		cabinet: d.cabinet_settings,
+		writeOffs: d.write_offs,
 		allowedActions: d.allowed_actions,
 		summary: d.summary,
 		name: d.name,
@@ -196,6 +198,8 @@ export function stockFromDto(s: StockDto): Stock {
 export function eventFromDto(e: EventDto): Event {
 	return {
 		id: String(e.id),
+		type: e.event_type,
+		entity: e.entity_locator,
 		time: e.created_at,
 		title: e.message || e.event_type || "Событие",
 		detail: e.detail || e.entity_locator || "",

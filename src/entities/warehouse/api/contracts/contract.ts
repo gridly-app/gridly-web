@@ -1,9 +1,11 @@
 import { z } from "zod";
 import {
 	blockRoutePlanSchema,
+	cabinetSchema,
 	robotTaskSchema,
 	storageZoneSchema,
 	warehouseSummarySchema,
+	writeOffSchema,
 } from "../../model/warehouse/schemas";
 
 const revision = z.number().int().nonnegative().optional();
@@ -32,6 +34,8 @@ export const warehouseDto = z
 		...identity,
 		allowed_actions: z.array(z.string()).optional(),
 		summary: warehouseSummarySchema.optional(),
+		cabinet_settings: cabinetSchema.optional(),
+		write_offs: z.array(writeOffSchema).optional(),
 		name: z.string(),
 		width: z.number().int().positive(),
 		height: z.number().int().positive(),

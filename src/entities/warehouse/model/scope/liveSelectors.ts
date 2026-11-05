@@ -19,24 +19,24 @@ export const selectMapLive = (
 	};
 };
 
-export const selectRobotsLive = (
+const operationalLive = (
 	snapshot: Warehouse,
 	live?: WarehouseLiveState | undefined,
-) => ({ robots: mergeLiveState(snapshot, live).robots });
-
-export const selectInventoryLive = (
-	snapshot: Warehouse,
-	live?: WarehouseLiveState | undefined,
-) => ({ stock: live?.stock ?? snapshot.stock });
-
-export const selectOrdersLive = (
-	snapshot: Warehouse,
-	live?: WarehouseLiveState | undefined,
-) => ({
-	summary: live?.summary ?? snapshot.summary,
-	orders: live?.orders ?? snapshot.orders,
-	stock: live?.stock ?? snapshot.stock,
-});
+) => {
+	const warehouse = mergeLiveState(snapshot, live);
+	return {
+		robots: warehouse.robots,
+		orders: warehouse.orders,
+		stock: warehouse.stock,
+		summary: warehouse.summary,
+		tick: warehouse.tick,
+		asOf: warehouse.asOf,
+		running: warehouse.running,
+	};
+};
+export const selectRobotsLive = operationalLive;
+export const selectInventoryLive = operationalLive;
+export const selectOrdersLive = operationalLive;
 
 export const selectHistoryLive = (
 	snapshot: Warehouse,

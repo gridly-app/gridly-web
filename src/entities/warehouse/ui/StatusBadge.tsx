@@ -1,7 +1,8 @@
-import { Badge, type BadgeTone } from "@/shared/ui";
+import { type BadgeTone, StatusBadge as ProductStatusBadge } from "@/shared/ui";
 import { statuses } from "./warehousePresentation";
 
 const active = new Set([
+	"active",
 	"running",
 	"in_progress",
 	"moving",
@@ -9,7 +10,12 @@ const active = new Set([
 	"carrying",
 ]);
 
-const warning = new Set(["waiting", "waiting_confirmation", "awaiting_load"]);
+const warning = new Set([
+	"waiting",
+	"waiting_confirmation",
+	"awaiting_load",
+	"charging",
+]);
 
 const danger = new Set([
 	"blocked",
@@ -18,7 +24,23 @@ const danger = new Set([
 	"received_with_losses",
 ]);
 
-const neutral = new Set(["draft", "neutral", "cancelled", "idle"]);
+const neutral = new Set([
+	"draft",
+	"neutral",
+	"cancelled",
+	"canceled",
+	"idle",
+	"created",
+	"Архив",
+]);
+const success = new Set([
+	"received",
+	"shipped",
+	"completed",
+	"available",
+	"ready",
+	"Годно",
+]);
 
 export interface StatusBadgeProps {
 	value: string;
@@ -33,6 +55,26 @@ export function StatusBadge({ value }: StatusBadgeProps) {
 				? "danger"
 				: neutral.has(value)
 					? "neutral"
-					: "success";
-	return <Badge tone={tone}>{statuses[value] || value}</Badge>;
+					: success.has(value)
+						? "success"
+						: "neutral";
+	const indicator =
+		tone === "accent"
+			? "info"
+			: tone === "warning"
+				? "warning"
+				: tone === "danger"
+					? "error"
+					: tone === "neutral"
+						? "offline"
+						: "online";
+	return (
+		<ProductStatusBadge
+			compact
+			animated={false}
+			status={indicator}
+			tone={tone}
+			primaryText={statuses[value] || value}
+		/>
+	);
 }

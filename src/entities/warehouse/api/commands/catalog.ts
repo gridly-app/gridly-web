@@ -23,7 +23,7 @@ export async function saveProduct(
 				sku: product.sku,
 				category_id: product.category,
 				unit_volume: Number(product.volume),
-				price: Number(product.price) || 0,
+				price: product.price.trim() ? Number(product.price) : null,
 				has_shelf_life: product.shelf > 0,
 				default_shelf_life_days: product.shelf || null,
 			},

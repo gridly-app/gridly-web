@@ -37,6 +37,7 @@ export {
 	connectedBlock,
 	defaultBlockRoutes,
 	routeThrough,
+	storageBlocks,
 } from "./model/layout/blockRoutes";
 export {
 	createWarehousePathfinder,
@@ -61,6 +62,15 @@ export {
 	useWarehouseScope,
 	useWarehouseSnapshot,
 } from "./model/scope/warehouseScope";
+export {
+	type CompletionForecast,
+	incomingProduct,
+	orderCompletion,
+	orderValue,
+	productOccupancy,
+	productPrice,
+	robotAssignment,
+} from "./model/warehouse/operations";
 export type {
 	BlockRoutePlan,
 	Category,
@@ -82,6 +92,7 @@ export {
 	warehouseLiveStateSchema,
 	warehouseSchema,
 } from "./model/warehouse/schemas";
+export { useSimulationCadence } from "./model/warehouse/useSimulationCadence";
 export type { WorkflowPolicy } from "./model/warehouse/workflowPolicy";
 export {
 	emptyWorkflowPolicy,
@@ -90,6 +101,7 @@ export {
 	workflowKeys,
 	workflowPolicySchema,
 } from "./model/warehouse/workflowPolicy";
+export { forecastLabel } from "./ui/operationPresentation";
 export { StatusBadge } from "./ui/StatusBadge";
 export {
 	cellColors,
@@ -97,4 +109,5 @@ export {
 	confirmationLabels,
 	robotRoleLabels,
 	robotRoleOptions,
+	statuses as statusLabels,
 } from "./ui/warehousePresentation";

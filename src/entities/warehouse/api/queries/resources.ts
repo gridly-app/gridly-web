@@ -13,6 +13,8 @@ export type WarehouseResource =
 
 export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	metadata: [
+		"cabinet",
+		"location",
 		"name",
 		"timezone",
 		"revision",
@@ -41,7 +43,7 @@ export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	catalog: ["categories", "products"],
 	orders: ["orders"],
 	inventory: ["stock"],
-	history: ["events"],
+	history: ["events", "writeOffs"],
 	robots: ["robots"],
 	all: [],
 };
@@ -50,6 +52,18 @@ export function commandResources(
 	action: WarehouseCommand["action"],
 ): WarehouseResource[] {
 	switch (action) {
+		case "deleteWarehouse":
+			return [];
+		case "deleteProduct":
+		case "deleteCategory":
+			return ["catalog", "map"];
+		case "deleteOrder":
+			return ["orders", "inventory", "history", "metadata"];
+		case "stock":
+		case "deleteStock":
+			return ["inventory", "history", "metadata"];
+		case "cabinet":
+			return ["metadata"];
 		case "product":
 		case "category":
 			return ["catalog"];

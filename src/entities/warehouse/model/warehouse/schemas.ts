@@ -179,13 +179,43 @@ export const orderSchema = z.object({
 });
 
 export const eventSchema = z.object({
+	type: z.string().optional(),
+	entity: z.string().optional(),
 	id: z.string(),
 	time: z.string(),
 	title: z.string(),
 	detail: z.string(),
 });
 
+export const reportViewSchema = z.object({
+	name: z.string().min(1).max(80),
+	from: z.iso.date(),
+	to: z.iso.date(),
+	kind: z.string(),
+	status: z.string(),
+	category: z.string(),
+	compare: z.boolean(),
+});
+export const writeOffSchema = z.object({
+	id: z.string(),
+	product: z.string(),
+	quantity: z.number(),
+	time: z.string(),
+	reason: z.string(),
+	price: z.number().nullable(),
+});
+export const cabinetSchema = z.object({
+	reportViews: z.array(reportViewSchema).optional(),
+	location: z.string().max(200),
+	placement: z.enum(["fifo", "fefo"]),
+	allowMixedCategories: z.boolean(),
+	reserveOnStart: z.boolean(),
+	lowStockThreshold: z.number().int().nonnegative(),
+});
+
 export const warehouseSchema = z.object({
+	cabinet: cabinetSchema.optional(),
+	writeOffs: z.array(writeOffSchema).optional(),
 	allowedActions: z.array(z.string()).optional(),
 	summary: warehouseSummarySchema.optional(),
 	draftRoutes: z.array(blockRoutePlanSchema).optional(),

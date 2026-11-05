@@ -23,6 +23,10 @@ export const cellColors: Record<CellType, string> = {
 };
 
 export const statuses: Record<string, string> = {
+	active: "В работе",
+	completed: "Завершён",
+	created: "Создан",
+	charging: "Заряжается",
 	draft: "Черновик",
 	in_progress: "В работе",
 	awaiting_load: "Ожидает погрузки",

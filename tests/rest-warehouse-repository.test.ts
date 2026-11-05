@@ -199,7 +199,10 @@ describe("REST warehouse synchronization", () => {
 		const live = await repository.getLive("w1");
 		release();
 		const snapshot = await old;
-		expect(snapshot.robots[0].motionPath).toEqual(live.robots[0].motionPath);
+		const robot = snapshot.robots[0];
+		const liveRobot = live.robots[0];
+		if (!robot || !liveRobot) throw new Error("Missing robot snapshot");
+		expect(robot.motionPath).toEqual(liveRobot.motionPath);
 	});
 	test("paginates collection envelopes and retains existing query parameters", async () => {
 		const { repository, calls } = fixture();

@@ -7,15 +7,29 @@ export function findWarehousePath(
 	starts: GridPosition[],
 	targets: GridPosition[],
 	blocked: Set<string> = new Set(),
+	allowStorage = false,
 ): Cell[] {
-	return createWarehousePathfinder(cells)(starts, targets, blocked);
+	return createWarehousePathfinder(cells, allowStorage)(
+		starts,
+		targets,
+		blocked,
+	);
 }
 
-export function createWarehousePathfinder(cells: readonly Cell[]) {
+export function createWarehousePathfinder(
+	cells: readonly Cell[],
+	allowStorage = false,
+) {
 	const index = new Map(
 		cells
 			.filter((cell) =>
-				["aisle", "unload", "load", "charge"].includes(cell.type),
+				[
+					"aisle",
+					"unload",
+					"load",
+					"charge",
+					...(allowStorage ? ["storage", "cold"] : []),
+				].includes(cell.type),
 			)
 			.map((cell) => [cellKey(cell), cell]),
 	);
