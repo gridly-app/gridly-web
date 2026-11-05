@@ -52,11 +52,11 @@ export function ProductForm({
 						inputMode="decimal"
 					/>
 				</Field>
-				<Field label="Цена, ₽ *">
+				<Field label="Цена, ₽ (необязательно)">
 					<Input
 						name="price"
-						defaultValue={product?.price || "0.00"}
-						required
+						defaultValue={product?.price ?? ""}
+						placeholder="Не указана"
 						inputMode="decimal"
 					/>
 				</Field>

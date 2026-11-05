@@ -193,6 +193,7 @@ describe("server demo workspace", () => {
 		await session.start();
 		const id = session.getSnapshot().session?.initial_warehouse_id;
 		expect(id).toBe("server-warehouse");
+		if (!id) throw new Error("Missing initial warehouse ID");
 		expect((await repository.list()).map((w) => w.id)).toEqual([id]);
 		const snapshot = await repository.get(id as string);
 		expect(snapshot.cells[0]).toMatchObject({ type: "storage", capacity: 10 });

@@ -77,6 +77,7 @@ test("corrupt stored data is ignored and write failures are reported", () => {
 	const drafts = new OrderFormDrafts(storage, ["account", "a"], "w", "inbound");
 	drafts.save(form("one"));
 	const key = [...storage.data.keys()][0];
+	if (!key) throw new Error("Missing saved form key");
 	storage.data.set(key, "broken");
 	expect(drafts.read()).toEqual([]);
 	storage.data.set(key, JSON.stringify([form("one"), { id: "invalid" }]));

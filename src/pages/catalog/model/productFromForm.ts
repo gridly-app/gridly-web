@@ -16,7 +16,10 @@ export function productFromForm(
 	) {
 		throw new Error("Объём: положительное число, максимум 3 знака после точки");
 	}
-	if (!/^\d+(\.\d{1,2})?$/.test(price) || !Number.isFinite(Number(price))) {
+	if (
+		price &&
+		(!/^\d+(\.\d{1,2})?$/.test(price) || !Number.isFinite(Number(price)))
+	) {
 		throw new Error("Цена: максимум 2 знака после точки");
 	}
 	if (!Number.isSafeInteger(shelf) || shelf < 0) {

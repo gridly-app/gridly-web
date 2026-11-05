@@ -1,5 +1,10 @@
 import { IconPlus } from "@tabler/icons-react";
-import { Button, SearchField, SegmentedControl } from "@/shared/ui";
+import {
+	Button,
+	SearchField,
+	SegmentedControl,
+	StableLabel,
+} from "@/shared/ui";
 import type { CatalogTab } from "../model/catalog";
 import catalogStyles from "./CatalogToolbar.module.css";
 
@@ -32,7 +37,9 @@ export function CatalogToolbar({
 					onClick={onCreate}
 				>
 					<IconPlus size={18} />
-					{tab === "products" ? "Новый товар" : "Новая категория"}
+					<StableLabel variants={["Новый товар", "Новая категория"]}>
+						{tab === "products" ? "Новый товар" : "Новая категория"}
+					</StableLabel>
 				</Button>
 				<SegmentedControl
 					aria-label="Раздел каталога"

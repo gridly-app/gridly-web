@@ -14,7 +14,7 @@ describe("HTTP session lifecycle", () => {
 		const started = new Promise<void>((resolve) => {
 			refreshStarted = resolve;
 		});
-		const tokens: string[] = [];
+		const tokens: (string | undefined)[] = [];
 		const client = clientWith(async (url, options) => {
 			if (url.endsWith("/auth/login"))
 				return Response.json({ access_token: "new-account" });

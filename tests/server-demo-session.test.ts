@@ -93,10 +93,13 @@ describe("independent server demo", () => {
 		const { session } = setup((async (_url, options) => {
 			const headers = options?.headers as Record<string, string>;
 			if (options?.method === "DELETE") {
-				revoked.push(headers.Authorization);
+				const token = headers.Authorization;
+				if (!token) throw new Error("Missing authorization header");
+				revoked.push(token);
 				return new Response(null, { status: 204 });
 			}
 			const key = headers["Idempotency-Key"];
+			if (!key) throw new Error("Missing idempotency key");
 			keys.push(key);
 			if (!issued.has(key))
 				issued.set(key, credentials(String(issued.size + 1)));
@@ -198,9 +201,9 @@ describe("independent server demo", () => {
 		const { session } = setup((async (_url, options) => {
 			if (options?.method === "DELETE")
 				return new Response(null, { status: 204 });
-			keys.push(
-				((options?.headers ?? {}) as Record<string, string>)["Idempotency-Key"],
-			);
+			const key = new Headers(options?.headers).get("Idempotency-Key");
+			if (!key) throw new Error("Missing idempotency key");
+			keys.push(key);
 			await Promise.resolve();
 			if (fail)
 				return Response.json(
@@ -224,7 +227,9 @@ describe("independent server demo", () => {
 		const revoked: string[] = [];
 		const { session, storage, clears } = setup((async (_url, options) => {
 			if (options?.method === "DELETE") {
-				revoked.push((options.headers as Record<string, string>).Authorization);
+				const token = new Headers(options.headers).get("Authorization");
+				if (!token) throw new Error("Missing authorization header");
+				revoked.push(token);
 				return new Response(null, { status: 204 });
 			}
 			attempt++;

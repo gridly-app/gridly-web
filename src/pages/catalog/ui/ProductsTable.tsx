@@ -1,7 +1,8 @@
+import { IconArchive, IconArchiveOff, IconPencil } from "@tabler/icons-react";
 import { StatusBadge as Badge, type Product } from "@/entities/warehouse";
 
 import {
-	Button,
+	IconButton,
 	Table,
 	TableActions,
 	TableBody,
@@ -33,7 +34,8 @@ export function ProductsTable({
 					<TableHead>Товар</TableHead>
 					<TableHead>Артикул</TableHead>
 					<TableHead>Категория</TableHead>
-					<TableHead>Объём</TableHead>
+					<TableHead>Объём единицы</TableHead>
+					<TableHead>Занято на складе</TableHead>
 					<TableHead>Цена</TableHead>
 					<TableHead />
 				</TableRow>
@@ -49,20 +51,36 @@ export function ProductsTable({
 						<TableCell>{p.categoryName}</TableCell>
 						<TableCell>{p.volume} м³</TableCell>
 						<TableCell>
+							<strong>
+								{p.occupiedVolume === null
+									? "—"
+									: `${p.occupiedVolume.toLocaleString("ru-RU", { maximumFractionDigits: 3 })} м³`}
+							</strong>
+							<small className="table-note">
+								{p.stockQuantity.toLocaleString("ru-RU")} шт. · включая резерв
+							</small>
+						</TableCell>
+						<TableCell>
 							{p.price ? Number(p.price).toLocaleString("ru") : "—"} ₽
 						</TableCell>
 						<TableCell>
 							<TableActions>
-								<Button
-									size="sm"
-									variant="ghost"
+								<IconButton
+									label="Изменить"
+									icon={<IconPencil size={16} />}
+									variant="secondary"
 									disabled={pending || !p.allowedActions?.includes("edit")}
 									onClick={() => onEdit(p)}
-								>
-									Изменить
-								</Button>
-								<Button
-									size="sm"
+								/>
+								<IconButton
+									label={p.archived ? "Восстановить" : "В архив"}
+									icon={
+										p.archived ? (
+											<IconArchiveOff size={16} />
+										) : (
+											<IconArchive size={16} />
+										)
+									}
 									variant="ghost"
 									disabled={
 										pending ||
@@ -71,9 +89,7 @@ export function ProductsTable({
 										)
 									}
 									onClick={() => void onToggleArchive(p.id)}
-								>
-									{p.archived ? "Восстановить" : "В архив"}
-								</Button>
+								/>
 							</TableActions>
 						</TableCell>
 					</TableRow>

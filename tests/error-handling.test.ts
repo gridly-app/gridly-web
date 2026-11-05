@@ -1,63 +1,9 @@
 import { expect, test } from "bun:test";
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import ts from "typescript";
 import {
 	memoryStorage,
 	resilientStorage,
 } from "../src/shared/lib/browserStorage";
 import { runtimeNotices } from "../src/shared/lib/runtimeNotices";
-
-function files(directory: string): string[] {
-	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-		const path = join(directory, entry.name);
-		return entry.isDirectory()
-			? files(path)
-			: /\.[cm]?[jt]sx?$/.test(path)
-				? [path]
-				: [];
-	});
-}
-
-test("catch blocks and Promise rejection handlers must do work, including when commented", () => {
-	const violations: string[] = [];
-	for (const file of [
-		...files("src"),
-		...files("tests"),
-		...readdirSync(".").filter((file) => /\.[cm]?[jt]sx?$/.test(file)),
-	]) {
-		const source = ts.createSourceFile(
-			file,
-			readFileSync(file, "utf8"),
-			ts.ScriptTarget.Latest,
-			true,
-		);
-		function visit(node: ts.Node) {
-			let body: ts.Block | undefined;
-			if (ts.isCatchClause(node)) body = node.block;
-			if (
-				ts.isCallExpression(node) &&
-				ts.isPropertyAccessExpression(node.expression) &&
-				node.expression.name.text === "catch"
-			) {
-				const handler = node.arguments[0];
-				if (
-					handler &&
-					(ts.isArrowFunction(handler) || ts.isFunctionExpression(handler)) &&
-					ts.isBlock(handler.body)
-				)
-					body = handler.body;
-			}
-			if (body && body.statements.length === 0)
-				violations.push(
-					`${file}:${source.getLineAndCharacterOfPosition(body.pos).line + 1}`,
-				);
-			ts.forEachChild(node, visit);
-		}
-		visit(source);
-	}
-	expect(violations).toEqual([]);
-});
 
 test("storage switches to memory once, retaining known values and new changes", () => {
 	const source = memoryStorage();

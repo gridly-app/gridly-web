@@ -1,6 +1,7 @@
+import { IconPencil } from "@tabler/icons-react";
 import type { Category } from "@/entities/warehouse";
 import {
-	Button,
+	IconButton,
 	Table,
 	TableActions,
 	TableBody,
@@ -37,14 +38,13 @@ export function CategoriesTable({ items, onEdit }: CategoriesTableProps) {
 						<TableCell>{c.productCount ?? "—"}</TableCell>
 						<TableCell>
 							<TableActions>
-								<Button
-									size="sm"
-									variant="ghost"
+								<IconButton
+									label="Изменить"
+									icon={<IconPencil size={16} />}
+									variant="secondary"
 									disabled={!c.allowedActions?.includes("edit")}
 									onClick={() => onEdit(c)}
-								>
-									Изменить
-								</Button>
+								/>
 							</TableActions>
 						</TableCell>
 					</TableRow>

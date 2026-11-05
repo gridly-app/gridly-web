@@ -8,6 +8,8 @@ export type CatalogDialogState =
 
 export interface CatalogProduct extends Product {
 	categoryName: string | undefined;
+	stockQuantity: number;
+	occupiedVolume: number | null;
 }
 
 export interface CatalogCategory extends Category {

@@ -1,8 +1,16 @@
 import { useState } from "react";
-import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
+import {
+	type CommandExecutor,
+	productOccupancy,
+	type Stock,
+	type Warehouse,
+} from "@/entities/warehouse";
 import type { CatalogCategory, CatalogProduct, CatalogTab } from "./catalog";
 
 export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
+	const [status, setStatus] = useState("all");
+	const [category, setCategory] = useState("all");
+	const [storage, setStorage] = useState("all");
 	const [search, setSearch] = useState("");
 	const [tab, setTab] = useState<CatalogTab>("products");
 	const searchQuery = search.trim().toLowerCase();
@@ -22,16 +30,44 @@ export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
 		return command("product", { ...product, archived: !product.archived });
 	}
 
+	const stockByProduct = new Map<string, Stock[]>();
+	for (const stock of warehouse.stock) {
+		const items = stockByProduct.get(stock.product);
+		if (items) items.push(stock);
+		else stockByProduct.set(stock.product, [stock]);
+	}
+
 	const visibleProducts: CatalogProduct[] = warehouse.products
+		.filter(
+			(p) =>
+				(status === "all" || (status === "archived") === !!p.archived) &&
+				(category === "all" || p.category === category) &&
+				(storage === "all" ||
+					warehouse.categories.find((c) => c.id === p.category)?.cold ===
+						(storage === "cold")),
+		)
 		.filter((product) =>
 			(product.name + product.sku).toLowerCase().includes(searchQuery),
 		)
 		.map((product) => ({
 			...product,
 			categoryName: categoryNames.get(product.category),
+			stockQuantity: productOccupancy(
+				product,
+				stockByProduct.get(product.id) ?? [],
+			).quantity,
+			occupiedVolume: productOccupancy(
+				product,
+				stockByProduct.get(product.id) ?? [],
+			).volume,
 		}));
 
 	const visibleCategories: CatalogCategory[] = warehouse.categories
+		.filter(
+			(c) =>
+				(status === "all" || (status === "archived") === !!c.archived) &&
+				(storage === "all" || c.cold === (storage === "cold")),
+		)
 		.filter((category) => category.name.toLowerCase().includes(searchQuery))
 		.map((category) => ({
 			...category,
@@ -39,6 +75,12 @@ export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
 		}));
 
 	return {
+		status,
+		setStatus,
+		category,
+		setCategory,
+		storage,
+		setStorage,
 		empty: !(tab === "products" ? warehouse.products : warehouse.categories)
 			.length,
 		noResults:
