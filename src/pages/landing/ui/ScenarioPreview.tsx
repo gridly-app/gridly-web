@@ -37,7 +37,6 @@ export function ScenarioMap({ scenario }: { scenario: LandingScenario }) {
 		const shelfY = Math.floor(scenario.routeShelfCell / 8) * 100 + 47;
 		const dx = Math.sign(approach.x - shelfX);
 		const dy = Math.sign(approach.y - shelfY);
-		// The cell is raised by 6 viewBox units. The rounded line cap touches its outer face.
 		const edge = { x: shelfX + dx * 53, y: shelfY - 6 + dy * 53 };
 		if (scenario.id === "inbound") points.push(edge);
 		else points.unshift(edge);

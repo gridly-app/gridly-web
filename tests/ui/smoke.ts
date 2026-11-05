@@ -63,6 +63,7 @@ const permissions = [
 	"create-inbound-order",
 	"create-outbound-order",
 	"edit-settings",
+	"edit-inventory",
 	"save-map",
 	"optimize-routes",
 	"resize-map",
@@ -201,6 +202,32 @@ try {
 				data.items.push(product);
 				data.total++;
 			}
+			if (method === "PUT" && /\/inventory\/[^/]+$/.test(path)) {
+				const id = path.split("/").at(-1);
+				const payload = request.postDataJSON();
+				const collection = store.get(path.slice(0, path.lastIndexOf("/"))) as {
+					items: { id: string }[];
+					total: number;
+				};
+				const existing = collection.items.find((item) => item.id === id);
+				const fields = {
+					...payload,
+					available_quantity: payload.quantity - payload.reserved_quantity,
+				};
+				if (existing) Object.assign(existing, fields);
+				else {
+					collection.items.push({
+						id,
+						...fields,
+						batch_id: `batch-${id}`,
+						revision: 1,
+						can_write_off: true,
+					});
+					collection.total++;
+				}
+				await route.fulfill({ status: 204 });
+				return;
+			}
 			if (path.endsWith("/inventory/write-offs")) {
 				const data = request.postDataJSON() as {
 					stock_id: string;
@@ -279,6 +306,14 @@ try {
 		await ready(page, path);
 		await expect(page.locator("input[role=combobox]")).toHaveCount(0);
 		await expect(page.locator("[title]")).toHaveCount(0);
+		if (path === "history") {
+			await expect(
+				page.getByText("Склад создан", { exact: true }),
+			).toBeVisible();
+			await expect(
+				page.getByText("Склад готов к работе", { exact: true }),
+			).toHaveCount(0);
+		}
 		if (path === "information") {
 			const metrics = page.getByRole("region", {
 				name: "Основные показатели склада",
@@ -303,6 +338,7 @@ try {
 				page.getByRole("radio", { name: "Списания", exact: true }),
 			).toBeVisible();
 			await page.getByRole("radio", { name: "Ожидается", exact: true }).click();
+			await page.getByRole("button", { name: "Фильтры", exact: true }).click();
 			await expect(
 				page.getByRole("combobox", { name: "Категория остатков", exact: true }),
 			).toBeVisible();
@@ -311,7 +347,48 @@ try {
 		await screenshot(page, path);
 	}
 	console.log("PASS all warehouse screens");
-	// Search and segmented keyboard selection.
+	const sidebarTrigger = page.getByRole("button", {
+		name: "Переключить меню",
+		exact: true,
+	});
+	await sidebarTrigger.click();
+	await expect(sidebarTrigger).toHaveAttribute("aria-expanded", "false");
+	await expect(
+		page.getByRole("link", { name: "Каталог", exact: true }),
+	).toBeVisible();
+	const navCatalog = page.getByRole("link", { name: "Каталог", exact: true });
+	await page.emulateMedia({ reducedMotion: "no-preference" });
+	await navCatalog.click();
+	const railSelection = navCatalog.locator("[data-rail-selection]");
+	await expect(railSelection).toBeVisible();
+	await expect
+		.poll(async () => {
+			const link = await navCatalog.boundingBox();
+			const highlight = await railSelection.boundingBox();
+			return link && highlight ? Math.abs(link.y - highlight.y) : Infinity;
+		})
+		.toBeLessThan(1);
+	await page.emulateMedia({ reducedMotion: "reduce" });
+	const profile = page.getByRole("button", { name: "Меню профиля" });
+	await expect(
+		page.locator('[data-collapsible="icon"] [data-slot="separator"]'),
+	).toBeVisible();
+	await expect
+		.poll(async () => {
+			const avatar = await profile
+				.locator('[data-slot="avatar"]')
+				.first()
+				.boundingBox();
+			const link = await navCatalog.boundingBox();
+			return avatar && link
+				? Math.abs(avatar.x + avatar.width / 2 - link.x - link.width / 2)
+				: Infinity;
+		})
+		.toBeLessThan(2);
+
+	await sidebarTrigger.click();
+	await expect(sidebarTrigger).toHaveAttribute("aria-expanded", "true");
+
 	await ready(page, "catalog");
 	await page.getByRole("textbox", { name: "Поиск по каталогу" }).fill("Кофе");
 	await expect(page.locator("tbody tr")).toHaveCount(1);
@@ -327,18 +404,64 @@ try {
 	await expect(
 		page.getByRole("radio", { name: "Категории", exact: true }),
 	).toBeChecked();
-	await page.getByRole("radio", { name: "Товары", exact: true }).click();
+	await page.getByRole("button", { name: "Продукты", exact: true }).click();
+	const categoryCard = page.getByRole("dialog", {
+		name: "Продукты",
+		exact: true,
+	});
+	await expect(
+		categoryCard.getByRole("link", { name: "Поставки" }),
+	).toHaveAttribute("href", /inbound\?category=cat-food/);
+	await expect(
+		categoryCard.getByRole("link", { name: "Отгрузки" }),
+	).toHaveAttribute("href", /outbound\?category=cat-food/);
+	await expect(
+		categoryCard.getByRole("heading", { name: "Правила хранения" }),
+	).toBeVisible();
+	const limit = categoryCard
+		.getByRole("spinbutton", {
+			name: "Лимит на клетку, м³ · Продукты",
+			exact: true,
+		})
+		.first();
+	await limit.fill("25");
+	const savedRules = page.waitForRequest(
+		(request) =>
+			request.url().endsWith("/layout/commit") && request.method() === "POST",
+	);
+	await categoryCard
+		.getByRole("button", { name: "Сохранить правила хранения" })
+		.click();
+	expect((await savedRules).postDataJSON().cells).toContainEqual(
+		expect.objectContaining({
+			x: 2,
+			y: 2,
+			capacity_volume: 25,
+			zone: expect.objectContaining({
+				id: "zone-cat-food-left",
+				category_id: "cat-food",
+			}),
+		}),
+	);
+	await categoryCard.getByRole("link", { name: "Остатки" }).click();
+	await expect(page).toHaveURL(/inventory\?category=cat-food/);
+	await expect(
+		page.getByRole("button", { name: "Фильтры, активно: 1" }),
+	).toBeVisible();
+	await ready(page, "catalog");
 	await page.getByRole("button", { name: "Фильтры", exact: true }).click();
 	await page
 		.getByRole("combobox", { name: "Статус каталога", exact: true })
 		.click();
 	await page.getByRole("option", { name: "Активные", exact: true }).hover();
-	await expect(page.locator(".glide-select-highlight")).toBeVisible();
+	await expect(
+		page.locator("[data-slot=glide-select-highlight]"),
+	).toBeVisible();
 	await expect
 		.poll(() =>
 			page.locator('[data-slot="select-list"]').evaluate((root) => {
 				const pill = root
-					.querySelector(".glide-select-highlight")
+					.querySelector("[data-slot=glide-select-highlight]")
 					?.getBoundingClientRect();
 				const item = Array.from(root.querySelectorAll('[role="option"]'))
 					.find((option) => option.textContent?.trim() === "Активные")
@@ -351,8 +474,54 @@ try {
 	await expect(
 		page.getByRole("combobox", { name: "Статус каталога", exact: true }),
 	).toContainText("Активные");
-	// Controlled Select and Combobox, focus trap/return, validation, pending and retry.
-	const create = page.getByRole("button", { name: "Новый товар", exact: true });
+	await page.keyboard.press("Escape");
+	await page.getByRole("link", { name: "Кофе в зёрнах", exact: true }).click();
+	const productCard = page.getByRole("dialog", { name: "Кофе в зёрнах" });
+	await expect(productCard.getByRole("table")).toBeVisible();
+	await productCard.getByRole("radio", { name: /^Заказы/ }).click();
+	await productCard.getByRole("link", { name: "ПР-1042", exact: true }).click();
+	const orderCard = page.getByRole("dialog", { name: "Карточка заказа" });
+	const lines = orderCard.getByRole("region", { name: "Состав заказа" });
+	await lines
+		.getByRole("textbox", { name: "Поиск по составу заказа" })
+		.fill("FOOD-001");
+	await expect(lines.locator("tbody tr")).toHaveCount(1);
+	await lines.getByRole("link", { name: "Кофе в зёрнах", exact: true }).click();
+	await expect(productCard).toBeVisible();
+	await productCard
+		.getByRole("button", { name: "Изменить товар", exact: true })
+		.click();
+	await expect(
+		page.getByRole("dialog", { name: "Редактирование товара" }),
+	).toBeVisible();
+	await page.keyboard.press("Escape");
+	await page.getByRole("link", { name: "Паста ригатони", exact: true }).click();
+	const pastaCard = page.getByRole("dialog", { name: "Паста ригатони" });
+	await pastaCard.getByRole("radio", { name: "Движения", exact: true }).click();
+	await expect(
+		pastaCard.getByRole("table", { name: "Движения товара" }),
+	).toBeVisible();
+	await expect(
+		pastaCard.getByRole("link", { name: "ЗК-2079", exact: true }),
+	).toBeVisible();
+	await page.keyboard.press("Escape");
+	console.log("PASS linked product and order cards");
+	await page.getByRole("button", { name: "Столбцы", exact: true }).click();
+	await page
+		.getByRole("menuitemcheckbox", { name: "Артикул", exact: true })
+		.click();
+	await expect(page.getByRole("columnheader", { name: "Артикул" })).toHaveCount(
+		0,
+	);
+	await page
+		.getByRole("menuitemcheckbox", { name: "Артикул", exact: true })
+		.click();
+	await page.keyboard.press("Escape");
+	const priceHeader = page.getByRole("columnheader", { name: "Цена" });
+	await priceHeader.getByRole("button").click();
+	await expect(priceHeader).toHaveAttribute("aria-sort", "ascending");
+
+	const create = page.getByRole("button", { name: "Товар", exact: true });
 	await create.click();
 	const dialog = page.locator("[data-slot=dialog-popup]");
 	await expect(dialog).toBeVisible();
@@ -392,6 +561,39 @@ try {
 	console.log("PASS forms, combobox, keyboard, failed save and retry");
 	await ready(page, "inventory");
 	await page
+		.getByRole("button", { name: /^Партии:/ })
+		.first()
+		.click();
+	await page
+		.getByRole("button", { name: "Связи товара", exact: true })
+		.first()
+		.click();
+	await expect(
+		page.getByRole("menuitem", { name: "Товар в каталоге" }),
+	).toBeVisible();
+	await page.keyboard.press("Escape");
+	await page
+		.getByRole("button", { name: "Изменить количество", exact: true })
+		.first()
+		.click();
+	const quantity = page.getByRole("spinbutton", { name: "Количество партии" });
+	const previousQuantity = Number(await quantity.inputValue());
+	await quantity.fill(String(previousQuantity - 1));
+	await page
+		.getByRole("button", { name: "Сохранить количество", exact: true })
+		.click();
+	await expect(quantity).toHaveCount(0);
+	await expect(
+		page
+			.getByRole("cell", {
+				name: `${previousQuantity - 1} шт. Изменить количество`,
+				exact: true,
+			})
+			.first(),
+	).toBeVisible();
+	console.log("PASS grouped inventory and inline correction");
+
+	await page
 		.getByRole("button", { name: "Списать", exact: true })
 		.first()
 		.click();
@@ -402,6 +604,22 @@ try {
 	await dialog.getByRole("button", { name: "Подтвердить списание" }).click();
 	await expect(dialog).toHaveCount(0);
 	console.log("PASS write-off");
+	await page.getByRole("button", { name: "Партия", exact: true }).click();
+	await dialog.getByRole("combobox", { name: /Товар/ }).click();
+	await page
+		.getByRole("option", { name: "Кофе в зёрнах", exact: true })
+		.click();
+	await dialog.getByRole("combobox", { name: /Зона/ }).click();
+	await page.getByRole("option", { name: "Продукты", exact: true }).click();
+	await dialog
+		.getByRole("button", { name: "Сохранить остаток", exact: true })
+		.click();
+	await expect(dialog).toHaveCount(0);
+	await expect(
+		page.getByRole("cell", { name: "Партий: 2", exact: true }),
+	).toBeVisible();
+	console.log("PASS stock creation by zone");
+
 	await ready(page, "robots");
 	const beforeDelete = mutations;
 	await page
@@ -421,7 +639,6 @@ try {
 	await expect(
 		page.getByRole("button", { name: "Сохранить подтверждения", exact: true }),
 	).toBeEnabled();
-	// Warehouse creation error retains its form.
 	await page
 		.getByRole("combobox", {
 			name: "Рабочее пространство — выбор склада",
@@ -442,8 +659,41 @@ try {
 
 	await ready(page, "inbound");
 	await page
-		.getByRole("button", { name: "Новая поставка", exact: true })
+		.getByRole("button", { name: /^Состав заказа/ })
+		.first()
 		.click();
+	const expandedLines = page.getByRole("region", { name: "Состав заказа" });
+	await expect(
+		expandedLines.getByRole("columnheader", { name: "Обработано" }),
+	).toBeVisible();
+	await expect(
+		expandedLines.getByRole("link", { name: "Партии товара" }).first(),
+	).toBeVisible();
+
+	await expandedLines
+		.getByRole("link", { name: "Партии товара" })
+		.first()
+		.click();
+	await expect(page).toHaveURL(/inventory\?product=prod-coffee/);
+	await expect(page.getByText(/^Товар: /)).toHaveCount(0);
+	await page.getByRole("button", { name: "Фильтры, активно: 1" }).click();
+	await expect(
+		page.getByRole("combobox", { name: "Товар", exact: true }),
+	).toContainText("Кофе в зёрнах");
+
+	await ready(page, "inbound");
+	await page.getByRole("button", { name: "Столбцы", exact: true }).click();
+	const supplierColumn = page.getByRole("menuitemcheckbox", {
+		name: "Поставщик",
+		exact: true,
+	});
+	await supplierColumn.click();
+	await expect(
+		page.getByRole("columnheader", { name: "Поставщик", exact: true }),
+	).toHaveCount(0);
+	await supplierColumn.click();
+	await page.keyboard.press("Escape");
+	await page.getByRole("button", { name: "Поставка", exact: true }).click();
 	await expect(dialog).toBeVisible();
 	await dialog.getByLabel("Поставщик *", { exact: true }).fill("UI поставщик");
 	await dialog.getByRole("combobox").first().click();
@@ -473,6 +723,9 @@ try {
 	await expect(
 		page.getByRole("button", { name: "Сохранить изменения", exact: true }),
 	).toBeVisible();
+	await expect(
+		page.getByRole("button", { name: "Следующие категории" }),
+	).toHaveCount(0);
 	await screenshot(page, "editor-construction");
 	const editCanvas = page.locator("canvas").first();
 	await editCanvas.focus();
@@ -534,7 +787,6 @@ try {
 		page.getByText("Нет операций за выбранный период.", { exact: true }),
 	).toBeVisible();
 	console.log("PASS analytics charts, empty periods and CSV");
-	// Both themes and responsive navigation; check root layout and keyboard reachability.
 	for (const dark of [false, true]) {
 		await page.evaluate((value) => {
 			localStorage.setItem("gridly.theme", value ? "dark" : "light");
@@ -684,18 +936,20 @@ try {
 	readOnly = true;
 	await ready(page, "catalog");
 	await expect(
-		page.getByRole("button", { name: "Новый товар", exact: true }),
+		page.getByRole("button", { name: "Товар", exact: true }),
 	).toBeDisabled();
-	await page.getByRole("button", { name: "Новый товар", exact: true }).hover();
-	await expect(page.getByRole("tooltip")).toContainText("Создание недоступно");
-	const tooltip = page.getByRole("tooltip");
+	await page.getByRole("button", { name: "Товар", exact: true }).hover();
+	const tooltip = page
+		.locator("[data-warm-tooltip]")
+		.filter({ hasText: "Создание недоступно" });
+	await expect(tooltip).toBeVisible();
 	await tooltip.hover();
 	await expect(tooltip).toBeVisible();
 	await page.keyboard.press("Escape");
 	await expect(tooltip).toHaveCount(0);
 	await ready(page, "catalog");
 	await page.keyboard.press("Tab");
-	await page.getByRole("button", { name: "Новый товар", exact: true }).focus();
+	await page.getByRole("button", { name: "Товар", exact: true }).focus();
 	await expect(tooltip).toBeVisible();
 	await page.keyboard.press("Escape");
 	await expect(tooltip).toHaveCount(0);
@@ -708,7 +962,7 @@ try {
 	offlineData = false;
 	await page.getByRole("button", { name: "Повторить", exact: true }).click();
 	await expect(
-		page.getByRole("button", { name: "Новый товар", exact: true }),
+		page.getByRole("button", { name: "Товар", exact: true }),
 	).toBeEnabled();
 	await page.goto(`${base}/`);
 	await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -766,10 +1020,14 @@ try {
 			() => document.documentElement.scrollWidth > innerWidth,
 		),
 	).toBe(false);
-	const heroTitle = await page.locator("h1 > span").boundingBox();
-	expect(
-		heroTitle && heroTitle.x >= 0 && heroTitle.x + heroTitle.width <= 376,
-	).toBe(true);
+	await expect
+		.poll(async () => {
+			const heroTitle = await page.locator("h1 > span").boundingBox();
+			return (
+				!!heroTitle && heroTitle.x >= 0 && heroTitle.x + heroTitle.width <= 376
+			);
+		})
+		.toBe(true);
 	await screenshot(page, "landing-zoom-200");
 	await page.evaluate(() => {
 		document.documentElement.style.zoom = "";

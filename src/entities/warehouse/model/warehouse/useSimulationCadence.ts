@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Warehouse } from "./schemas";
 
-/** Observe server ticks instead of assuming how long a simulation tick lasts. */
 export function useSimulationCadence(
 	warehouse: Pick<Warehouse, "id" | "tick" | "asOf" | "lastTickAt" | "running">,
 ) {
