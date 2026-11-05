@@ -90,11 +90,9 @@ export function SidebarProvider({
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 }): React.ReactElement {
-	const isMobile = useMediaQuery("max-md");
+	const isMobile = useMediaQuery("(width < 851px)");
 	const [openMobile, setOpenMobile] = React.useState(false);
 
-	// This is the internal state of the sidebar.
-	// We use openProp and setOpenProp for control from outside the component.
 	const [_open, _setOpen] = React.useState(defaultOpen);
 	const open = openProp ?? _open;
 	const setOpen = React.useCallback(
@@ -106,9 +104,7 @@ export function SidebarProvider({
 				_setOpen(openState);
 			}
 
-			// Gridly also persists controlled state in localStorage; Cookie Store is not available in every browser.
 			if (typeof cookieStore === "undefined") return;
-			// This sets the cookie to keep the sidebar state.
 			await cookieStore.set({
 				expires: Date.now() + SIDEBAR_COOKIE_MAX_AGE * 1000,
 				name: SIDEBAR_COOKIE_NAME,
@@ -119,12 +115,10 @@ export function SidebarProvider({
 		[setOpenProp, open],
 	);
 
-	// Helper to toggle the sidebar.
 	const toggleSidebar = React.useCallback(() => {
 		return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
 	}, [isMobile, setOpen]);
 
-	// Adds a keyboard shortcut to toggle the sidebar.
 	useEventListener("keydown", (event: KeyboardEvent) => {
 		if (
 			event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -135,8 +129,6 @@ export function SidebarProvider({
 		}
 	});
 
-	// We add a state so that we can do data-state="expanded" or "collapsed".
-	// This makes it easier to style the sidebar with Tailwind classes.
 	const state = open ? "expanded" : "collapsed";
 
 	const contextValue = React.useMemo<SidebarContextProps>(
@@ -206,9 +198,13 @@ export function Sidebar({
 
 	if (isMobile) {
 		return (
-			<Sheet onOpenChange={setOpenMobile} open={openMobile} {...props}>
+			<Sheet onOpenChange={setOpenMobile} open={openMobile}>
 				<SheetPopup
-					className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+					className={cn(
+						"w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden",
+						className,
+					)}
+					{...props}
 					data-mobile="true"
 					data-sidebar="sidebar"
 					data-slot="sidebar"
@@ -220,8 +216,8 @@ export function Sidebar({
 					}
 				>
 					<SheetHeader className="sr-only">
-						<SheetTitle>Sidebar</SheetTitle>
-						<SheetDescription>Displays the mobile sidebar.</SheetDescription>
+						<SheetTitle>Навигация</SheetTitle>
+						<SheetDescription>Разделы рабочего пространства.</SheetDescription>
 					</SheetHeader>
 					<div className="flex h-full w-full flex-col">{children}</div>
 				</SheetPopup>
@@ -238,7 +234,6 @@ export function Sidebar({
 			data-state={state}
 			data-variant={variant}
 		>
-			{/* This is what handles the sidebar gap on desktop */}
 			<div
 				className={cn(
 					"relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
@@ -256,7 +251,6 @@ export function Sidebar({
 					side === "left"
 						? "left-0 group-data-[collapsible=offcanvas]:-left-(--sidebar-width)"
 						: "right-0 group-data-[collapsible=offcanvas]:-right-(--sidebar-width)",
-					// Adjust the padding for floating and inset variants.
 					variant === "floating" || variant === "inset"
 						? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
 						: "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
@@ -282,13 +276,14 @@ export function SidebarTrigger({
 	onClick,
 	...props
 }: React.ComponentProps<typeof Button>): React.ReactElement {
-	const { toggleSidebar } = useSidebar();
+	const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
 
 	return (
 		<Button
 			className={cn("size-7", className)}
 			data-sidebar="trigger"
 			data-slot="sidebar-trigger"
+			aria-expanded={isMobile ? openMobile : open}
 			onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
 				onClick?.(event);
 				toggleSidebar();
@@ -468,7 +463,6 @@ export function SidebarGroupAction({
 	const defaultProps = {
 		className: cn(
 			"absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
-			// Increases the hit area of the button on mobile.
 			"after:absolute after:-inset-2 md:after:hidden",
 			"group-data-[collapsible=icon]:hidden",
 			className,
@@ -592,7 +586,6 @@ export function SidebarMenuAction({
 	const defaultProps = {
 		className: cn(
 			"absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-lg p-0 text-sidebar-foreground outline-hidden ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg:not([class*='size-'])]:size-4 [&>svg]:shrink-0",
-			// Increases the hit area of the button on mobile.
 			"after:absolute after:-inset-2 md:after:hidden",
 			"peer-data-[size=sm]/menu-button:top-1",
 			"peer-data-[size=default]/menu-button:top-1.5",
@@ -642,7 +635,6 @@ export function SidebarMenuSkeleton({
 }: React.ComponentProps<"div"> & {
 	showIcon?: boolean;
 }): React.ReactElement {
-	// Random width between 50 to 90%.
 	const width = React.useMemo(() => {
 		return `${Math.floor(Math.random() * 40) + 50}%`;
 	}, []);

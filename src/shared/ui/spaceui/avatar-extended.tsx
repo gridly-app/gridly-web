@@ -7,7 +7,6 @@ import { Badge, type BadgeProps } from "@/shared/ui/spaceui/badge";
 
 export type AvatarVariant =
 	| "all"
-	// gradient
 	| "lumina"
 	| "shaula"
 	| "singularity"
@@ -15,28 +14,23 @@ export type AvatarVariant =
 	| "solar-flare"
 	| "titan"
 	| "glass"
-	// fluid
 	| "splash"
 	| "astronaut"
 	| "ghost"
 	| "bot"
 	| "glitch"
 	| "animals"
-	// classic
 	| "pebble"
 	| "invader"
 	| "grunge"
 	| "bored"
 	| "doodle"
 	| "squiggle"
-	// paletteless
 	| "critter"
 	| "kendo";
 
 export interface AvatarFallbackProps extends AvatarPrimitive.Fallback.Props {
-	/** The name used to generate the avatar. Falls back to children if it is a string. */
 	name?: string;
-	/** Avatar style variant. Defaults to 'all' (random pick by the API). */
 	variant?: AvatarVariant;
 }
 

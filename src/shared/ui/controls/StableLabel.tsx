@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-/** Reserve the largest label before a mode or request state changes. */
 export function StableLabel({
 	children,
 	variants,

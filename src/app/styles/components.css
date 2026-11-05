@@ -1,4 +1,3 @@
-/* Product-wide metrics for SpaceUI slots; layout remains owned by each page. */
 :is([data-slot="button"], [data-control="button"]) {
 	border-radius: var(--radius-control);
 	font-size: var(--text-control);
@@ -137,7 +136,6 @@
 	}
 }
 
-/* Shared spacing and interaction metrics. */
 [data-slot="form"] {
 	display: flex;
 	flex-direction: column;
@@ -152,6 +150,24 @@
 [data-slot="card-panel"],
 [data-slot="card-footer"] {
 	padding-inline: var(--panel-inset);
+}
+.workspace-modal-body {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--space-4);
+	padding-inline: var(--panel-inset);
+	padding-bottom: var(--panel-inset);
+	overflow-wrap: anywhere;
+}
+.workspace-modal-body > :is([data-slot="button"], [data-rubber-segment]) {
+	justify-self: start;
+	max-width: 100%;
+}
+.workspace-modal-body
+	:where([data-slot="field"])
+	> [data-slot="select-trigger"] {
+	width: 100%;
+	min-width: 0;
 }
 [data-slot="toolbar"] {
 	min-width: 0;
@@ -191,6 +207,9 @@
 }
 [data-slot="dialog-header"] {
 	gap: var(--space-2);
+}
+.workspace-modal > [data-slot="dialog-header"] {
+	padding-inline: var(--panel-inset) calc(var(--panel-inset) + 32px);
 }
 [data-slot="select-item"] {
 	position: relative;
@@ -309,10 +328,9 @@
 	width: 18px;
 	height: 18px;
 }
-[data-collapsible="icon"] [data-slot="sidebar-menu-button"] > span {
+[data-collapsible="icon"] [data-slot="sidebar-menu-button"] > span:last-child {
 	display: none;
 }
-/* Workspace tabs fill the available area; inner controls retain their radii. */
 .data-panel[data-slot="card"] {
 	border: 0;
 	border-radius: 0;
@@ -341,7 +359,6 @@
 	--tile-shadow: #10190c;
 }
 
-/* Public pages keep a fixed light palette. */
 .public-page[data-fixed-theme="light"] {
 	color-scheme: light;
 	--bg-page: #f5f5f5;
@@ -421,7 +438,6 @@
 	min-height: 36px;
 }
 
-/* Disabled actions remain neutral; enabled primary actions use the brand colour. */
 :is(
 	[data-slot="button"],
 	[data-control="button"]
@@ -501,7 +517,6 @@
 	corner-shape: superellipse(1.25);
 }
 
-/* Compact, aligned actions and filters across workspace lists. */
 .action-icon:is([data-slot="button"], [data-control="button"]) {
 	width: 32px;
 	height: 32px;
@@ -580,9 +595,20 @@
 }
 .order-facts {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 12px;
-	margin: 16px 0;
+	margin: 0;
+}
+.product-facts {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (width <= 580px) {
+	.order-facts {
+		gap: 8px;
+	}
+	.product-facts {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 }
 .order-facts > div {
 	padding: 12px;
@@ -627,7 +653,6 @@
 	}
 }
 
-/* Gridly presentation stays outside CLI-installed SpaceUI primitives. */
 :is([data-slot="button"], [data-control="button"])[data-variant="default"] {
 	box-shadow: var(--shadow-control);
 }
@@ -647,51 +672,39 @@
 	backdrop-filter: blur(24px);
 }
 
-/* Secondary filters occupy their own row only when requested. */
-.list-filters {
-	display: contents;
+.list-filters-positioner {
+	z-index: 50;
 }
-.list-filters-actions {
-	min-width: 0;
-	max-width: 100%;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-.list-filters-fields:not([hidden]) {
-	display: flex;
-	flex: 1 0 100%;
-	min-width: 0;
-	flex-wrap: wrap;
-	align-items: flex-end;
+.list-filters-fields {
+	display: grid;
 	gap: 12px;
-	padding-top: 12px;
-	border-top: 1px solid var(--border);
+	width: min(300px, calc(100vw - 24px));
+	max-height: var(--available-height);
+	overflow-y: auto;
+	padding: 12px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-control);
+	background: var(--card);
+	box-shadow: var(--shadow-floating);
+	transform-origin: var(--transform-origin);
+	transition:
+		opacity 160ms,
+		transform 160ms;
 }
-.list-filters-fields > * {
-	flex: 0 1 200px;
-	min-width: min(100%, 160px);
-	max-width: 100%;
+.list-filters-fields:is([data-starting-style], [data-ending-style]) {
+	opacity: 0;
+	transform: scale(0.97);
 }
 .list-filters-fields [data-slot="select-trigger"] {
 	width: 100%;
-	min-height: 36px;
 }
 .list-filters-count {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
 	min-width: 20px;
-	height: 20px;
-	padding-inline: 5px;
+	padding-inline: 4px;
 	border-radius: 6px;
 	background: var(--primary);
 	color: var(--primary-foreground);
-	font-size: var(--text-caption);
-}
-.list-filters[data-open] .list-filters-chevron {
-	transform: rotate(180deg);
+	font-variant-numeric: tabular-nums;
 }
 .data-panel > .data-panel-toolbar {
 	align-items: center;
@@ -701,17 +714,6 @@
 	width: fit-content;
 	height: auto;
 	white-space: nowrap;
-}
-@media (max-width: 600px) {
-	.list-filters-fields > * {
-		flex: 1 1 160px;
-	}
-}
-
-/* Stable control geometry: content changes must not move neighbouring controls. */
-:root {
-	--control-action-width: 200px;
-	--control-filter-width: 200px;
 }
 .stable-label {
 	display: inline-grid;
@@ -733,44 +735,11 @@
 .data-panel-toolbar
 	> :is([data-slot="button"], [data-control="button"])[data-variant="default"],
 .data-panel-toolbar
-	> :not(.list-filters)
+	> *
 	> :is([data-slot="button"], [data-control="button"])[data-variant="default"] {
-	flex: 0 0 var(--control-action-width);
-	width: var(--control-action-width);
+	flex: 0 0 auto;
+	width: auto;
 	max-width: 100%;
-}
-.list-filters-fields > [data-slot="select-trigger"],
-.list-filters-fields > [data-slot="select-button"] {
-	flex: 0 0 var(--control-filter-width);
-	width: var(--control-filter-width);
-	max-width: 100%;
-}
-.list-filters-count {
-	width: 24px;
-	font-variant-numeric: tabular-nums;
-}
-.list-filters-count[data-empty],
-.list-filters-reset[data-empty] {
-	visibility: hidden;
-	pointer-events: none;
-}
-@media (width <= 580px) {
-	.list-filters-fields > [data-slot="select-trigger"],
-	.list-filters-fields > [data-slot="select-button"] {
-		flex: 1 1 160px;
-	}
-}
-
-.report-context {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	flex-wrap: wrap;
-	gap: 8px;
-	padding: 8px 16px;
-	color: var(--primary);
-	background: var(--accent-bg);
-	font-size: var(--text-control);
 }
 [data-unpriced-highlight="true"] {
 	background: var(--accent-bg);
@@ -792,6 +761,7 @@
 }
 .order-lines {
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 12px;
 }
 .order-lines [data-slot="badge"] {
@@ -826,14 +796,6 @@
 	}
 }
 
-.list-filters[data-inline] .list-filters-fields {
-	display: contents;
-}
-.list-filters[data-inline] [data-filter-reset] {
-	flex: 0 0 36px;
-	min-width: 36px;
-}
-
 .glide-select-search {
 	padding: 8px;
 	border-bottom: 1px solid var(--border);
@@ -845,16 +807,6 @@
 }
 .glide-select-search + [data-slot="select-list"] {
 	max-height: min(280px, calc(var(--available-height) - 70px));
-}
-
-.list-filter-field {
-	display: flex;
-	align-items: flex-end;
-	min-width: 0;
-}
-.list-filter-field > [data-slot="select-trigger"],
-.list-filter-field > [data-slot="select-button"] {
-	width: 100%;
 }
 
 [data-glide-select] [data-slot="select-item"] {

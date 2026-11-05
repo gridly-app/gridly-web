@@ -15,6 +15,7 @@ export {
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuItem,
+	useSidebar,
 } from "../spaceui/sidebar";
 export function SidebarProvider(
 	props: ComponentProps<typeof SpaceSidebarProvider>,

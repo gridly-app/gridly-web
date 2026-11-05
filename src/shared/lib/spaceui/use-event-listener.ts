@@ -3,20 +3,6 @@
 import { type RefObject, useEffect, useRef } from "react";
 import { useIsomorphicLayoutEffect } from "@/shared/lib/spaceui/use-isomorphic-layout-effect";
 
-/**
- * React hook that binds an event listener to the window, document, or a specific DOM element.
- *
- * @template K, T
- * @param {K} eventName - Standard DOM event name.
- * @param {(event: any) => void} handler - Event handler function.
- * @param {RefObject<T> | T | null} [element] - Optional DOM target element or React ref.
- * @param {boolean | AddEventListenerOptions} [options] - Standard addEventListener options.
- *
- * @example
- * useEventListener('keydown', (e) => {
- *   if (e.key === 'Escape') closeModal();
- * });
- */
 export function useEventListener<K extends keyof WindowEventMap>(
 	eventName: K,
 	handler: (event: WindowEventMap[K]) => void,

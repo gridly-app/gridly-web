@@ -19,7 +19,6 @@ export function FormShell({
 
 	return (
 		<Form
-			className="space-y-4"
 			onSubmit={(event) => {
 				void handleSubmit(event);
 			}}

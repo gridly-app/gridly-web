@@ -27,6 +27,7 @@ export {
 	TableHeader,
 	TableRow,
 } from "./dataDisplay/Table";
+export { useTableColumns } from "./dataDisplay/useTableColumns";
 export { ErrorNotice } from "./feedback/ErrorNotice";
 export { Feedback } from "./feedback/Feedback";
 export { Combobox } from "./forms/Combobox";
@@ -49,11 +50,14 @@ export {
 	SidebarMenuItem,
 	SidebarProvider,
 	SidebarTrigger,
+	useSidebar,
 } from "./navigation/Sidebar";
 export { ConfirmDialog } from "./overlays/ConfirmDialog";
 export {
 	Menu,
+	MenuCheckboxItem,
 	MenuItem,
+	MenuLinkItem,
 	MenuPopup,
 	MenuSubmenu,
 	MenuSubmenuTrigger,

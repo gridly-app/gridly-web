@@ -1,4 +1,3 @@
-// React Bits Animated Content reveal, adapted to the existing Motion runtime.
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 

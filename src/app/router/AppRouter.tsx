@@ -71,7 +71,7 @@ function AuthRoute() {
 	const { error } = useSession();
 	if (!online)
 		return (
-			<Feedback role="status">
+			<Feedback tone="warning">
 				Нет соединения. Для входа подключитесь к сети.{error && <p>{error}</p>}
 			</Feedback>
 		);

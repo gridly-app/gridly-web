@@ -6,12 +6,16 @@ export function StartupFailure() {
 	}
 
 	return (
-		<Feedback tone="loading" role="alert">
-			<h1>Не удалось загрузить приложение</h1>
-			<p>Проверьте соединение и попробуйте ещё раз.</p>
-			<Button type="button" onClick={reload}>
-				Перезагрузить страницу
-			</Button>
+		<Feedback
+			tone="error"
+			title="Не удалось загрузить приложение"
+			action={
+				<Button type="button" onClick={reload}>
+					Перезагрузить страницу
+				</Button>
+			}
+		>
+			Проверьте соединение и попробуйте ещё раз.
 		</Feedback>
 	);
 }

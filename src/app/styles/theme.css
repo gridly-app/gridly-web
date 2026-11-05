@@ -59,7 +59,6 @@
 	--shadow-panel: 0 2px 4px #18181b05, 0 12px 32px -20px #18181b1a;
 	--shadow-floating: 0 2px 6px #18181b0d, 0 16px 40px -12px #18181b26;
 
-	/* Compatibility with SpaceUI and the map/editor presentation. */
 	--radius: 0.75rem;
 	--bg: var(--bg-page);
 	--text: var(--text-primary);

@@ -9,11 +9,18 @@ import {
 } from "../spaceui/dialog";
 export interface ModalProps {
 	title: string;
+	wide?: boolean;
 	children: ReactNode;
 	onClose: () => void;
 	finalFocus?: ComponentProps<typeof DialogPopup>["finalFocus"] | undefined;
 }
-export function Modal({ title, children, onClose, finalFocus }: ModalProps) {
+export function Modal({
+	title,
+	children,
+	onClose,
+	finalFocus,
+	wide,
+}: ModalProps) {
 	const [opener] = useState(() =>
 		document.activeElement instanceof HTMLElement
 			? document.activeElement
@@ -27,6 +34,7 @@ export function Modal({ title, children, onClose, finalFocus }: ModalProps) {
 			}}
 		>
 			<DialogPopup
+				className={wide ? "workspace-modal sm:max-w-5xl" : "workspace-modal"}
 				finalFocus={finalFocus ?? (() => opener)}
 				closeProps={{
 					"aria-label": "Закрыть",
@@ -36,7 +44,7 @@ export function Modal({ title, children, onClose, finalFocus }: ModalProps) {
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
-				<DialogPanel>{children}</DialogPanel>
+				<DialogPanel className="workspace-modal-body">{children}</DialogPanel>
 			</DialogPopup>
 		</Dialog>
 	);

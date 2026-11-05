@@ -40,22 +40,19 @@ export function SegmentedControl<T extends string>({
 	useLayoutEffect(() => {
 		const root = track.current;
 		if (!root || !items.some((item) => item.value === value)) return;
-		let stop = () => {
-			/* No animation is running yet. */
-		};
+		let stop: (() => void) | undefined;
 		const measure = (instant: boolean) => {
 			const selected = root.querySelector<HTMLElement>("[data-checked]");
 			if (!selected) return;
 			const l = selected.offsetLeft;
 			const r = l + selected.offsetWidth;
-			stop();
+			stop?.();
 			if (instant || reduce || !initialized.current) {
 				left.jump(l);
 				right.jump(r);
 				initialized.current = true;
 				return;
 			}
-			// React Bits Rubber Segment: leading edge travels first; trailing edge catches up.
 			const forward = l > left.get();
 			const a = animate(left, l, {
 				type: "spring",
@@ -88,7 +85,7 @@ export function SegmentedControl<T extends string>({
 			observer.observe(item);
 		return () => {
 			observer.disconnect();
-			stop();
+			stop?.();
 		};
 	}, [value, items, reduce, left, right]);
 	return (

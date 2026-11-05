@@ -2,7 +2,6 @@ import { animate } from "motion";
 import { useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
 
-// React Bits Glide Select motion, adapted to the accessible Space UI listbox.
 export function useGlideHighlight() {
 	const [list, setList] = useState<HTMLElement | null>(null);
 	const highlight = useRef<HTMLSpanElement>(null);
