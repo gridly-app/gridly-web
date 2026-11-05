@@ -1,4 +1,5 @@
-import { Button, Combobox, Field, Input } from "@/shared/ui";
+import { IconTrash } from "@tabler/icons-react";
+import { Combobox, Field, IconButton, Input } from "@/shared/ui";
 import type { useOrderForm } from "../model/useOrderForm";
 import localLayout from "./Layout.module.css";
 import orderLayout from "./OrdersPage.module.css";
@@ -53,14 +54,13 @@ export function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 						/>
 					</Field>
 				)}
-				<Button
-					variant="ghost"
+				<IconButton
+					icon={<IconTrash size={16} />}
+					variant="destructive"
 					type="button"
-					aria-label="Удалить позицию"
+					label="Удалить позицию"
 					onClick={() => model.removeLine(line.key)}
-				>
-					×
-				</Button>
+				/>
 			</div>
 		</div>
 	);

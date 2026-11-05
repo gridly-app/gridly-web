@@ -1,17 +1,18 @@
 .row {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 }
 .wrap {
 	flex-wrap: wrap;
 }
 .sectionCaption {
-	font-size: 9px;
+	font-size: var(--text-caption);
+	line-height: 16px;
 	color: var(--muted-foreground);
-	font-weight: 800;
-	letter-spacing: 1px;
-	margin: 0 0 19px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	margin: 0 0 16px;
 }
 .muted {
 	color: var(--muted-foreground);
@@ -19,7 +20,8 @@
 
 @media (width <= 580px) {
 	.sectionCaption {
-		font-size: 8px;
-		letter-spacing: 0.5px;
+		font-size: var(--text-caption);
+		line-height: 16px;
+		letter-spacing: 0.06em;
 	}
 }

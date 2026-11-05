@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
 	type CommandExecutor,
 	type OrderInput,
@@ -83,7 +84,8 @@ export function useOrderDialogs(
 	const [formError, setFormError] = useState(initialForms.error);
 
 	const inFlight = useRef(false);
-	const [detail, updateDetail] = useState<string | null>(null);
+	const [params, setParams] = useSearchParams();
+	const detail = params.get("order");
 	const detailGeneration = useRef(0);
 	const [editing, setEditing] = useState(false);
 	const orderQuery = useOrder(warehouse.id, detail);
@@ -188,9 +190,21 @@ export function useOrderDialogs(
 			setSubmitting(false);
 		}
 	}
-	function setDetail(id: string | null) {
+	function setDetail(id: string | null, highlightUnpriced = false) {
 		detailGeneration.current++;
-		updateDetail(id);
+		setParams(
+			(current) => {
+				const next = new URLSearchParams(current);
+				if (id) next.set("order", id);
+				else {
+					next.delete("order");
+					next.delete("highlight");
+				}
+				if (highlightUnpriced) next.set("highlight", "unpriced");
+				return next;
+			},
+			{ replace: true },
+		);
 		setEditing(false);
 	}
 	function closeOrder() {

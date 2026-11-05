@@ -1,8 +1,9 @@
-import { IconPlayerPlay } from "@tabler/icons-react";
+import { IconCheck, IconEye, IconPlayerPlay } from "@tabler/icons-react";
 import { StatusBadge as Badge } from "@/entities/warehouse";
 
 import {
 	Button,
+	IconButton,
 	Table,
 	TableActions,
 	TableBody,
@@ -29,7 +30,7 @@ export interface OrdersTableProps {
 }
 
 export function OrdersTable({ model }: OrdersTableProps) {
-	const { statistics, visibleOrders, page, pending } = model;
+	const { visibleOrders, page, pending } = model;
 
 	return (
 		<Table>
@@ -39,21 +40,14 @@ export function OrdersTable({ model }: OrdersTableProps) {
 					<TableHead>
 						{page === "inbound" ? "Поставщик" : "Получатель"}
 					</TableHead>
-					<TableHead>Позиций</TableHead>
+					<TableHead>Товаров</TableHead>
+					<TableHead>Стоимость</TableHead>
 					<TableHead>Создан</TableHead>
-					<TableHead>Статус</TableHead>
 					<TableHead>
-						<div className={ordersStyles.orderStatistics}>
-							<b>
-								{page === "inbound" ? "Поставок" : "Отгрузок"}:{" "}
-								{statistics.total ?? "—"}
-							</b>
-							<small>
-								В работе: {statistics.active ?? "—"} · Завершено:{" "}
-								{statistics.completed ?? "—"}
-							</small>
-						</div>
+						{page === "inbound" ? "Ожидаемое размещение" : "Ожидаемая отгрузка"}
 					</TableHead>
+					<TableHead>Статус</TableHead>
+					<TableHead>Действия</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -73,38 +67,58 @@ export function OrdersTable({ model }: OrdersTableProps) {
 						</TableCell>
 						<TableCell>{o.party}</TableCell>
 						<TableCell>{o.quantity ?? "—"} шт.</TableCell>
+						<TableCell
+							title={
+								o.cost.unknown
+									? `Без цены: ${o.cost.unknown} шт.`
+									: "Стоимость по ценам каталога"
+							}
+						>
+							{o.cost.unknown > 0 ? (
+								<Button
+									variant="text"
+									size="sm"
+									onClick={() => model.setDetail(o.id, true)}
+									aria-label={`${o.number}: товары без цены`}
+								>
+									{o.cost.label} · без цены: {o.cost.unknown} шт. →
+								</Button>
+							) : (
+								<strong>{o.cost.label}</strong>
+							)}
+						</TableCell>
 						<TableCell>{o.createdLabel}</TableCell>
+						<TableCell title={o.forecast.note}>
+							<span>{o.completionLabel}</span>
+						</TableCell>
 						<TableCell>
 							<Badge value={o.status} />
 						</TableCell>
 						<TableCell>
 							<TableActions>
 								{o.canStart ? (
-									<Button
-										size="sm"
-										variant="ghost"
+									<IconButton
+										label="Запустить"
+										icon={<IconPlayerPlay size={16} />}
+										variant="default"
 										disabled={pending}
 										onClick={() => void model.startOrder(o.id)}
-									>
-										Запустить <IconPlayerPlay size={14} />
-									</Button>
+									/>
 								) : o.canConfirm ? (
-									<Button
-										size="sm"
+									<IconButton
+										label="Подтвердить этап"
+										icon={<IconCheck size={16} />}
 										variant="default"
 										disabled={pending}
 										onClick={() => void model.confirmOrder(o.id)}
-									>
-										Подтвердить этап
-									</Button>
+									/>
 								) : (
-									<Button
-										size="sm"
-										variant="ghost"
+									<IconButton
+										label="Подробнее"
+										icon={<IconEye size={16} />}
+										variant="secondary"
 										onClick={() => model.setDetail(o.id)}
-									>
-										Подробнее
-									</Button>
+									/>
 								)}
 							</TableActions>
 						</TableCell>

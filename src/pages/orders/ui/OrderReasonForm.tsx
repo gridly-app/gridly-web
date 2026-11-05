@@ -17,6 +17,7 @@ export function OrderReasonForm({ model }: OrderReasonFormProps) {
 		<>
 			{reasonAction && (
 				<FormShell
+					submitVariant="destructive"
 					pending={pending}
 					submitLabel={reasonLabel}
 					onSubmit={handleSubmit}

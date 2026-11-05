@@ -1,4 +1,5 @@
-import { Button } from "@/shared/ui";
+import { IconPencil } from "@tabler/icons-react";
+import { Button, IconButton } from "@/shared/ui";
 import type { useOrderDetail } from "../model/useOrderDetail";
 import localLayout from "./Layout.module.css";
 
@@ -22,13 +23,21 @@ export function OrderActions({ model }: OrderActionsProps) {
 	return (
 		<div className={`${localLayout.row} ${localLayout.wrap}`}>
 			{onEdit && canEdit && (
-				<Button variant="ghost" disabled={pending} onClick={onEdit}>
-					Исправить черновик
-				</Button>
+				<IconButton
+					label="Изменить черновик"
+					icon={<IconPencil size={16} />}
+					variant="secondary"
+					disabled={pending}
+					onClick={onEdit}
+				/>
 			)}
 			{visibleActions.map((action) => (
 				<Button
-					variant="ghost"
+					variant={
+						["cancel", "abort", "write-off-expired"].includes(action.id)
+							? "destructive"
+							: "default"
+					}
 					key={action.id}
 					disabled={pending}
 					onClick={() => model.runOrderAction(action.id)}
@@ -38,7 +47,7 @@ export function OrderActions({ model }: OrderActionsProps) {
 			))}
 			{canConfirm && (
 				<Button
-					variant="ghost"
+					variant="default"
 					disabled={pending}
 					onClick={() => {
 						void confirmOrder();

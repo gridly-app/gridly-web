@@ -1,5 +1,5 @@
 import type { Order, Warehouse } from "@/entities/warehouse";
-import { workflowKeys } from "@/entities/warehouse";
+import { productPrice, workflowKeys } from "@/entities/warehouse";
 
 export function getOrderPresentation(
 	order: Order,
@@ -7,6 +7,13 @@ export function getOrderPresentation(
 ) {
 	const lines = order.lines.map((line) => ({
 		...line,
+		unpriced:
+			productPrice(
+				warehouse.products.find((product) => product.id === line.product)
+					?.price,
+			) === null,
+		category: warehouse.products.find((product) => product.id === line.product)
+			?.category,
 		productName:
 			warehouse.products.find((product) => product.id === line.product)?.name ||
 			line.product,

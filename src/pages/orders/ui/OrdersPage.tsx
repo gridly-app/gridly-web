@@ -8,7 +8,7 @@ import {
 } from "@/entities/warehouse";
 import { useDemoSession, useSession, useWorkspaceMode } from "@/shared/auth";
 import { browserStorage } from "@/shared/lib/browserStorage";
-import { DataPanel, ErrorNotice } from "@/shared/ui";
+import { Button, DataPanel, ErrorNotice } from "@/shared/ui";
 import { OrderFormDrafts } from "../model/orderFormDrafts";
 import { useOrderDialogs } from "../model/useOrderDialogs";
 import type { OrdersPageOptions } from "../model/useOrdersPage";
@@ -72,6 +72,17 @@ function OrdersPageContent({
 		<>
 			{!dialogs.creation && !dialogs.choosing && (
 				<ErrorNotice message={dialogs.formError} />
+			)}
+			{(model.unpriced || model.from || model.to) && (
+				<div className="report-context">
+					<span>
+						{model.unpriced ? "Товары без цены" : "Из отчёта"}
+						{model.from && ` · ${model.from} — ${model.to}`}
+					</span>
+					<Button variant="text" size="sm" onClick={model.resetFilters}>
+						Сбросить фильтры отчёта
+					</Button>
+				</div>
 			)}
 			<DataPanel
 				empty={model.empty}

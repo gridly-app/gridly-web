@@ -1,5 +1,6 @@
+import { IconTrash } from "@tabler/icons-react";
 import type { Warehouse } from "@/entities/warehouse";
-import { Button, ErrorNotice, Modal } from "@/shared/ui";
+import { Button, ErrorNotice, IconButton, Modal } from "@/shared/ui";
 import type { useOrderDialogs } from "../model/useOrderDialogs";
 import { OrderForm } from "./OrderForm";
 import styles from "./OrdersPage.module.css";
@@ -45,13 +46,12 @@ export function OrderCreationDialog({ model }: OrderCreationDialogProps) {
 								Продолжить форму: {form.values.party || "Без контрагента"} ·{" "}
 								{new Date(form.updatedAt).toLocaleString("ru")}
 							</Button>
-							<Button
-								variant="ghost"
-								aria-label={`Удалить сохранённую форму ${form.values.party || "Без контрагента"}`}
+							<IconButton
+								icon={<IconTrash size={16} />}
+								variant="destructive"
+								label={`Удалить сохранённую форму ${form.values.party || "Без контрагента"}`}
 								onClick={() => model.deleteForm(form.id)}
-							>
-								Удалить
-							</Button>
+							/>
 						</div>
 					))}
 				</div>
@@ -73,7 +73,7 @@ export function OrderCreationDialog({ model }: OrderCreationDialogProps) {
 				<ErrorNotice message={model.formError} />
 				<div className={styles.savedForms}>
 					<Button onClick={model.saveForm}>Сохранить форму</Button>
-					<Button variant="secondary" onClick={model.discardForm}>
+					<Button variant="destructive" onClick={model.discardForm}>
 						Удалить изменения
 					</Button>
 					<Button variant="ghost" onClick={model.continueForm}>

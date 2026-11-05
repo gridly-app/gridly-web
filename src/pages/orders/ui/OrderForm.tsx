@@ -1,4 +1,4 @@
-import { Field, FormShell, Input } from "@/shared/ui";
+import { Field, Fieldset, FormShell, Input } from "@/shared/ui";
 import type { OrderFormOptions } from "../model/useOrderForm";
 import { useOrderForm } from "../model/useOrderForm";
 import { OrderConfirmations } from "./OrderConfirmations";
@@ -17,7 +17,7 @@ export function OrderForm(props: OrderFormProps) {
 			submitLabel={order ? "Сохранить черновик" : "Создать черновик"}
 			onSubmit={handleSubmit}
 		>
-			<fieldset className={styles.formFields} disabled={pending}>
+			<Fieldset className={styles.formFields} disabled={pending}>
 				<Field
 					label={kind === "inbound" ? "Поставщик *" : "Получатель / адрес *"}
 				>
@@ -32,7 +32,7 @@ export function OrderForm(props: OrderFormProps) {
 
 				<OrderLinesFields model={model} />
 				<OrderConfirmations model={model} />
-			</fieldset>
+			</Fieldset>
 		</FormShell>
 	);
 }
