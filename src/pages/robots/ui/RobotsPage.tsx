@@ -5,8 +5,8 @@ import {
 	DataPanel,
 	ListFilters,
 	Modal,
-	SearchField,
 	Select,
+	useTableColumns,
 } from "@/shared/ui";
 import { useRobotsPage } from "../model/useRobotsPage";
 import { RobotForm } from "./RobotForm";
@@ -14,6 +14,14 @@ import { RobotsTable } from "./RobotsTable";
 
 export function RobotsPage() {
 	const model = useRobotsPage();
+	const columns = useTableColumns("robots", [
+		"Специализация",
+		"Скорость",
+		"Груз",
+		"Текущая задача",
+		"Статус",
+		"Действия",
+	]);
 	const {
 		setEditing,
 		empty,
@@ -44,8 +52,9 @@ export function RobotsPage() {
 							<IconPlus size={18} />
 							Добавить робота
 						</Button>
-						<SearchField value={search} onChange={setSearch} />
+						{columns.button}
 						<ListFilters
+							search={{ value: search, onChange: setSearch }}
 							count={
 								[model.status !== "all", model.role !== "all"].filter(Boolean)
 									.length
@@ -80,7 +89,7 @@ export function RobotsPage() {
 					</>
 				}
 			>
-				<RobotsTable model={model} />
+				<RobotsTable model={model} hiddenColumns={columns.hiddenColumns} />
 			</DataPanel>
 			{editing && (
 				<Modal title="Параметры робота" onClose={() => setEditing(null)}>

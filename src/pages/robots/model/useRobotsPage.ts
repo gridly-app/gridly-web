@@ -32,20 +32,32 @@ export function useRobotsPage() {
 				(status === "all" || r.status === status) &&
 				(role === "all" || r.roles.includes(role)),
 		)
-		.filter((robot) => robot.name.toLowerCase().includes(searchQuery))
+
 		.map((robot) => ({
 			...robot,
 			canEdit: !!robot.allowedActions?.includes("edit"),
 			canDelete: !!robot.allowedActions?.includes("delete"),
 			rolesLabel: robot.roles.map((role) => roleLabel(role)).join(", "),
 			assignment: robotAssignment(robot, warehouse),
-		}));
+		}))
+		.filter((robot) =>
+			[
+				robot.name,
+				robot.assignment.title,
+				robot.assignment.order?.number,
+				robot.assignment.detail,
+			]
+				.join(" ")
+				.toLowerCase()
+				.includes(searchQuery.trim()),
+		);
 
 	function removeRobot(robotId: string) {
 		return command("deleteRobot", robotId);
 	}
 
 	return {
+		warehouseId: warehouse.id,
 		status,
 		setStatus,
 		role,

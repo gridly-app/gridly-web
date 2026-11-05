@@ -93,7 +93,6 @@ function remainingTaskTicks(robot: Robot): number | null {
 	}
 	return Math.max(1, ticks);
 }
-/** A forecast at current fleet throughput, not a scheduled/guaranteed completion date. */
 export function orderCompletion(
 	order: Order,
 	warehouse: Pick<Warehouse, "running" | "robots" | "asOf" | "lastTickAt">,
@@ -222,12 +221,16 @@ export function robotAssignment(
 	const task = robot.currentTask;
 	if (!task)
 		return {
-			title: robot.returnRoute?.length
-				? "Возвращается на стоянку"
-				: robot.status === "idle"
-					? "Ожидает задачу"
-					: "Задача не передана",
+			title:
+				robot.status === "charging"
+					? "На зарядке"
+					: robot.returnRoute?.length
+						? "Возвращается на стоянку"
+						: robot.status === "idle"
+							? "Ожидает задачу"
+							: "Задача не передана",
 			detail: "",
+			order: undefined,
 		};
 	const order = warehouse.orders.find((item) => item.id === task.orderId);
 	const product = warehouse.products.find((item) => item.id === task.productId);
@@ -243,6 +246,11 @@ export function robotAssignment(
 				: task.label;
 	return {
 		title,
-		detail: `${order?.number ?? task.orderId} · ${product?.name ?? task.productId} · ${task.quantity} шт.`,
+		order: {
+			id: task.orderId,
+			kind: order?.kind,
+			number: order?.number ?? task.orderId,
+		},
+		detail: `${product?.name ?? task.productId} · ${task.quantity} шт.`,
 	};
 }

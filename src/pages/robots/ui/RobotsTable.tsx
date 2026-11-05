@@ -1,10 +1,14 @@
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { StatusBadge as Badge } from "@/entities/warehouse";
+import { useWorkspaceMode } from "@/shared/auth";
+import { warehousePath } from "@/shared/config";
 import { errorMessage } from "@/shared/lib";
 import {
 	ConfirmDialog,
 	IconButton,
+	Link,
 	Table,
 	TableActions,
 	TableBody,
@@ -17,14 +21,16 @@ import {
 import type { useRobotsPage } from "../model/useRobotsPage";
 
 export interface RobotsTableProps {
+	hiddenColumns: readonly number[];
 	model: Pick<
 		ReturnType<typeof useRobotsPage>,
-		"visibleRobots" | "pending" | "setEditing" | "removeRobot"
+		"warehouseId" | "visibleRobots" | "pending" | "setEditing" | "removeRobot"
 	>;
 }
 
-export function RobotsTable({ model }: RobotsTableProps) {
-	const { visibleRobots, pending } = model;
+export function RobotsTable({ model, hiddenColumns }: RobotsTableProps) {
+	const { visibleRobots, pending, warehouseId } = model;
+	const mode = useWorkspaceMode();
 	const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(
 		null,
 	);
@@ -47,7 +53,7 @@ export function RobotsTable({ model }: RobotsTableProps) {
 
 	return (
 		<>
-			<Table style={{ minWidth: 900 }}>
+			<Table hiddenColumns={hiddenColumns}>
 				<TableHeader>
 					<TableRow>
 						<TableHead style={{ width: 150 }}>Робот</TableHead>
@@ -70,9 +76,36 @@ export function RobotsTable({ model }: RobotsTableProps) {
 							<TableCell>{r.capacity} м³</TableCell>
 							<TableCell>
 								<strong>{r.assignment.title}</strong>
-								<small className="table-note">
-									{r.assignment.detail || "—"}
-								</small>
+								{r.assignment.order && (
+									<div>
+										{r.assignment.order.kind ? (
+											<Link
+												render={
+													<RouterLink
+														to={{
+															pathname: warehousePath(
+																mode,
+																warehouseId,
+																r.assignment.order.kind,
+															),
+															search: new URLSearchParams({
+																order: r.assignment.order.id,
+															}).toString(),
+														}}
+													/>
+												}
+											>
+												{r.assignment.order.kind === "inbound"
+													? "Поставка"
+													: "Отгрузка"}{" "}
+												{r.assignment.order.number}
+											</Link>
+										) : (
+											<span>Заказ {r.assignment.order.number}</span>
+										)}
+										<small className="table-note">{r.assignment.detail}</small>
+									</div>
+								)}
 							</TableCell>
 							<TableCell>
 								<Badge value={r.status} />
