@@ -8,11 +8,14 @@ import {
 	storageCellTypes,
 	useRouteProposal,
 } from "@/entities/warehouse";
+import { useWorkspaceMode } from "@/shared/auth";
 import { errorMessage } from "@/shared/lib";
+import { exteriorShelfRoute } from "../../lib/map/shelfRoute";
 import type { MapEditor } from "../layout/useMapEditor";
 import { useRouteDrag } from "./useRouteDrag";
 
 export function useRouteEditor(editor: MapEditor, warehouseId: string) {
+	const allowStorage = useWorkspaceMode() === "demo";
 	const proposal = useRouteProposal(warehouseId);
 	async function optimize() {
 		try {
@@ -34,16 +37,21 @@ export function useRouteEditor(editor: MapEditor, warehouseId: string) {
 	const keys = block.map(cellKey).sort();
 	const id = keys[0] ?? "";
 	const plan = editor.routes.find((p) => p.id === id);
-	const routes =
-		plan ??
-		(editor.editing && block.length
-			? defaultBlockRoutes(editor.cells, block)
-			: { inbound: [], outbound: [] });
+	const routes = plan
+		? {
+				...plan,
+				inbound: exteriorShelfRoute(plan.inbound, block, "inbound"),
+				outbound: exteriorShelfRoute(plan.outbound, block, "outbound"),
+			}
+		: editor.editing && block.length
+			? defaultBlockRoutes(editor.cells, block, allowStorage)
+			: { inbound: [], outbound: [] };
 	function replace(next: BlockRoutePlan) {
 		editor.setRoutes([...editor.routes.filter((p) => p.id !== next.id), next]);
 		setError("");
 	}
 	const drag = useRouteDrag({
+		allowStorage,
 		cells: editor.cells,
 		block,
 		direction,
@@ -62,7 +70,7 @@ export function useRouteEditor(editor: MapEditor, warehouseId: string) {
 				editor.editing &&
 				!editor.routes.some((plan) => plan.id === keys[0])
 			) {
-				const proposed = defaultBlockRoutes(editor.cells, block);
+				const proposed = defaultBlockRoutes(editor.cells, block, allowStorage);
 				if (proposed.inbound.length && proposed.outbound.length)
 					editor.setRoutes([
 						...editor.routes,

@@ -5,6 +5,7 @@ import { errorMessage } from "@/shared/lib";
 import { moveRouteCell } from "../../lib/map/editRoute";
 
 export interface RouteDragOptions {
+	allowStorage?: boolean;
 	cells: Cell[];
 	block: Cell[];
 	direction: "inbound" | "outbound";
@@ -31,6 +32,7 @@ export interface RouteDragHandle {
 
 export function useRouteDrag({
 	cells,
+	allowStorage = false,
 	block,
 	direction,
 	routes,
@@ -79,6 +81,8 @@ export function useRouteDrag({
 				current.base[current.direction],
 				current.index,
 				current.head,
+				allowStorage,
+				new Set(block.map(cellKey)),
 			);
 
 			current.candidate = { ...current.base, [current.direction]: path };

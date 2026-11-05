@@ -1,4 +1,4 @@
-import { Button, ErrorNotice, Form } from "@/shared/ui";
+import { Button, ErrorNotice, Fieldset, Form, StableLabel } from "@/shared/ui";
 import type { ZonePanelOptions } from "../../model/zones/useZonePanel";
 import { useZonePanel } from "../../model/zones/useZonePanel";
 import mapStyles from "../map/WarehouseMap.module.css";
@@ -22,7 +22,7 @@ export default function ZonePanel(props: ZonePanelProps) {
 			}}
 		>
 			{props.showSummary !== false && <ZoneSummary model={model} />}
-			<fieldset
+			<Fieldset
 				className={mapStyles.zoneFields}
 				disabled={props.disabled || model.pending}
 			>
@@ -36,9 +36,11 @@ export default function ZonePanel(props: ZonePanelProps) {
 					fullWidth
 					disabled={props.disabled || model.pending}
 				>
-					{model.pending ? "Сохраняем…" : "Применить к черновику"}
+					<StableLabel variants={["Сохраняем…", "Применить к черновику"]}>
+						{model.pending ? "Сохраняем…" : "Применить к черновику"}
+					</StableLabel>
 				</Button>
-			</fieldset>
+			</Fieldset>
 		</Form>
 	);
 }

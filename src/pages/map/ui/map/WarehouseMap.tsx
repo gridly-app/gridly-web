@@ -1,9 +1,15 @@
 import { useRef, useState } from "react";
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
 import { cellLabels } from "@/entities/warehouse";
-
 import { useImmersiveRegion } from "@/shared/lib";
-import { Button, ConfirmDialog, ErrorNotice, StatusBadge } from "@/shared/ui";
+import {
+	Button,
+	ConfirmDialog,
+	ErrorNotice,
+	StableLabel,
+	StatusBadge,
+	Toolbar,
+} from "@/shared/ui";
 import { useMapEditor } from "../../model/layout/useMapEditor";
 import { MapSelectionProvider } from "../../model/map/MapSelectionProvider";
 import { mapThemes } from "../../model/map/mapTheme";
@@ -117,7 +123,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 					}}
 				/>
 			) : (
-				<div className={mapStyles.mapToolbar}>
+				<Toolbar aria-label="Действия карты" className={mapStyles.mapToolbar}>
 					<StatusBadge
 						compactOnMobile
 						status={warehouse.running ? "online" : "offline"}
@@ -136,7 +142,9 @@ export function WarehouseMap(props: WarehouseMapProps) {
 								}}
 								disabled={pending}
 							>
-								{warehouse.running ? "Пауза" : "Продолжить"}
+								<StableLabel variants={["Пауза", "Продолжить"]}>
+									{warehouse.running ? "Пауза" : "Продолжить"}
+								</StableLabel>
 							</Button>
 						)}
 						<Button
@@ -149,7 +157,7 @@ export function WarehouseMap(props: WarehouseMapProps) {
 							Режим просмотра
 						</Button>
 					</div>
-				</div>
+				</Toolbar>
 			)}
 			<MapSizeDialog model={sizeEditor} />
 			<ConfirmDialog

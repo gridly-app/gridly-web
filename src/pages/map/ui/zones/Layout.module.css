@@ -1,14 +1,16 @@
 .sectionCaption {
-	font-size: 9px;
+	font-size: var(--text-caption);
+	line-height: 16px;
 	color: var(--muted-foreground);
-	font-weight: 800;
-	letter-spacing: 1px;
-	margin: 0 0 19px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	margin: 0 0 16px;
 }
 
 @media (width <= 580px) {
 	.sectionCaption {
-		font-size: 8px;
-		letter-spacing: 0.5px;
+		font-size: var(--text-caption);
+		line-height: 16px;
+		letter-spacing: 0.06em;
 	}
 }

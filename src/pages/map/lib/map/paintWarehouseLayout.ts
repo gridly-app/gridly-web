@@ -1,6 +1,11 @@
-import { cellKey, storageCellTypes } from "@/entities/warehouse";
+import {
+	cellKey,
+	connectedBlock,
+	storageCellTypes,
+} from "@/entities/warehouse";
 import { mapThemes } from "../../model/map/mapTheme";
 import type { LayoutRenderState } from "./CanvasWarehouseRenderer";
+import { shelfRoutePoints } from "./shelfRoute";
 
 export function paintWarehouseLayout(
 	ctx: CanvasRenderingContext2D,
@@ -19,31 +24,56 @@ export function paintWarehouseLayout(
 	const theme = mapThemes[dark ? "dark" : "light"];
 	const palette = theme.cells;
 
-	ctx.font = "10px Inter, sans-serif";
+	ctx.font = "10px Geist, sans-serif";
 	ctx.textAlign = "center";
 	const selectedSet = new Set(selectionKeys.length ? selectionKeys : []);
 
+	const storage = new Map(
+		cells
+			.filter((c) => storageCellTypes.includes(c.type))
+			.map((c) => [cellKey(c), c]),
+	);
 	for (const cell of cells) {
 		const x = 32 + cell.x * size;
 		const y = 32 + cell.y * size;
 
 		ctx.fillStyle = palette[cell.type];
-		ctx.beginPath();
-		ctx.roundRect(x + 2, y + 2, size - 4, size - 4, 3);
-		ctx.fill();
-		if (cell.type === "wall") {
-			ctx.strokeStyle = theme.wallBorder;
-			ctx.lineWidth = 1;
-			ctx.stroke();
-		}
-		if (size > 22 && storageCellTypes.includes(cell.type)) {
-			ctx.fillStyle = cell.type === "cold" ? theme.coldMark : theme.storageMark;
-			ctx.fillRect(x + size * 0.2, y + size * 0.28, size * 0.6, 2);
-			ctx.fillRect(x + size * 0.2, y + size * 0.64, size * 0.6, 2);
+		if (storageCellTypes.includes(cell.type)) {
+			const same = (dx: number, dy: number) => {
+				const next = storage.get(`${cell.x + dx},${cell.y + dy}`);
+				return next?.type === cell.type && next?.zone?.id === cell.zone?.id;
+			};
+			const left = same(-1, 0) ? 0 : 2;
+			const right = same(1, 0) ? 0 : 2;
+			const top = same(0, -1) ? 0 : 2;
+			const bottom = same(0, 1) ? 0 : 2;
+			ctx.beginPath();
+			ctx.roundRect(
+				x + left,
+				y + top,
+				size - left - right,
+				size - top - bottom,
+				[
+					left && top ? 3 : 0,
+					right && top ? 3 : 0,
+					right && bottom ? 3 : 0,
+					left && bottom ? 3 : 0,
+				],
+			);
+			ctx.fill();
+		} else {
+			ctx.beginPath();
+			ctx.roundRect(x + 2, y + 2, size - 4, size - 4, 3);
+			ctx.fill();
+			if (cell.type === "wall") {
+				ctx.strokeStyle = theme.wallBorder;
+				ctx.lineWidth = 1;
+				ctx.stroke();
+			}
 		}
 		if (["unload", "load", "charge"].includes(cell.type)) {
 			ctx.fillStyle = theme.symbol;
-			ctx.font = `${size * 0.4}px sans-serif`;
+			ctx.font = `${size * 0.4}px Geist, sans-serif`;
 			ctx.fillText(
 				cell.type === "charge" ? "ϟ" : cell.type === "unload" ? "↓" : "↑",
 				x + size / 2,
@@ -52,7 +82,7 @@ export function paintWarehouseLayout(
 		}
 		if (selectedSet.has(cellKey(cell))) {
 			ctx.fillStyle = dark ? "rgba(160,175,255,.14)" : "rgba(85,105,210,.10)";
-			ctx.fillRect(x, y, size, size);
+			ctx.fill();
 			ctx.strokeStyle = theme.selection;
 			ctx.lineWidth = 2;
 			ctx.beginPath();
@@ -80,11 +110,21 @@ export function paintWarehouseLayout(
 			ctx.strokeRect(x + 1, y + 1, size - 2, size - 2);
 		}
 	}
-	for (const [path, color, dash] of [
-		[routes?.inbound, "#e86536", []],
-		[routes?.outbound, "#4f83c4", [6, 4]],
+	ctx.textAlign = "center";
+	const shelf =
+		selected && storageCellTypes.includes(selected.type)
+			? connectedBlock(cells, selected)
+			: cells.filter(
+					(cell) =>
+						selectedSet.has(cellKey(cell)) &&
+						storageCellTypes.includes(cell.type),
+				);
+	for (const [sourcePath, color, dash, direction] of [
+		[routes?.inbound, "#e86536", [], "inbound"],
+		[routes?.outbound, "#4f83c4", [6, 4], "outbound"],
 	] as const) {
-		if (!path?.length) {
+		const path = shelfRoutePoints(sourcePath ?? [], shelf, direction, size);
+		if (!path.length) {
 			continue;
 		}
 		ctx.save();
@@ -108,16 +148,20 @@ export function paintWarehouseLayout(
 		const end = path.at(-1);
 		if (!end) continue;
 
-		ctx.fillStyle = color;
-		ctx.beginPath();
-		ctx.arc(
-			32 + (end.x + 0.5) * size,
-			32 + (end.y + 0.5) * size,
-			Math.max(3, size * 0.12),
-			0,
-			Math.PI * 2,
-		);
-		ctx.fill();
+		const previous = path.at(-2);
+		if (previous) {
+			const x = 32 + (end.x + 0.5) * size;
+			const y = 32 + (end.y + 0.5) * size;
+			ctx.translate(x, y);
+			ctx.rotate(Math.atan2(end.y - previous.y, end.x - previous.x));
+			const arrow = Math.max(6, size * 0.2);
+			ctx.setLineDash([]);
+			ctx.beginPath();
+			ctx.moveTo(-arrow, -arrow * 0.65);
+			ctx.lineTo(0, 0);
+			ctx.lineTo(-arrow, arrow * 0.65);
+			ctx.stroke();
+		}
 		ctx.restore();
 	}
 	if (routeHandles && routes?.[routeHandles].length) {
@@ -170,7 +214,7 @@ export function paintWarehouseLayout(
 			ctx.lineWidth = 2;
 			ctx.stroke();
 			ctx.fillStyle = ctx.strokeStyle;
-			ctx.font = "bold 10px sans-serif";
+			ctx.font = "bold 10px Geist, sans-serif";
 			ctx.fillText(String(index + 1), x, y + 3);
 		}
 	}

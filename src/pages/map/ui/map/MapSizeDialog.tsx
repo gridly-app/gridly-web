@@ -43,7 +43,7 @@ export function MapSizeDialog({ model }: MapSizeDialogProps) {
 				</Field>
 				<ErrorNotice message={model.error} />
 				{!model.supported && (
-					<p role="alert">Изменение размера недоступно по данным сервера.</p>
+					<ErrorNotice message="Изменение размера недоступно по данным сервера." />
 				)}
 				<Button
 					type="submit"

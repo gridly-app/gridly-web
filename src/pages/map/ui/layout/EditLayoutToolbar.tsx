@@ -1,73 +1,76 @@
 import {
 	IconArrowBackUp,
 	IconArrowForwardUp,
+	IconChevronLeft,
+	IconChevronRight,
 	IconRotate,
 } from "@tabler/icons-react";
+import { Button, Feedback, Toolbar, ToolbarGroup } from "@/shared/ui";
 import {
-	Button,
-	Feedback,
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationNext,
-	PaginationPrevious,
-} from "@/shared/ui";
-import type { EditLayoutToolbarOptions } from "../../model/layout/useEditLayoutToolbar";
-import { useEditLayoutToolbar } from "../../model/layout/useEditLayoutToolbar";
-import editorStyles from "./EditLayoutToolbar.module.css";
+	type EditLayoutToolbarOptions,
+	useEditLayoutToolbar,
+} from "../../model/layout/useEditLayoutToolbar";
+import styles from "./EditLayoutToolbar.module.css";
 
 export type EditLayoutToolbarProps = EditLayoutToolbarOptions & {
 	className?: string | undefined;
 };
-
 export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 	const { container, ...model } = useEditLayoutToolbar(props);
 	const { tools, editor, pending } = model;
-
 	return (
 		<div
 			ref={container}
-			className={`${editorStyles.editor} ${props.className ?? ""}`}
+			className={`${styles.editor} ${props.className ?? ""}`}
 		>
-			<Pagination
-				className={editorStyles.categoryPagination}
+			<Toolbar
+				data-variant="floating"
 				aria-label="Категории строительства"
+				className={styles.categoryPagination}
 			>
-				<PaginationContent variant="fitted" className={editorStyles.editorPill}>
-					<PaginationItem>
-						<PaginationPrevious
-							size="compact"
-							disabled={model.page === 0}
-							onClick={() => model.changePage(model.page - 1)}
-						/>
-					</PaginationItem>
+				<Button
+					size="compact"
+					variant="ghost"
+					aria-label="Предыдущие категории"
+					disabled={model.page === 0 || editor.busy}
+					onClick={() => model.changePage(model.page - 1)}
+				>
+					<IconChevronLeft size={16} />
+				</Button>
+				<div className={styles.categories}>
 					{model.categoryTools.map((category) => (
-						<PaginationItem key={category.id}>
-							<Button
-								size="compact"
-								variant="ghost"
-								className={editorStyles.categoryButton}
-								selected={category.selected}
-								disabled={editor.busy}
-								onClick={() => editor.applyCategory(category)}
-							>
-								{category.name}
-							</Button>
-						</PaginationItem>
-					))}
-					<PaginationItem>
-						<PaginationNext
+						<Button
 							size="compact"
-							disabled={model.page + 1 === model.pages}
-							onClick={() => model.changePage(model.page + 1)}
-						/>
-					</PaginationItem>
-				</PaginationContent>
-			</Pagination>
-			<div
-				className={`${editorStyles.editorControls} ${editorStyles.editorPill}`}
+							variant="ghost"
+							className={styles.categoryButton}
+							key={category.id}
+							selected={category.selected}
+							disabled={editor.busy}
+							onClick={() => editor.applyCategory(category)}
+						>
+							{category.name}
+						</Button>
+					))}
+				</div>
+				<Button
+					size="compact"
+					variant="ghost"
+					aria-label="Следующие категории"
+					disabled={model.page + 1 === model.pages || editor.busy}
+					onClick={() => model.changePage(model.page + 1)}
+				>
+					<IconChevronRight size={16} />
+				</Button>
+			</Toolbar>
+			<Toolbar
+				data-variant="floating"
+				aria-label="Инструменты строительства"
+				className={styles.editorControls}
 			>
-				<div className={`${editorStyles.controlsRow} ${editorStyles.toolsRow}`}>
+				<ToolbarGroup
+					aria-label="Тип клетки"
+					className={`${styles.controlsRow} ${styles.toolsRow}`}
+				>
 					{tools.map((tool) => (
 						<Button
 							size="compact"
@@ -77,58 +80,70 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 							key={tool.type}
 							onClick={() => editor.applyType(tool.type)}
 						>
-							<i style={{ background: tool.color }} />
+							<i aria-hidden="true" style={{ background: tool.color }} />
 							{tool.label}
 						</Button>
 					))}
+				</ToolbarGroup>
+				<div className={styles.actionsRow}>
+					<ToolbarGroup
+						aria-label="История изменений"
+						className={styles.controlsRow}
+					>
+						<Button
+							size="compact"
+							variant="ghost"
+							disabled={!editor.canUndo}
+							onClick={editor.undo}
+							aria-label="Отменить"
+						>
+							<IconArrowBackUp size={16} />
+						</Button>
+						<Button
+							size="compact"
+							variant="ghost"
+							disabled={!editor.canRedo}
+							onClick={editor.redo}
+							aria-label="Вернуть отменённое"
+						>
+							<IconArrowForwardUp size={16} />
+						</Button>
+					</ToolbarGroup>
+					<ToolbarGroup
+						aria-label="Сохранение изменений"
+						className={styles.controlsRow}
+					>
+						<Button
+							size="compact"
+							disabled={pending || editor.busy || !editor.canSave}
+							tooltip={
+								!editor.canSave ? editor.saveUnavailableReason : undefined
+							}
+							onClick={() => {
+								void editor.save();
+							}}
+						>
+							Сохранить изменения
+						</Button>
+						<Button
+							size="compact"
+							variant="ghost"
+							disabled={pending || editor.busy}
+							aria-busy={editor.resetting}
+							onClick={editor.discard}
+							aria-label="Отменить все изменения"
+						>
+							<IconRotate
+								className={editor.resetting ? styles.resetSpinning : ""}
+								size={16}
+							/>
+						</Button>
+					</ToolbarGroup>
 				</div>
-				<div className={editorStyles.controlsRow}>
-					<Button
-						size="compact"
-						variant="ghost"
-						disabled={!editor.canUndo}
-						onClick={editor.undo}
-						aria-label="Отменить"
-					>
-						<IconArrowBackUp size={16} />
-					</Button>
-					<Button
-						size="compact"
-						variant="ghost"
-						disabled={!editor.canRedo}
-						onClick={editor.redo}
-						aria-label="Вернуть отменённое"
-					>
-						<IconArrowForwardUp size={16} />
-					</Button>
-					<Button
-						size="compact"
-						disabled={pending || editor.busy || !editor.canSave}
-						title={!editor.canSave ? editor.saveUnavailableReason : undefined}
-						onClick={() => {
-							void editor.save();
-						}}
-					>
-						Сохранить изменения
-					</Button>
-					<Button
-						size="compact"
-						variant="ghost"
-						disabled={pending || editor.busy}
-						aria-busy={editor.resetting}
-						onClick={editor.discard}
-						aria-label="Отменить все изменения"
-					>
-						<IconRotate
-							className={editor.resetting ? editorStyles.resetSpinning : ""}
-							size={16}
-						/>
-					</Button>
-				</div>
-			</div>
+			</Toolbar>
 			{editor.errors && (
 				<Feedback
-					className={editorStyles.notice}
+					className={styles.notice}
 					tone={editor.errors.length ? "error" : "success"}
 				>
 					{editor.errors.length

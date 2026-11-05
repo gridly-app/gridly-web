@@ -290,7 +290,7 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 					);
 				}
 				ctx.fillStyle = "white";
-				ctx.font = `bold ${Math.max(10, size * 0.27)}px sans-serif`;
+				ctx.font = `bold ${Math.max(10, size * 0.27)}px Geist, sans-serif`;
 				ctx.textAlign = "center";
 				ctx.fillText(String(index + 1).padStart(2, "0"), x, y + 4);
 			}

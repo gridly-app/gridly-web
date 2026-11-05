@@ -5,15 +5,15 @@
 	pointer-events: none;
 }
 .mapWorkspace {
+	--route-inbound: #e86536;
+	--route-outbound: #4f83c4;
 	position: relative;
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
-	border: 0;
-	border-radius: 0;
+
 	display: flex;
 	flex-direction: column;
-	background: var(--surface);
 }
 .mapLayout {
 	display: grid;
@@ -23,10 +23,9 @@
 	gap: 0;
 }
 .mapPanel {
-	background: var(--surface);
 	position: relative;
 	min-height: 0;
-	border: 0;
+
 	overflow: hidden;
 }
 .canvasStack {
@@ -41,8 +40,7 @@
 	display: flex;
 	overflow: auto;
 	align-items: safe center;
-	background-color: var(--bg);
-	background-image: radial-gradient(var(--line) 1px, transparent 1px);
+
 	background-size: 18px 18px;
 	touch-action: none;
 }
@@ -58,72 +56,58 @@
 	align-items: center;
 	flex-shrink: 0;
 	padding: 12px 16px;
-	border-bottom: 1px solid var(--line);
+
 	gap: 12px;
 }
 .toolbarActions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
-	border-radius: 14px;
-	background: var(--surface);
 }
 .mapBottom {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
-	gap: 10px;
-	font-size: 9px;
+	gap: 8px;
+	font-size: 14px;
 	color: var(--muted-foreground);
 	position: absolute;
-	bottom: 20px;
-	right: 20px;
+	bottom: 16px;
+	right: 16px;
 	z-index: 3;
-	padding: 6px;
-	background: var(--surface);
-	border: 0;
-	border-radius: 12px;
-	box-shadow: 0 8px 30px #30382c0d;
+	padding: 8px;
 }
 .zoomActions {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 }
 .zoomButton {
 	padding: 7px;
-	background: var(--surface);
+
 	color: var(--text);
 }
 .mapDetails {
+	background: var(--card);
+	border-left: 1px solid var(--border);
 	min-width: 0;
 	height: 100%;
-	overflow: auto;
+	overflow: hidden;
 	min-height: 0;
 	padding: 24px;
 	display: flex;
 	flex-direction: column;
-	background: var(--surface);
 }
 .mapDetails h3 {
 	text-align: center;
-	font-size: 17px;
-	letter-spacing: -0.5px;
+	font-size: 20px;
+	line-height: 28px;
+	letter-spacing: -0.02em;
 }
 .mapDetails > p {
-	font-size: 11px;
+	font-size: 14px;
 	text-align: center;
 	line-height: 1.8;
-}
-.overviewIcon {
-	display: grid;
-	place-items: center;
-	width: 56px;
-	height: 56px;
-	border-radius: 20px;
-	background: var(--overview-bg);
-	color: var(--overview-fg);
-	margin: 33px auto 18px;
 }
 .legend {
 	margin-top: auto;
@@ -133,8 +117,8 @@
 .legend > div:not(:first-child) {
 	display: flex;
 	align-items: center;
-	gap: 9px;
-	font-size: 10px;
+	gap: 8px;
+	font-size: 14px;
 	margin: 12px 0;
 	color: var(--muted-foreground);
 }
@@ -142,8 +126,6 @@
 	display: inline-block;
 	width: 12px;
 	height: 12px;
-	border-radius: 3px;
-	border: 1px solid #00000009;
 }
 .legendCaption {
 	width: 100%;
@@ -151,24 +133,23 @@
 .detailLine {
 	display: flex;
 	justify-content: space-between;
-	font-size: 11px;
+	font-size: 14px;
 	padding: 12px 0;
-	border-bottom: 1px solid var(--line);
 }
 .zoneForm {
-	margin-bottom: 20px;
+	margin-bottom: 16px;
 }
 .zoneField {
-	font-size: 11px;
+	font-size: 14px;
 }
 .zoneInput {
 	width: 100%;
-	font-size: 11px;
+	font-size: 14px;
 }
 .zoneTextButton {
 	padding-inline: 0;
 	text-align: left;
-	font-size: 10px;
+	font-size: 14px;
 }
 .zoneSubmit {
 	margin-top: 15px;
@@ -177,7 +158,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -186,18 +167,12 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	border: 0;
-	border-radius: 8px;
-	background: transparent;
+
 	color: inherit;
 	padding: 10px 12px;
 	font: inherit;
-	font-size: 12px;
+	font-size: 14px;
 	cursor: pointer;
-}
-.spaceNavigationTrigger:hover,
-.spaceNavigationTrigger[data-popup-open] {
-	background: var(--bg);
 }
 .spaceNavigationContent {
 	display: grid;
@@ -206,7 +181,7 @@
 	gap: 2px;
 }
 .spaceNavigationContent p {
-	font-size: 12px;
+	font-size: 14px;
 	color: var(--muted-foreground);
 	line-height: 1.6;
 	margin: 4px;
@@ -215,7 +190,7 @@
 	justify-content: flex-start;
 	min-height: 32px;
 	padding: 6px 9px;
-	font-size: 12px;
+	font-size: 14px;
 	gap: 8px;
 }
 .navigationItem svg {
@@ -229,9 +204,9 @@
 	z-index: 20;
 	height: 100dvh;
 	width: 100%;
-	background: var(--surface);
+
 	--map-details-width: 0px;
-	--map-controls-gap: 10px;
+	--map-controls-gap: 8px;
 	--map-navigation-top: 18px;
 }
 .mapFullscreen.mapShowDetails {
@@ -249,9 +224,6 @@
 .mapFullscreen:not(.mapShowDetails) .mapDetails {
 	display: none;
 }
-.mapFullscreen .mapScroll {
-	background: var(--bg);
-}
 .mapViewNavigation {
 	display: flex;
 	flex-wrap: wrap;
@@ -263,12 +235,9 @@
 	transform: translateX(-50%);
 	width: max-content;
 	max-width: calc(100% - var(--map-details-width) - 24px);
-	padding: 6px;
+	padding: 8px;
 	gap: 0;
-	border: 1px solid var(--line);
-	border-radius: 16px;
-	box-shadow: 0 8px 28px #0002;
-	background: color-mix(in srgb, var(--surface) 94%, transparent);
+
 	backdrop-filter: blur(16px);
 	z-index: 5;
 	flex-shrink: 0;
@@ -285,15 +254,13 @@
 	transform: translateX(-50%);
 	width: min(1040px, calc(100% - var(--map-details-width) - 48px));
 	min-width: 0;
-	max-height: none;
+	max-height: min(40dvh, calc(100dvh - 200px));
+	overflow-y: auto;
 	margin: 0;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	box-shadow: none;
+	padding: 8px;
+
 	z-index: 6;
-	overflow: visible;
-	pointer-events: none;
+	pointer-events: auto;
 }
 .mapScroll[data-viewing="true"][data-editor="construction"] {
 	padding-top: calc(
@@ -307,7 +274,8 @@
 	padding-top: calc(
 		var(--map-navigation-top) +
 		var(--map-navigation-height, 52px) +
-		124px
+		var(--route-toolbar-height, 180px) +
+		24px
 	);
 }
 .routeInbound {
@@ -318,11 +286,11 @@
 }
 .mapRoutesSummary {
 	margin-top: 20px;
-	font-size: 12px;
+	font-size: 14px;
 }
 .robotCurrentTask {
 	margin-top: 18px;
-	font-size: 12px;
+	font-size: 14px;
 	line-height: 1.6;
 }
 .robotTaskLabel {
@@ -335,6 +303,9 @@
 	}
 }
 @media (width <= 850px) {
+	.mapFullscreen.mapShowDetails .mapDetails[data-empty="true"] {
+		display: none;
+	}
 	.mapLayout {
 		grid-template-columns: minmax(0, 1fr) 200px;
 	}
@@ -342,18 +313,15 @@
 		flex-wrap: wrap;
 	}
 	.mapDetails {
-		padding: 18px;
-	}
-	.overviewIcon {
-		margin: 24px auto 18px;
+		padding: 16px;
 	}
 	.toolbarButton {
 		min-height: 32px;
-		font-size: 10px;
+		font-size: 14px;
 		padding: 8px;
 	}
 	.viewButton {
-		font-size: 11px;
+		font-size: 14px;
 		padding: 8px;
 	}
 	.spaceNavigationList {
@@ -377,7 +345,6 @@
 		padding-top: 20px;
 		z-index: 4;
 		display: block;
-		box-shadow: -8px 0 24px #0002;
 	}
 	.mapFullscreen .editorOverlay {
 		width: calc(100% - 32px);
@@ -388,18 +355,18 @@
 		grid-template-columns: minmax(0, 1fr) 116px;
 	}
 	.mapToolbar {
-		padding: 10px;
+		padding: 12px;
 		align-items: flex-start;
 	}
 	.mapDetails {
 		padding: 12px 8px;
 	}
 	.mapDetails > p {
-		font-size: 9px;
+		font-size: 14px;
 	}
 	.legend > div:not(:first-child) {
-		font-size: 8px;
-		gap: 6px;
+		font-size: 14px;
+		gap: 8px;
 		align-items: flex-start;
 	}
 	.legend i {
@@ -407,40 +374,36 @@
 		width: 10px;
 		height: 10px;
 	}
-	.overviewIcon {
-		width: 42px;
-		height: 42px;
-	}
 	.toolbarActions {
 		flex-direction: column;
 		align-items: stretch;
-		gap: 3px;
+		gap: 4px;
 		padding: 0;
 	}
 	.toolbarButton {
-		font-size: 9px;
+		font-size: 14px;
 		padding: 7px 5px;
 	}
 	.mapBottom {
 		flex-wrap: wrap;
 		right: 8px;
 		bottom: 12px;
-		padding: 3px;
+		padding: 4px;
 	}
 	.detailLine {
 		flex-direction: column;
-		gap: 6px;
-		font-size: 9px;
+		gap: 8px;
+		font-size: 14px;
 	}
 	.zoneField {
-		font-size: 9px;
+		font-size: 14px;
 	}
 	.zoneInput {
 		padding: 8px 5px;
-		font-size: 10px;
+		font-size: 14px;
 	}
 	.zoneButton {
-		font-size: 9px;
+		font-size: 14px;
 		padding: 7px 5px;
 	}
 }
@@ -452,8 +415,31 @@
 }
 
 .zoneFields {
-	border: 0;
 	padding: 0;
 	margin: 0;
 	min-width: 0;
+}
+
+.mapBottom {
+	border-radius: var(--radius-panel);
+}
+.legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.legendCaption {
+	margin: 0 0 8px;
+}
+
+.mapToolbar[data-slot="toolbar"],
+.mapDetails[data-slot="card"] {
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.mapDetailsBody {
+	display: flex;
+	flex-direction: column;
+	min-height: 100%;
 }

@@ -1,5 +1,5 @@
 import { IconFocus2, IconZoomIn, IconZoomOut } from "@tabler/icons-react";
-import { Button } from "@/shared/ui";
+import { Button, Toolbar } from "@/shared/ui";
 import type { MapCanvasModel } from "../../model/map/useMapCanvas";
 import mapStyles from "./WarehouseMap.module.css";
 
@@ -63,7 +63,11 @@ export function MapCanvas({ model, viewing, editorMode }: MapCanvasProps) {
 					<canvas ref={dynamic} className={mapStyles.dynamic} inert />
 				</div>
 			</div>
-			<div className={mapStyles.mapBottom}>
+			<Toolbar
+				data-variant="floating"
+				aria-label="Масштаб карты"
+				className={mapStyles.mapBottom}
+			>
 				<div className={mapStyles.zoomActions}>
 					<Button
 						size="sm"
@@ -94,7 +98,7 @@ export function MapCanvas({ model, viewing, editorMode }: MapCanvasProps) {
 						<IconFocus2 size={16} />
 					</Button>
 				</div>
-			</div>
+			</Toolbar>
 		</div>
 	);
 }

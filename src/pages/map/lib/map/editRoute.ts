@@ -11,15 +11,22 @@ export function moveRouteCell(
 	path: GridPosition[],
 	index: number,
 	target: GridPosition,
+	allowStorage = false,
+	blocked = new Set<string>(),
 ): GridPosition[] {
 	const last = path.at(-1);
 	if (!last || !path[index])
 		throw new Error("Выберите точку существующего маршрута");
 	if (index === 0) {
-		return routeThrough(cells, [target, last]);
+		return routeThrough(cells, [target, last], blocked, allowStorage);
 	}
 	if (index === path.length - 1) {
-		return routeThrough(cells, [requiredAt(path, 0), target]);
+		return routeThrough(
+			cells,
+			[requiredAt(path, 0), target],
+			blocked,
+			allowStorage,
+		);
 	}
 	if (cellKey(requiredAt(path, index)) === cellKey(target)) {
 		return path;
@@ -27,7 +34,8 @@ export function moveRouteCell(
 	const replacement = routeThrough(
 		cells,
 		[requiredAt(path, index - 1), target, requiredAt(path, index + 1)],
-		new Set([cellKey(requiredAt(path, index))]),
+		new Set([...blocked, cellKey(requiredAt(path, index))]),
+		allowStorage,
 	);
 	const result = [
 		...path.slice(0, index - 1),

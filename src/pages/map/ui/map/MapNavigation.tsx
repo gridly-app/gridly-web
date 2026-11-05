@@ -5,7 +5,14 @@ import {
 	IconRoute,
 } from "@tabler/icons-react";
 import type { RefObject } from "react";
-import { Button, Menu, MenuItem, MenuPopup, MenuTrigger } from "@/shared/ui";
+import {
+	Button,
+	Menu,
+	MenuItem,
+	MenuPopup,
+	MenuTrigger,
+	Toolbar,
+} from "@/shared/ui";
 import type { MapEditor } from "../../model/layout/useMapEditor";
 import type { useMapView } from "../../model/map/useMapView";
 
@@ -38,7 +45,12 @@ export function MapNavigation({
 	navigation,
 }: MapNavigationProps) {
 	return (
-		<div ref={navigation} className={mapStyles.mapViewNavigation}>
+		<Toolbar
+			data-variant="floating"
+			aria-label="Действия режима просмотра"
+			ref={navigation}
+			className={mapStyles.mapViewNavigation}
+		>
 			<nav aria-label="Управление картой">
 				<ul className={mapStyles.spaceNavigationList}>
 					<li>
@@ -144,6 +156,6 @@ export function MapNavigation({
 					</li>
 				</ul>
 			</nav>
-		</div>
+		</Toolbar>
 	);
 }

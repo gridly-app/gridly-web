@@ -1,4 +1,5 @@
 import type { CellType } from "@/entities/warehouse";
+import { Badge } from "@/shared/ui";
 import localLayout from "./Layout.module.css";
 import mapStyles from "./WarehouseMap.module.css";
 
@@ -22,10 +23,14 @@ export function MapLegend({ model }: MapLegendProps) {
 				ОБОЗНАЧЕНИЯ
 			</div>
 			{entries.map(([k, label]) => (
-				<div key={k}>
-					<i style={{ background: palette[k as CellType] }} />
+				<Badge key={k} tone="neutral">
+					<Badge
+						aria-hidden="true"
+						style={{ background: palette[k as CellType] }}
+						className="size-3 min-w-3 p-0"
+					/>
 					{label}
-				</div>
+				</Badge>
 			))}
 		</div>
 	);
