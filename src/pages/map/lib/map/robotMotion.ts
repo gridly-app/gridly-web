@@ -6,6 +6,8 @@ export interface RobotMotionTrack {
 	readonly path: readonly Readonly<GridPosition>[];
 	readonly startedAt: number;
 	readonly duration: number;
+	readonly sample?: string | undefined;
+	readonly timed?: boolean | undefined;
 }
 
 interface RobotMotionMetrics {
@@ -30,7 +32,9 @@ function getMotionMetrics(track: RobotMotionTrack): RobotMotionMetrics {
 	for (let index = 1; index < track.path.length; index += 1) {
 		const previous = requiredAt(track.path, index - 1);
 		const point = requiredAt(track.path, index);
-		const length = Math.hypot(point.x - previous.x, point.y - previous.y);
+		const length = track.timed
+			? 1
+			: Math.hypot(point.x - previous.x, point.y - previous.y);
 
 		segmentLengths.push(length);
 		totalLength += length;

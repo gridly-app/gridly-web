@@ -66,9 +66,13 @@ export function useWarehouse(id: string) {
 	return snapshot;
 }
 
-export function useWarehouseLivePolling(id: string, enabled = true) {
+export function useWarehouseLiveUpdates(id: string, enabled = true) {
 	const repository = useWarehouseRepository();
 	const visible = usePageVisible();
+	useEffect(() => {
+		if (enabled && visible && id !== "new" && repository.subscribeLive)
+			return repository.subscribeLive(id);
+	}, [repository, id, enabled, visible]);
 	return useQuery({
 		queryKey: warehouseKeys.live(id),
 		queryFn: ({ signal }) => {
@@ -76,9 +80,14 @@ export function useWarehouseLivePolling(id: string, enabled = true) {
 				throw new Error("Поток состояния склада недоступен");
 			return repository.getLive(id, signal);
 		},
-		enabled: enabled && !!repository.getLive && visible && id !== "new",
-		refetchInterval: visible ? 250 : false,
-		staleTime: 250,
+		enabled:
+			enabled &&
+			!repository.subscribeLive &&
+			!!repository.getLive &&
+			visible &&
+			id !== "new",
+		refetchInterval: visible && !repository.subscribeLive ? 1000 : false,
+		staleTime: 1000,
 		refetchOnWindowFocus: false,
 	});
 }

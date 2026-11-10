@@ -185,7 +185,12 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 		for (const robot of warehouse.robots) {
 			const track = this.tracks.get(robot.id);
 
-			if (track && track.target.x === robot.x && track.target.y === robot.y) {
+			if (
+				track &&
+				track.target.x === robot.x &&
+				track.target.y === robot.y &&
+				track.sample === warehouse.asOf
+			) {
 				continue;
 			}
 			const supplied = robot.motionPath ?? [];
@@ -193,6 +198,8 @@ export class CanvasWarehouseRenderer implements MapRenderer {
 			const path = last?.x === robot.x && last?.y === robot.y ? supplied : [];
 
 			const nextTrack = prepareRobotMotionTrack({
+				timed: robot.motionTimed,
+				sample: warehouse.asOf,
 				target: robot,
 				path: path.length ? path : [robot],
 				startedAt: start,

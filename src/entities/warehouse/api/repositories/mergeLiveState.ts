@@ -39,6 +39,7 @@ export function mergeLiveState(
 						y: position.y,
 						status: position.status,
 						motionPath: position.motionPath,
+						motionTimed: position.motionTimed,
 						currentTask: position.currentTask,
 						returnRoute: position.returnRoute,
 					}

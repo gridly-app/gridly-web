@@ -21,6 +21,8 @@ export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 		"timezone",
 		"revision",
 		"policyRevision",
+		"version",
+		"published",
 		"policy",
 		"summary",
 		"allowedActions",
@@ -30,6 +32,8 @@ export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	map: [
 		"width",
 		"height",
+		"version",
+		"published",
 		"cells",
 		"draft",
 		"routePlans",

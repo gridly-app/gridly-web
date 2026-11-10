@@ -31,6 +31,7 @@ import {
 } from "../contracts/contract";
 import { warehouseKeys } from "../queries/queryKeys";
 import { resourceFields, type WarehouseResource } from "../queries/resources";
+import { WarehouseLiveStream } from "./liveStream";
 import { readMapState } from "./readMapState";
 import { readWarehouseCollection } from "./readWarehouseCollection";
 import type { MutationOptions, WarehouseRepository } from "./repository";
@@ -89,12 +90,84 @@ export class RestWarehouseRepository implements WarehouseRepository {
 	private generation = 0;
 
 	private readonly http: HttpClient;
+	private liveStreams = new Map<
+		string,
+		{ stream: WarehouseLiveStream; subscribers: number }
+	>();
+	private mapStateReady = new Map<string, number>();
+	subscribeLive(id: string) {
+		let entry = this.liveStreams.get(id);
+		if (!entry) {
+			const stream = new WarehouseLiveStream(
+				{
+					id,
+					http: this.http,
+					cache: this.cache,
+					snapshotReady: () => {
+						const snapshot = this.cache.getQueryData<Warehouse>(
+							warehouseKeys.detail(id),
+						);
+						return (
+							!!snapshot && this.mapStateReady.get(id) === snapshot.version
+						);
+					},
+					resync: async (signal) => {
+						const snapshot = await this.get(id, signal, "map", true);
+						signal.throwIfAborted();
+						this.cache.setQueryData(
+							warehouseKeys.resource(id, "map"),
+							snapshot,
+						);
+						void this.cache.invalidateQueries({
+							queryKey: warehouseKeys.resource(id, "robots"),
+						});
+						return snapshot;
+					},
+					poll: (signal) => this.getLive(id, signal),
+				},
+				(error) => {
+					this.cache.setQueryData(["warehouses", id, "connection"], { error });
+				},
+			);
+			entry = { stream, subscribers: 0 };
+			this.liveStreams.set(id, entry);
+		}
+		entry.subscribers++;
+		entry.stream.start();
+		let released = false;
+		return () => {
+			if (released) return;
+			released = true;
+			if (--entry.subscribers === 0) {
+				entry.stream.stop();
+				this.mapStateReady.delete(id);
+				if (this.liveStreams.get(id) === entry) this.liveStreams.delete(id);
+			}
+		};
+	}
 	private session = new AbortController();
 	constructor(
 		http: HttpClient,
 		private readonly cache = new QueryClient(),
 	) {
 		this.http = {
+			...(http.openStream
+				? {
+						openStream: async (path: string, options: RequestOptions = {}) => {
+							const signal = options.signal
+								? AbortSignal.any([options.signal, this.session.signal])
+								: this.session.signal;
+							if (!http.openStream)
+								throw new Error("Потоковый транспорт недоступен");
+							const stream = await http.openStream(path, {
+								...options,
+								signal,
+							});
+							signal.throwIfAborted();
+							return stream;
+						},
+					}
+				: {}),
 			request: async (path, options = {}) => {
 				const controller = this.session;
 				const signal = options.signal
@@ -108,6 +181,9 @@ export class RestWarehouseRepository implements WarehouseRepository {
 	}
 
 	clear() {
+		for (const { stream } of this.liveStreams.values()) stream.stop();
+		this.liveStreams.clear();
+		this.mapStateReady.clear();
 		this.session.abort();
 		this.session = new AbortController();
 		this.generation++;
@@ -215,6 +291,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		id: string,
 		signal?: AbortSignal | undefined,
 		resource: WarehouseResource = "all",
+		forceState = false,
 	): Promise<Warehouse> {
 		if (resource === "settings") {
 			const generation = this.generation;
@@ -253,6 +330,14 @@ export class RestWarehouseRepository implements WarehouseRepository {
 
 		this.assertActive(generation, signal);
 		const warehouse = warehouseFromDto(d);
+		const cached = this.cache.getQueryData<Warehouse>(warehouseKeys.detail(id));
+		if (cached && cached.version !== warehouse.version)
+			this.liveStreams.get(id)?.stream.invalidate();
+		const skipLive =
+			!forceState &&
+			!!this.liveStreams.get(id)?.stream.healthy &&
+			cached?.version === warehouse.version;
+
 		const retainedLayout = this.cache.getQueryData<LayoutDto>([
 			"warehouses",
 			id,
@@ -295,7 +380,22 @@ export class RestWarehouseRepository implements WarehouseRepository {
 			layoutPromise,
 			draftPromise,
 			withMap
-				? readMapState(this.http, `${base}/map/state`, { signal })
+				? skipLive && cached
+					? Promise.resolve({
+							warehouse_id: id,
+							state_version: cached.stateVersion ?? "0",
+							tick: cached.tick,
+							layout_version: cached.version,
+							as_of: cached.asOf,
+							robots: cached.robots.map((robot) => ({
+								id: robot.id,
+								x: robot.x,
+								y: robot.y,
+								status: robot.status,
+								motion_path: robot.motionPath,
+							})),
+						})
+					: readMapState(this.http, `${base}/map/state`, { signal })
 				: Promise.resolve(null),
 			withMap || needs("robots")
 				? readWarehouseCollection(this.http, `${base}/robots`, robotDto, signal)
@@ -375,7 +475,16 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		warehouse.asOf = state?.as_of || d.as_of;
 		const live = new Map((state?.robots ?? []).map((r) => [r.id, r]));
 
-		warehouse.robots = robots.map((r) => robotFromDto(r, live.get(r.id)));
+		warehouse.robots = robots.map((r) => {
+			const robot = robotFromDto(r, live.get(r.id));
+			return skipLive
+				? {
+						...robot,
+						motionTimed: cached?.robots.find((old) => old.id === r.id)
+							?.motionTimed,
+					}
+				: robot;
+		});
 		warehouse.categories = categories.map(categoryFromDto);
 		warehouse.products = products.map(productFromDto);
 		warehouse.orders = orders.map(orderFromDto);
@@ -389,7 +498,9 @@ export class RestWarehouseRepository implements WarehouseRepository {
 
 		if (
 			latest?.version === warehouse.version &&
-			BigInt(latest.stateVersion || "0") > BigInt(warehouse.stateVersion || "0")
+			(BigInt(latest.stateVersion || "0") >
+				BigInt(warehouse.stateVersion || "0") ||
+				(!withMap && latest.stateVersion === warehouse.stateVersion))
 		) {
 			warehouse.stateVersion = latest.stateVersion;
 			warehouse.tick = latest.tick;
@@ -408,6 +519,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 							y: live.y,
 							status: live.status,
 							motionPath: live.motionPath,
+							motionTimed: live.motionTimed,
 						}
 					: robot;
 			});
@@ -425,6 +537,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 						),
 					};
 		this.cache.setQueryData(warehouseKeys.detail(id), result);
+		if (withMap && state) this.mapStateReady.set(id, warehouse.version);
 		return result;
 	}
 

@@ -10,6 +10,10 @@ export type RequestOptions = {
 };
 
 export interface HttpClient {
+	openStream?(
+		path: string,
+		options?: RequestOptions,
+	): Promise<ReadableStream<Uint8Array>>;
 	clearSession?(): void;
 	request(path: string, options?: RequestOptions | undefined): Promise<unknown>;
 }
@@ -23,6 +27,7 @@ export interface HttpSessionPolicy {
 
 export class FetchHttpClient implements HttpClient {
 	private token = "";
+	private streamSession = new AbortController();
 
 	private sessionGeneration = 0;
 
@@ -38,6 +43,8 @@ export class FetchHttpClient implements HttpClient {
 	) {}
 
 	clearSession() {
+		this.streamSession.abort();
+		this.streamSession = new AbortController();
 		this.sessionGeneration++;
 		this.token = "";
 		this.refreshRequest = null;
@@ -63,6 +70,33 @@ export class FetchHttpClient implements HttpClient {
 	}
 
 	async request(path: string, options: RequestOptions = {}): Promise<unknown> {
+		return this.perform(path, options);
+	}
+	async openStream(
+		path: string,
+		options: RequestOptions = {},
+	): Promise<ReadableStream<Uint8Array>> {
+		const signal = options.signal
+			? AbortSignal.any([options.signal, this.streamSession.signal])
+			: this.streamSession.signal;
+		const result = await this.perform(
+			path,
+			{
+				...options,
+				signal,
+				headers: { ...options.headers, Accept: "text/event-stream" },
+			},
+			true,
+		);
+		if (!(result instanceof ReadableStream))
+			throw new ApiError("Поток состояния недоступен", 502, "INVALID_RESPONSE");
+		return result;
+	}
+	private async perform(
+		path: string,
+		options: RequestOptions,
+		streaming = false,
+	): Promise<unknown> {
 		const generation = this.sessionGeneration;
 		const { method = "GET", body, signal } = options;
 		const auth = path.startsWith("/auth/");
@@ -102,6 +136,39 @@ export class FetchHttpClient implements HttpClient {
 			headers.Authorization = `Bearer ${this.token}`;
 			response = await send();
 			assertActive();
+		}
+		if (streaming && response.ok) {
+			if (
+				!response.body ||
+				!response.headers.get("Content-Type")?.startsWith("text/event-stream")
+			) {
+				await response.body?.cancel();
+				throw new ApiError(
+					"Сервер не вернул поток событий",
+					502,
+					"INVALID_RESPONSE",
+				);
+			}
+			const reader = response.body.getReader();
+			return new ReadableStream<Uint8Array>({
+				async pull(controller) {
+					try {
+						assertActive();
+						const result = await reader.read();
+						assertActive();
+						if (result.done) {
+							reader.releaseLock();
+							controller.close();
+						} else controller.enqueue(result.value);
+					} catch (error) {
+						await reader.cancel().catch(() => undefined);
+						controller.error(error);
+					}
+				},
+				async cancel(reason) {
+					await reader.cancel(reason);
+				},
+			});
 		}
 		if (response.status === 204) {
 			return undefined;

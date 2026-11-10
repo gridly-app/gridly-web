@@ -88,6 +88,7 @@ export const robotSchema = z.object({
 	allowedActions: z.array(z.string()).optional(),
 	blockedReason: z.string().optional(),
 	motionPath: z.array(gridPositionSchema).optional(),
+	motionTimed: z.boolean().optional(),
 	currentTask: robotTaskSchema.optional(),
 	returnRoute: z.array(gridPositionSchema).optional(),
 	revision: z.number().optional(),

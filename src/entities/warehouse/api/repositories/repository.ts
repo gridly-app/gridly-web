@@ -20,6 +20,7 @@ export interface MutationOptions {
 }
 
 export interface WarehouseRepository {
+	subscribeLive?(id: string): () => void;
 	proposeRoutes?(
 		id: string,
 		cells: Warehouse["cells"],
