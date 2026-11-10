@@ -214,8 +214,17 @@ export const cabinetSchema = z.object({
 	lowStockThreshold: z.number().int().nonnegative(),
 });
 
+export const warehouseSettingsSchema = z.object({
+	revision: z.number().int().nonnegative(),
+	location: z.string().max(200),
+	lowStockThreshold: z.number().int().nonnegative(),
+	allocationPolicy: z.literal("fefo"),
+});
+export type WarehouseSettings = z.infer<typeof warehouseSettingsSchema>;
+
 export const warehouseSchema = z.object({
 	cabinet: cabinetSchema.optional(),
+	settings: warehouseSettingsSchema.optional(),
 	writeOffs: z.array(writeOffSchema).optional(),
 	allowedActions: z.array(z.string()).optional(),
 	summary: warehouseSummarySchema.optional(),

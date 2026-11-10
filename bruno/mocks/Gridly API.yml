@@ -6621,3 +6621,31 @@ routes:
               "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
             }
           }
+
+  - name: "Settings: warehouse-demo (proposed backend contract)"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-demo/settings
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {"revision": 1, "location": "Москва", "low_stock_threshold": 10, "allocation_policy": "fefo"}
+
+  - name: "Settings: warehouse-north (proposed backend contract)"
+    request:
+      method: GET
+      url: /api/v1/warehouses/warehouse-north/settings
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {"revision": 1, "location": "Санкт-Петербург", "low_stock_threshold": 15, "allocation_policy": "fefo"}

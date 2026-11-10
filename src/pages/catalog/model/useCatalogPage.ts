@@ -26,7 +26,9 @@ export function useCatalogPage(warehouse: Warehouse, command: CommandExecutor) {
 			return;
 		}
 
-		return command("product", { ...product, archived: !product.archived });
+		return product.archived
+			? command("product", { ...product, archived: false })
+			: command("archiveProduct", product.id);
 	}
 
 	const stockByProduct = new Map<string, Stock[]>();

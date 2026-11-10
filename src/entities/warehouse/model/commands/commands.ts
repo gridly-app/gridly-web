@@ -15,7 +15,13 @@ export type WarehouseInput = Pick<
 	"name" | "width" | "height" | "timezone"
 >;
 
-export type WarehouseSettings = CommandPayloads["settings"];
+export type WarehouseSettingsChange = CommandPayloads["warehouseSettings"];
+export type RobotCreateInput = z.infer<
+	typeof import("./commandSchemas").robotCreateSchema
+>;
+export type RobotUpdateInput = z.infer<
+	typeof import("./commandSchemas").robotUpdateSchema
+>;
 
 export type CommandPayloads = {
 	[K in keyof typeof commandPayloads]: z.infer<(typeof commandPayloads)[K]>;

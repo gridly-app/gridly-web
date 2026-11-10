@@ -2,6 +2,7 @@ import type { WarehouseCommand } from "../../model/commands/commands";
 import type { Warehouse } from "../../model/warehouse/schemas";
 
 export type WarehouseResource =
+	| "settings"
 	| "metadata"
 	| "map"
 	| "catalog"
@@ -12,6 +13,7 @@ export type WarehouseResource =
 	| "all";
 
 export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
+	settings: ["settings"],
 	metadata: [
 		"cabinet",
 		"location",
@@ -28,8 +30,6 @@ export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	map: [
 		"width",
 		"height",
-		"version",
-		"published",
 		"cells",
 		"draft",
 		"routePlans",
@@ -54,16 +54,13 @@ export function commandResources(
 	switch (action) {
 		case "deleteWarehouse":
 			return [];
-		case "deleteProduct":
-		case "deleteCategory":
+		case "archiveProduct":
+		case "archiveCategory":
 			return ["catalog", "map", "history"];
 		case "deleteOrder":
 			return ["orders", "inventory", "history", "metadata"];
-		case "stock":
-		case "deleteStock":
-			return ["inventory", "history", "metadata"];
-		case "cabinet":
-			return ["metadata", "history"];
+		case "warehouseSettings":
+			return ["settings"];
 		case "product":
 		case "category":
 			return ["catalog", "history"];

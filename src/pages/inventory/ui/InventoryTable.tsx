@@ -1,15 +1,10 @@
 import {
 	IconChevronDown,
 	IconChevronRight,
-	IconPencil,
 	IconTrash,
 } from "@tabler/icons-react";
 import { Fragment, useState } from "react";
-import {
-	StatusBadge as Badge,
-	type Stock,
-	type Warehouse,
-} from "@/entities/warehouse";
+import { StatusBadge as Badge, type Warehouse } from "@/entities/warehouse";
 import {
 	Button,
 	IconButton,
@@ -23,28 +18,21 @@ import {
 } from "@/shared/ui";
 import type { InventoryStock } from "../model/inventoryStock";
 import { StockLinks } from "./StockLinks";
-import { StockQuantity } from "./StockQuantity";
 
 export function InventoryTable({
 	items,
 	hiddenColumns,
 	warehouse,
 	pending,
-	canEdit,
 	highlightUnpriced,
 	onWriteOff,
-	onEdit,
-	onSave,
 }: {
 	items: readonly InventoryStock[];
 	hiddenColumns: readonly number[];
 	warehouse: Warehouse;
 	pending: boolean;
-	canEdit: boolean;
 	highlightUnpriced?: boolean;
 	onWriteOff: (stock: InventoryStock) => void;
-	onEdit: (stock: InventoryStock) => void;
-	onSave: (stock: Stock) => Promise<void>;
 }) {
 	const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 	const groups = new Map<string, InventoryStock[]>();
@@ -134,12 +122,7 @@ export function InventoryTable({
 										</TableCell>
 										<TableCell>{stock.zoneName}</TableCell>
 										<TableCell>
-											<StockQuantity
-												stock={stock}
-												editable={canEdit && /^\d+,\d+$/.test(stock.cell)}
-												pending={pending}
-												onSave={onSave}
-											/>
+											{stock.quantity.toLocaleString("ru-RU")} шт.
 										</TableCell>
 										<TableCell>
 											{stock.reserved === undefined
@@ -154,14 +137,6 @@ export function InventoryTable({
 										</TableCell>
 										<TableCell>
 											<TableActions>
-												{canEdit && (
-													<IconButton
-														label="Корректировать партию"
-														icon={<IconPencil size={16} />}
-														disabled={pending}
-														onClick={() => onEdit(stock)}
-													/>
-												)}
 												<IconButton
 													label="Списать"
 													icon={<IconTrash size={16} />}

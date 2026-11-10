@@ -25,6 +25,9 @@ async function runOrderAction(
 		`/orders/${encodeURIComponent(orderId)}/${encodeURIComponent(action)}`,
 		{
 			revision: requireRevision(revision ?? o.revision),
+			...(action === "confirm"
+				? { action: o.kind === "inbound" ? "unload" : "load" }
+				: {}),
 			...(reason ? { reason } : {}),
 		},
 	);

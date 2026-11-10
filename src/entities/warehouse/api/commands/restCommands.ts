@@ -1,7 +1,12 @@
-import type { HttpClient, RequestOptions } from "@/shared/api";
-import { commandPayloads } from "../../model/commands/commandSchemas";
+import {
+	type HttpClient,
+	parseResponse,
+	type RequestOptions,
+} from "@/shared/api";
+import { warehouseCommandSchema } from "../../model/commands/commandSchemas";
 import type { WarehouseCommand } from "../../model/commands/commands";
 import type { Warehouse } from "../../model/warehouse/schemas";
+import { warehouseSettingsDto } from "../contracts/contract";
 import { saveCategory, saveProduct } from "./catalog";
 import {
 	type RestCommandContext,
@@ -30,6 +35,7 @@ export class RestWarehouseCommands {
 		command: WarehouseCommand,
 		warehouse: Warehouse,
 	): Promise<void> {
+		command = warehouseCommandSchema.parse(command);
 		const base = `/warehouses/${encodeURIComponent(id)}`;
 		const send = (
 			path: string,
@@ -54,56 +60,42 @@ export class RestWarehouseCommands {
 			case "deleteWarehouse":
 				await remove("", warehouse.revision);
 				return;
-			case "deleteProduct":
-				await remove(
-					`/products/${encodeURIComponent(command.value)}`,
-					warehouse.products.find((p) => p.id === command.value)?.revision,
+			case "archiveProduct":
+			case "archiveCategory": {
+				const product = command.action === "archiveProduct";
+				const item = (product ? warehouse.products : warehouse.categories).find(
+					(i) => i.id === command.value,
+				);
+				await send(
+					`/${product ? "products" : "categories"}/${encodeURIComponent(command.value)}/archive`,
+					{ revision: requireRevision(item?.revision) },
 				);
 				return;
-			case "deleteCategory":
-				await remove(
-					`/categories/${encodeURIComponent(command.value)}`,
-					warehouse.categories.find((c) => c.id === command.value)?.revision,
-				);
-				return;
+			}
 			case "deleteOrder":
 				await remove(
 					`/orders/${encodeURIComponent(command.value)}`,
 					warehouse.orders.find((o) => o.id === command.value)?.revision,
 				);
 				return;
-			case "stock": {
-				const stock = commandPayloads.stock.parse(command.value);
-				const [x, y] = stock.cell.split(",").map(Number);
-				await send(
-					`/inventory/${encodeURIComponent(stock.id)}`,
-					{
-						revision: stock.revision,
-						product_id: stock.product,
-						quantity: stock.quantity,
-						reserved_quantity: stock.reserved ?? 0,
-						expires_on: stock.expires || null,
-						cell_x: x,
-						cell_y: y,
-					},
-					"PUT",
+			case "warehouseSettings": {
+				const { revision, location, lowStockThreshold } = command.value;
+				parseResponse(
+					warehouseSettingsDto,
+					await send(
+						"/settings",
+						{
+							revision,
+							...(location !== undefined ? { location } : {}),
+							...(lowStockThreshold !== undefined
+								? { low_stock_threshold: lowStockThreshold }
+								: {}),
+						},
+						"PATCH",
+					),
 				);
 				return;
 			}
-
-			case "deleteStock":
-				await remove(
-					`/inventory/${encodeURIComponent(command.value)}`,
-					warehouse.stock.find((s) => s.id === command.value)?.revision,
-				);
-				return;
-			case "cabinet":
-				await send(
-					"/settings",
-					{ revision: requireRevision(warehouse.revision), ...command.value },
-					"PATCH",
-				);
-				return;
 			case "saveMap":
 				return saveMap(context, command);
 			case "resize":

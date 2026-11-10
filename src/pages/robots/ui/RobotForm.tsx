@@ -1,11 +1,13 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import {
 	Checkbox,
 	CheckLabel,
+	Feedback,
 	Field,
 	FormGrid,
 	FormShell,
 	Input,
+	Select,
 } from "@/shared/ui";
 import type { RobotFormOptions } from "../model/createRobotForm";
 import { createRobotForm } from "../model/createRobotForm";
@@ -15,12 +17,43 @@ export interface RobotFormProps extends RobotFormOptions {
 	pending: boolean;
 }
 
-export function RobotForm({ robot, pending, onSave }: RobotFormProps) {
+export function RobotForm({
+	robot,
+	pending,
+	onSave,
+	spawnCells,
+}: RobotFormProps) {
 	const controlId = useId();
-	const { handleSubmit, roles } = createRobotForm({ onSave, robot });
+	const [position, setPosition] = useState("");
+	const { handleSubmit, roles } = createRobotForm({
+		onSave,
+		robot,
+		spawnCells,
+	});
 
+	if (!robot && !spawnCells.length)
+		return (
+			<Feedback tone="info">
+				На опубликованной карте нет свободных клеток прохода или зарядки.
+				Освободите клетку или измените карту.
+			</Feedback>
+		);
 	return (
 		<FormShell pending={pending} onSubmit={handleSubmit}>
+			{!robot && (
+				<Field label="Стартовая клетка *">
+					<input type="hidden" name="position" value={position} />
+					<Select
+						value={position}
+						onValueChange={setPosition}
+						aria-label="Стартовая клетка"
+						options={spawnCells.map((c) => ({
+							value: `${c.x},${c.y}`,
+							label: `${c.x}, ${c.y}${c.type === "charge" ? " · Зарядка" : " · Проход"}`,
+						}))}
+					/>
+				</Field>
+			)}
 			<Field label="Название *">
 				<Input name="name" defaultValue={robot?.name} required maxLength={80} />
 			</Field>
@@ -43,6 +76,8 @@ export function RobotForm({ robot, pending, onSave }: RobotFormProps) {
 				<Field label="Клеток за тик">
 					<Input
 						name="speed"
+						max={5}
+						step={1}
 						type="number"
 						min={1}
 						defaultValue={robot?.speed || 2}
@@ -52,6 +87,8 @@ export function RobotForm({ robot, pending, onSave }: RobotFormProps) {
 				<Field label="Тиков на действие">
 					<Input
 						name="duration"
+						max={20}
+						step={1}
 						type="number"
 						min={1}
 						defaultValue={robot?.duration || 3}

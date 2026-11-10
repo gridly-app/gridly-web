@@ -10,6 +10,8 @@ export function writeOffFromForm(
 	if (!Number.isInteger(quantity) || quantity < 1) {
 		throw new Error("Укажите целое положительное количество");
 	}
+	if (quantity > (stock.availableQuantity ?? 0))
+		throw new Error("Количество превышает доступный остаток");
 	if (!formText(data, "reason")) {
 		throw new Error("Укажите причину списания");
 	}

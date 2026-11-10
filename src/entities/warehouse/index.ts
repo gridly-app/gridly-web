@@ -18,7 +18,11 @@ export type {
 	WarehouseRepository,
 } from "./api/repositories/repository";
 export { RestWarehouseRepository } from "./api/repositories/restRepository";
-export { warehouseCommandSchema } from "./model/commands/commandSchemas";
+export {
+	robotCreateSchema,
+	robotUpdateSchema,
+	warehouseCommandSchema,
+} from "./model/commands/commandSchemas";
 export type {
 	CategoryInput,
 	CommandExecutor,
@@ -28,10 +32,12 @@ export type {
 	CommandResult,
 	OrderInput,
 	ProductInput,
+	RobotCreateInput,
 	RobotInput,
+	RobotUpdateInput,
 	WarehouseCommand,
 	WarehouseInput,
-	WarehouseSettings,
+	WarehouseSettingsChange,
 } from "./model/commands/commands";
 export {
 	connectedBlock,
@@ -92,6 +98,7 @@ export type {
 	StorageZone,
 	Warehouse,
 	WarehouseLiveState,
+	WarehouseSettings,
 } from "./model/warehouse/schemas";
 export {
 	storageCellTypes,

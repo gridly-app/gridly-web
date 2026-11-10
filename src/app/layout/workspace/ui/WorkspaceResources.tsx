@@ -10,7 +10,7 @@ import { Button, Feedback } from "@/shared/ui";
 const pageResources: Record<string, WarehouseResource[]> = {
 	map: ["map", "catalog"],
 	catalog: ["catalog", "inventory"],
-	robots: ["robots", "orders", "catalog"],
+	robots: ["map", "robots", "orders", "catalog"],
 	inbound: ["orders", "catalog", "robots"],
 	outbound: ["orders", "catalog", "robots"],
 	inventory: ["inventory", "catalog", "map", "orders", "robots", "history"],

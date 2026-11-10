@@ -23,6 +23,8 @@ export function WriteOffForm({ stock, pending, onSave }: WriteOffFormProps) {
 					name="quantity"
 					type="number"
 					min={1}
+					max={stock.availableQuantity ?? 0}
+					step={1}
 					defaultValue={1}
 					required
 				/>

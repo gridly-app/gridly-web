@@ -61,6 +61,13 @@ test("Bruno responses satisfy the complete REST warehouse contract", async () =>
 	expect(warehouse.robots).toHaveLength(3);
 	expect(warehouse.orders).toHaveLength(3);
 	expect(warehouse.cells).toHaveLength(176);
+	expect(
+		(await rest.get(warehouseId, undefined, "settings")).settings,
+	).toMatchObject({
+		revision: 1,
+		allocationPolicy: "fefo",
+		lowStockThreshold: 10,
+	});
 	const order = warehouse.orders[0];
 	if (!order) throw new Error("Missing order fixture");
 	expect((await rest.getOrder(warehouseId, order.id)).id).toBe(order.id);

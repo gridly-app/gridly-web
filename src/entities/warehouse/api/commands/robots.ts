@@ -9,9 +9,28 @@ export async function saveRobot(
 	const { warehouse, send } = context;
 	const r = command.value;
 	const old = warehouse.robots.find((x) => x.id === r.id);
+	if (r.id && !old)
+		throw new Error("Робот больше не существует. Обновите данные.");
+	if (
+		"x" in r &&
+		(!warehouse.published ||
+			!warehouse.cells.some(
+				(c) =>
+					c.x === r.x &&
+					c.y === r.y &&
+					(c.type === "aisle" || c.type === "charge"),
+			) ||
+			warehouse.robots.some((robot) => robot.x === r.x && robot.y === r.y))
+	) {
+		throw new Error(
+			"Выберите свободную клетку прохода или зарядки опубликованной карты.",
+		);
+	}
 	const placement = old
 		? { revision: requireRevision(r.revision ?? old.revision) }
-		: {};
+		: "x" in r
+			? { x: r.x, y: r.y }
+			: {};
 	await send(
 		`/robots${old ? `/${encodeURIComponent(r.id ?? "")}` : ""}`,
 		{

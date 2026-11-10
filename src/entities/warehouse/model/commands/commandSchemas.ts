@@ -1,13 +1,11 @@
 import { z } from "zod";
 import {
 	blockRoutePlanSchema,
-	cabinetSchema,
 	categorySchema,
 	cellSchema,
 	orderSchema,
 	productSchema,
 	robotSchema,
-	stockSchema,
 	warehouseSchema,
 } from "../warehouse/schemas";
 
@@ -15,15 +13,29 @@ export const orderInputSchema = orderSchema
 	.pick({ kind: true, party: true, lines: true, manual: true })
 	.extend({ id: z.string().optional(), revision: z.number().optional() });
 
-export const robotInputSchema = robotSchema
-	.pick({
-		name: true,
-		roles: true,
-		speed: true,
-		duration: true,
-		capacity: true,
-	})
-	.extend({ id: z.string().optional(), revision: z.number().optional() });
+const robotParameters = robotSchema
+	.pick({ name: true, capacity: true })
+	.extend({
+		name: z.string().trim().min(1).max(80),
+		roles: z.array(z.enum(["unload", "sort", "ship"])).min(1),
+		speed: z.number().int().min(1).max(5),
+		duration: z.number().int().min(1).max(20),
+		capacity: z
+			.string()
+			.regex(/^\d+(\.\d{1,3})?$/)
+			.refine((v) => Number.isFinite(Number(v)) && Number(v) > 0),
+	});
+export const robotCreateSchema = robotParameters.extend({
+	id: z.undefined().optional(),
+	revision: z.undefined().optional(),
+	x: z.number().int().nonnegative(),
+	y: z.number().int().nonnegative(),
+});
+export const robotUpdateSchema = robotParameters.extend({
+	id: z.string().min(1),
+	revision: z.number().int().nonnegative(),
+});
+export const robotInputSchema = z.union([robotCreateSchema, robotUpdateSchema]);
 
 export const warehouseInputSchema = warehouseSchema.pick({
 	name: true,
@@ -52,23 +64,19 @@ export const layoutInputSchema = z.object({
 
 export const commandPayloads = {
 	deleteWarehouse: z.undefined().optional(),
-	deleteProduct: z.string(),
-	deleteCategory: z.string(),
+	archiveProduct: z.string(),
+	archiveCategory: z.string(),
 	deleteOrder: z.string(),
-	stock: stockSchema
-		.extend({
-			id: z.string().min(1),
-			product: z.string().min(1),
-			quantity: z.number().int().nonnegative(),
-			reserved: z.number().int().nonnegative().optional(),
-			cell: z.string().regex(/^\d+,\d+$/),
+	warehouseSettings: z
+		.object({
+			revision: z.number().int().nonnegative(),
+			location: z.string().trim().max(200).optional(),
+			lowStockThreshold: z.number().int().nonnegative().optional(),
 		})
 		.refine(
-			(s) => (s.reserved ?? 0) <= s.quantity,
-			"Резерв не может превышать остаток",
+			(v) => v.location !== undefined || v.lowStockThreshold !== undefined,
+			"Нет изменений",
 		),
-	deleteStock: z.string(),
-	cabinet: cabinetSchema,
 	saveMap: layoutInputSchema,
 	resize: z.object({
 		width: z.number().int().positive(),
@@ -99,8 +107,8 @@ export const commandPayloads = {
 	writeoff: z.object({
 		revision: z.number().optional(),
 		id: z.string(),
-		quantity: z.number(),
-		reason: z.string(),
+		quantity: z.number().int().positive(),
+		reason: z.string().trim().min(1).max(500),
 	}),
 	settings: z.discriminatedUnion("section", [
 		z.object({
@@ -125,12 +133,10 @@ function command<K extends keyof typeof commandPayloads>(action: K) {
 
 export const warehouseCommandSchema = z.discriminatedUnion("action", [
 	command("deleteWarehouse"),
-	command("deleteProduct"),
-	command("deleteCategory"),
+	command("archiveProduct"),
+	command("archiveCategory"),
 	command("deleteOrder"),
-	command("stock"),
-	command("deleteStock"),
-	command("cabinet"),
+	command("warehouseSettings"),
 	command("saveMap"),
 	command("resize"),
 	command("simulation"),

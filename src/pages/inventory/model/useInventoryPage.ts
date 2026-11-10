@@ -69,10 +69,6 @@ export function useInventoryPage() {
 		() => stockZoneCells(warehouse.cells),
 		[warehouse.cells],
 	);
-	const canEdit = !!warehouse.allowedActions?.includes("edit-inventory");
-	async function saveStock(stock: Stock) {
-		await execute("stock", stock);
-	}
 
 	async function writeOffStock(value: {
 		revision?: number | undefined;
@@ -211,8 +207,6 @@ export function useInventoryPage() {
 
 	return {
 		warehouse,
-		canEdit,
-		saveStock,
 		productFilter,
 		setProduct,
 		timezone: warehouse.timezone,

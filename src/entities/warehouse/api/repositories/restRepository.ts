@@ -27,6 +27,7 @@ import {
 	robotDto,
 	stockDto,
 	warehouseDto,
+	warehouseSettingsDto,
 } from "../contracts/contract";
 import { warehouseKeys } from "../queries/queryKeys";
 import { resourceFields, type WarehouseResource } from "../queries/resources";
@@ -215,6 +216,31 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		signal?: AbortSignal | undefined,
 		resource: WarehouseResource = "all",
 	): Promise<Warehouse> {
+		if (resource === "settings") {
+			const generation = this.generation;
+			const settings = parseResponse(
+				warehouseSettingsDto,
+				await this.http.request(
+					`/warehouses/${encodeURIComponent(id)}/settings`,
+					{ signal },
+				),
+			);
+			this.assertActive(generation, signal);
+			const warehouse = this.cache.getQueryData<Warehouse>(
+				warehouseKeys.detail(id),
+			);
+			if (!warehouse) throw new Error("Сначала загрузите склад");
+			const result = {
+				...warehouse,
+				settings:
+					!warehouse.settings ||
+					settings.revision >= warehouse.settings.revision
+						? settings
+						: warehouse.settings,
+			};
+			this.cache.setQueryData(warehouseKeys.detail(id), result);
+			return result;
+		}
 		const needs = (name: WarehouseResource) =>
 			resource === "all" || resource === name;
 		const withMap = needs("map");

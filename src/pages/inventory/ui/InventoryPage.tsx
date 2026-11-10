@@ -1,7 +1,4 @@
-import { IconPlus } from "@tabler/icons-react";
-import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import type { Stock } from "@/entities/warehouse";
 import { useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
 import {
@@ -26,14 +23,12 @@ import {
 } from "@/shared/ui";
 import { useInventoryPage } from "../model/useInventoryPage";
 import { InventoryTable } from "./InventoryTable";
-import { StockCorrectionForm } from "./StockCorrectionForm";
 import { StockLinks } from "./StockLinks";
 import { WriteOffForm } from "./WriteOffForm";
 
 export function InventoryPage() {
 	const model = useInventoryPage();
 	const mode = useWorkspaceMode();
-	const [correction, setCorrection] = useState<Stock | "new" | null>(null);
 	const warehouse = model.warehouse;
 	const stockColumns = useTableColumns("stock", [
 		"Зона",
@@ -103,14 +98,7 @@ export function InventoryPage() {
 								{ value: "writeoffs", label: "Списания" },
 							]}
 						/>
-						{stockView && model.canEdit && (
-							<Button
-								onClick={() => setCorrection("new")}
-								disabled={model.pending}
-							>
-								<IconPlus size={18} /> Партия
-							</Button>
-						)}
+
 						{
 							(stockView
 								? stockColumns
@@ -214,9 +202,6 @@ export function InventoryPage() {
 						items={model.visibleStock}
 						hiddenColumns={stockColumns.hiddenColumns}
 						warehouse={warehouse}
-						canEdit={model.canEdit}
-						onEdit={setCorrection}
-						onSave={model.saveStock}
 						pending={model.pending}
 						onWriteOff={model.openWriteOff}
 						highlightUnpriced={model.filter === "unpriced"}
@@ -329,26 +314,6 @@ export function InventoryPage() {
 					</Table>
 				)}
 			</DataPanel>
-			{correction && model.canEdit && (
-				<Modal
-					title={
-						correction === "new" ? "Добавление партии" : "Корректировка партии"
-					}
-					onClose={() => setCorrection(null)}
-				>
-					<StockCorrectionForm
-						stock={correction === "new" ? null : correction}
-						warehouse={warehouse}
-						pending={model.pending}
-						onSave={async (stock) => {
-							await model.saveStock(stock);
-							setCorrection((current) =>
-								current === correction ? null : current,
-							);
-						}}
-					/>
-				</Modal>
-			)}
 			{model.selected && (
 				<Modal title="Списание партии" onClose={model.closeWriteOff}>
 					<WriteOffForm

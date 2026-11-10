@@ -20,7 +20,7 @@ import styles from "./SettingsPage.module.css";
 const defaultMapSize = "10";
 
 function currentCity(w: Warehouse) {
-	const raw = (w.cabinet?.location || w.location || "").trim();
+	const raw = (w.settings?.location || "").trim();
 	return cities.some((option) => option.value === raw)
 		? raw
 		: raw.split(",")[0]?.trim() || "";
@@ -34,14 +34,25 @@ export function LocationAndMapSettings({
 	execute: CommandExecutor;
 	pending: boolean;
 }) {
-	const [city, setCity] = useState(() => currentCity(w));
+	const [cityDraft, setCityDraft] = useState<{
+		value: string;
+		revision: number;
+	} | null>(null);
+	const city = cityDraft?.value ?? currentCity(w);
+	const setCity = (value: string) => {
+		if (w.settings)
+			setCityDraft({
+				value,
+				revision: cityDraft?.revision ?? w.settings.revision,
+			});
+	};
 	const [width, setWidth] = useState(String(w.width));
 	const [height, setHeight] = useState(String(w.height));
 	const [saving, setSaving] = useState<"city" | "map" | null>(null);
 	const [errors, setErrors] = useState({ city: "", map: "" });
 	const [messages, setMessages] = useState({ city: "", map: "" });
 	const inFlight = useRef(false);
-	const canEdit = !!w.allowedActions?.includes("edit-settings");
+	const canEdit = !!w.settings && !!w.allowedActions?.includes("edit-settings");
 	const canResize = !!w.allowedActions?.includes("resize");
 	const busy = pending || saving !== null;
 	const options =
@@ -55,17 +66,14 @@ export function LocationAndMapSettings({
 		setErrors((current) => ({ ...current, [section]: "" }));
 		setMessages((current) => ({ ...current, [section]: "" }));
 		try {
-			if (section === "city")
-				await execute("cabinet", {
-					...(w.cabinet ?? {
-						placement: "fefo",
-						allowMixedCategories: false,
-						reserveOnStart: true,
-						lowStockThreshold: 10,
-					}),
+			if (section === "city") {
+				if (!w.settings) throw new Error("Настройки склада не загружены");
+				await execute("warehouseSettings", {
+					revision: cityDraft?.revision ?? w.settings.revision,
 					location: city,
 				});
-			else
+				setCityDraft(null);
+			} else
 				await execute("resize", {
 					width: Number(width),
 					height: Number(height),

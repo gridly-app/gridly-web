@@ -149,7 +149,7 @@ export function ProductsTable({
 									onClick={() => onEdit(p)}
 								/>
 								<IconButton
-									label={p.archived ? "Восстановить" : "В архив"}
+									label={p.archived ? "Восстановить" : "Архивировать"}
 									icon={
 										p.archived ? (
 											<IconArchiveOff size={16} />

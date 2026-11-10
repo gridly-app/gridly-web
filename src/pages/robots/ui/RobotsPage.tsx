@@ -95,6 +95,7 @@ export function RobotsPage() {
 				<Modal title="Параметры робота" onClose={() => setEditing(null)}>
 					<RobotForm
 						robot={editingRobot}
+						spawnCells={model.spawnCells}
 						pending={pending}
 						onSave={saveRobot}
 					/>

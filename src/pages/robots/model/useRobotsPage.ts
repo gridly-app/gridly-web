@@ -58,6 +58,13 @@ export function useRobotsPage() {
 
 	return {
 		warehouseId: warehouse.id,
+		spawnCells: warehouse.published
+			? warehouse.cells.filter(
+					(c) =>
+						(c.type === "aisle" || c.type === "charge") &&
+						!warehouse.robots.some((r) => r.x === c.x && r.y === c.y),
+				)
+			: [],
 		status,
 		setStatus,
 		role,

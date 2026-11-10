@@ -9,7 +9,9 @@ export class ApiError extends Error {
 		super(
 			code === "STALE_REVISION"
 				? "Объект изменился. Обновите данные и сохраните правки вручную."
-				: message,
+				: code === "CATEGORY_HAS_PRODUCTS"
+					? "Нельзя архивировать категорию: сначала перенесите или архивируйте связанные товары."
+					: message,
 		);
 		this.name = "ApiError";
 	}

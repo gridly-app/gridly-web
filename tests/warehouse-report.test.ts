@@ -140,90 +140,46 @@ test("CSV preserves filters, comparison and unavailable write-offs while escapin
 	expect(csv).toContain('"Нет данных"');
 	expect(csv).toContain('"2026-11-01";"2026-11-02"');
 });
-test("new REST mutations use warehouse-scoped paths, wire fields and revision preconditions", async () => {
+test("archive and settings mutations preserve scoped paths and revision preconditions", async () => {
 	const calls: { path: string; options: RequestOptions }[] = [];
+	const settings = {
+		revision: 4,
+		location: "Москва",
+		low_stock_threshold: 12,
+		allocation_policy: "fefo",
+	};
 	const commands = new RestWarehouseCommands(
 		{ request: async () => ({}) },
 		async (path, options) => {
 			calls.push({ path, options });
-			return {};
+			return settings;
 		},
 	);
-	const product = base.products[0];
-	const cabinet = base.cabinet;
-	if (!product || !cabinet) throw new Error("Missing product or cabinet");
-	await commands.execute(base.id, { action: "cabinet", value: cabinet }, base);
+	const product = requiredAt(base.products, 0);
+	await commands.execute(
+		base.id,
+		{
+			action: "warehouseSettings",
+			value: { revision: 3, lowStockThreshold: 12 },
+		},
+		base,
+	);
 	expect(calls[0]).toMatchObject({
 		path: `/warehouses/${base.id}/settings`,
 		options: {
 			method: "PATCH",
-			body: { revision: base.revision, placement: "fefo" },
+			body: { revision: 3, low_stock_threshold: 12 },
 		},
 	});
 	await commands.execute(
 		base.id,
-		{ action: "deleteProduct", value: product.id },
+		{ action: "archiveProduct", value: product.id },
 		base,
 	);
-	expect(calls[1]?.options.headers).toEqual({
-		"If-Match": `"${product.revision}"`,
+	expect(calls[1]).toMatchObject({
+		path: `/warehouses/${base.id}/products/${encodeURIComponent(product.id)}/archive`,
+		options: { method: "POST", body: { revision: product.revision } },
 	});
-	await commands.execute(
-		base.id,
-		{
-			action: "stock",
-			value: {
-				id: "batch/new",
-				product: product.id,
-				quantity: 5,
-				reserved: 1,
-				cell: "2,3",
-				expires: "",
-			},
-		},
-		base,
-	);
-	expect(calls[2]).toMatchObject({
-		path: `/warehouses/${base.id}/inventory/batch%2Fnew`,
-		options: {
-			method: "PUT",
-			body: {
-				product_id: product.id,
-				quantity: 5,
-				reserved_quantity: 1,
-				cell_x: 2,
-				cell_y: 3,
-				expires_on: null,
-			},
-		},
-	});
-	await expect(
-		commands.execute(
-			base.id,
-			{
-				action: "stock",
-				value: {
-					id: "s",
-					product: product.id,
-					quantity: 1,
-					reserved: 2,
-					cell: "2,3",
-					expires: "",
-				},
-			},
-			base,
-		),
-	).rejects.toThrow();
-	expect(calls).toHaveLength(3);
-	const failure = new RestWarehouseCommands(
-		{ request: async () => ({}) },
-		async () => {
-			throw new Error("STATIC_MOCK");
-		},
-	);
-	await expect(
-		failure.execute(base.id, { action: "cabinet", value: cabinet }, base),
-	).rejects.toThrow("STATIC_MOCK");
 });
 test("shelves merge only within adjacent matching zones and mock paths can pass below storage", () => {
 	const cells: Cell[] = [

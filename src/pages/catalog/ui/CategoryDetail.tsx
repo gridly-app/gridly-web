@@ -9,6 +9,7 @@ import {
 } from "@/entities/warehouse";
 import { useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
+import { errorMessage } from "@/shared/lib";
 import { Button, Feedback, Link, Modal } from "@/shared/ui";
 import { CategoryForm } from "./CategoryForm";
 import { CategoryStorage } from "./CategoryStorage";
@@ -35,11 +36,33 @@ export function CategoryDetail({
 	onClose: () => void;
 }) {
 	const mode = useWorkspaceMode();
+	const [archiveError, setArchiveError] = useState("");
+	const [archiving, setArchiving] = useState(false);
 	const [editingName, setEditingName] = useState(false);
 	const map = useWarehouseResources(warehouse, ["map"]);
 
 	return (
 		<Modal title={category.name} onClose={onClose} wide>
+			{archiveError && <Feedback tone="error">{archiveError}</Feedback>}
+			{category.allowedActions?.includes("archive") && !category.archived && (
+				<Button
+					disabled={pending || archiving}
+					onClick={async () => {
+						setArchiving(true);
+						setArchiveError("");
+						try {
+							await execute("archiveCategory", category.id);
+							onClose();
+						} catch (error) {
+							setArchiveError(errorMessage(error));
+						} finally {
+							setArchiving(false);
+						}
+					}}
+				>
+					Архивировать категорию
+				</Button>
+			)}
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<nav className="flex flex-wrap gap-2" aria-label="Разделы по категории">
 					{sections.map(([page, label]) => (

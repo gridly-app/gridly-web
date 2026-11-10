@@ -1,12 +1,26 @@
-import { ScrollArea } from "@/shared/ui";
+import { Button, Feedback, ScrollArea } from "@/shared/ui";
 import { useSettingsPage } from "../model/useSettingsPage";
 import { CabinetSettings } from "./CabinetSettings";
 import { SettingsForm } from "./SettingsForm";
 import styles from "./SettingsPage.module.css";
 
 export function SettingsPage() {
-	const { warehouse, execute, pending } = useSettingsPage();
-	const props = { w: warehouse, execute, pending };
+	const {
+		warehouse,
+		execute,
+		pending,
+		settingsError,
+		retrySettings,
+		settingsLoading,
+	} = useSettingsPage();
+	const props = {
+		w: warehouse,
+		execute,
+		pending,
+		settingsError,
+		retrySettings,
+		settingsLoading,
+	};
 	return (
 		<ScrollArea className={styles.pageScroll}>
 			<div className={styles.settings}>
@@ -14,6 +28,20 @@ export function SettingsPage() {
 					<h2>Настройки склада</h2>
 					<p>{warehouse.name}</p>
 				</header>
+				{settingsLoading && (
+					<Feedback tone="loading">Загружаем настройки…</Feedback>
+				)}
+				{settingsError && (
+					<Feedback
+						tone="error"
+						action={
+							<Button onClick={() => void retrySettings()}>Повторить</Button>
+						}
+					>
+						Не удалось загрузить настройки города и порога остатка.{" "}
+						{settingsError.message}
+					</Feedback>
+				)}
 				<div className={styles.settingsGrid} key={warehouse.id}>
 					<SettingsForm section="general" {...props} />
 					<SettingsForm section="confirmations" {...props} />
