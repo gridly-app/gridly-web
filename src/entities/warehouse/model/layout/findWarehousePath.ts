@@ -1,5 +1,5 @@
-import { requiredAt } from "@/shared/lib/requiredAt";
-import type { Cell, GridPosition } from "../warehouse/schemas";
+import { requiredAt } from "@/shared/lib";
+import type { Cell, GridPosition } from "../warehouse";
 import { cellKey } from "./zones";
 
 export function findWarehousePath(

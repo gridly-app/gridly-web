@@ -1,7 +1,8 @@
 import { parseResponse } from "@/shared/api";
+import { UserError } from "@/shared/lib";
 import type { WarehouseCommand } from "../../model/commands/commands";
-import { orderDto } from "../contracts/contract";
 import { policyToDto } from "../contracts/contractMappers";
+import { orderDto } from "../contracts/orderDto";
 import type { RestCommandContext } from "./context";
 import { requireRevision } from "./context";
 
@@ -19,7 +20,7 @@ async function runOrderAction(
 	);
 
 	if (!o.allowed_actions?.includes(action)) {
-		throw new Error("Действие больше недоступно. Обновите заказ.");
+		throw new UserError("Действие больше недоступно. Обновите заказ.");
 	}
 	await send(
 		`/orders/${encodeURIComponent(orderId)}/${encodeURIComponent(action)}`,
@@ -104,7 +105,7 @@ export async function confirmTask(
 	const task = o.tasks?.find((t) => t.id === command.value.id);
 
 	if (!task?.allowed_actions?.includes(command.value.action)) {
-		throw new Error("Подтверждение задачи недоступно");
+		throw new UserError("Подтверждение задачи недоступно");
 	}
 	await send(
 		`/tasks/${encodeURIComponent(task.id)}/${encodeURIComponent(command.value.action)}`,

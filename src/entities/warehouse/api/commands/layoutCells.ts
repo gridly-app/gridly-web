@@ -1,4 +1,4 @@
-import type { Cell } from "../../model/warehouse/schemas";
+import type { Cell } from "../../model/warehouse";
 import { wireKinds } from "../contracts/contractMappers";
 
 export function serializeLayoutCells(

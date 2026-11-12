@@ -7,19 +7,32 @@ import {
 	productSchema,
 	robotSchema,
 	warehouseSchema,
-} from "../warehouse/schemas";
+} from "../warehouse";
 
 export const orderInputSchema = orderSchema
 	.pick({ kind: true, party: true, lines: true, manual: true })
 	.extend({ id: z.string().optional(), revision: z.number().optional() });
+
+export const robotParameterLimits = {
+	speed: { min: 1, max: 5 },
+	duration: { min: 1, max: 20 },
+} as const;
 
 const robotParameters = robotSchema
 	.pick({ name: true, capacity: true })
 	.extend({
 		name: z.string().trim().min(1).max(80),
 		roles: z.array(z.enum(["unload", "sort", "ship"])).min(1),
-		speed: z.number().int().min(1).max(5),
-		duration: z.number().int().min(1).max(20),
+		speed: z
+			.number()
+			.int()
+			.min(robotParameterLimits.speed.min)
+			.max(robotParameterLimits.speed.max),
+		duration: z
+			.number()
+			.int()
+			.min(robotParameterLimits.duration.min)
+			.max(robotParameterLimits.duration.max),
 		capacity: z
 			.string()
 			.regex(/^\d+(\.\d{1,3})?$/)
@@ -83,7 +96,7 @@ export const commandPayloads = {
 		height: z.number().int().positive(),
 	}),
 	simulation: z.undefined().optional(),
-	discard: z.undefined().optional(),
+	discard: z.object({ draftRevision: z.number().int().nonnegative() }),
 	robot: robotInputSchema,
 	deleteRobot: z.string(),
 	product: productInputSchema,

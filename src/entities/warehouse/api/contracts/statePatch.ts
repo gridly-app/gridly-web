@@ -1,19 +1,16 @@
 import { z } from "zod";
 
-const counter = z
-	.union([
-		z.string().regex(/^\d+$/),
-		z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-	])
-	.transform(String);
+import { counter } from "./resourceFields";
+
+const stateCounter = counter.transform(String);
 const coord = z.object({
 	x: z.number().int().nonnegative(),
 	y: z.number().int().nonnegative(),
 });
 export const statePatchDto = z.object({
 	warehouse_id: z.string(),
-	tick: counter,
-	state_version: counter,
+	tick: stateCounter,
+	state_version: stateCounter,
 	committed_at: z.iso.datetime({ offset: true }),
 	layout_version: z.number().int().nonnegative().optional(),
 	robots: z

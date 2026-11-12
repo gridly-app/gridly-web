@@ -6,7 +6,7 @@ import type {
 	Order,
 	Warehouse,
 	WarehouseLiveState,
-} from "../../model/warehouse/schemas";
+} from "../../model/warehouse";
 import type { WarehouseResource } from "../queries/resources";
 
 export interface MutationReceipt {

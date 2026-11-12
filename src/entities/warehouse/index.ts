@@ -1,40 +1,35 @@
-export { WarehouseRepositoryProvider } from "./api/context/context";
 export {
 	useCreateWarehouse,
-	useOrder,
 	useRouteProposal,
+	useWarehouseCommand,
+} from "./api/queries/mutations";
+export {
+	useLiveWarehouseScope,
+	useOrder,
 	useSelectionSummary,
 	useWarehouse,
-	useWarehouseCommand,
-	useWarehouseLiveSelection,
+	useWarehouseConnection,
 	useWarehouseResources,
 	useWarehouses,
 } from "./api/queries/queries";
 export { warehouseKeys } from "./api/queries/queryKeys";
 export type { WarehouseResource } from "./api/queries/resources";
-export type {
-	MutationOptions,
-	MutationReceipt,
-	WarehouseRepository,
-} from "./api/repositories/repository";
+export type { MutationReceipt } from "./api/repositories/repository";
 export { RestWarehouseRepository } from "./api/repositories/restRepository";
+export { WarehouseRepositoryProvider } from "./api/WarehouseRepositoryProvider";
 export {
 	robotCreateSchema,
+	robotParameterLimits,
 	robotUpdateSchema,
-	warehouseCommandSchema,
 } from "./model/commands/commandSchemas";
 export type {
 	CategoryInput,
 	CommandExecutor,
 	CommandHandler,
-	CommandIntent,
 	CommandPayloads,
-	CommandResult,
 	OrderInput,
 	ProductInput,
-	RobotCreateInput,
 	RobotInput,
-	RobotUpdateInput,
 	WarehouseCommand,
 	WarehouseInput,
 	WarehouseSettingsChange,
@@ -43,46 +38,29 @@ export {
 	connectedBlock,
 	defaultBlockRoutes,
 	routeThrough,
-	storageBlocks,
 } from "./model/layout/blockRoutes";
-export {
-	createWarehousePathfinder,
-	findWarehousePath,
-} from "./model/layout/findWarehousePath";
 export {
 	stockZoneCells,
 	stockZoneId,
-	stockZoneName,
 	stockZoneNames,
 } from "./model/layout/stockZones";
 export {
 	cellKey,
 	toggleZoneCell,
 } from "./model/layout/zones";
+export { incomingProduct } from "./model/orderForecast";
 export {
-	selectHistoryLive,
-	selectInventoryLive,
-	selectMapLive,
-	selectOrdersLive,
-	selectRobotsLive,
-} from "./model/scope/liveSelectors";
-export { WarehouseScopeProvider } from "./model/scope/WarehouseScopeProvider";
-export type { WarehouseScope } from "./model/scope/warehouseScope";
-export {
-	useLiveWarehouseScope,
-	useWarehouseCommands,
-	useWarehouseScope,
-	useWarehouseSnapshot,
-} from "./model/scope/warehouseScope";
-export {
-	type CompletionForecast,
-	incomingProduct,
-	orderCompletion,
 	orderValue,
 	productOccupancy,
 	productPrice,
-	robotAssignment,
-} from "./model/warehouse/operations";
+} from "./model/productMetrics";
+export { robotAssignment } from "./model/robotAssignment";
+export {
+	useWarehouseScope,
+	type WarehouseScope,
+	WarehouseScopeProvider,
+} from "./model/scope/warehouseScope";
+export { useSimulationCadence } from "./model/useSimulationCadence";
 export type {
 	BlockRoutePlan,
 	Category,
@@ -93,27 +71,15 @@ export type {
 	Order,
 	Product,
 	Robot,
-	RobotTask,
 	Stock,
-	StorageZone,
 	Warehouse,
-	WarehouseLiveState,
-	WarehouseSettings,
-} from "./model/warehouse/schemas";
+} from "./model/warehouse";
+export { storageCellTypes } from "./model/warehouse";
+export type { WorkflowPolicy } from "./model/workflowPolicy";
 export {
-	storageCellTypes,
-	warehouseLiveStateSchema,
-	warehouseSchema,
-} from "./model/warehouse/schemas";
-export { useSimulationCadence } from "./model/warehouse/useSimulationCadence";
-export type { WorkflowPolicy } from "./model/warehouse/workflowPolicy";
-export {
-	emptyWorkflowPolicy,
-	legacyWorkflowPolicy,
 	storedWorkflowPolicySchema,
 	workflowKeys,
-	workflowPolicySchema,
-} from "./model/warehouse/workflowPolicy";
+} from "./model/workflowPolicy";
 export { forecastLabel } from "./ui/operationPresentation";
 export { StatusBadge } from "./ui/StatusBadge";
 export {

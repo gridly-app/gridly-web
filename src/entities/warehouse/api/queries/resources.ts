@@ -1,5 +1,5 @@
 import type { WarehouseCommand } from "../../model/commands/commands";
-import type { Warehouse } from "../../model/warehouse/schemas";
+import type { Warehouse } from "../../model/warehouse";
 
 export type WarehouseResource =
 	| "settings"
@@ -12,13 +12,15 @@ export type WarehouseResource =
 	| "robots"
 	| "all";
 
-export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
+const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	settings: ["settings"],
 	metadata: [
 		"cabinet",
 		"location",
 		"name",
 		"timezone",
+		"width",
+		"height",
 		"revision",
 		"policyRevision",
 		"version",
@@ -51,6 +53,15 @@ export const resourceFields: Record<WarehouseResource, (keyof Warehouse)[]> = {
 	robots: ["robots"],
 	all: [],
 };
+
+export function warehouseResourceData(
+	resource: WarehouseResource,
+	warehouse: Warehouse,
+): Partial<Warehouse> {
+	return Object.fromEntries(
+		resourceFields[resource].map((key) => [key, warehouse[key]]),
+	);
+}
 
 export function commandResources(
 	action: WarehouseCommand["action"],

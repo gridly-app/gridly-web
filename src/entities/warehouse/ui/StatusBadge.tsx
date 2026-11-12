@@ -1,4 +1,7 @@
-import { type BadgeTone, StatusBadge as ProductStatusBadge } from "@/shared/ui";
+import {
+	type BadgeTone,
+	StatusBadge as ProductStatusBadge,
+} from "@/shared/ui/dataDisplay";
 import { statuses } from "./warehousePresentation";
 
 const active = new Set([

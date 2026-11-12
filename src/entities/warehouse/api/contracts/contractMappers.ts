@@ -1,6 +1,6 @@
-import type { CellType } from "../../model/warehouse/schemas";
-import type { WorkflowPolicy } from "../../model/warehouse/workflowPolicy";
-import type { PolicyDto } from "./contract";
+import type { CellType } from "../../model/warehouse";
+import type { WorkflowPolicy } from "../../model/workflowPolicy";
+import type { PolicyDto } from "./warehouseDto";
 
 export const wireKinds: Record<CellType, string> = {
 	empty: "empty",

@@ -1,5 +1,6 @@
 import type { HttpClient, RequestOptions } from "@/shared/api";
-import type { Warehouse } from "../../model/warehouse/schemas";
+import { UserError } from "@/shared/lib";
+import type { Warehouse } from "../../model/warehouse";
 
 export type SendMutation = (
 	path: string,
@@ -22,7 +23,7 @@ export interface RestCommandContext {
 
 export function requireRevision(revision?: number | undefined): number {
 	if (revision === undefined) {
-		throw new Error("API не вернул ревизию объекта. Обновите данные.");
+		throw new UserError("Обновите данные перед сохранением.");
 	}
 
 	return revision;

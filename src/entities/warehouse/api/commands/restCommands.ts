@@ -3,10 +3,11 @@ import {
 	parseResponse,
 	type RequestOptions,
 } from "@/shared/api";
+import { UserError } from "@/shared/lib";
 import { warehouseCommandSchema } from "../../model/commands/commandSchemas";
 import type { WarehouseCommand } from "../../model/commands/commands";
-import type { Warehouse } from "../../model/warehouse/schemas";
-import { warehouseSettingsDto } from "../contracts/contract";
+import type { Warehouse } from "../../model/warehouse";
+import { warehouseSettingsDto } from "../contracts/warehouseDto";
 import { saveCategory, saveProduct } from "./catalog";
 import {
 	type RestCommandContext,
@@ -100,7 +101,7 @@ export class RestWarehouseCommands {
 				return saveMap(context, command);
 			case "resize":
 				if (!warehouse.allowedActions?.includes("resize"))
-					throw new Error("Изменение размера недоступно по данным сервера");
+					throw new UserError("Изменение размера недоступно по данным сервера");
 				await send("/layout/resize", {
 					...command.value,
 					base_version: warehouse.version,

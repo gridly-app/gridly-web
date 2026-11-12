@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { type HttpClient, parseResponse } from "@/shared/api";
-import { legacyMapStateDto, mapStateDto } from "../contracts/contract";
+import { legacyMapStateDto, mapStateDto } from "../contracts/mapDto";
 
 export async function readMapState(
 	http: HttpClient,

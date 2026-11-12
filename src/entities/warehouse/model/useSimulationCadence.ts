@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Warehouse } from "./schemas";
+import type { Warehouse } from "./warehouse";
 
 export function useSimulationCadence(
 	warehouse: Pick<Warehouse, "id" | "tick" | "asOf" | "lastTickAt" | "running">,

@@ -1,4 +1,4 @@
-import type { CompletionForecast } from "../model/warehouse/operations";
+import type { CompletionForecast } from "../model/orderForecast";
 export function forecastLabel(forecast: CompletionForecast, timezone: string) {
 	return forecast.at === null
 		? forecast.note

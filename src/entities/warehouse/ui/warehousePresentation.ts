@@ -1,4 +1,4 @@
-import type { CellType } from "../model/warehouse/schemas";
+import type { CellType } from "../model/warehouse";
 
 export const cellLabels: Record<CellType, string> = {
 	empty: "Пустая клетка",

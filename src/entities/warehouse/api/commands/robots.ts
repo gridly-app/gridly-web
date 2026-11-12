@@ -1,3 +1,4 @@
+import { UserError } from "@/shared/lib";
 import type { WarehouseCommand } from "../../model/commands/commands";
 import type { RestCommandContext } from "./context";
 import { requireRevision } from "./context";
@@ -10,7 +11,7 @@ export async function saveRobot(
 	const r = command.value;
 	const old = warehouse.robots.find((x) => x.id === r.id);
 	if (r.id && !old)
-		throw new Error("Робот больше не существует. Обновите данные.");
+		throw new UserError("Робот больше не существует. Обновите данные.");
 	if (
 		"x" in r &&
 		(!warehouse.published ||
@@ -22,7 +23,7 @@ export async function saveRobot(
 			) ||
 			warehouse.robots.some((robot) => robot.x === r.x && robot.y === r.y))
 	) {
-		throw new Error(
+		throw new UserError(
 			"Выберите свободную клетку прохода или зарядки опубликованной карты.",
 		);
 	}

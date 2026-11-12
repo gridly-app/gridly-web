@@ -1,5 +1,5 @@
-import { requiredAt } from "@/shared/lib/requiredAt";
-import type { Cell, GridPosition } from "../warehouse/schemas";
+import { requiredAt, UserError } from "@/shared/lib";
+import type { Cell, GridPosition } from "../warehouse";
 import { findWarehousePath } from "./findWarehousePath";
 import { cellKey } from "./zones";
 
@@ -104,7 +104,7 @@ export function routeThrough(
 		);
 
 		if (!segment.length) {
-			throw new Error("Между выбранными точками нет прохода");
+			throw new UserError("Между выбранными точками нет прохода");
 		}
 		result.push(...(result.length ? segment.slice(1) : segment));
 	}

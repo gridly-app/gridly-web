@@ -1,4 +1,5 @@
-import type { Cell } from "../warehouse/schemas";
+import { UserError } from "@/shared/lib";
+import type { Cell } from "../warehouse";
 
 export const cellKey = (cell: Pick<Cell, "x" | "y">) => `${cell.x},${cell.y}`;
 
@@ -13,7 +14,7 @@ export function toggleZoneCell(
 	const next = cells.find((cell) => cellKey(cell) === key);
 
 	if (!next) {
-		throw new Error("Клетка не найдена");
+		throw new UserError("Клетка не найдена");
 	}
 	return [...keys, key];
 }

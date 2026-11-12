@@ -1,12 +1,16 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { ApiError, type HttpClient } from "@/shared/api";
-import { readSse, type ServerEvent } from "@/shared/api/readSse";
-import type {
-	Warehouse,
-	WarehouseLiveState,
-} from "../../model/warehouse/schemas";
+import {
+	ApiError,
+	type HttpClient,
+	readSse,
+	type ServerEvent,
+} from "@/shared/api";
+import { toLiveState } from "../../model/liveState";
+import type { Warehouse, WarehouseLiveState } from "../../model/warehouse";
 import { statePatchDto } from "../contracts/statePatch";
 import { warehouseKeys } from "../queries/queryKeys";
+import type { WarehouseResource } from "../queries/resources";
+import { applyRobotPatch } from "./applyRobotPatch";
 
 interface LiveStreamOptions {
 	id: string;
@@ -23,9 +27,11 @@ export class WarehouseLiveStream {
 	private controller = new AbortController();
 	private connection: AbortController | undefined;
 	private fallback: ReturnType<typeof setInterval> | undefined;
-	private polling = false;
+	private polling: AbortController | undefined;
+	private fallbackHealthy = false;
 	private layoutVersion = -1;
 	private started = false;
+	private refreshing = new Map<WarehouseResource | "order-details", boolean>();
 	private onError: (error: unknown) => void;
 	constructor(
 		private readonly options: LiveStreamOptions,
@@ -52,6 +58,8 @@ export class WarehouseLiveStream {
 	private stopFallback() {
 		clearInterval(this.fallback);
 		this.fallback = undefined;
+		this.polling?.abort();
+		this.fallbackHealthy = false;
 	}
 	private startFallback() {
 		if (this.fallback || this.controller.signal.aborted) return;
@@ -61,18 +69,24 @@ export class WarehouseLiveStream {
 	}
 	private async poll() {
 		if (this.polling || this.healthy || this.controller.signal.aborted) return;
-		this.polling = true;
+		const polling = new AbortController();
+		this.polling = polling;
 		try {
-			const state = await this.options.poll(this.controller.signal);
-			if (!this.controller.signal.aborted)
-				this.options.cache.setQueryData(
-					warehouseKeys.live(this.options.id),
-					state,
-				);
+			const state = await this.options.poll(polling.signal);
+			polling.signal.throwIfAborted();
+			this.options.cache.setQueryData(
+				warehouseKeys.live(this.options.id),
+				state,
+			);
+			this.fallbackHealthy = true;
+			this.onError(undefined);
 		} catch (error) {
-			if (!this.controller.signal.aborted) this.onError(error);
+			if (!polling.signal.aborted) {
+				this.fallbackHealthy = false;
+				this.onError(error);
+			}
 		} finally {
-			this.polling = false;
+			this.polling = undefined;
 		}
 	}
 	private async wait(milliseconds: number) {
@@ -87,6 +101,29 @@ export class WarehouseLiveStream {
 			const timer = setTimeout(finish, milliseconds);
 			signal.addEventListener("abort", finish, { once: true });
 		});
+	}
+	private async refresh(resource: WarehouseResource | "order-details") {
+		if (this.refreshing.has(resource)) {
+			this.refreshing.set(resource, true);
+			return;
+		}
+
+		const { cache, id } = this.options;
+		const queryKey =
+			resource === "order-details"
+				? warehouseKeys.orders(id)
+				: warehouseKeys.resource(id, resource);
+		this.refreshing.set(resource, false);
+		try {
+			do {
+				const alreadyFetching = cache.isFetching({ queryKey }) > 0;
+				this.refreshing.set(resource, false);
+				await cache.invalidateQueries({ queryKey }, { cancelRefetch: false });
+				if (!alreadyFetching && !this.refreshing.get(resource)) break;
+			} while (!this.controller.signal.aborted);
+		} finally {
+			this.refreshing.delete(resource);
+		}
 	}
 	private async run() {
 		const { http, id, cache } = this.options;
@@ -108,6 +145,7 @@ export class WarehouseLiveStream {
 				);
 			};
 			try {
+				this.startFallback();
 				if (!first || !this.options.snapshotReady())
 					await this.options.resync(signal);
 				first = false;
@@ -117,12 +155,8 @@ export class WarehouseLiveStream {
 				);
 				if (!warehouse) throw new Error("Склад не загружен");
 				this.layoutVersion = warehouse.version;
-				cache.setQueryData(warehouseKeys.live(id), {
-					...warehouse,
-					layoutVersion: warehouse.version,
-				});
+				cache.setQueryData(warehouseKeys.live(id), toLiveState(warehouse));
 				if (!http.openStream) throw new Error("Потоковый транспорт недоступен");
-				this.startFallback();
 				activity();
 				const stream = await http.openStream(
 					`/warehouses/${encodeURIComponent(id)}/stream?since_version=${encodeURIComponent(warehouse.stateVersion ?? "0")}`,
@@ -145,14 +179,12 @@ export class WarehouseLiveStream {
 				throw new Error("Соединение с потоком состояния закрыто");
 			} catch (error) {
 				if (this.controller.signal.aborted) break;
-				this.onError(error);
-				if (
-					error instanceof ApiError &&
-					(error.status === 401 || error.status === 403)
-				) {
+				if (error instanceof ApiError && error.status === 401) {
+					this.onError(error);
 					this.stop();
 					break;
 				}
+				if (!this.fallbackHealthy) this.onError(error);
 			} finally {
 				clearTimeout(watchdog);
 				connection.abort();
@@ -195,74 +227,11 @@ export class WarehouseLiveStream {
 			(event.id && event.id !== patch.state_version)
 		)
 			throw new Error("Пропущено событие состояния");
-		const known = new Set(current.robots.map((r) => r.id));
-		if (patch.robots?.some((r) => !known.has(r.robot_id)))
-			throw new Error("Требуется загрузить новых роботов");
-		const robots = new Map((patch.robots ?? []).map((r) => [r.robot_id, r]));
-		if (robots.size !== (patch.robots?.length ?? 0))
-			throw new Error("Повторный робот в событии");
-		const inBounds = (point: { x: number; y: number }) =>
-			point.x < current.width && point.y < current.height;
-		const next = {
-			...current,
-			stateVersion: patch.state_version,
-			tick: patch.tick,
-			asOf: patch.committed_at,
-			robots: current.robots.map((robot) => {
-				const update = robots.get(robot.id);
-				if (!update)
-					return { ...robot, motionPath: undefined, motionTimed: undefined };
-				const steps = update.microsteps;
-				if (
-					![
-						update.from,
-						update.to,
-						...(steps?.flatMap((step) => [step.from, step.to]) ?? []),
-					].every(inBounds)
-				)
-					throw new Error("Траектория выходит за пределы карты");
-				let path = [update.from, update.to];
-				if (steps?.length) {
-					const ordered = [...steps].sort((a, b) => a.slot - b.slot);
-					// Server slots may be numbered 0..4 or 1..5. Retain idle slots.
-					const origin = ordered.some((step) => step.slot === 0) ? 0 : 1;
-					if (
-						new Set(ordered.map((step) => step.slot)).size !== ordered.length ||
-						ordered.some((step) => step.slot >= origin + 5)
-					)
-						throw new Error("Некорректные слоты движения");
-					path = [update.from];
-					for (let slot = origin; slot < origin + 5; slot++) {
-						const step = ordered.find((item) => item.slot === slot);
-						const previous = path[path.length - 1] ?? update.from;
-						if (
-							step &&
-							(step.from.x !== previous.x || step.from.y !== previous.y)
-						)
-							throw new Error("Разрыв траектории движения");
-						path.push(step?.to ?? previous);
-					}
-					const last = path.at(-1);
-					if (last?.x !== update.to.x || last?.y !== update.to.y)
-						throw new Error("Некорректная траектория");
-				}
-				return {
-					...robot,
-					x: update.to.x,
-					y: update.to.y,
-					status: update.status,
-					motionPath: path,
-					motionTimed: !!steps?.length,
-				};
-			}),
-		};
+		const next = applyRobotPatch(current, patch);
 		signal.throwIfAborted();
 		cache.setQueryData(warehouseKeys.detail(id), next);
-		cache.setQueryData(warehouseKeys.live(id), {
-			...next,
-			layoutVersion: next.version,
-		});
-		const resources = new Set<string>();
+		cache.setQueryData(warehouseKeys.live(id), toLiveState(next));
+		const resources = new Set<WarehouseResource>();
 		if (patch.tasks?.length) {
 			resources.add("robots");
 			resources.add("orders");
@@ -270,11 +239,7 @@ export class WarehouseLiveStream {
 		if (patch.order_changes?.length) resources.add("orders");
 		if (patch.stock_changes?.length) resources.add("inventory");
 		if (resources.size) resources.add("history");
-		for (const resource of resources)
-			void cache.invalidateQueries({
-				queryKey: warehouseKeys.resource(id, resource),
-			});
-		if (resources.has("orders"))
-			void cache.invalidateQueries({ queryKey: warehouseKeys.orders(id) });
+		for (const resource of resources) void this.refresh(resource);
+		if (resources.has("orders")) void this.refresh("order-details");
 	}
 }

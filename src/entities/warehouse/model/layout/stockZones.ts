@@ -1,4 +1,4 @@
-import { type Cell, type Stock, storageCellTypes } from "../warehouse/schemas";
+import { type Cell, type Stock, storageCellTypes } from "../warehouse";
 import { cellKey } from "./zones";
 
 export function stockZoneId(cell: Cell) {

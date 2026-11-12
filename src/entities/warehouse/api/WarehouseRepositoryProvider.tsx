@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { createContext, useContext } from "react";
-import type { WarehouseRepository } from "../repositories/repository";
+import type { WarehouseRepository } from "./repositories/repository";
 
 export interface WarehouseRepositoryProviderProps {
 	repository: WarehouseRepository;

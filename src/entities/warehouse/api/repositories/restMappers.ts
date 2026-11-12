@@ -8,19 +8,15 @@ import type {
 	Robot,
 	Stock,
 	Warehouse,
-} from "../../model/warehouse/schemas";
-import type {
-	CategoryDto,
-	EventDto,
-	LayoutDto,
-	MapStateDto,
-	OrderDto,
-	ProductDto,
-	RobotDto,
-	StockDto,
-	WarehouseDto,
-} from "../contracts/contract";
+} from "../../model/warehouse";
+import type { CategoryDto, ProductDto } from "../contracts/catalogDto";
 import { policyFromDto, wireKinds } from "../contracts/contractMappers";
+import type { EventDto } from "../contracts/historyDto";
+import type { StockDto } from "../contracts/inventoryDto";
+import type { LayoutDto, MapStateDto } from "../contracts/mapDto";
+import type { OrderDto } from "../contracts/orderDto";
+import type { RobotDto } from "../contracts/robotDto";
+import type { WarehouseDto } from "../contracts/warehouseDto";
 
 function requireValue<T>(value: T | undefined, field: string): T {
 	if (value === undefined)

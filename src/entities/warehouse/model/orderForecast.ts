@@ -1,4 +1,4 @@
-import type { Order, Product, Robot, Stock, Warehouse } from "./schemas";
+import type { Order, Robot, Warehouse } from "./warehouse";
 
 const completed = new Set([
 	"received",
@@ -11,52 +11,7 @@ export interface CompletionForecast {
 	at: number | null;
 	note: string;
 }
-export function productPrice(raw: string | undefined): number | null {
-	if (!raw?.trim()) return null;
-	const value = Number(raw.replace(",", "."));
-	return Number.isFinite(value) && value >= 0 ? value : null;
-}
-export function orderValue(order: Order, products: readonly Product[]) {
-	if (!order.lines.length)
-		return {
-			value: 0,
-			unknown: order.quantity ?? 1,
-			label: "Нет данных о составе",
-		};
-	const prices = new Map(
-		products.map((product) => [product.id, productPrice(product.price)]),
-	);
-	let value = 0,
-		unknown = 0;
-	for (const line of order.lines) {
-		const price = prices.get(line.product);
-		if (price === undefined || price === null) unknown += line.quantity;
-		else value += price * line.quantity;
-	}
-	return {
-		value,
-		unknown,
-		label:
-			unknown && !value
-				? "Цена не задана"
-				: `${unknown ? "от " : ""}${value.toLocaleString("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 2 })}`,
-	};
-}
-export function productOccupancy(product: Product, stock: readonly Stock[]) {
-	const quantity = stock
-		.filter((item) => item.product === product.id)
-		.reduce((sum, item) => sum + item.quantity, 0);
-	const unitVolume = product.volume.trim()
-		? Number(product.volume.replace(",", "."))
-		: NaN;
-	return {
-		quantity,
-		volume:
-			Number.isFinite(unitVolume) && unitVolume >= 0
-				? quantity * unitVolume
-				: null,
-	};
-}
+
 const distance = (route: readonly { x: number; y: number }[]) =>
 	route.reduce((sum, point, index) => {
 		const previous = route[index - 1];
@@ -212,45 +167,5 @@ export function incomingProduct(
 			quantity,
 			forecast,
 		})),
-	};
-}
-export function robotAssignment(
-	robot: Robot,
-	warehouse: Pick<Warehouse, "orders" | "products">,
-) {
-	const task = robot.currentTask;
-	if (!task)
-		return {
-			title:
-				robot.status === "charging"
-					? "На зарядке"
-					: robot.returnRoute?.length
-						? "Возвращается на стоянку"
-						: robot.status === "idle"
-							? "Ожидает задачу"
-							: "Задача не передана",
-			detail: "",
-			order: undefined,
-		};
-	const order = warehouse.orders.find((item) => item.id === task.orderId);
-	const product = warehouse.products.find((item) => item.id === task.productId);
-	const title =
-		order?.kind === "inbound"
-			? task.carrying
-				? "Размещает поставку"
-				: "Разгружает поставку"
-			: order?.kind === "outbound"
-				? task.carrying
-					? "Везёт на отгрузку"
-					: "Забирает товар для отгрузки"
-				: task.label;
-	return {
-		title,
-		order: {
-			id: task.orderId,
-			kind: order?.kind,
-			number: order?.number ?? task.orderId,
-		},
-		detail: `${product?.name ?? task.productId} · ${task.quantity} шт.`,
 	};
 }

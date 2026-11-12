@@ -1,6 +1,6 @@
+import { UserError } from "@/shared/lib";
 import type { WarehouseCommand } from "../../model/commands/commands";
 import type { RestCommandContext } from "./context";
-import { requireRevision } from "./context";
 import { serializeLayoutCells } from "./layoutCells";
 
 export async function saveMap(
@@ -8,9 +8,7 @@ export async function saveMap(
 	command: Extract<WarehouseCommand, { action: "saveMap" }>,
 ) {
 	if (!context.warehouse.allowedActions?.includes("save-map"))
-		throw new Error(
-			"Сохранение карты недоступно: сервер не предоставил разрешение save-map",
-		);
+		throw new UserError("У вас нет прав для сохранения карты.");
 	const draft = command.value;
 	const categoryIds = new Set(context.warehouse.categories.map((c) => c.id));
 	const zoneIds = new Set(
@@ -32,12 +30,12 @@ export async function saveMap(
 
 export async function discardLayout(
 	context: RestCommandContext,
-	_command: Extract<WarehouseCommand, { action: "discard" }>,
+	command: Extract<WarehouseCommand, { action: "discard" }>,
 ): Promise<void> {
-	const { warehouse, base, mutate } = context;
+	const { base, mutate } = context;
 
 	await mutate(`${base}/layout/draft`, {
 		method: "DELETE",
-		headers: { "If-Match": `"${requireRevision(warehouse.draftRevision)}"` },
+		headers: { "If-Match": `"${command.value.draftRevision}"` },
 	});
 }

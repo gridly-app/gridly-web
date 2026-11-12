@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { Warehouse } from "../warehouse/schemas";
+import type { Warehouse } from "../warehouse";
 import type { commandPayloads, warehouseCommandSchema } from "./commandSchemas";
 
 export type RobotInput = CommandPayloads["robot"];
