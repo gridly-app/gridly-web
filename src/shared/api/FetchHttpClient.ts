@@ -1,7 +1,10 @@
 import { ApiError } from "./ApiError";
+import { parseHttpError, readHttpBody, readSessionToken } from "./httpResponse";
+import { readEventStream } from "./readEventStream";
 
 export type RequestOptions = {
 	detached?: boolean | undefined;
+	credentials?: RequestCredentials | undefined;
 	method?: ("GET" | "POST" | "PATCH" | "PUT" | "DELETE") | undefined;
 	body?: unknown | undefined;
 	signal?: AbortSignal | undefined;
@@ -23,6 +26,10 @@ export interface HttpSessionPolicy {
 	accessToken?: (() => string) | undefined;
 	refresh?: boolean | undefined;
 	onUnauthorized?: (() => void) | undefined;
+	withRefresh?(
+		refresh: (validate: (data: unknown) => void) => Promise<unknown>,
+		signal: AbortSignal,
+	): Promise<unknown>;
 }
 
 export class FetchHttpClient implements HttpClient {
@@ -31,7 +38,7 @@ export class FetchHttpClient implements HttpClient {
 
 	private sessionGeneration = 0;
 
-	private refreshRequest: Promise<void> | null = null;
+	private refreshRequest: Promise<unknown> | null = null;
 
 	constructor(
 		private readonly baseUrl = "/api/v1",
@@ -50,19 +57,26 @@ export class FetchHttpClient implements HttpClient {
 		this.refreshRequest = null;
 	}
 
-	private async refresh() {
+	private refresh() {
 		if (this.refreshRequest) {
 			return this.refreshRequest;
 		}
-		const request = this.request("/auth/refresh", {
-			method: "POST",
-		})
-			.then(() => undefined)
-			.finally(() => {
-				if (this.refreshRequest === request) {
-					this.refreshRequest = null;
-				}
-			});
+		const signal = AbortSignal.any([
+			this.streamSession.signal,
+			AbortSignal.timeout(15000),
+		]);
+		const perform = (validate?: (data: unknown) => void) =>
+			this.perform(
+				"/auth/refresh",
+				{ method: "POST", signal },
+				false,
+				validate,
+			);
+		const request = (
+			this.policy.withRefresh?.(perform, signal) ?? perform()
+		).finally(() => {
+			if (this.refreshRequest === request) this.refreshRequest = null;
+		});
 
 		this.refreshRequest = request;
 
@@ -70,6 +84,10 @@ export class FetchHttpClient implements HttpClient {
 	}
 
 	async request(path: string, options: RequestOptions = {}): Promise<unknown> {
+		if (path === "/auth/refresh") {
+			options.signal?.throwIfAborted();
+			return waitForRefresh(this.refresh(), options.signal);
+		}
 		return this.perform(path, options);
 	}
 	async openStream(
@@ -96,10 +114,12 @@ export class FetchHttpClient implements HttpClient {
 		path: string,
 		options: RequestOptions,
 		streaming = false,
+		validate?: (data: unknown) => void,
 	): Promise<unknown> {
 		const generation = this.sessionGeneration;
 		const { method = "GET", body, signal } = options;
 		const auth = path.startsWith("/auth/");
+		const issuesToken = path === "/auth/login" || path === "/auth/refresh";
 		const headers: Record<string, string> = { ...options.headers };
 
 		if (body !== undefined) {
@@ -122,7 +142,10 @@ export class FetchHttpClient implements HttpClient {
 			return this.transport(`${this.baseUrl}${path}`, {
 				method,
 				headers,
-				credentials: this.policy.credentials ?? "include",
+				credentials:
+					options.credentials ??
+					this.policy.credentials ??
+					(auth ? "include" : "omit"),
 				...(signal ? { signal } : {}),
 				...(body === undefined ? {} : { body: JSON.stringify(body) }),
 			});
@@ -131,112 +154,46 @@ export class FetchHttpClient implements HttpClient {
 
 		assertActive();
 		if (response.status === 401 && !auth && this.policy.refresh !== false) {
-			await this.refresh();
+			await waitForRefresh(this.refresh(), signal);
 			assertActive();
 			headers.Authorization = `Bearer ${this.token}`;
 			response = await send();
 			assertActive();
 		}
-		if (streaming && response.ok) {
-			if (
-				!response.body ||
-				!response.headers.get("Content-Type")?.startsWith("text/event-stream")
-			) {
-				await response.body?.cancel();
-				throw new ApiError(
-					"Сервер не вернул поток событий",
-					502,
-					"INVALID_RESPONSE",
-				);
-			}
-			const reader = response.body.getReader();
-			return new ReadableStream<Uint8Array>({
-				async pull(controller) {
-					try {
-						assertActive();
-						const result = await reader.read();
-						assertActive();
-						if (result.done) {
-							reader.releaseLock();
-							controller.close();
-						} else controller.enqueue(result.value);
-					} catch (error) {
-						await reader.cancel().catch(() => undefined);
-						controller.error(error);
-					}
-				},
-				async cancel(reason) {
-					await reader.cancel(reason);
-				},
-			});
-		}
-		if (response.status === 204) {
-			return undefined;
-		}
-		const data: unknown = await response.json().catch(() => {
-			assertActive();
-			if (response.ok) {
-				throw new ApiError(
-					"Сервер вернул некорректный JSON",
-					response.status,
-					"INVALID_RESPONSE",
-				);
-			}
-
-			return null;
-		});
+		if (streaming && response.ok)
+			return readEventStream(response, assertActive);
+		const data = await readHttpBody(response, assertActive);
 
 		assertActive();
 		if (!response.ok) {
 			if (response.status === 401 && (!auth || path === "/auth/refresh"))
 				this.policy.onUnauthorized?.();
-			const envelope = isRecord(data) ? data : {};
-			const error = isRecord(envelope.error) ? envelope.error : envelope;
-
-			throw new ApiError(
-				textField(error.message) ||
-					textField(envelope.message) ||
-					"Не удалось выполнить запрос",
-				response.status,
-				textField(error.code) || textField(envelope.code),
-				error.details ?? envelope.details,
-				textField(envelope.request_id) || textField(error.request_id),
-			);
+			throw parseHttpError(response.status, data);
 		}
-		if (path === "/auth/refresh") {
-			if (
-				!isRecord(data) ||
-				typeof data.access_token !== "string" ||
-				!data.access_token
-			) {
-				throw new ApiError(
-					"Сервер не вернул токен сессии",
-					response.status,
-					"INVALID_RESPONSE",
-				);
-			}
-		}
-		if (
-			auth &&
-			!options.detached &&
-			isRecord(data) &&
-			typeof data.access_token === "string"
-		) {
+		if (issuesToken && !options.detached) {
+			const accessToken = readSessionToken(response.status, data);
+			validate?.(data);
+			assertActive();
 			if (path === "/auth/login") {
 				this.sessionGeneration++;
 				this.refreshRequest = null;
 			}
-			this.token = data.access_token;
+			this.token = accessToken;
 		}
 
 		return data;
 	}
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+async function waitForRefresh(refresh: Promise<unknown>, signal?: AbortSignal) {
+	if (!signal) return refresh;
 
-function textField(value: unknown): string | undefined {
-	return typeof value === "string" ? value : undefined;
+	return new Promise<unknown>((resolve, reject) => {
+		const abort = () => reject(signal.reason);
+		signal.addEventListener("abort", abort, { once: true });
+		refresh.then(resolve, reject).finally(() => {
+			signal.removeEventListener("abort", abort);
+		});
+		if (signal.aborted) abort();
+	});
 }
