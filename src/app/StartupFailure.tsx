@@ -1,4 +1,5 @@
-import { Button, Feedback } from "@/shared/ui";
+import { Button } from "@/shared/ui/controls";
+import { Feedback } from "@/shared/ui/feedback";
 
 export function StartupFailure() {
 	function reload() {

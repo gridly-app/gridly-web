@@ -1,0 +1,75 @@
+.profileTrigger {
+	min-width: 0;
+	overflow: hidden;
+	justify-content: flex-start;
+	width: 100%;
+	height: auto;
+	white-space: normal;
+	padding-inline: 8px;
+	gap: 8px;
+}
+.profileName {
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+}
+.profileName b,
+.profileName small {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.avatar {
+	flex: 0 0 2rem;
+}
+
+.profileMenu {
+	width: 168px;
+	max-width: calc(100vw - 24px);
+}
+.profileMenu > div {
+	padding: 4px;
+}
+.profileMenu [data-slot="menu-item"],
+.profileMenu [data-slot="menu-sub-trigger"] {
+	min-height: 30px;
+	padding: 5px 8px;
+	gap: 8px;
+	border-radius: 6px;
+	white-space: nowrap;
+}
+.profileMenu [data-slot="menu-item"] + [data-slot="menu-item"] {
+	margin-top: 2px;
+}
+
+.avatarWrapper {
+	flex: 0 0 32px;
+	width: 32px;
+	height: 32px;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border-radius: 50%;
+}
+
+[data-collapsible="icon"] .profileName,
+[data-collapsible="icon"] .profileChevron {
+	display: none;
+}
+
+[data-collapsible="icon"] .profileTrigger {
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	min-height: 36px;
+	padding: 0;
+	gap: 0;
+	margin-inline: auto;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+[data-collapsible="icon"] .profileTrigger [data-slot="avatar"] {
+	width: 32px;
+	height: 32px;
+}

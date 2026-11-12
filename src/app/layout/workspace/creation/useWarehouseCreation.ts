@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateWarehouse, type WarehouseInput } from "@/entities/warehouse";
 import { useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
-import { useOnlineStatus } from "@/shared/lib";
+import { UserError, useOnlineStatus } from "@/shared/lib";
 
 export function useWarehouseCreation(warehouseId: string) {
 	const navigate = useNavigate();
@@ -23,7 +23,7 @@ export function useWarehouseCreation(warehouseId: string) {
 
 	async function save(warehouse: WarehouseInput) {
 		if (!navigator.onLine)
-			throw new Error("Для создания склада нужно соединение с сервером");
+			throw new UserError("Для создания склада нужно соединение с сервером");
 		const added = await creation.mutateAsync(warehouse);
 		setOpen(false);
 		void navigate(warehousePath(mode, added.id));

@@ -9,11 +9,3 @@
 	display: grid;
 	gap: 8px;
 }
-.notice {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-.notice span {
-	flex: 1;
-}

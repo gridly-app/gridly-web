@@ -1,83 +1,65 @@
 import type { ReactNode } from "react";
+import { useMatches } from "react-router-dom";
 import type { WarehouseScope } from "@/entities/warehouse";
 import {
+	useWarehouseConnection,
 	useWarehouseResources,
 	type WarehouseResource,
 	WarehouseScopeProvider,
 } from "@/entities/warehouse";
-import { Button, Feedback } from "@/shared/ui";
+import { errorMessage } from "@/shared/lib";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
-const pageResources: Record<string, WarehouseResource[]> = {
-	map: ["map", "catalog"],
-	catalog: ["catalog", "inventory"],
-	robots: ["map", "robots", "orders", "catalog"],
-	inbound: ["orders", "catalog", "robots"],
-	outbound: ["orders", "catalog", "robots"],
-	inventory: ["inventory", "catalog", "map", "orders", "robots", "history"],
-	history: ["history"],
-
-	information: ["orders", "catalog", "inventory", "history"],
-	warehouses: [],
-};
+export interface WarehouseRouteHandle {
+	resources: WarehouseResource[];
+}
 
 export function WorkspaceResources({
 	scope,
-	page,
 	children,
 }: {
 	scope: WarehouseScope;
-	page: string;
 	children: ReactNode;
 }) {
+	const handle = useMatches().at(-1)?.handle as
+		| WarehouseRouteHandle
+		| undefined;
 	const resource = useWarehouseResources(
 		scope.warehouse,
-		pageResources[page] ?? [],
+		handle?.resources ?? [],
 	);
 	if (resource.loading)
 		return <Feedback tone="loading">Загружаем раздел…</Feedback>;
 	if (resource.error && !resource.hasData)
 		return (
 			<Feedback
-				className="workspace-alert"
+				inset
 				tone="error"
 				title="Не удалось загрузить раздел"
 				action={
-					<Button
-						variant="secondary"
-						size="sm"
-						onClick={() => {
-							void resource.retry();
-						}}
-					>
-						Повторить
-					</Button>
+					<RetryButton variant="secondary" size="sm" onRetry={resource.retry} />
 				}
 			>
-				{resource.error.message}
+				{errorMessage(resource.error)}
 			</Feedback>
 		);
 	return (
 		<>
 			{resource.error && (
 				<Feedback
-					className="workspace-alert"
+					inset
 					tone="warning"
 					title="Не удалось обновить раздел"
 					action={
-						<Button
-							variant="secondary"
-							size="sm"
-							onClick={() => {
-								void resource.retry();
-							}}
-						>
+						<RetryButton variant="secondary" size="sm" onRetry={resource.retry}>
 							Повторить синхронизацию
-						</Button>
+						</RetryButton>
 					}
 				>
 					Показаны последние загруженные данные.
 				</Feedback>
 			)}
+			<ConnectionStatus warehouseId={scope.warehouse.id} />
 			<WarehouseScopeProvider
 				value={{
 					...scope,
@@ -88,5 +70,16 @@ export function WorkspaceResources({
 				{children}
 			</WarehouseScopeProvider>
 		</>
+	);
+}
+
+function ConnectionStatus({ warehouseId }: { warehouseId: string }) {
+	const { data: disconnected } = useWarehouseConnection(warehouseId);
+	if (!disconnected) return null;
+
+	return (
+		<Feedback inset tone="warning">
+			Нет связи с потоком состояния склада. Данные могут быть устаревшими.
+		</Feedback>
 	);
 }

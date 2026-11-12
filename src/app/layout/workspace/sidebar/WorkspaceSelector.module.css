@@ -1,0 +1,48 @@
+.dropdown {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	min-width: 0;
+}
+
+.icon {
+	display: none;
+}
+
+.trigger {
+	width: 100%;
+	min-width: 0;
+	padding-inline: var(--space-2);
+}
+
+[data-collapsible="icon"] .dropdown {
+	justify-content: center;
+	width: 100%;
+}
+
+[data-collapsible="icon"] .trigger {
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	min-height: 36px;
+	padding: 0;
+	margin-inline: auto;
+	justify-content: center;
+	flex-shrink: 0;
+	border-color: transparent;
+	background: transparent;
+	box-shadow: none;
+	gap: 0;
+}
+
+[data-collapsible="icon"] .icon {
+	display: block;
+	width: 18px;
+	height: 18px;
+}
+
+[data-collapsible="icon"]
+	.trigger
+	:is([data-slot="select-value"], [data-slot="select-icon"]) {
+	display: none;
+}

@@ -7,10 +7,10 @@ import {
 } from "react";
 import { WarehouseRepositoryProvider } from "@/entities/warehouse";
 import { DemoSessionProvider, SessionProvider } from "@/shared/auth";
-import { ThemeProvider } from "@/shared/lib";
-import { runtimeNotices } from "@/shared/lib/runtimeNotices";
-import { Button, Feedback, WarmTooltipGroup } from "@/shared/ui";
-import { ToastProvider } from "@/shared/ui/spaceui/toast";
+import { runtimeNotices, ThemeProvider } from "@/shared/lib";
+import { Button } from "@/shared/ui/controls";
+import { Feedback, ToastProvider } from "@/shared/ui/feedback";
+import { WarmTooltipGroup } from "@/shared/ui/overlays";
 import type { AppDependencies } from "./dependencies";
 import styles from "./RuntimeFeedback.module.css";
 

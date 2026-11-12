@@ -1,9 +1,12 @@
 import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
-import { Button, Feedback, SidebarTrigger } from "@/shared/ui";
-import type { WorkspaceShellModel } from "../model/useWorkspaceShell";
+import { errorMessage } from "@/shared/lib";
+import { Button } from "@/shared/ui/controls";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { SidebarTrigger } from "@/shared/ui/navigation";
+import type { WorkspaceShellModel } from "../useWorkspaceShell";
+import styles from "./WorkspaceContent.module.css";
 import { WorkspaceResources } from "./WorkspaceResources";
-import workspaceStyles from "./WorkspaceShell.module.css";
 
 export interface WorkspaceContentProps {
 	model: WorkspaceShellModel["content"];
@@ -20,12 +23,12 @@ export function WorkspaceContent({ model }: WorkspaceContentProps) {
 	} = model;
 
 	return (
-		<main className={workspaceStyles.workspaceMain}>
-			<header className="flex items-center gap-3 border-b p-3 min-[851px]:hidden">
+		<main className={styles.workspaceMain}>
+			<header className={styles.mobileHeader}>
 				<SidebarTrigger aria-label="Открыть меню" />
 				<span>Gridly</span>
 			</header>
-			<div className={workspaceStyles.content} data-page={model.page}>
+			<div className={styles.content} data-page={model.page}>
 				{warehouseId === "new" ? (
 					<Button variant="default" onClick={openCreation}>
 						Создать первый склад
@@ -36,25 +39,23 @@ export function WorkspaceContent({ model }: WorkspaceContentProps) {
 					</Feedback>
 				) : snapshot.isError && !warehouse ? (
 					<Feedback
-						className="workspace-alert"
+						inset
 						tone="error"
 						fill
 						title="Не удалось загрузить склад"
 						action={
-							<Button variant="secondary" size="sm" onClick={retrySnapshot}>
-								Повторить
-							</Button>
+							<RetryButton
+								variant="secondary"
+								size="sm"
+								onRetry={retrySnapshot}
+							/>
 						}
 					>
-						{snapshot.error?.message || "Не удалось синхронизировать склад"}
+						{errorMessage(snapshot.error)}
 					</Feedback>
 				) : (
 					scope && (
-						<WorkspaceResources
-							key={warehouseId}
-							scope={scope}
-							page={model.page}
-						>
+						<WorkspaceResources key={warehouseId} scope={scope}>
 							<Suspense
 								fallback={
 									<Feedback tone="loading" fill role="status">

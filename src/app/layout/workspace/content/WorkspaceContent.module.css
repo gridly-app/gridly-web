@@ -1,0 +1,30 @@
+.workspaceMain {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.mobileHeader {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-3);
+	border-bottom: 1px solid var(--border);
+}
+
+@media (width >= 851px) {
+	.mobileHeader {
+		display: none;
+	}
+}

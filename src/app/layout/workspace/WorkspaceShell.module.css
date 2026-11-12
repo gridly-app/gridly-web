@@ -1,0 +1,6 @@
+.appShell {
+	display: flex;
+	height: 100dvh;
+	min-height: 0;
+	overflow: hidden;
+}

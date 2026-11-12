@@ -2,12 +2,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { useWarehouse } from "@/entities/warehouse";
 import {
 	type CommandExecutor,
+	type CommandHandler,
 	type MutationReceipt,
 	useWarehouseCommand,
 	type WarehouseCommand,
 } from "@/entities/warehouse";
-import { errorMessage } from "@/shared/lib";
-import { createCommandHandler } from "./createCommandHandler";
+import { errorMessage, UserError } from "@/shared/lib";
 
 export interface WorkspaceCommandOptions {
 	warehouseId: string;
@@ -15,14 +15,12 @@ export interface WorkspaceCommandOptions {
 		ReturnType<typeof useWarehouse>,
 		"isError" | "data" | "isFetching" | "dataUpdatedAt"
 	>;
-	requiresNetwork: boolean;
 	notify: (message: string) => void;
 }
 
 export function useWorkspaceCommands({
 	warehouseId,
 	snapshot,
-	requiresNetwork,
 	notify,
 }: WorkspaceCommandOptions) {
 	const mutation = useWarehouseCommand(warehouseId);
@@ -33,12 +31,12 @@ export function useWorkspaceCommands({
 	) => {
 		try {
 			if (
-				(requiresNetwork && !navigator.onLine) ||
+				!navigator.onLine ||
 				snapshot.isError ||
 				!snapshot.data ||
 				(snapshot.isFetching && !snapshot.dataUpdatedAt)
 			) {
-				throw new Error("Дождитесь синхронизации склада");
+				throw new UserError("Дождитесь синхронизации склада");
 			}
 			const saved = await mutation.mutateAsync({
 				action,
@@ -59,9 +57,17 @@ export function useWorkspaceCommands({
 			throw error;
 		}
 	};
+	const command: CommandHandler = async (action, ...args) => {
+		try {
+			await execute(action, ...args);
+			return { ok: true };
+		} catch (error) {
+			return { ok: false, error };
+		}
+	};
 	return {
 		execute,
-		command: createCommandHandler(execute),
+		command,
 		pending: mutation.isPending,
 	};
 }

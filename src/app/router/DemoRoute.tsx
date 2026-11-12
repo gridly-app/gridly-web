@@ -1,16 +1,21 @@
+import { IconAlertTriangle } from "@tabler/icons-react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
 	Navigate,
 	Outlet,
 	Link as RouterLink,
+	useBlocker,
 	useNavigate,
 } from "react-router-dom";
 import { WarehouseRepositoryProvider } from "@/entities/warehouse";
 import { useDemoSession, WorkspaceModeProvider } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
 import { errorMessage } from "@/shared/lib";
-import { Button, Feedback, Link, StableLabel } from "@/shared/ui";
+import { Button, StableLabel } from "@/shared/ui/controls";
+import { Feedback } from "@/shared/ui/feedback";
+import { Link } from "@/shared/ui/navigation";
+import { ConfirmDialog } from "@/shared/ui/overlays";
 import { useAppDependencies } from "../composition/AppProviders";
 import styles from "./DemoRoute.module.css";
 
@@ -29,6 +34,11 @@ export function DemoEntry() {
 
 function DemoWorkspace() {
 	const { demoClient, demoRepository } = useAppDependencies();
+	const { controller } = useDemoSession();
+	const exit = useBlocker(({ nextLocation }) => {
+		const path = nextLocation.pathname.toLowerCase();
+		return path !== "/demo" && !path.startsWith("/demo/");
+	});
 	useEffect(
 		() => () => {
 			void demoClient.cancelQueries();
@@ -41,6 +51,27 @@ function DemoWorkspace() {
 			<WarehouseRepositoryProvider repository={demoRepository}>
 				<WorkspaceModeProvider value="demo">
 					<Outlet />
+					{exit.state === "blocked" && (
+						<ConfirmDialog
+							open
+							title="Предупреждение"
+							icon={
+								<IconAlertTriangle
+									aria-hidden="true"
+									className={styles.exitIcon}
+									size={32}
+								/>
+							}
+							description="При выходе все изменения в демо будут сброшены. При следующем входе откроется исходный сценарий."
+							cancelLabel="Остаться"
+							confirmLabel="Выйти"
+							onCancel={exit.reset}
+							onConfirm={() => {
+								exit.proceed();
+								controller.end();
+							}}
+						/>
+					)}
 				</WorkspaceModeProvider>
 			</WarehouseRepositoryProvider>
 		</QueryClientProvider>

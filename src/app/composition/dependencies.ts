@@ -3,8 +3,11 @@ import { RestWarehouseRepository } from "@/entities/warehouse";
 import { FetchHttpClient } from "@/shared/api";
 import { BrowserSessionRepository, ServerDemoSession } from "@/shared/auth";
 import { environment } from "@/shared/config";
-import { availableStorage, browserStorage } from "@/shared/lib/browserStorage";
-import { clearFormDraftScope } from "@/shared/lib/forms/formDraftStorage";
+import {
+	availableStorage,
+	browserStorage,
+	clearFormDraftScope,
+} from "@/shared/lib";
 
 export type AppDependencies = ReturnType<typeof createDependencies>;
 
@@ -19,6 +22,8 @@ export function createDependencies() {
 	let sessionRepository: BrowserSessionRepository;
 	const http = new FetchHttpClient(environment.apiBaseUrl, undefined, {
 		onUnauthorized: () => sessionRepository?.expire(),
+		withRefresh: (refresh, signal) =>
+			sessionRepository.withRefresh(refresh, signal),
 	});
 	const realRepository = new RestWarehouseRepository(http, client);
 	let demoRepository: RestWarehouseRepository;
@@ -39,6 +44,8 @@ export function createDependencies() {
 		http,
 		browserStorage("localStorage"),
 		clearAccountData,
+		undefined,
+		browserStorage("sessionStorage"),
 	);
 	function clearAccountData() {
 		void client.cancelQueries();

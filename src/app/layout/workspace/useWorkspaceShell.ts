@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useWarehouse, useWarehouses } from "@/entities/warehouse";
 import { useDemoSession, useSession, useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
-import { errorMessage, useOnlineStatus, useTheme } from "@/shared/lib";
-import { writePreference } from "@/shared/lib/browserStorage";
+import {
+	errorMessage,
+	useOnlineStatus,
+	useTheme,
+	writePreference,
+} from "@/shared/lib";
 import { useWarehouseCreation } from "./creation/useWarehouseCreation";
 import { useWorkspaceCommands } from "./useWorkspaceCommands";
 import { useWorkspaceNotice } from "./useWorkspaceNotice";
@@ -20,27 +24,6 @@ export function useWorkspaceShell() {
 	const mode = useWorkspaceMode();
 	const isDemo = mode === "demo";
 	const { controller: demo } = useDemoSession();
-	const requiresNetwork = true;
-	const [resetOpen, setResetOpen] = useState(false);
-	const [resetPending, setResetPending] = useState(false);
-	const [resetError, setResetError] = useState("");
-	async function restartDemo() {
-		if (resetPending) return;
-		setResetPending(true);
-		setResetError("");
-		try {
-			await demo.start(true);
-			const session = demo.getSnapshot().session;
-			if (session)
-				void navigate(warehousePath("demo", session.initial_warehouse_id), {
-					replace: true,
-				});
-		} catch (error) {
-			setResetError(errorMessage(error));
-		} finally {
-			setResetPending(false);
-		}
-	}
 	const { dark, setDark } = useTheme();
 	const list = useWarehouses();
 	const snapshot = useWarehouse(warehouseId);
@@ -67,7 +50,7 @@ export function useWorkspaceShell() {
 		navigate,
 		mode,
 	]);
-	const notice = useWorkspaceNotice();
+	const notify = useWorkspaceNotice();
 	const creation = useWarehouseCreation(warehouseId);
 	const online = useOnlineStatus();
 	useEffect(() => {
@@ -77,11 +60,10 @@ export function useWorkspaceShell() {
 	const commands = useWorkspaceCommands({
 		warehouseId,
 		snapshot,
-		requiresNetwork,
-		notify: notice.show,
+		notify,
 	});
 	const warehouse = snapshot.data;
-	const stale = snapshot.isError || (requiresNetwork && !online);
+	const stale = snapshot.isError || !online;
 	function changeWarehouse(value: string) {
 		if (value) {
 			void navigate(warehousePath(mode, value, page));
@@ -90,11 +72,10 @@ export function useWorkspaceShell() {
 
 	async function logout() {
 		try {
-			if (isDemo) demo.end();
-			else await endSession();
+			if (!isDemo) await endSession();
 			void navigate(isDemo ? "/" : "/auth", { replace: true });
 		} catch (error) {
-			notice.show(errorMessage(error));
+			notify(errorMessage(error));
 		}
 	}
 
@@ -110,15 +91,12 @@ export function useWorkspaceShell() {
 				pending: commands.pending || stale || snapshot.isFetching,
 			}
 		: null;
-	const hasWaitingInbound = warehouse?.summary?.hasWaitingInbound ?? false;
 	return {
 		sidebar: {
-			workspace: { warehouseId, changeWarehouse, list },
+			workspace: { warehouseId, changeWarehouse, warehouses: list.data ?? [] },
 			navigation: {
 				warehouseId,
 				mode,
-				robotCount: warehouse?.summary?.robotCount,
-				hasWaitingInbound,
 			},
 			profile: {
 				user,
@@ -126,13 +104,6 @@ export function useWorkspaceShell() {
 				dark,
 				setDark,
 				logout,
-				restartDemo: () => {
-					setResetError("");
-					setResetOpen(true);
-				},
-				landing: () => {
-					void navigate("/");
-				},
 				account: () => {
 					void navigate("/app");
 				},
@@ -141,22 +112,12 @@ export function useWorkspaceShell() {
 		content: {
 			page,
 			warehouse,
-			stale,
 			warehouseId,
 			openCreation: () => creation.setOpen(true),
 			snapshot,
 			retrySnapshot,
 			scope,
 		},
-		notice: { message: notice.message, dismiss: notice.dismiss },
 		creation,
-		isDemo,
-		demoReset: {
-			open: resetOpen,
-			pending: resetPending,
-			error: resetError,
-			onConfirm: restartDemo,
-			onCancel: () => setResetOpen(false),
-		},
 	};
 }

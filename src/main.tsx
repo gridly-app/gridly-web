@@ -1,9 +1,10 @@
+import "@/app/styles/app.css";
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "@/app/App";
 import { createDependencies } from "@/app/composition/dependencies";
 import { StartupFailure } from "@/app/StartupFailure";
-import "@/app/styles/app.css";
 
 async function bootstrap() {
 	const dependencies = createDependencies();

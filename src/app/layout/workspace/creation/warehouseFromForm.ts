@@ -1,6 +1,6 @@
 import type { WarehouseInput } from "@/entities/warehouse";
 
-import { formNumber, formText } from "@/shared/lib";
+import { formNumber, formText, UserError } from "@/shared/lib";
 
 const MAX_WAREHOUSE_CELLS = 10_000;
 
@@ -9,14 +9,14 @@ export function warehouseFromForm(data: FormData): WarehouseInput {
 	const height = formNumber(data, "height");
 
 	if (width * height > MAX_WAREHOUSE_CELLS) {
-		throw new Error("Максимум 10 000 клеток");
+		throw new UserError("Максимум 10 000 клеток");
 	}
 	if (
 		![width, height].every(
 			(size) => Number.isInteger(size) && size >= 2 && size <= 100,
 		)
 	) {
-		throw new Error("Размеры должны быть целыми числами от 2 до 100");
+		throw new UserError("Размеры должны быть целыми числами от 2 до 100");
 	}
 
 	return {

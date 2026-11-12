@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useImmersiveState } from "@/shared/lib";
+import { Separator } from "@/shared/ui/dataDisplay";
 import {
 	Link,
 	Sidebar,
@@ -7,13 +8,12 @@ import {
 	SidebarFooter,
 	SidebarHeader,
 	SidebarTrigger,
-} from "@/shared/ui";
-import { Separator } from "@/shared/ui/spaceui/separator";
-import type { WorkspaceShellModel } from "../model/useWorkspaceShell";
-import ProfileMenu from "./profile/ProfileMenu";
+} from "@/shared/ui/navigation";
+import type { WorkspaceShellModel } from "../useWorkspaceShell";
+import ProfileMenu from "./ProfileMenu";
 import { WarehouseNavigation } from "./WarehouseNavigation";
 import { WorkspaceSelector } from "./WorkspaceSelector";
-import workspaceSidebarStyles from "./WorkspaceSidebar.module.css";
+import styles from "./WorkspaceSidebar.module.css";
 
 export interface WorkspaceSidebarProps {
 	model: WorkspaceShellModel["sidebar"];
@@ -26,29 +26,28 @@ export function WorkspaceSidebar({ model }: WorkspaceSidebarProps) {
 			inert={immersive}
 			aria-hidden={immersive || undefined}
 			data-immersive={immersive || undefined}
-			className={workspaceSidebarStyles.workspace}
+			className={styles.workspace}
 		>
-			<SidebarHeader>
-				<div className={workspaceSidebarStyles.sidebarBrandRow}>
-					<Link
-						render={<NavLink to="/" />}
-						className={workspaceSidebarStyles.brand}
-					>
+			<SidebarHeader className={styles.header}>
+				<div className={styles.brandRow}>
+					<Link render={<NavLink to="/" />} className={styles.brand}>
 						Gridly
 					</Link>
 					<SidebarTrigger
 						aria-label="Переключить меню"
-						className={workspaceSidebarStyles.trigger}
+						className={styles.trigger}
 					/>
 				</div>
 
-				<WorkspaceSelector model={model.workspace} />
-				<Separator className={workspaceSidebarStyles.railSeparator} />
+				<span className={styles.label}>РАБОЧЕЕ ПРОСТРАНСТВО</span>
+				<WorkspaceSelector {...model.workspace} />
+				<Separator className={styles.railSeparator} />
 			</SidebarHeader>
-			<SidebarContent>
-				<WarehouseNavigation model={model.navigation} />
+			<SidebarContent className={styles.content}>
+				<span className={styles.label}>ВЫБРАННЫЙ СКЛАД</span>
+				<WarehouseNavigation {...model.navigation} />
 			</SidebarContent>
-			<SidebarFooter className={workspaceSidebarStyles.sidebarBottom}>
+			<SidebarFooter className={styles.footer}>
 				<ProfileMenu
 					{...model.profile}
 					logout={() => {

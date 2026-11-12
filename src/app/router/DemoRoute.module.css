@@ -8,3 +8,13 @@
 	padding: 2rem;
 	text-align: center;
 }
+
+.exitIcon {
+	color: var(--destructive);
+}
+
+@media (width < 40rem) {
+	.exitIcon {
+		margin-inline: auto;
+	}
+}

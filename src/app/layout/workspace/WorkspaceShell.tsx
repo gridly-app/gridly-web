@@ -1,12 +1,11 @@
 import { useLayoutEffect } from "react";
 import { ImmersiveProvider, useTheme } from "@/shared/lib";
-import { ConfirmDialog, SidebarProvider } from "@/shared/ui";
-import { useWorkspaceShell } from "../model/useWorkspaceShell";
+import { SidebarProvider } from "@/shared/ui/navigation";
+import { WorkspaceContent } from "./content/WorkspaceContent";
 import { WarehouseCreationDialog } from "./creation/WarehouseCreationDialog";
-import { WorkspaceContent } from "./WorkspaceContent";
-import { WorkspaceNotification } from "./WorkspaceNotification";
+import { WorkspaceSidebar } from "./sidebar/WorkspaceSidebar";
+import { useWorkspaceShell } from "./useWorkspaceShell";
 import workspaceStyles from "./WorkspaceShell.module.css";
-import { WorkspaceSidebar } from "./WorkspaceSidebar";
 
 export function WorkspaceShell() {
 	const model = useWorkspaceShell();
@@ -26,16 +25,7 @@ export function WorkspaceShell() {
 			<SidebarProvider className={workspaceStyles.appShell}>
 				<WorkspaceSidebar model={model.sidebar} />
 				<WorkspaceContent model={model.content} />
-				<WorkspaceNotification model={model.notice} />
 				<WarehouseCreationDialog model={model.creation} />
-				{model.isDemo && (
-					<ConfirmDialog
-						{...model.demoReset}
-						title="Начать демо заново?"
-						description="Все изменения в текущем демо будут потеряны. Откроется новый готовый склад."
-						confirmLabel="Начать заново"
-					/>
-				)}
 			</SidebarProvider>
 		</ImmersiveProvider>
 	);
