@@ -1,4 +1,6 @@
-import { Button, Feedback, ScrollArea } from "@/shared/ui";
+import { errorMessage } from "@/shared/lib";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { ScrollArea } from "@/shared/ui/navigation";
 import { useSettingsPage } from "../model/useSettingsPage";
 import { CabinetSettings } from "./CabinetSettings";
 import { SettingsForm } from "./SettingsForm";
@@ -34,12 +36,10 @@ export function SettingsPage() {
 				{settingsError && (
 					<Feedback
 						tone="error"
-						action={
-							<Button onClick={() => void retrySettings()}>Повторить</Button>
-						}
+						action={<RetryButton onRetry={retrySettings} />}
 					>
 						Не удалось загрузить настройки города и порога остатка.{" "}
-						{settingsError.message}
+						{errorMessage(settingsError)}
 					</Feedback>
 				)}
 				<div className={styles.settingsGrid} key={warehouse.id}>

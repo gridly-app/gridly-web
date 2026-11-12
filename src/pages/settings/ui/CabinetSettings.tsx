@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
 import { errorMessage } from "@/shared/lib";
-import { Button, Feedback, Field, Form, FormActions, Input } from "@/shared/ui";
+import { Button, Input } from "@/shared/ui/controls";
+import { Feedback } from "@/shared/ui/feedback";
+import { Field, Form, FormActions } from "@/shared/ui/forms";
+import { useSettingsDraft } from "../model/useSettingsDraft";
 import styles from "./SettingsPage.module.css";
 
 export function CabinetSettings({
@@ -13,10 +16,6 @@ export function CabinetSettings({
 	execute: CommandExecutor;
 	pending: boolean;
 }) {
-	const [draft, setDraft] = useState<{
-		value: string;
-		revision: number;
-	} | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [message, setMessage] = useState<{
 		text: string;
@@ -25,18 +24,23 @@ export function CabinetSettings({
 	const settings = w.settings;
 	const inFlight = useRef(false);
 	const canEdit = !!w.allowedActions?.includes("edit-settings");
-	const threshold = draft?.value ?? String(settings?.lowStockThreshold ?? 10);
+	const draft = useSettingsDraft(
+		String(settings?.lowStockThreshold ?? 10),
+		settings?.revision,
+	);
+	const threshold = draft.value;
 	async function save() {
-		if (pending || inFlight.current || !settings || !canEdit) return;
+		if (pending || inFlight.current || draft.revision === undefined || !canEdit)
+			return;
 		inFlight.current = true;
 		setSaving(true);
 		setMessage(null);
 		try {
 			await execute("warehouseSettings", {
-				revision: draft?.revision ?? settings.revision,
+				revision: draft.revision,
 				lowStockThreshold: Number(threshold),
 			});
-			setDraft(null);
+			draft.reset();
 			setMessage({ text: "Настройки сохранены", tone: "success" });
 		} catch (error) {
 			setMessage({ text: errorMessage(error), tone: "error" });
@@ -65,13 +69,7 @@ export function CabinetSettings({
 						required
 						value={threshold}
 						disabled={!canEdit || !settings || saving || pending}
-						onChange={(e) => {
-							if (settings)
-								setDraft({
-									value: e.target.value,
-									revision: draft?.revision ?? settings.revision,
-								});
-						}}
+						onChange={(event) => draft.setValue(event.target.value)}
 					/>
 				</Field>
 				{message && <Feedback tone={message.tone}>{message.text}</Feedback>}
@@ -91,9 +89,9 @@ export function CabinetSettings({
 					<Button
 						type="button"
 						variant="secondary"
-						disabled={saving || pending || !draft}
+						disabled={saving || pending || !draft.dirty}
 						onClick={() => {
-							setDraft(null);
+							draft.reset();
 							setMessage(null);
 						}}
 					>

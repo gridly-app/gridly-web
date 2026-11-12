@@ -72,29 +72,29 @@
 	font-size: var(--text-control);
 	line-height: 22px;
 }
-.settings :global([data-slot="form"]) {
+.settings [data-slot="form"] {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
 	min-width: 0;
 }
-.card > :global([data-slot="form"]) {
+.card > [data-slot="form"] {
 	flex: 1;
 }
-.card :global([data-slot="form"]) > :global([data-slot="toolbar"]) {
+.card [data-slot="form"] > [data-slot="toolbar"] {
 	margin-top: auto;
 }
-.settings :global([data-slot="select-trigger"]) {
+.settings [data-slot="select-trigger"] {
 	width: 100%;
 	min-width: 0;
 }
-.settings :global([data-slot="label"]) {
+.settings [data-slot="label"] {
 	font-size: var(--text-control);
 }
-.settings :global([role="status"]):empty {
+.settings [role="status"]:empty {
 	display: none;
 }
-.card:not(.general) > :global([data-slot="form"]) {
+.card:not(.general) > [data-slot="form"] {
 	gap: 12px;
 }
 .switchRow {
@@ -106,9 +106,6 @@
 	padding: 8px 0;
 	border-bottom: 1px solid var(--border);
 	font-size: var(--text-control);
-}
-.switch {
-	margin: 0;
 }
 @media (width <= 580px) {
 	.settings {

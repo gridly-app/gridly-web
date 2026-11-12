@@ -1,17 +1,8 @@
 import { IconRefresh } from "@tabler/icons-react";
 import { useId } from "react";
-import {
-	Button,
-	Feedback,
-	Field,
-	Form,
-	FormActions,
-	FormGrid,
-	IconButton,
-	Input,
-	Label,
-	Switch,
-} from "@/shared/ui";
+import { Button, IconButton, Input, Switch } from "@/shared/ui/controls";
+import { Feedback } from "@/shared/ui/feedback";
+import { Field, Form, FormActions, FormGrid, Label } from "@/shared/ui/forms";
 import {
 	type SettingsFormOptions,
 	useSettingsForm,
