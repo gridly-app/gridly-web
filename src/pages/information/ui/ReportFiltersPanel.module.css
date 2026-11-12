@@ -1,0 +1,78 @@
+.filterPanel {
+	border: 1px solid var(--border);
+	border-radius: 0;
+	background: var(--card);
+	box-shadow: var(--shadow-panel);
+}
+.filterPanel {
+	padding: 16px;
+}
+.filterMain {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+.advancedFilters {
+	margin-top: 16px;
+	border-top: 1px solid var(--border);
+	padding-top: 12px;
+}
+.advancedFilters > summary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	color: var(--muted-foreground);
+	cursor: pointer;
+	font-size: var(--text-control);
+	font-weight: 500;
+	list-style: none;
+}
+.advancedFilters > summary::before {
+	content: "+";
+	color: var(--primary);
+	font-size: 18px;
+}
+.advancedFilters[open] > summary::before {
+	content: "−";
+}
+.filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: 16px;
+	padding-top: 16px;
+}
+.filters > [data-slot="field"] {
+	flex: 1 1 150px;
+	min-width: 0;
+}
+.filters [data-slot="select-trigger"] {
+	width: 100%;
+}
+.compare {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 40px;
+	font-size: var(--text-control);
+}
+@media (width <= 700px) {
+	.filterMain > [data-rubber-segment]:first-child {
+		width: 100%;
+	}
+	.filterMain > [data-rubber-segment]:first-child > [role="radio"] {
+		flex: 1 1 0;
+		min-width: 0;
+		padding-inline: 4px;
+		font-size: var(--text-caption);
+		line-height: 16px;
+		white-space: normal;
+		text-align: center;
+	}
+	.filterMain > [data-slot="select-trigger"] {
+		width: 100%;
+	}
+}

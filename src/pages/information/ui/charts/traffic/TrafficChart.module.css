@@ -1,0 +1,70 @@
+.chartControls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: 20px;
+}
+.legend {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.legendButton {
+	gap: 8px;
+}
+.trafficPlot {
+	margin-top: 16px;
+}
+.trafficPlot svg {
+	display: block;
+	width: 100%;
+	min-width: 620px;
+}
+.gridLine {
+	stroke: var(--border);
+	stroke-dasharray: 3 5;
+}
+.axisLabel {
+	fill: var(--muted-foreground);
+	font:
+		13px Geist,
+		sans-serif;
+}
+.crosshair {
+	stroke: var(--muted-foreground);
+	stroke-dasharray: 4 4;
+	opacity: 0.5;
+}
+.chartPoint {
+	cursor: pointer;
+	outline: none;
+}
+.inbound {
+	color: var(--primary);
+}
+.outbound {
+	color: var(--info);
+}
+.chartPoint:focus-visible circle {
+	stroke: var(--foreground);
+	stroke-width: 4;
+}
+.chartPoint[data-slot="button"] {
+	display: inline;
+	position: static;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+.chartPoint[data-slot="button"]:active {
+	transform: none;
+}
+.trafficHint {
+	display: grid;
+	gap: 8px;
+	min-width: 160px;
+	font-variant-numeric: tabular-nums;
+}

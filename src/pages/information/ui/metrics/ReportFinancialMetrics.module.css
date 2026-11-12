@@ -1,0 +1,83 @@
+.metrics {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+}
+.metrics [data-slot="card"] {
+	border-radius: 0;
+	padding: 0;
+}
+.metrics [data-slot="card-panel"] {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 24px;
+}
+.metrics strong {
+	font-size: clamp(24px, 2.8vw, 34px);
+	line-height: 1.2;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+	overflow-wrap: anywhere;
+}
+.metrics span,
+.metrics small {
+	color: var(--muted-foreground);
+	font-size: var(--text-control);
+	line-height: 20px;
+}
+.metrics [data-slot="badge"] {
+	font-size: 11px;
+	white-space: normal;
+}
+.financialMetrics strong {
+	font-size: clamp(20px, 2vw, 26px);
+}
+@media (width <= 1200px) {
+	.metrics {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (width <= 700px) {
+	.metrics {
+		gap: 12px;
+	}
+	.metrics [data-slot="card-panel"] {
+		padding: 16px;
+	}
+	.metrics strong {
+		font-size: 26px;
+	}
+	.financialMetrics strong {
+		font-size: 20px;
+	}
+}
+@media (width <= 420px) {
+	.financialMetrics {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+.unpricedLink {
+	height: auto;
+	min-height: 28px;
+	padding: 0;
+	justify-content: flex-start;
+	white-space: normal;
+	align-self: flex-start;
+	color: var(--primary);
+	font-size: var(--text-caption);
+	text-align: left;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-underline-offset: 4px;
+	cursor: pointer;
+}
+.unpricedLink:hover {
+	text-decoration-style: solid;
+}
+.unpricedLink:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 4px;
+	border-radius: 2px;
+}

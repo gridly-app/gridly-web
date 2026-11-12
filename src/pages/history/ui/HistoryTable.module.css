@@ -1,7 +1,7 @@
 .log {
 	min-width: 0;
 }
-.log :global([data-slot="table-cell"]) {
+.log [data-slot="table-cell"] {
 	vertical-align: top;
 	padding-block: 10px;
 }
@@ -58,8 +58,8 @@
 	.mobileBadge {
 		display: block;
 	}
-	.log :global([data-slot="table-cell"]),
-	.log :global([data-slot="table-head"]) {
+	.log [data-slot="table-cell"],
+	.log [data-slot="table-head"] {
 		padding-inline: 10px;
 	}
 }

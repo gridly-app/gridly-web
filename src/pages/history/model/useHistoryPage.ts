@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { selectHistoryLive, useLiveWarehouseScope } from "@/entities/warehouse";
+import { useLiveWarehouseScope } from "@/entities/warehouse";
 
 import {
 	historyEventGroup as group,
@@ -7,7 +7,7 @@ import {
 } from "./eventGroup";
 
 export function useHistoryPage() {
-	const { warehouse } = useLiveWarehouseScope(selectHistoryLive);
+	const { warehouse } = useLiveWarehouseScope(false);
 	const [search, setSearch] = useState("");
 	const [category, setCategory] = useState("all");
 	const [from, setFrom] = useState("");

@@ -1,20 +1,17 @@
-import {
-	type Order,
-	productPrice,
-	stockZoneNames,
-	type Warehouse,
-} from "@/entities/warehouse";
+import { type Order, productPrice, type Warehouse } from "@/entities/warehouse";
+
+import { type ReportFilters, warehouseDay } from "./reportPeriod";
+import { reportUnpricedDetails } from "./reportUnpricedDetails";
 
 export { productPrice } from "@/entities/warehouse";
+export {
+	previousPeriod,
+	type ReportFilters,
+	shiftDay,
+	warehouseDay,
+} from "./reportPeriod";
+export type { UnpricedDetail, UnpricedSection } from "./reportUnpricedDetails";
 
-export interface ReportFilters {
-	from: string;
-	to: string;
-	kind: string;
-	status: string;
-	category: string;
-	compare: boolean;
-}
 export const defaultCabinet: NonNullable<Warehouse["cabinet"]> = {
 	location: "",
 	placement: "fefo" as const,
@@ -22,43 +19,6 @@ export const defaultCabinet: NonNullable<Warehouse["cabinet"]> = {
 	reserveOnStart: true,
 	lowStockThreshold: 10,
 };
-const formatters = new Map<string, Intl.DateTimeFormat>();
-export function warehouseDay(time: string | number, timezone: string) {
-	let formatter = formatters.get(timezone);
-	if (!formatter) {
-		formatter = new Intl.DateTimeFormat("en-CA", {
-			timeZone: timezone,
-			year: "numeric",
-			month: "2-digit",
-			day: "2-digit",
-		});
-		formatters.set(timezone, formatter);
-	}
-	return formatter.format(new Date(time));
-}
-export function shiftDay(day: string, days: number) {
-	return new Date(Date.parse(`${day}T00:00:00Z`) + days * 86400000)
-		.toISOString()
-		.slice(0, 10);
-}
-export function previousPeriod(filters: ReportFilters): ReportFilters {
-	const days =
-		Math.round((Date.parse(filters.to) - Date.parse(filters.from)) / 86400000) +
-		1;
-	return {
-		...filters,
-		from: shiftDay(filters.from, -days),
-		to: shiftDay(filters.from, -1),
-	};
-}
-export interface UnpricedDetail {
-	id: string;
-	productName: string;
-	quantity: number;
-	source: string;
-}
-export type UnpricedSection = "inbound" | "outbound" | "stock" | "writeOffs";
-
 export function buildReport(w: Warehouse, filters: ReportFilters) {
 	const products = new Map(w.products.map((p) => [p.id, p]));
 	const inPeriod = (date: string) => {
@@ -125,52 +85,15 @@ export function buildReport(w: Warehouse, filters: ReportFilters) {
 			(filters.category === "all" ||
 				products.get(s.product)?.category === filters.category),
 	);
-	const productName = (id: string) => products.get(id)?.name ?? `Товар ${id}`;
-	const orderDetails = (kind: Order["kind"]): UnpricedDetail[] =>
-		orders
-			.filter((order) => order.kind === kind)
-			.flatMap((order) =>
-				order.lines.flatMap((line, index) =>
-					productPrice(products.get(line.product)?.price) === null &&
-					line.quantity > 0
-						? [
-								{
-									id: `${order.id}:${index}`,
-									productName: productName(line.product),
-									quantity: line.quantity,
-									source: `Заказ ${order.number}`,
-								},
-							]
-						: [],
-				),
-			);
-	const zoneName = stockZoneNames(w.cells);
-	const unpricedDetails: Record<UnpricedSection, UnpricedDetail[]> = {
-		inbound: orderDetails("inbound"),
-		outbound: orderDetails("outbound"),
-		stock: stock
-			.filter(
-				(item) =>
-					productPrice(products.get(item.product)?.price) === null &&
-					item.quantity > 0,
-			)
-			.map((item) => ({
-				id: item.id,
-				productName: productName(item.product),
-				quantity: item.quantity,
-				source: `Партия ${item.id} · ${zoneName(item)}`,
-			})),
-		writeOffs: (writeOffs ?? [])
-			.filter((item) => item.price === null && item.quantity > 0)
-			.map((item) => ({
-				id: item.id,
-				productName: productName(item.product),
-				quantity: item.quantity,
-				source: `${warehouseDay(item.time, w.timezone)} · ${item.reason}`,
-			})),
-	};
+
 	return {
-		unpricedDetails,
+		unpricedDetails: reportUnpricedDetails(
+			w,
+			products,
+			orders,
+			stock,
+			writeOffs,
+		),
 		orders,
 		series: [...series.values()].sort((a, b) => a.day.localeCompare(b.day)),
 		inbound: amount(orders.filter((o) => o.kind === "inbound")),
@@ -208,68 +131,4 @@ export function buildReport(w: Warehouse, filters: ReportFilters) {
 			0,
 		),
 	};
-}
-export function reportCsv(w: Warehouse, filters: ReportFilters) {
-	const report = buildReport(w, filters);
-	const safe = (value: unknown) => {
-		const raw = String(value ?? "");
-		return `"${(/^\s*[=+\-@]|^[\t\r\n]/.test(raw) ? "'" : "") + raw.replaceAll('"', '""')}"`;
-	};
-	const rows: unknown[][] = [
-		["Склад", w.name],
-		["Период", filters.from, filters.to],
-		["Тип", filters.kind],
-		["Статус", filters.status],
-		["Категория", filters.category],
-		["Оценка по текущим ценам каталога"],
-		[
-			"Номер",
-			"Тип",
-			"Статус",
-			"Создан",
-			"Количество",
-			"Стоимость известных цен",
-			"Без цены, шт.",
-		],
-	];
-
-	const prices = new Map(w.products.map((p) => [p.id, productPrice(p.price)]));
-	for (const o of report.orders) {
-		const money = o.lines.reduce(
-			(sum, line) => {
-				const price = prices.get(line.product);
-				if (price == null) sum.unknown += line.quantity;
-				else sum.value += price * line.quantity;
-				return sum;
-			},
-			{ value: 0, unknown: 0 },
-		);
-		rows.push([
-			o.number,
-			o.kind,
-			o.status,
-			o.created,
-			o.lines.reduce((n, l) => n + l.quantity, 0),
-			money.value,
-			money.unknown,
-		]);
-	}
-	rows.push(
-		["Текущие остатки, шт.", report.stockQuantity],
-		["Стоимость текущих остатков", report.stockValue],
-		["Остатки без цены, шт.", report.unpricedStock],
-		["Списано, шт.", report.writeOffQuantity ?? "Нет данных"],
-		["Стоимость списаний", report.writeOffValue ?? "Нет данных"],
-	);
-	if (filters.compare) {
-		const previous = previousPeriod(filters);
-		const result = buildReport(w, previous);
-		rows.push(
-			["Предыдущий период", previous.from, previous.to],
-			["Заказов в предыдущем периоде", result.orders.length],
-			["Оценка поставок", result.inbound.value],
-			["Оценка отгрузок", result.outbound.value],
-		);
-	}
-	return `\uFEFF${rows.map((r) => r.map(safe).join(";")).join("\r\n")}`;
 }

@@ -5,9 +5,10 @@ import {
 	IconClipboardList,
 	IconInfoCircle,
 } from "@tabler/icons-react";
-import { Card, WarmTooltip } from "@/shared/ui";
-import type { WarehouseReport } from "../model/chartData";
-import styles from "./InformationPage.module.css";
+import { Card } from "@/shared/ui/dataDisplay";
+import { WarmTooltip } from "@/shared/ui/overlays";
+import type { WarehouseReport } from "../../model/chartData";
+import styles from "./ReportMetrics.module.css";
 
 export function ReportMetrics({
 	report,

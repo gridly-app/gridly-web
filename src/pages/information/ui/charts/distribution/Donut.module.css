@@ -1,0 +1,98 @@
+.distribution {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-top: 24px;
+}
+.donut {
+	display: block;
+	width: 180px;
+	flex: 0 0 180px;
+	max-width: 100%;
+}
+.donutValue {
+	fill: var(--foreground);
+	font:
+		700 30px Geist,
+		sans-serif;
+	letter-spacing: -0.03em;
+}
+.donutCaption {
+	fill: var(--muted-foreground);
+	font:
+		12px Geist,
+		sans-serif;
+}
+.donutSlice {
+	outline: none;
+	cursor: pointer;
+}
+.donutSlice circle {
+	transition:
+		stroke-width 160ms,
+		opacity 160ms;
+}
+.donutSlice:hover circle,
+.donutSlice:focus-visible circle {
+	stroke-width: 28px;
+}
+.distributionLegend {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex: 1;
+	min-width: 0;
+}
+.distributionItem {
+	width: 100%;
+	justify-content: flex-start;
+	min-height: 36px;
+	height: auto;
+	padding: 8px;
+	text-align: left;
+}
+.distributionItem > .sliceLabel {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.distributionItem > strong {
+	margin-left: auto;
+	flex-shrink: 0;
+	font-variant-numeric: tabular-nums;
+}
+@media (width <= 1200px) {
+	.distributionLegend {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	.distributionItem {
+		flex: 1 1 180px;
+	}
+}
+@media (width <= 420px) {
+	.distribution {
+		flex-direction: column;
+	}
+	.donut {
+		width: 180px;
+		flex-basis: auto;
+	}
+	.distributionLegend {
+		width: 100%;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.donutSlice circle {
+		transition: none;
+	}
+}
+.donutSlice[data-slot="button"] {
+	display: inline;
+	position: static;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+.donutSlice[data-slot="button"]:active {
+	transform: none;
+}
