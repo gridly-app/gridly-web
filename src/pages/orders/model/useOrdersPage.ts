@@ -16,11 +16,9 @@ export function useOrdersPage({
 	kind: page,
 	warehouse,
 	command,
-	pending,
 }: OrdersPageOptions & {
 	warehouse: Warehouse;
 	command: CommandExecutor;
-	pending: boolean;
 }) {
 	const [params, setParams] = useSearchParams();
 	const status = params.get("status") || "all";
@@ -50,11 +48,6 @@ export function useOrdersPage({
 	const [search, setSearch] = useState("");
 	const searchQuery = search.toLowerCase();
 	const orders = warehouse.orders.filter((order) => order.kind === page);
-	const statistics = warehouse.summary?.orders?.[page] || {
-		total: undefined,
-		active: undefined,
-		completed: undefined,
-	};
 	const visibleOrders = orders
 		.filter((order) => {
 			const day = Number.isFinite(Date.parse(order.created))
@@ -121,21 +114,20 @@ export function useOrdersPage({
 		unpriced,
 		from,
 		to,
-		resetFilters,
-		status,
-		setStatus,
-		category,
-		setCategory,
-		statuses: [...new Set(orders.map((o) => o.status))],
-		categories: warehouse.categories,
+		filters: {
+			resetFilters,
+			status,
+			setStatus,
+			category,
+			setCategory,
+			statuses: [...new Set(orders.map((o) => o.status))],
+			categories: warehouse.categories,
+			search,
+			setSearch,
+		},
 		canCreate: !!warehouse.allowedActions?.includes(`create-${page}-order`),
 		empty: visibleOrders.length === 0,
 		visibleOrders,
-		statistics,
-		page,
-		search,
-		setSearch,
-		pending,
 		startOrder,
 		confirmOrder,
 	};

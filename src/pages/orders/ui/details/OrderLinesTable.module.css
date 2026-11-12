@@ -1,0 +1,4 @@
+.unpriced[data-unpriced-highlight="true"] {
+	background: var(--accent-bg);
+	box-shadow: inset 3px 0 var(--primary);
+}

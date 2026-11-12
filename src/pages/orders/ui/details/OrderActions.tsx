@@ -1,7 +1,7 @@
 import { IconPencil } from "@tabler/icons-react";
-import { Button, IconButton } from "@/shared/ui";
-import type { useOrderDetail } from "../model/useOrderDetail";
-import localLayout from "./Layout.module.css";
+import { Button, IconButton } from "@/shared/ui/controls";
+import type { useOrderDetail } from "../../model/useOrderDetail";
+import styles from "./OrderActions.module.css";
 
 export interface OrderActionsProps {
 	model: Pick<
@@ -24,7 +24,7 @@ export function OrderActions({ model }: OrderActionsProps) {
 		return null;
 
 	return (
-		<div className={`${localLayout.row} ${localLayout.wrap}`}>
+		<div className={styles.actions}>
 			{onEdit && canEdit && (
 				<IconButton
 					label="Изменить черновик"

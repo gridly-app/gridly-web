@@ -4,7 +4,7 @@ import type {
 	Warehouse,
 	WorkflowPolicy,
 } from "@/entities/warehouse";
-import { formText } from "@/shared/lib";
+import { formText, UserError } from "@/shared/lib";
 
 export interface OrderDraft {
 	kind: Order["kind"];
@@ -25,7 +25,7 @@ export function orderFromForm(
 				!line.product || line.quantity < 1 || !Number.isInteger(line.quantity),
 		)
 	) {
-		throw new Error("Добавьте товар и целое положительное количество");
+		throw new UserError("Добавьте товар и целое положительное количество");
 	}
 
 	return {

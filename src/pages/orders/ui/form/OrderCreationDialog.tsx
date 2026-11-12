@@ -1,37 +1,25 @@
 import { IconTrash } from "@tabler/icons-react";
 import type { Warehouse } from "@/entities/warehouse";
-import { Button, ErrorNotice, IconButton, Modal } from "@/shared/ui";
-import type { useOrderDialogs } from "../model/useOrderDialogs";
+import { Button, IconButton } from "@/shared/ui/controls";
+import { ErrorNotice } from "@/shared/ui/feedback";
+import { Modal } from "@/shared/ui/overlays";
+import type { useOrderCreation } from "../../model/useOrderCreation";
+import styles from "./OrderCreationDialog.module.css";
 import { OrderForm } from "./OrderForm";
-import styles from "./OrdersPage.module.css";
 
 export interface OrderCreationDialogProps {
-	model: Pick<
-		ReturnType<typeof useOrderDialogs>,
-		| "choosing"
-		| "closeChooser"
-		| "savedForms"
-		| "restoreForm"
-		| "deleteForm"
-		| "formError"
-		| "newForm"
-		| "creation"
-		| "confirmClose"
-		| "continueForm"
-		| "saveForm"
-		| "discardForm"
-		| "closeCreation"
-		| "submitting"
-		| "createDraft"
-		| "changeValues"
-	> & {
-		w: Warehouse;
-		pending: boolean;
-		page: "inbound" | "outbound";
-	};
+	model: Omit<ReturnType<typeof useOrderCreation>, "openCreation">;
+	warehouse: Warehouse;
+	pending: boolean;
+	kind: "inbound" | "outbound";
 }
 
-export function OrderCreationDialog({ model }: OrderCreationDialogProps) {
+export function OrderCreationDialog({
+	model,
+	warehouse,
+	pending,
+	kind,
+}: OrderCreationDialogProps) {
 	if (model.choosing)
 		return (
 			<Modal title="Сохранённые формы" onClose={model.closeChooser}>
@@ -84,14 +72,14 @@ export function OrderCreationDialog({ model }: OrderCreationDialogProps) {
 		);
 	return (
 		<Modal
-			title={model.page === "inbound" ? "Поставка" : "Заказ"}
+			title={kind === "inbound" ? "Поставка" : "Заказ"}
 			onClose={model.closeCreation}
 		>
 			<OrderForm
 				key={model.creation.id}
-				kind={model.page}
-				warehouse={model.w}
-				pending={model.pending || model.submitting}
+				kind={kind}
+				warehouse={warehouse}
+				pending={pending || model.submitting}
 				onSave={model.createDraft}
 				values={model.creation.values}
 				onValuesChange={model.changeValues}

@@ -1,36 +1,25 @@
 import type { CommandExecutor, Warehouse } from "@/entities/warehouse";
-import { Button, Feedback, Modal } from "@/shared/ui";
-import type { useOrderDialogs } from "../model/useOrderDialogs";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { Modal } from "@/shared/ui/overlays";
+import type { useOrderSelection } from "../../model/useOrderSelection";
+import { OrderForm } from "../form/OrderForm";
 import { OrderDetail } from "./OrderDetail";
-import { OrderForm } from "./OrderForm";
 
 export interface OrderDetailDialogProps {
-	model: Pick<
-		ReturnType<typeof useOrderDialogs>,
-		| "detailOpen"
-		| "detailError"
-		| "retryDetail"
-		| "selected"
-		| "editing"
-		| "closeOrder"
-		| "saveDraft"
-		| "fetching"
-		| "editSelected"
-	> & { w: Warehouse; pending: boolean; execute: CommandExecutor };
+	model: Omit<ReturnType<typeof useOrderSelection>, "setDetail">;
+	warehouse: Warehouse;
+	pending: boolean;
+	execute: CommandExecutor;
 }
 
-export function OrderDetailDialog({ model }: OrderDetailDialogProps) {
-	const {
-		selected,
-		editing,
-		closeOrder,
-		w,
-		pending,
-		saveDraft,
-		execute,
-		fetching,
-		editSelected,
-	} = model;
+export function OrderDetailDialog({
+	model,
+	warehouse,
+	pending,
+	execute,
+}: OrderDetailDialogProps) {
+	const { selected, editing, closeOrder, saveDraft, fetching, editSelected } =
+		model;
 
 	if (model.detailOpen && !selected)
 		return (
@@ -38,7 +27,7 @@ export function OrderDetailDialog({ model }: OrderDetailDialogProps) {
 				{model.detailError ? (
 					<Feedback tone="error">
 						{model.detailError}
-						<Button onClick={model.retryDetail}>Повторить</Button>
+						<RetryButton onRetry={model.retryDetail} />
 					</Feedback>
 				) : (
 					<Feedback tone="loading">Загружаем заказ…</Feedback>
@@ -59,14 +48,14 @@ export function OrderDetailDialog({ model }: OrderDetailDialogProps) {
 							key={selected.id}
 							kind={selected.kind}
 							order={selected}
-							warehouse={w}
+							warehouse={warehouse}
 							pending={pending || fetching}
 							onSave={saveDraft}
 						/>
 					) : (
 						<OrderDetail
 							o={selected}
-							w={w}
+							w={warehouse}
 							command={execute}
 							pending={pending || fetching}
 							onEdit={editSelected}

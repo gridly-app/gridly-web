@@ -1,0 +1,9 @@
+.orderLink {
+	color: var(--brand-accent);
+	font-weight: 700;
+}
+
+.expandedOrder {
+	background: var(--muted);
+	white-space: normal;
+}

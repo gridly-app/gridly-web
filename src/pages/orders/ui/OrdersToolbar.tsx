@@ -1,64 +1,58 @@
 import { IconPlus } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import { statusLabels } from "@/entities/warehouse";
-import { Button, ListFilters, Select, StableLabel } from "@/shared/ui";
+import { type Order, statusLabels } from "@/entities/warehouse";
+import { Button, StableLabel } from "@/shared/ui/controls";
+import { ListFilters } from "@/shared/ui/dataDisplay";
+import { Select } from "@/shared/ui/forms";
 
-import type { useOrderDialogs } from "../model/useOrderDialogs";
 import type { useOrdersPage } from "../model/useOrdersPage";
 
 export interface OrdersToolbarProps {
 	columns: ReactNode;
-	model: Pick<
-		ReturnType<typeof useOrdersPage>,
-		| "resetFilters"
-		| "page"
-		| "search"
-		| "setSearch"
-		| "canCreate"
-		| "status"
-		| "setStatus"
-		| "category"
-		| "setCategory"
-		| "statuses"
-		| "categories"
-	> &
-		Pick<ReturnType<typeof useOrderDialogs>, "openCreation">;
+	filters: ReturnType<typeof useOrdersPage>["filters"];
+	kind: Order["kind"];
+	canCreate: boolean;
+	onCreate: () => void;
 }
 
-export function OrdersToolbar({ model, columns }: OrdersToolbarProps) {
-	const { openCreation, page, search, setSearch } = model;
+export function OrdersToolbar({
+	filters,
+	columns,
+	kind,
+	canCreate,
+	onCreate,
+}: OrdersToolbarProps) {
+	const { search, setSearch } = filters;
 
 	return (
 		<>
 			<Button
-				disabled={!model.canCreate}
-				title={
-					!model.canCreate ? "Создание недоступно по данным сервера" : undefined
-				}
+				disabled={!canCreate}
+				title={!canCreate ? "Создание недоступно по данным сервера" : undefined}
 				variant="default"
-				onClick={openCreation}
+				onClick={onCreate}
 			>
 				<IconPlus size={18} />
 				<StableLabel variants={["Поставка", "Заказ"]}>
-					{page === "inbound" ? "Поставка" : "Заказ"}
+					{kind === "inbound" ? "Поставка" : "Заказ"}
 				</StableLabel>
 			</Button>
 			{columns}
 			<ListFilters
 				search={{ value: search, onChange: setSearch }}
 				count={
-					[model.status !== "all", model.category !== "all"].filter(Boolean)
+					[filters.status !== "all", filters.category !== "all"].filter(Boolean)
 						.length
 				}
-				onReset={model.resetFilters}
+				onReset={filters.resetFilters}
 			>
 				<Select
 					aria-label="Статус заказа"
-					value={model.status}
-					onValueChange={model.setStatus}
+					value={filters.status}
+					onValueChange={filters.setStatus}
 					options={[
 						{ value: "all", label: "Все статусы" },
-						...model.statuses.map((s) => ({
+						...filters.statuses.map((s) => ({
 							value: s,
 							label: statusLabels[s] ?? s,
 						})),
@@ -66,11 +60,11 @@ export function OrdersToolbar({ model, columns }: OrdersToolbarProps) {
 				/>
 				<Select
 					aria-label="Категория заказа"
-					value={model.category}
-					onValueChange={model.setCategory}
+					value={filters.category}
+					onValueChange={filters.setCategory}
 					options={[
 						{ value: "all", label: "Все категории" },
-						...model.categories.map((c) => ({ value: c.id, label: c.name })),
+						...filters.categories.map((c) => ({ value: c.id, label: c.name })),
 					]}
 				/>
 			</ListFilters>

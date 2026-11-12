@@ -1,0 +1,10 @@
+.savedForms {
+	display: grid;
+	gap: 12px;
+	margin-block: 16px;
+}
+.savedForm {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}

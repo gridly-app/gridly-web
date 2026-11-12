@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Order, Warehouse } from "@/entities/warehouse";
 import { storedWorkflowPolicySchema } from "@/entities/warehouse";
 import type { KeyValueStorage } from "@/shared/lib";
-import { formDraftPrefix } from "@/shared/lib/forms/formDraftStorage";
+import { formDraftPrefix } from "@/shared/lib";
 
 const formValuesSchema = z.object({
 	party: z.string(),

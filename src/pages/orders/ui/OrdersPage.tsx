@@ -2,52 +2,47 @@ import { useMemo } from "react";
 import {
 	type CommandExecutor,
 	type CommandHandler,
-	selectOrdersLive,
 	useLiveWarehouseScope,
 	type Warehouse,
 } from "@/entities/warehouse";
 import { useDemoSession, useSession, useWorkspaceMode } from "@/shared/auth";
-import { browserStorage } from "@/shared/lib/browserStorage";
-import {
-	Button,
-	DataPanel,
-	ErrorNotice,
-	Feedback,
-	useTableColumns,
-} from "@/shared/ui";
+import { browserStorage } from "@/shared/lib";
+import { Button } from "@/shared/ui/controls";
+import { DataPanel, useTableColumns } from "@/shared/ui/dataDisplay";
+import { ErrorNotice, Feedback } from "@/shared/ui/feedback";
 import { OrderFormDrafts } from "../model/orderFormDrafts";
-import { useOrderDialogs } from "../model/useOrderDialogs";
+import { useOrderCreation } from "../model/useOrderCreation";
+import { useOrderSelection } from "../model/useOrderSelection";
 import type { OrdersPageOptions } from "../model/useOrdersPage";
 import { useOrdersPage } from "../model/useOrdersPage";
-import { OrderCreationDialog } from "./OrderCreationDialog";
-import { OrderDetailDialog } from "./OrderDetailDialog";
-import { OrdersTable } from "./OrdersTable";
+import { OrderDetailDialog } from "./details/OrderDetailDialog";
+import { OrderCreationDialog } from "./form/OrderCreationDialog";
 import { OrdersToolbar } from "./OrdersToolbar";
+import { OrdersTable } from "./table/OrdersTable";
 
 export type OrdersPageProps = OrdersPageOptions;
 
-export function OrdersPage(props: OrdersPageProps) {
-	const { warehouse, execute, command, pending } =
-		useLiveWarehouseScope(selectOrdersLive);
+export function OrdersPage({ kind }: OrdersPageProps) {
+	const { warehouse, execute, command, pending } = useLiveWarehouseScope();
 	const mode = useWorkspaceMode();
 	const { user } = useSession();
 	const demo = useDemoSession();
 	const owner = mode === "demo" ? (demo.session?.session_id ?? "") : user;
-	const identity = JSON.stringify([mode, owner, warehouse.id, props.kind]);
+	const identity = JSON.stringify([mode, owner, warehouse.id, kind]);
 	const drafts = useMemo(
 		() =>
 			new OrderFormDrafts(
 				browserStorage("localStorage"),
 				[mode === "demo" ? "demo" : "account", owner],
 				warehouse.id,
-				props.kind,
+				kind,
 			),
-		[mode, owner, warehouse.id, props.kind],
+		[mode, owner, warehouse.id, kind],
 	);
 	return (
 		<OrdersPageContent
 			key={identity}
-			{...props}
+			kind={kind}
 			warehouse={warehouse}
 			execute={execute}
 			command={command}
@@ -63,7 +58,7 @@ function OrdersPageContent({
 	command,
 	pending,
 	drafts,
-	...props
+	kind,
 }: OrdersPageOptions & {
 	warehouse: Warehouse;
 	execute: CommandExecutor;
@@ -71,10 +66,15 @@ function OrdersPageContent({
 	pending: boolean;
 	drafts: OrderFormDrafts;
 }) {
-	const model = useOrdersPage({ ...props, warehouse, command, pending });
-	const dialogs = useOrderDialogs(warehouse, execute, drafts);
-	const columns = useTableColumns(props.kind, [
-		props.kind === "inbound" ? "Поставщик" : "Получатель",
+	const model = useOrdersPage({ kind, warehouse, command });
+	const { openCreation, ...creation } = useOrderCreation(
+		warehouse,
+		execute,
+		drafts,
+	);
+	const { setDetail, ...detail } = useOrderSelection(warehouse, execute);
+	const columns = useTableColumns(kind, [
+		kind === "inbound" ? "Поставщик" : "Получатель",
 		"Товаров",
 		"Стоимость",
 		"Создан",
@@ -84,15 +84,19 @@ function OrdersPageContent({
 
 	return (
 		<>
-			{!dialogs.creation && !dialogs.choosing && (
-				<ErrorNotice message={dialogs.formError} />
+			{!creation.creation && !creation.choosing && (
+				<ErrorNotice message={creation.formError} />
 			)}
 			{(model.unpriced || model.from || model.to) && (
 				<Feedback
 					tone="info"
-					className="workspace-alert"
+					inset
 					action={
-						<Button variant="text" size="sm" onClick={model.resetFilters}>
+						<Button
+							variant="text"
+							size="sm"
+							onClick={model.filters.resetFilters}
+						>
 							Сбросить фильтры отчёта
 						</Button>
 					}
@@ -106,7 +110,10 @@ function OrdersPageContent({
 				empty={model.empty}
 				toolbar={
 					<OrdersToolbar
-						model={{ ...model, openCreation: dialogs.openCreation }}
+						filters={model.filters}
+						kind={kind}
+						canCreate={model.canCreate}
+						onCreate={openCreation}
 						columns={columns.button}
 					/>
 				}
@@ -114,14 +121,25 @@ function OrdersPageContent({
 				<OrdersTable
 					hiddenColumns={columns.hiddenColumns}
 					warehouse={warehouse}
-					model={{ ...model, setDetail: dialogs.setDetail }}
+					orders={model.visibleOrders}
+					kind={kind}
+					pending={pending}
+					onDetail={setDetail}
+					onStart={model.startOrder}
+					onConfirm={model.confirmOrder}
 				/>
 			</DataPanel>
 			<OrderCreationDialog
-				model={{ ...dialogs, page: props.kind, w: warehouse, pending }}
+				model={creation}
+				kind={kind}
+				warehouse={warehouse}
+				pending={pending}
 			/>
 			<OrderDetailDialog
-				model={{ ...dialogs, w: warehouse, pending, execute }}
+				model={detail}
+				warehouse={warehouse}
+				pending={pending}
+				execute={execute}
 			/>
 		</>
 	);

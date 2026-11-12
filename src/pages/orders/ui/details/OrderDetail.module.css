@@ -1,0 +1,21 @@
+.costLink[data-slot="button"] {
+	max-width: 100%;
+	height: auto;
+	padding: 0;
+	white-space: normal;
+	text-align: left;
+	justify-content: flex-start;
+	color: var(--primary);
+}
+
+.summary {
+	display: grid;
+	gap: var(--space-1);
+}
+
+.heading {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+}
