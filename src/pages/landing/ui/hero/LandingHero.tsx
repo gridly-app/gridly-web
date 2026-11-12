@@ -1,13 +1,8 @@
 import { Link } from "react-router-dom";
 import { useSession } from "@/shared/auth";
-import {
-	AnimatedContent,
-	Button,
-	ShapeBackdrop,
-	StableLabel,
-	StaticText,
-} from "@/shared/ui";
-import landingStyles from "./LandingPage.module.css";
+import { Button, StableLabel } from "@/shared/ui/controls";
+import { AnimatedContent, ShapeBackdrop, StaticText } from "@/shared/ui/visual";
+import landingStyles from "./LandingHero.module.css";
 
 export function LandingHero() {
 	const { user } = useSession();

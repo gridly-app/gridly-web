@@ -17,7 +17,10 @@ export function useLandingDemo() {
 			if (controller.getSnapshot().session) await controller.restore();
 			else await controller.start();
 			const snapshot = controller.getSnapshot();
-			if (snapshot.status === "error") throw new Error(snapshot.error);
+			if (snapshot.status === "error") {
+				setError(snapshot.error);
+				return;
+			}
 			void navigate(
 				snapshot.status === "active" && snapshot.session
 					? warehousePath(

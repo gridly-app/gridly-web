@@ -1,8 +1,8 @@
 import { IconArrowRight, IconCheck } from "@tabler/icons-react";
 import { useInView, useReducedMotion } from "motion/react";
 import { useId, useRef } from "react";
-import type { LandingScenario } from "../config/landingScenarios";
-import styles from "./LandingPage.module.css";
+import type { LandingScenario } from "../../config/landingScenarios";
+import styles from "./ScenarioPreview.module.css";
 
 const cells = Array.from({ length: 48 }, (_, id) => ({
 	id,

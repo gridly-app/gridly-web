@@ -1,0 +1,74 @@
+.landingWorkflow {
+	width: min(1200px, calc(100% - 48px));
+	margin: 0 auto;
+	padding: 64px 0;
+}
+.workflowHeading h2 {
+	font-size: clamp(28px, 3.5vw, 40px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1.2;
+	margin: 0;
+}
+.workflowHeading {
+	text-align: center;
+	margin-bottom: 48px;
+}
+.workflowHeadingMuted {
+	color: var(--muted-foreground);
+}
+.workflowBody {
+	display: grid;
+	grid-template-columns: 0.85fr 1.15fr;
+	gap: 64px;
+	align-items: center;
+}
+.scenarioControls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding: 0;
+	width: fit-content;
+	margin-bottom: 32px;
+}
+.scenarioDescription {
+	min-height: 192px;
+}
+.scenarioDescription h3 {
+	font-size: 24px;
+	line-height: 32px;
+	font-weight: 600;
+	letter-spacing: -0.025em;
+	margin: 0 0 16px;
+}
+.scenarioDescription p {
+	font-size: 16px;
+	line-height: 24px;
+	max-width: 42ch;
+	color: var(--muted-foreground);
+	margin: 0;
+}
+@media (width <= 1000px) {
+	.workflowBody {
+		gap: 32px;
+	}
+}
+@media (width <= 700px) {
+	.landingWorkflow {
+		width: calc(100% - 32px);
+		padding: 40px 0;
+	}
+	.workflowBody {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.workflowHeading {
+		text-align: left;
+		margin-bottom: 32px;
+	}
+	.scenarioDescription {
+		min-height: 160px;
+	}
+	.scenarioControls {
+		margin-bottom: 24px;
+	}
+}

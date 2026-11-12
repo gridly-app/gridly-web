@@ -1,7 +1,9 @@
 import { IconArrowUpRight } from "@tabler/icons-react";
-import { Button, ErrorNotice, StaticText } from "@/shared/ui";
-import { useLandingDemo } from "../model/useLandingDemo";
-import landingStyles from "./LandingPage.module.css";
+import { Button } from "@/shared/ui/controls";
+import { ErrorNotice } from "@/shared/ui/feedback";
+import { StaticText } from "@/shared/ui/visual";
+import { useLandingDemo } from "../../model/useLandingDemo";
+import landingStyles from "./LandingSandbox.module.css";
 
 export function LandingSandbox() {
 	const { openDemo, pending, error } = useLandingDemo();

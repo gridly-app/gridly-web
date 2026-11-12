@@ -1,9 +1,10 @@
-import { AnimatedContent, Link, StaticText } from "@/shared/ui";
-import { LandingFeatures } from "./LandingFeatures";
-import { LandingHero } from "./LandingHero";
+import { Link } from "@/shared/ui/navigation";
+import { AnimatedContent, StaticText } from "@/shared/ui/visual";
+import { LandingFeatures } from "./features/LandingFeatures";
+import { LandingHero } from "./hero/LandingHero";
 import landingStyles from "./LandingPage.module.css";
-import { LandingSandbox } from "./LandingSandbox";
-import { LandingWorkflow } from "./LandingWorkflow";
+import { LandingSandbox } from "./sandbox/LandingSandbox";
+import { LandingWorkflow } from "./workflow/LandingWorkflow";
 
 export function LandingPage() {
 	return (

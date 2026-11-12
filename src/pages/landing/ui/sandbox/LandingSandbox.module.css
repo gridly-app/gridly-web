@@ -1,0 +1,53 @@
+.landingCta {
+	width: min(1200px, calc(100% - 48px));
+	margin: 64px auto 32px;
+	padding: 64px 24px;
+	text-align: center;
+}
+.landingCta h2 {
+	font-size: clamp(28px, 3.5vw, 40px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1.2;
+	margin: 16px 0 24px;
+}
+.landingCta p {
+	font-size: 16px;
+	line-height: 24px;
+	color: var(--muted-foreground);
+	margin: 0 auto 24px;
+	max-width: 48ch;
+}
+.sandboxCopy {
+	min-width: 0;
+}
+.sandboxNote {
+	display: block;
+	margin-top: 16px;
+	font-size: 12px;
+	line-height: 16px;
+	color: var(--muted-foreground);
+}
+.ctaButton {
+	margin-top: 8px;
+}
+@media (width <= 1000px) {
+	.landingCta {
+		padding: 32px;
+		gap: 32px;
+	}
+}
+@media (width <= 700px) {
+	.landingCta {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.landingCta {
+		width: calc(100% - 32px);
+		margin-top: 40px;
+		padding: 24px;
+		gap: 32px;
+	}
+	.landingCta p br {
+		display: none;
+	}
+}

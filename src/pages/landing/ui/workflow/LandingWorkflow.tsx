@@ -1,6 +1,7 @@
-import { SegmentedControl, StaticText } from "@/shared/ui";
-import { useLandingScenario } from "../model/useLandingScenario";
-import landingStyles from "./LandingPage.module.css";
+import { SegmentedControl } from "@/shared/ui/navigation";
+import { StaticText } from "@/shared/ui/visual";
+import { useLandingScenario } from "../../model/useLandingScenario";
+import landingStyles from "./LandingWorkflow.module.css";
 import { ScenarioPreview } from "./ScenarioPreview";
 
 export function LandingWorkflow() {
@@ -19,7 +20,7 @@ export function LandingWorkflow() {
 				</h2>
 			</div>
 			<div className={landingStyles.workflowBody}>
-				<div className={landingStyles.workflowCopy}>
+				<div>
 					<div className={landingStyles.scenarioControls}>
 						<SegmentedControl
 							aria-label="Складские сценарии"

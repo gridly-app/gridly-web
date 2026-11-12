@@ -1,6 +1,6 @@
 import { IconBox, IconMap2, IconRobot } from "@tabler/icons-react";
-import { StaticText } from "@/shared/ui";
-import landingStyles from "./LandingPage.module.css";
+import { StaticText } from "@/shared/ui/visual";
+import landingStyles from "./LandingFeatures.module.css";
 
 const features = [
 	{
