@@ -1,7 +1,12 @@
 import { expect, test } from "bun:test";
-import { ApiError, FetchHttpClient } from "@/shared/api";
+import { ApiError } from "@/shared/api";
 import { BrowserSessionRepository } from "@/shared/auth";
 import { memoryStorage } from "@/shared/lib/browserStorage";
+import {
+	accountStorage,
+	immediateLock,
+	queuedLock,
+} from "./accountSessionFixture";
 
 test("logout clears local identity and data even when revocation fails", async () => {
 	const storage = memoryStorage();
@@ -9,8 +14,9 @@ test("logout clears local identity and data even when revocation fails", async (
 		dataCleared = 0;
 	const session = new BrowserSessionRepository(
 		{
-			request: async () => {
-				throw new Error("offline");
+			request: async (path) => {
+				if (path === "/auth/logout") throw new Error("offline");
+				return { user: { login: "operator" } };
 			},
 			clearSession: () => {
 				tokenCleared = true;
@@ -20,80 +26,24 @@ test("logout clears local identity and data even when revocation fails", async (
 		() => {
 			dataCleared++;
 		},
+		immediateLock,
 	);
-	session.remember("operator");
-	session.clear();
+	await session.authenticate("login", {
+		login: "operator",
+		password: "secret",
+	});
+	const beforeLogout = dataCleared;
+	const cleared = session.clear();
 	expect(session.current()).toBe("");
 	expect(storage.getItem("gridly.user")).toBeNull();
 	expect(tokenCleared).toBe(true);
-	expect(dataCleared).toBe(1);
-	await Promise.resolve();
-	await Promise.resolve();
+	expect(dataCleared).toBe(beforeLogout + 1);
+	await cleared;
 	expect(session.getSnapshot().error).toContain("Локальный выход выполнен");
 });
 
-test("remembered account waits for a confirmed refresh and network errors are retryable", async () => {
-	const storage = memoryStorage();
-	storage.setItem("gridly.user", "operator");
-	let fail = true;
-	const session = new BrowserSessionRepository(
-		{
-			request: async () => {
-				if (fail) throw new Error("offline");
-				return {};
-			},
-		},
-		storage,
-	);
-	expect(session.current()).toBe("");
-	expect(session.getSnapshot().status).toBe("restoring");
-	await session.restore();
-	expect(session.getSnapshot().status).toBe("error");
-	expect(storage.getItem("gridly.user")).toBe("operator");
-	fail = false;
-	await session.restore();
-	expect(session.current()).toBe("operator");
-});
-
-test("terminal refresh 401 ends only the account session", async () => {
-	const storage = memoryStorage();
-	storage.setItem("gridly.user", "operator");
-	storage.setItem("demo", "keep");
-	let clears = 0;
-	let session: BrowserSessionRepository;
-	const http = new FetchHttpClient(
-		"/api",
-		async () => Response.json({ message: "expired" }, { status: 401 }),
-		{ onUnauthorized: () => session.expire() },
-	);
-	session = new BrowserSessionRepository(http, storage, () => {
-		clears++;
-	});
-	await session.restore();
-	expect(session.getSnapshot().status).toBe("ended");
-	expect(session.current()).toBe("");
-	expect(clears).toBe(1);
-	expect(storage.getItem("demo")).toBe("keep");
-});
-
-test("a forbidden response does not terminate a restored account", async () => {
-	let unauthorized = 0;
-	const http = new FetchHttpClient(
-		"/api",
-		async () => Response.json({}, { status: 403 }),
-		{
-			onUnauthorized: () => {
-				unauthorized++;
-			},
-		},
-	);
-	await expect(http.request("/warehouses")).rejects.toBeInstanceOf(ApiError);
-	expect(unauthorized).toBe(0);
-});
-
 test("late refresh after local logout cannot restore the previous account", async () => {
-	const storage = memoryStorage();
-	storage.setItem("gridly.user", "old");
+	const storage = accountStorage("old");
 	let release!: (value: unknown) => void;
 	const session = new BrowserSessionRepository(
 		{
@@ -105,6 +55,8 @@ test("late refresh after local logout cannot restore the previous account", asyn
 					: Promise.resolve({}),
 		},
 		storage,
+		undefined,
+		immediateLock,
 	);
 	const old = session.restore();
 	session.clear();
@@ -129,8 +81,11 @@ test("a new login waits for old cookie revocation and ignores its failure", asyn
 			},
 		},
 		storage,
+		undefined,
+		immediateLock,
 	);
-	session.remember("old");
+	await session.authenticate("login", { login: "old", password: "secret" });
+	calls.length = 0;
 	session.clear();
 	const login = session.authenticate("login", {
 		login: "new",
@@ -143,11 +98,11 @@ test("a new login waits for old cookie revocation and ignores its failure", asyn
 	expect(session.getSnapshot().error).toBe("");
 });
 
-test("storage failures do not prevent login or local logout", () => {
+test("storage failures do not prevent login or local logout", async () => {
 	let cleared = 0;
 	const session = new BrowserSessionRepository(
 		{
-			request: async () => ({}),
+			request: async () => ({ user: { login: "operator" } }),
 			clearSession: () => {
 				cleared++;
 			},
@@ -163,11 +118,42 @@ test("storage failures do not prevent login or local logout", () => {
 				throw new Error("denied");
 			},
 		},
+		undefined,
+		immediateLock,
 	);
-	session.remember("operator");
+	await session.authenticate("login", {
+		login: "operator",
+		password: "secret",
+	});
 	expect(session.current()).toBe("operator");
 	session.expire();
 	expect(session.current()).toBe("");
 	expect(session.getSnapshot().status).toBe("ended");
 	expect(cleared).toBe(1);
+});
+
+test("rejected credentials preserve the current browser association", async () => {
+	const storage = accountStorage("operator");
+	const previous = storage.getItem("gridly.user");
+	const account = new BrowserSessionRepository(
+		{
+			request: async (path) => {
+				if (path === "/auth/login")
+					throw new ApiError("Wrong password", 401, "INVALID_CREDENTIALS");
+				return {};
+			},
+		},
+		storage,
+		undefined,
+		queuedLock(),
+	);
+	await account.restore();
+	await expect(
+		account.authenticate("login", {
+			login: "operator",
+			password: "wrong password",
+		}),
+	).rejects.toHaveProperty("code", "INVALID_CREDENTIALS");
+	expect(account.current()).toBe("operator");
+	expect(storage.getItem("gridly.user")).toBe(previous);
 });

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { ApiError, FetchHttpClient } from "../src/shared/api";
+import { ApiError, FetchHttpClient } from "@/shared/api";
 
 function clientWith(
 	transport: (url: string, options: RequestInit) => Promise<Response>,
@@ -125,4 +125,50 @@ describe("HTTP session lifecycle", () => {
 			"INVALID_RESPONSE",
 		);
 	});
+});
+
+test("empty refresh responses cannot trigger a protected retry", async () => {
+	let reads = 0;
+	const client = clientWith(async (url) => {
+		if (url.endsWith("/auth/refresh"))
+			return new Response(null, { status: 204 });
+		reads++;
+		return Response.json({}, { status: 401 });
+	});
+	await expect(client.request("/warehouses")).rejects.toHaveProperty(
+		"code",
+		"INVALID_RESPONSE",
+	);
+	expect(reads).toBe(1);
+});
+
+test("canceling one request leaves its shared refresh available to another", async () => {
+	let releaseRefresh!: (response: Response) => void;
+	let notifyStarted!: () => void;
+	let refreshes = 0;
+	const started = new Promise<void>((resolve) => {
+		notifyStarted = resolve;
+	});
+	const client = clientWith(async (url, options) => {
+		if (url.endsWith("/auth/refresh")) {
+			refreshes++;
+			notifyStarted();
+			return new Promise<Response>((resolve) => {
+				releaseRefresh = resolve;
+			});
+		}
+		return new Headers(options.headers).get("Authorization") === "Bearer fresh"
+			? Response.json({ ok: true })
+			: Response.json({}, { status: 401 });
+	});
+
+	const controller = new AbortController();
+	const canceled = client.request("/first", { signal: controller.signal });
+	const surviving = client.request("/second");
+	await started;
+	controller.abort();
+	await expect(canceled).rejects.toHaveProperty("name", "AbortError");
+	releaseRefresh(Response.json({ access_token: "fresh" }));
+	expect(await surviving).toEqual({ ok: true });
+	expect(refreshes).toBe(1);
 });

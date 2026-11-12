@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { RestWarehouseRepository } from "../src/entities/warehouse/api/repositories/restRepository";
-import { warehouseSchema } from "../src/entities/warehouse/model/warehouse/schemas";
-import { FetchHttpClient } from "../src/shared/api";
+import { RestWarehouseRepository } from "@/entities/warehouse/api/repositories/restRepository";
+import { warehouseSchema } from "@/entities/warehouse/model/warehouse";
+import { FetchHttpClient } from "@/shared/api";
 
 const fixtureSchema = z.object({
 	routes: z.array(
@@ -23,7 +23,7 @@ const fixtureSchema = z.object({
 const fixture = fixtureSchema.parse(
 	Bun.YAML.parse(
 		await Bun.file(
-			new URL("../bruno/mocks/Gridly API.yml", import.meta.url),
+			new URL("../../bruno/mocks/Gridly API.yml", import.meta.url),
 		).text(),
 	),
 );
@@ -85,4 +85,14 @@ test("static fixtures reject saving rather than reporting a change they cannot p
 			value: { section: "name", name: "Changed" },
 		}),
 	).rejects.toThrow("статические примеры");
+});
+
+test("static fixtures route category and product archiving without claiming success", () => {
+	for (const resource of ["categories", "products"]) {
+		const path = `/api/v1/warehouses/${warehouseId}/${resource}/:id/archive`;
+		const route = fixture.routes.find(
+			(item) => item.request.url === path && item.request.method === "POST",
+		);
+		expect(route?.response.status).toBe(501);
+	}
 });

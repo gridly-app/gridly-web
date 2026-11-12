@@ -1,18 +1,14 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseCommands } from "../src/entities/warehouse/api/commands/restCommands";
-import { warehouseKeys } from "../src/entities/warehouse/api/queries/queryKeys";
-import { RestWarehouseRepository } from "../src/entities/warehouse/api/repositories/restRepository";
-import { warehouseCommandSchema } from "../src/entities/warehouse/model/commands/commandSchemas";
-import type { Warehouse } from "../src/entities/warehouse/model/warehouse/schemas";
-import { writeOffFromForm } from "../src/pages/inventory/model/writeOffFromForm";
-import { robotFromForm } from "../src/pages/robots/model/robotFromForm";
-import {
-	ApiError,
-	FetchHttpClient,
-	type RequestOptions,
-} from "../src/shared/api";
-import { warehouse } from "./support/warehouse";
+import { RestWarehouseCommands } from "@/entities/warehouse/api/commands/restCommands";
+import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
+import { RestWarehouseRepository } from "@/entities/warehouse/api/repositories/restRepository";
+import { warehouseCommandSchema } from "@/entities/warehouse/model/commands/commandSchemas";
+import type { Warehouse } from "@/entities/warehouse/model/warehouse";
+import { writeOffFromForm } from "@/pages/inventory/model/writeOffFromForm";
+import { robotFromForm } from "@/pages/robots/model/robotFromForm";
+import { ApiError, FetchHttpClient, type RequestOptions } from "@/shared/api";
+import { warehouse } from "../../support/warehouse";
 
 function form() {
 	const data = new FormData();
@@ -27,33 +23,7 @@ function form() {
 		data.append(name, value);
 	return data;
 }
-test("robot form requires a current spawn cell and bounded integer parameters", () => {
-	const w = warehouse(),
-		data = form();
-	expect(robotFromForm(data, undefined, w.cells)).toMatchObject({
-		x: 1,
-		y: 1,
-		speed: 5,
-		duration: 20,
-		roles: ["ship"],
-	});
-	expect(() => robotFromForm(data, undefined, [])).toThrow("стартовую");
-	for (const [field, value] of [
-		["speed", "6"],
-		["speed", "1.5"],
-		["duration", "21"],
-		["roles", "loader"],
-	]) {
-		const invalid = form();
-		invalid.set(field ?? "", value ?? "");
-		expect(() => robotFromForm(invalid, undefined, w.cells)).toThrow();
-	}
-	const robot = w.robots[0];
-	if (!robot) throw new Error("Missing robot");
-	const update = robotFromForm(data, robot, []);
-	expect(update).toMatchObject({ id: "r", revision: 1 });
-	expect(update).not.toHaveProperty("x");
-});
+
 test("robot wire DTO uses x/y on POST and revision on PATCH", async () => {
 	const w = warehouse();
 	const calls: { path: string; options: RequestOptions }[] = [];

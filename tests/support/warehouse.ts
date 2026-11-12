@@ -1,7 +1,7 @@
 import {
 	type Warehouse,
 	warehouseSchema,
-} from "../../src/entities/warehouse/model/warehouse/schemas";
+} from "@/entities/warehouse/model/warehouse";
 export function warehouse(): Warehouse {
 	return warehouseSchema.parse({
 		id: "w",

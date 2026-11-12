@@ -1,9 +1,6 @@
 import { expect, test } from "bun:test";
-import {
-	memoryStorage,
-	resilientStorage,
-} from "../src/shared/lib/browserStorage";
-import { runtimeNotices } from "../src/shared/lib/runtimeNotices";
+import { memoryStorage, resilientStorage } from "@/shared/lib/browserStorage";
+import { runtimeNotices } from "@/shared/lib/runtimeNotices";
 
 test("storage switches to memory once, retaining known values and new changes", () => {
 	const source = memoryStorage();

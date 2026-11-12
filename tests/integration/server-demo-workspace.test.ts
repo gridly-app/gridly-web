@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "../src/entities/warehouse";
-import { ServerDemoSession } from "../src/shared/auth/model/ServerDemoSession";
+import { RestWarehouseRepository } from "@/entities/warehouse";
+import { ServerDemoSession } from "@/shared/auth/model/ServerDemoSession";
 
 const base = "http://gridly-demo.test/api/v1";
 const sessions: ServerDemoSession[] = [];

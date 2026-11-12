@@ -1,122 +1,15 @@
 import { describe, expect, test } from "bun:test";
-import { RestWarehouseRepository } from "../src/entities/warehouse";
+import { RestWarehouseRepository } from "@/entities/warehouse";
 
-import { ApiError, type RequestOptions } from "../src/shared/api";
+import { warehouseRepositoryFixture } from "./warehouseRepositoryFixture";
 
-const warehouseDto = {
-	id: "w1",
-	name: "Warehouse",
-	width: 3,
-	height: 3,
-	time_zone: "Europe/Moscow",
-	published_version: 1,
-	revision: 2,
-	simulation_mode: "paused",
-	worker_health: "healthy",
-	tick: "1",
-	state_version: "1",
-	workflow_policy: {
-		confirm_unload: false,
-		confirm_pick: false,
-		confirm_putaway: false,
-		confirm_load: false,
-	},
-};
-
-function fixture() {
-	const calls: string[] = [];
-	let stateVersion = "1";
-	let legacy = false;
-	const http = {
-		async request(path: string, _options?: RequestOptions): Promise<unknown> {
-			calls.push(path);
-			const url = new URL(path, "http://localhost");
-			if (url.pathname === "/warehouses/w1") return warehouseDto;
-			if (url.pathname.endsWith("/layout/draft"))
-				throw new ApiError("No draft", 404);
-			if (url.pathname.endsWith("/layout"))
-				return { version: 1, width: 3, height: 3, cells: [] };
-			if (url.pathname.endsWith("/map/state"))
-				return legacy
-					? {
-							warehouse: { ...warehouseDto, state_version: stateVersion },
-							robots: null,
-						}
-					: {
-							warehouse_id: "w1",
-							layout_version: 1,
-							state_version: stateVersion,
-							tick: stateVersion,
-							robots: [],
-						};
-			if (url.pathname === "/warehouses") {
-				const offset = Number(url.searchParams.get("offset"));
-				return {
-					items:
-						offset === 0
-							? Array.from({ length: 100 }, (_, i) => ({
-									...warehouseDto,
-									id: `w${i}`,
-								}))
-							: [{ ...warehouseDto, id: "last" }],
-					total: 101,
-				};
-			}
-			return [];
-		},
-	};
-	return {
-		http,
-		repository: new RestWarehouseRepository(http),
-		calls,
-		setVersion: (value: string) => {
-			stateVersion = value;
-		},
-		useLegacy: () => {
-			legacy = true;
-		},
-	};
-}
-
-describe("REST warehouse synchronization", () => {
-	test("route proposals preserve zone boundaries including new zones", async () => {
-		let body: unknown;
-		const repository = new RestWarehouseRepository({
-			async request(_path, options) {
-				body = options?.body;
-				return [];
-			},
-		});
-		await repository.proposeRoutes("w1", [
-			{
-				x: 0,
-				y: 0,
-				type: "storage",
-				capacity: 20,
-				zone: { id: "draft-a", name: "A", categoryId: "c1" },
-			},
-			{
-				x: 1,
-				y: 0,
-				type: "storage",
-				capacity: 20,
-				zone: { id: "draft-b", name: "B", categoryId: "c1" },
-			},
-		]);
-		expect(body).toMatchObject({
-			cells: [
-				{ zone: { client_id: "draft-a", name: "A", category_id: "c1" } },
-				{ zone: { client_id: "draft-b", name: "B", category_id: "c1" } },
-			],
-		});
-	});
-
+describe("REST warehouse snapshots", () => {
 	test("rejects mixed metadata and layout versions or dimensions", async () => {
 		for (const layout of [
 			{ version: 2, width: 3, height: 3, cells: [] },
 			{ version: 1, width: 4, height: 4, cells: [] },
 		]) {
-			const base = fixture();
+			const base = warehouseRepositoryFixture();
 			const repository = new RestWarehouseRepository({
 				async request(path, options) {
 					if (path.endsWith("/layout")) return layout;
@@ -136,7 +29,7 @@ describe("REST warehouse synchronization", () => {
 	});
 
 	test("a delayed full snapshot retains newer live motion paths", async () => {
-		const base = fixture();
+		const base = warehouseRepositoryFixture();
 		let version = 1;
 		let delay = false;
 		let release!: () => void;
@@ -205,7 +98,7 @@ describe("REST warehouse synchronization", () => {
 		expect(robot.motionPath).toEqual(liveRobot.motionPath);
 	});
 	test("paginates collection envelopes and retains existing query parameters", async () => {
-		const { repository, calls } = fixture();
+		const { repository, calls } = warehouseRepositoryFixture();
 		const warehouses = await repository.list();
 		expect(warehouses).toHaveLength(101);
 		expect(warehouses.at(-1)?.id).toBe("last");
@@ -215,7 +108,7 @@ describe("REST warehouse synchronization", () => {
 	});
 
 	test("normalizes snapshots and caches published layouts until session reset", async () => {
-		const { repository, calls } = fixture();
+		const { repository, calls } = warehouseRepositoryFixture();
 		const warehouse = await repository.get("w1");
 		expect(warehouse.cells).toHaveLength(9);
 		expect(warehouse.draft).toBeNull();
@@ -230,7 +123,7 @@ describe("REST warehouse synchronization", () => {
 	});
 
 	test("does not roll back a newer live state when an older update arrives", async () => {
-		const { repository, setVersion } = fixture();
+		const { repository, setVersion } = warehouseRepositoryFixture();
 		await repository.get("w1");
 		setVersion("9007199254740995");
 		expect((await repository.getLive("w1")).stateVersion).toBe(
@@ -243,7 +136,7 @@ describe("REST warehouse synchronization", () => {
 	});
 
 	test("legacy map envelopes with null robots remain supported", async () => {
-		const { repository, useLegacy } = fixture();
+		const { repository, useLegacy } = warehouseRepositoryFixture();
 		useLegacy();
 		expect((await repository.get("w1")).robots).toEqual([]);
 		expect((await repository.getLive("w1")).layoutVersion).toBe(1);
