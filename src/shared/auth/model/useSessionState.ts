@@ -13,7 +13,6 @@ export function useSessionState(repository: SessionRepository): SessionState {
 	return {
 		...state,
 		user: state.status === "active" ? state.user : "",
-		login: (user) => repository.remember(user),
 		authenticate: async (mode, credentials) => {
 			await repository.authenticate(mode, credentials);
 		},

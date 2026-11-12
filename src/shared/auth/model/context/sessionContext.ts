@@ -7,7 +7,6 @@ export interface SessionState {
 	status: "restoring" | "active" | "ended" | "error";
 	error: string;
 	restore: () => Promise<void>;
-	login: (user: string) => void;
 	authenticate: (mode: AuthMode, credentials: Credentials) => Promise<void>;
 	logout: () => Promise<void>;
 }

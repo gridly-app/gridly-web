@@ -1,23 +1,13 @@
-import { z } from "zod";
 import { ApiError, FetchHttpClient, parseResponse } from "@/shared/api";
-import { errorMessage, type KeyValueStorage } from "@/shared/lib";
-import { runtimeNotices } from "@/shared/lib/runtimeNotices";
+import {
+	errorMessage,
+	type KeyValueStorage,
+	runtimeNotices,
+} from "@/shared/lib";
+import { demoMetadataSchema, demoSessionSchema } from "../api/demoSession";
+import { type DemoCredentials, DemoSessionStorage } from "./demoSessionStorage";
 
-const metadataSchema = z.object({
-	session_id: z.string().min(1),
-	expires_at: z.iso.datetime({ offset: true }),
-	initial_warehouse_id: z.string().min(1),
-});
-
-const sessionSchema = metadataSchema.extend({
-	access_token: z.string().min(1),
-});
-
-const storedSchema = sessionSchema.extend({
-	last_warehouse_id: z.string().optional(),
-});
-
-export type DemoCredentials = z.infer<typeof storedSchema>;
+export type { DemoCredentials } from "./demoSessionStorage";
 
 export type DemoStatus = "idle" | "starting" | "active" | "expired" | "error";
 
@@ -27,10 +17,9 @@ export interface DemoSnapshot {
 	error: string;
 }
 
-const storageKey = "gridly.demo.session";
-
 export class ServerDemoSession {
 	private snapshot: DemoSnapshot;
+	private readonly storage: DemoSessionStorage;
 	private listeners = new Set<() => void>();
 	private operation: Promise<void> | null = null;
 	private generation = 0;
@@ -40,7 +29,7 @@ export class ServerDemoSession {
 	private readonly anonymous: FetchHttpClient;
 
 	constructor(
-		private readonly storage: KeyValueStorage,
+		storage: KeyValueStorage,
 		private readonly baseUrl: string,
 		private readonly clearData: () => void,
 		private readonly transport: (
@@ -50,22 +39,8 @@ export class ServerDemoSession {
 		private readonly clearSessionForms: (sessionId: string) => void = () =>
 			undefined,
 	) {
-		try {
-			storage.removeItem("gridly.demo");
-		} catch {
-			runtimeNotices.report(
-				"demo.legacy",
-				"Не удалось удалить устаревшие данные демо. Очистите данные сайта в настройках браузера.",
-			);
-		}
-		let session: DemoCredentials | null = null;
-		try {
-			const saved = storage.getItem(storageKey);
-			if (saved) session = storedSchema.parse(JSON.parse(saved));
-		} catch {
-			this.removeSavedSession();
-		}
-		this.snapshot = { status: "idle", session, error: "" };
+		this.storage = new DemoSessionStorage(storage);
+		this.snapshot = { status: "idle", session: this.storage.load(), error: "" };
 		this.anonymous = this.client(() => "");
 		this.http = this.client(
 			() => this.snapshot.session?.access_token ?? "",
@@ -114,7 +89,7 @@ export class ServerDemoSession {
 	private activate(session: DemoCredentials) {
 		if (Date.parse(session.expires_at) <= Date.now())
 			throw new ApiError("Демо завершено", 401);
-		this.storage.setItem(storageKey, JSON.stringify(session));
+		this.storage.save(session);
 		this.publish({ status: "active", session, error: "" });
 		this.scheduleExpiry();
 	}
@@ -147,7 +122,7 @@ export class ServerDemoSession {
 			this.publish({ ...this.snapshot, status: "starting", error: "" });
 			try {
 				const metadata = parseResponse(
-					metadataSchema,
+					demoMetadataSchema,
 					await this.http.request("/demo/session"),
 				);
 				this.assertGeneration(generation);
@@ -183,7 +158,7 @@ export class ServerDemoSession {
 			let created: DemoCredentials | undefined;
 			try {
 				created = parseResponse(
-					sessionSchema,
+					demoSessionSchema,
 					await this.anonymous.request("/demo/sessions", {
 						method: "POST",
 						idempotencyKey: this.startKey,
@@ -192,7 +167,7 @@ export class ServerDemoSession {
 				this.assertGeneration(generation);
 				if (Date.parse(created.expires_at) <= Date.now())
 					throw new Error("Сервер вернул истёкшую демо-сессию");
-				this.storage.setItem(storageKey, JSON.stringify(created));
+				this.storage.save(created);
 				this.generation++;
 				this.resetData();
 				this.startKey = null;
@@ -223,7 +198,7 @@ export class ServerDemoSession {
 		)
 			return;
 		const session = { ...this.snapshot.session, last_warehouse_id: id };
-		this.storage.setItem(storageKey, JSON.stringify(session));
+		this.storage.save(session);
 		this.publish({ ...this.snapshot, session });
 	}
 	expire = () => {
@@ -232,7 +207,7 @@ export class ServerDemoSession {
 		this.operation = null;
 		this.startKey = null;
 		clearTimeout(this.expiryTimer);
-		this.removeSavedSession();
+		this.storage.remove();
 		this.resetData();
 		this.publish({ status: "expired", session: null, error: "" });
 		if (sessionId) this.clearForms(sessionId);
@@ -243,23 +218,13 @@ export class ServerDemoSession {
 		this.generation++;
 		this.operation = null;
 		clearTimeout(this.expiryTimer);
-		this.removeSavedSession();
+		this.storage.remove();
 		this.startKey = null;
 		this.resetData();
 		this.publish({ status: "idle", session: null, error: "" });
 		if (sessionId) this.clearForms(sessionId);
 		if (token) void this.revoke(token);
 	};
-	private removeSavedSession() {
-		try {
-			this.storage.removeItem(storageKey);
-		} catch {
-			runtimeNotices.report(
-				"demo.remove",
-				"Не удалось удалить сохранённую демо-сессию. Очистите данные сайта перед повторным использованием демо.",
-			);
-		}
-	}
 	private clearForms(sessionId: string) {
 		try {
 			this.clearSessionForms(sessionId);
