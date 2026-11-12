@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "../controls/Button";
 import { StableLabel } from "../controls/StableLabel";
 import { ErrorNotice } from "../feedback/ErrorNotice";
@@ -13,6 +14,8 @@ export interface ConfirmDialogProps {
 	open: boolean;
 	title: string;
 	description: string;
+	icon?: ReactNode;
+	cancelLabel?: string;
 	confirmLabel: string;
 	pending?: boolean | undefined;
 	error?: string | undefined;
@@ -23,6 +26,8 @@ export function ConfirmDialog({
 	open,
 	title,
 	description,
+	icon,
+	cancelLabel = "Отмена",
 	confirmLabel,
 	pending,
 	error,
@@ -39,12 +44,13 @@ export function ConfirmDialog({
 			<AlertDialogPopup>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{title}</AlertDialogTitle>
+					{icon}
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 					<ErrorNotice message={error} />
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<Button variant="ghost" disabled={pending} onClick={onCancel}>
-						Отмена
+						{cancelLabel}
 					</Button>
 					<Button
 						variant="destructive"

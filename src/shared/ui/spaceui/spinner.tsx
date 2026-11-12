@@ -1,6 +1,8 @@
+import { clsx } from "clsx";
 import { Loader2 } from "lucide-react";
 import type * as React from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
+
+import css from "./spinner.module.css";
 
 export function Spinner({
 	className,
@@ -9,7 +11,7 @@ export function Spinner({
 	return (
 		<Loader2
 			aria-label="Loading"
-			className={cn("animate-spin", className)}
+			className={clsx(css.root, className)}
 			role="status"
 			data-slot="spinner"
 			{...props}

@@ -5,6 +5,7 @@ import {
 	InputGroupAddon,
 	InputGroupInput,
 } from "../spaceui/input-group";
+import styles from "./SearchField.module.css";
 export interface SearchFieldProps {
 	value: string;
 	actions?: ReactNode;
@@ -18,7 +19,7 @@ export function SearchField({
 	"aria-label": label = "Поиск",
 }: SearchFieldProps) {
 	return (
-		<InputGroup className="min-w-40 flex-1">
+		<InputGroup className={styles.field}>
 			<InputGroupAddon>
 				<IconSearch aria-hidden="true" />
 			</InputGroupAddon>

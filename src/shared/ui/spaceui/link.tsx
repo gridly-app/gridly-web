@@ -3,25 +3,24 @@
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
+import { clsx } from "clsx";
 import type * as React from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
 import { buttonVariants } from "@/shared/ui/spaceui/button";
 
-export const linkVariants = cva(
-	"relative inline-flex items-center gap-1.5 font-medium text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
-	{
-		defaultVariants: {
-			variant: "default",
-		},
-		variants: {
-			variant: {
-				default: "text-primary",
-				secondary: "text-muted-foreground hover:text-foreground",
-				underline: "text-foreground hover:text-primary underline",
-			},
+import css from "./link.module.css";
+
+export const linkVariants = cva(css.root, {
+	defaultVariants: {
+		variant: "default",
+	},
+	variants: {
+		variant: {
+			default: css.variantDefault,
+			secondary: css.variantSecondary,
+			underline: css.variantUnderline,
 		},
 	},
-);
+});
 
 export interface LinkProps extends useRender.ComponentProps<"a"> {
 	asButton?: boolean;
@@ -40,16 +39,16 @@ export function Link({
 	...props
 }: LinkProps): React.ReactElement {
 	const classes = asButton
-		? cn(
+		? clsx(
 				buttonVariants({
 					variant: variant as VariantProps<typeof buttonVariants>["variant"],
 					size,
 				}),
 				className,
 			)
-		: cn(
+		: clsx(
 				linkVariants({ variant }),
-				underline && "underline-offset-4 hover:underline",
+				underline && css.underlineOnHover,
 				className,
 			);
 

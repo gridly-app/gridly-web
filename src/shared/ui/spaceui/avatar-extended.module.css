@@ -1,0 +1,19 @@
+@layer primitives {
+	.avatarFallback {
+		width: 100%;
+		height: 100%;
+		border-radius: inherit;
+		corner-shape: inherit;
+	}
+	.img {
+		width: 100%;
+		height: 100%;
+		border-radius: inherit;
+		object-fit: cover;
+		corner-shape: inherit;
+	}
+	.root {
+		position: relative;
+		display: inline-flex;
+	}
+}

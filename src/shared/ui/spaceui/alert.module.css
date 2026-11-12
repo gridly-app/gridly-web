@@ -1,0 +1,131 @@
+@layer primitives {
+	.root {
+		position: relative;
+		display: grid;
+		width: 100%;
+		grid-template-columns: auto 1fr auto;
+		align-items: flex-start;
+		column-gap: 0.75rem;
+		row-gap: 0.125rem;
+		border-radius: calc(var(--radius) + 4px);
+		border: 1px solid var(--border);
+		background-color: transparent;
+		padding-inline: 0.875rem;
+		padding-block: 0.75rem;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		color: var(--card-foreground);
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			background-color: color-mix(in oklab, var(--input) 32%, transparent);
+		}
+		& > svg {
+			width: 1rem;
+			height: 1lh;
+		}
+	}
+	.variantError > svg {
+		color: var(--error-foreground);
+	}
+	.variantInfo > svg {
+		color: var(--info-foreground);
+	}
+	.variantSuccess > svg {
+		color: var(--success-foreground);
+	}
+	.variantWarning > svg {
+		color: var(--warning-foreground);
+	}
+	.iconDefault {
+		color: var(--muted-foreground);
+	}
+	.badgeDefault {
+		background-color: var(--secondary);
+		color: var(--secondary-foreground);
+	}
+	.iconError {
+		color: var(--error-foreground);
+	}
+	.badgeError {
+		background-color: var(--error-bg);
+		color: var(--error-foreground);
+	}
+	.iconInfo {
+		color: var(--info-foreground);
+	}
+	.badgeInfo {
+		background-color: var(--info-bg);
+		color: var(--info-foreground);
+	}
+	.iconSuccess {
+		color: var(--success-foreground);
+	}
+	.badgeSuccess {
+		background-color: var(--success-bg);
+		color: var(--success-foreground);
+	}
+	.iconWarning {
+		color: var(--warning-foreground);
+	}
+	.badgeWarning {
+		background-color: var(--warning-bg);
+		color: var(--warning-foreground);
+	}
+	.icon {
+		grid-column-start: 1;
+		display: flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		& > svg {
+			flex-shrink: 0;
+		}
+	}
+	.iconBadge {
+		grid-row-start: 1;
+		grid-row-end: 3;
+		width: 1.5rem;
+		height: 1.5rem;
+		align-self: flex-start;
+		border-radius: calc(var(--radius) - 2px);
+		& > svg {
+			width: 1.125rem;
+			height: 1.125rem;
+		}
+	}
+	.iconWithoutBadge {
+		grid-row-start: 1;
+		height: 1lh;
+		width: 1rem;
+		align-self: flex-start;
+		& > svg {
+			width: 1rem;
+			height: 1rem;
+		}
+	}
+	.title {
+		grid-column-start: 2;
+		grid-row-start: 1;
+		font-weight: 500;
+	}
+	.description {
+		grid-column-start: 2;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		color: var(--muted-foreground);
+	}
+	.action {
+		grid-column-start: 3;
+		grid-row-start: 1;
+		grid-row-end: 3;
+		margin-inline-start: auto;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		align-self: center;
+	}
+	.variantDefault > svg {
+		color: var(--muted-foreground);
+	}
+}

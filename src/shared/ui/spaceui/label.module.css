@@ -1,0 +1,15 @@
+@layer primitives {
+	.root {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 1rem;
+		line-height: 1.125rem;
+		color: var(--foreground);
+		font-weight: 500;
+		@media (width >= 40rem) {
+			font-size: 0.875rem;
+			line-height: 1rem;
+		}
+	}
+}

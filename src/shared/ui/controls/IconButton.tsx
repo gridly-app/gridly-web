@@ -1,6 +1,7 @@
+import { clsx } from "clsx";
 import type { ReactNode } from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
 import { Button, type ButtonProps } from "./Button";
+import styles from "./IconButton.module.css";
 
 export interface IconButtonProps
 	extends Omit<ButtonProps, "children" | "size"> {
@@ -20,7 +21,8 @@ export function IconButton({
 			variant={variant}
 			size="icon"
 			aria-label={label}
-			className={cn("action-icon", className)}
+			data-action-icon=""
+			className={clsx(styles.icon, className)}
 		>
 			{icon}
 		</Button>

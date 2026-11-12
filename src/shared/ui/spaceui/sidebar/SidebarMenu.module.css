@@ -1,0 +1,94 @@
+@layer components {
+	.menuButton {
+		display: flex;
+		width: 100%;
+		align-items: center;
+		gap: 0.5rem;
+		overflow: hidden;
+		border-radius: var(--radius);
+		padding: 0.5rem;
+		text-align: left;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		outline-style: none;
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				width 150ms ease,
+				height 150ms ease,
+				padding 150ms ease;
+		}
+	}
+	.menuButton:focus-visible {
+		box-shadow: 0 0 0 2px var(--sidebar-ring);
+	}
+	@media (forced-colors: active) {
+		.menuButton:focus-visible {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+		}
+	}
+	.default {
+		height: 2rem;
+	}
+	.lg {
+		height: 3rem;
+	}
+	.sm {
+		height: 1.75rem;
+		font-size: 0.75rem;
+		line-height: 1rem;
+	}
+	.outline {
+		background-color: var(--background);
+	}
+	.item:has([data-sidebar="menu-action"]) .menuButton {
+		padding-inline-end: 2rem;
+	}
+	.menuButton[data-active="true"] {
+		font-weight: 500;
+	}
+	.menuButton:is(:active, [data-active="true"]) {
+		background-color: var(--sidebar-accent);
+		color: var(--sidebar-accent-foreground);
+	}
+	@media (hover: hover) {
+		.menuButton:hover {
+			background-color: var(--sidebar-accent);
+			color: var(--sidebar-accent-foreground);
+		}
+	}
+	.menuButton:is(:disabled, [aria-disabled="true"]) {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+	.menuButton > span:last-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.menuButton > svg {
+		flex-shrink: 0;
+	}
+	.menuButton > svg:not([data-icon-size]) {
+		width: 1rem;
+		height: 1rem;
+	}
+	.menu {
+		display: flex;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+	.item {
+		position: relative;
+	}
+}
+[data-slot="sidebar"][data-collapsible="icon"] .menuButton {
+	width: 2rem;
+	height: 2rem;
+	padding: 0.5rem;
+}
+[data-slot="sidebar"][data-collapsible="icon"] .menuButton.lg {
+	padding: 0;
+}

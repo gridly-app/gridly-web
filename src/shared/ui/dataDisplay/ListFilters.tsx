@@ -3,6 +3,7 @@ import { IconAdjustmentsHorizontal } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { Button } from "../controls/Button";
 import { SearchField, type SearchFieldProps } from "../forms/SearchField";
+import styles from "./ListFilters.module.css";
 
 export function ListFilters({
 	search,
@@ -26,16 +27,16 @@ export function ListFilters({
 					>
 						<IconAdjustmentsHorizontal size={16} />
 						<span>Фильтры</span>
-						{count > 0 && <span className="list-filters-count">{count}</span>}
+						{count > 0 && <span className={styles.count}>{count}</span>}
 					</Popover.Trigger>
 					<Popover.Portal>
 						<Popover.Positioner
 							sideOffset={8}
 							align="end"
 							collisionPadding={12}
-							className="list-filters-positioner"
+							className={styles.positioner}
 						>
-							<Popover.Popup className="list-filters-fields">
+							<Popover.Popup className={styles.fields}>
 								<Popover.Title>Фильтры</Popover.Title>
 								{children}
 								{count > 0 && (

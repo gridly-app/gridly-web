@@ -7,6 +7,7 @@ import {
 	DialogPopup,
 	DialogTitle,
 } from "../spaceui/dialog";
+import styles from "./Modal.module.css";
 export interface ModalProps {
 	title: string;
 	wide?: boolean;
@@ -34,7 +35,7 @@ export function Modal({
 			}}
 		>
 			<DialogPopup
-				className={wide ? "workspace-modal sm:max-w-5xl" : "workspace-modal"}
+				className={wide ? `${styles.popup} ${styles.wide}` : styles.popup}
 				finalFocus={finalFocus ?? (() => opener)}
 				closeProps={{
 					"aria-label": "Закрыть",
@@ -44,7 +45,7 @@ export function Modal({
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>
 				</DialogHeader>
-				<DialogPanel className="workspace-modal-body">{children}</DialogPanel>
+				<DialogPanel className={styles.body}>{children}</DialogPanel>
 			</DialogPopup>
 		</Dialog>
 	);

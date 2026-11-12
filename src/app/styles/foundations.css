@@ -1,7 +1,13 @@
 @layer base {
-	* {
+	*,
+	::before,
+	::after,
+	::backdrop,
+	::file-selector-button {
 		box-sizing: border-box;
-		border-color: var(--border);
+		margin: 0;
+		padding: 0;
+		border: 0 solid var(--border);
 	}
 	html,
 	body,
@@ -13,13 +19,64 @@
 	h2,
 	h3,
 	h4,
-	p {
-		margin: 0;
+	h5,
+	h6 {
+		font-size: inherit;
+		font-weight: inherit;
+	}
+	html {
+		-webkit-text-size-adjust: 100%;
+		tab-size: 4;
+		-webkit-tap-highlight-color: transparent;
+	}
+	a {
+		color: inherit;
+		text-decoration: inherit;
+	}
+	ul,
+	ol,
+	menu {
+		list-style: none;
+	}
+	table {
+		border-collapse: collapse;
+		text-indent: 0;
 	}
 	button,
 	input,
-	textarea {
+	select,
+	optgroup,
+	textarea,
+	::file-selector-button {
 		font: inherit;
+		letter-spacing: inherit;
+		color: inherit;
+		border-radius: 0;
+		background-color: transparent;
+		opacity: 1;
+	}
+	textarea {
+		resize: vertical;
+	}
+	::placeholder {
+		opacity: 1;
+		color: color-mix(in oklab, currentcolor 50%, transparent);
+	}
+	img,
+	svg,
+	video,
+	canvas {
+		display: block;
+		vertical-align: middle;
+	}
+	img,
+	video {
+		max-width: 100%;
+		height: auto;
+	}
+	[hidden]:where(:not([hidden="until-found"])) {
+		/* biome-ignore lint/complexity/noImportantStyles: preserve the HTML hidden state when a component sets display */
+		display: none !important;
 	}
 	body {
 		margin: 0;
@@ -53,21 +110,10 @@
 		font-size: 0.875rem;
 	}
 	canvas {
-		display: block;
 		touch-action: none;
 	}
 	canvas:focus-visible {
 		outline: 2px solid var(--ring);
 		outline-offset: 3px;
-	}
-}
-@media (prefers-reduced-motion: reduce) {
-	*,
-	*::before,
-	*::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
-		scroll-behavior: auto !important;
 	}
 }

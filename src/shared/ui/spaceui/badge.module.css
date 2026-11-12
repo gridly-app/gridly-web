@@ -1,0 +1,229 @@
+@layer primitives {
+	.root {
+		position: relative;
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		gap: 0.25rem;
+		border-radius: calc(var(--radius) - 4px);
+		border: 1px solid transparent;
+		white-space: nowrap;
+		outline-style: none;
+		corner-shape: superellipse(1.25);
+		font-weight: 500;
+		&:focus-visible {
+			outline-offset: 1px;
+			outline: 2px solid var(--ring);
+		}
+		&:disabled {
+			pointer-events: none;
+			opacity: 0.64;
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				color 150ms,
+				background-color 150ms,
+				border-color 150ms;
+		}
+		& svg {
+			pointer-events: none;
+			flex-shrink: 0;
+		}
+		& svg:not([data-icon-opacity]) {
+			opacity: 0.8;
+		}
+		& svg:not([data-icon-size]) {
+			width: 0.875rem;
+			height: 0.875rem;
+		}
+		button&,
+		a& {
+			cursor: pointer;
+			@media (pointer: coarse) {
+				&::after {
+					position: absolute;
+					width: 100%;
+					height: 100%;
+					min-height: 2.75rem;
+					content: "";
+					min-width: 2.75rem;
+				}
+			}
+		}
+		@media (width >= 40rem) {
+			& svg:not([data-icon-size]) {
+				width: 0.75rem;
+				height: 0.75rem;
+			}
+		}
+	}
+	.sizeDefault {
+		height: 1.375rem;
+		min-width: 1.375rem;
+		padding-inline: calc(0.25rem - 1px);
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		@media (width >= 40rem) {
+			height: 1.125rem;
+			min-width: 1.125rem;
+			font-size: 0.75rem;
+			line-height: 1rem;
+		}
+	}
+	.sizeLg {
+		height: 1.625rem;
+		min-width: 1.625rem;
+		padding-inline: calc(0.375rem - 1px);
+		font-size: 1rem;
+		line-height: 1.5;
+		@media (width >= 40rem) {
+			height: 1.375rem;
+			min-width: 1.375rem;
+			font-size: 0.875rem;
+			line-height: 1.25rem;
+		}
+	}
+	.sizeSm {
+		height: 1.25rem;
+		min-width: 1.25rem;
+		border-radius: 0.25rem;
+		padding-inline: calc(0.25rem - 1px);
+		font-size: 0.75rem;
+		line-height: 1rem;
+		@media (width >= 40rem) {
+			height: 1rem;
+			min-width: 1rem;
+			font-size: 0.625rem;
+		}
+	}
+	.variantDefault {
+		background-color: var(--primary);
+		color: var(--primary-foreground);
+		button&,
+		a& {
+			@media (hover: hover) {
+				&:hover {
+					background-color: color-mix(
+						in oklab,
+						var(--primary) 90%,
+						transparent
+					);
+				}
+			}
+		}
+	}
+	.variantDestructive {
+		background-color: var(--destructive);
+		color: #fff;
+		button&,
+		a& {
+			@media (hover: hover) {
+				&:hover {
+					background-color: color-mix(
+						in oklab,
+						var(--destructive) 90%,
+						transparent
+					);
+				}
+			}
+		}
+	}
+	.variantError {
+		background-color: var(--error-bg);
+		color: var(--error-foreground);
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			background-color: var(--error-bg);
+		}
+	}
+	.variantInfo {
+		background-color: var(--info-bg);
+		color: var(--info-foreground);
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			background-color: var(--info-bg);
+		}
+	}
+	.variantOutline {
+		border-color: var(--input);
+		background-color: var(--background);
+		color: var(--foreground);
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			background-color: color-mix(in oklab, var(--input) 32%, transparent);
+			button&,
+			a& {
+				@media (hover: hover) {
+					&:hover {
+						background-color: color-mix(
+							in oklab,
+							var(--input) 48%,
+							transparent
+						);
+					}
+				}
+			}
+		}
+		button&,
+		a& {
+			@media (hover: hover) {
+				&:hover {
+					background-color: color-mix(
+						in oklab,
+						var(--accent-bg) 50%,
+						transparent
+					);
+				}
+			}
+		}
+	}
+	.variantSecondary {
+		background-color: var(--secondary);
+		color: var(--secondary-foreground);
+		button&,
+		a& {
+			@media (hover: hover) {
+				&:hover {
+					background-color: color-mix(
+						in oklab,
+						var(--secondary) 90%,
+						transparent
+					);
+				}
+			}
+		}
+	}
+	.variantSuccess {
+		background-color: var(--success-bg);
+		color: var(--success-foreground);
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			background-color: var(--success-bg);
+		}
+	}
+	.variantWarning {
+		background-color: var(--warning-bg);
+		color: var(--warning-foreground);
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			background-color: var(--warning-bg);
+		}
+	}
+	.rootSquare {
+		aspect-ratio: 1 / 1;
+	}
+}
+@layer components {
+	.root {
+		min-height: 24px;
+		padding: 3px 8px;
+		border-radius: 8px;
+		corner-shape: superellipse(1.25);
+	}
+}

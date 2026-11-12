@@ -1,0 +1,347 @@
+@layer primitives {
+	.badge {
+		display: inline-flex;
+		height: auto;
+		width: fit-content;
+		flex-shrink: 0;
+		align-items: center;
+		border-radius: calc(var(--radius) + 4px);
+		font-weight: 600;
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				color 150ms,
+				background-color 150ms,
+				border-color 150ms;
+		}
+	}
+	.variantDefault {
+		border-color: transparent;
+		background-color: var(--muted);
+		color: var(--foreground);
+	}
+	.variantInverted {
+		border-color: transparent;
+		background-color: var(--foreground);
+		color: var(--background);
+	}
+	.variantOutline {
+		border: 1px solid var(--border);
+		background-color: transparent;
+		color: var(--foreground);
+	}
+	.sizeXs {
+		gap: 0.375rem;
+		padding-inline: 0.375rem;
+		padding-block: 0.125rem;
+		font-size: 0.75rem;
+		line-height: 1rem;
+	}
+	.sizeSm {
+		gap: 0.375rem;
+		padding-inline: 0.375rem;
+		padding-block: 0.25rem;
+		font-size: 0.75rem;
+		line-height: 1rem;
+	}
+	.sizeMd {
+		gap: 0.5rem;
+		padding-inline: 0.375rem;
+		padding-block: 0.25rem;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+	}
+	.sizeLg {
+		gap: 0.5rem;
+		padding-inline: 0.375rem;
+		padding-block: 0.25rem;
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+	.badgeSizeXs {
+		gap: 0.125rem;
+		padding-inline: 0.375rem;
+		padding-block: 0.125rem;
+		font-size: 0.725rem;
+		line-height: 0.25rem;
+	}
+	.badgeSizeSm {
+		gap: 0.25rem;
+		padding-inline: 0.375rem;
+		padding-block: 0.25rem;
+		font-size: 0.75rem;
+		line-height: 1rem;
+	}
+	.badgeSizeDefault {
+		gap: 0.375rem;
+		padding-inline: 0.5rem;
+		padding-block: 0.375rem;
+		font-size: 0.75rem;
+		line-height: 1rem;
+	}
+	.badgeSizeMd {
+		gap: 0.375rem;
+		padding-inline: 0.5rem;
+		padding-block: 0.375rem;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+	}
+	.badgeSizeLg {
+		gap: 0.375rem;
+		padding-inline: 0.625rem;
+		padding-block: 0.5rem;
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+	.circleTrue {
+		aspect-ratio: 1 / 1;
+		padding: 0.375rem;
+	}
+	.badgeCircle {
+		border-radius: var(--radius);
+	}
+	.badgeText {
+		white-space: pre-line;
+		font-weight: 500;
+		line-height: 1;
+	}
+	.statusIndicator {
+		border-radius: calc(var(--radius) - 2px);
+	}
+	.statusOnline {
+		background-color: oklch(72.3% 0.219 149.579);
+	}
+	.statusOffline {
+		background-color: oklch(70.7% 0.022 261.325);
+	}
+	.statusBusy {
+		background-color: oklch(63.7% 0.237 25.331);
+	}
+	.statusAway {
+		background-color: oklch(79.5% 0.184 86.047);
+	}
+	.statusError {
+		background-color: oklch(57.7% 0.245 27.325);
+	}
+	.statusWarning {
+		background-color: oklch(70.5% 0.213 47.604);
+	}
+	.statusInfo {
+		background-color: oklch(62.3% 0.214 259.815);
+	}
+	.indicatorXs {
+		height: 0.375rem;
+		width: 0.375rem;
+	}
+	.indicatorSm {
+		height: 0.5rem;
+		width: 0.5rem;
+	}
+	.indicatorDefault {
+		height: 0.625rem;
+		width: 0.625rem;
+	}
+	.indicatorMd {
+		height: 0.75rem;
+		width: 0.75rem;
+	}
+	.indicatorLg {
+		height: 0.875rem;
+		width: 0.875rem;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.animatedTrue {
+			animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+		}
+		.indicatorPulsing {
+			animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+		}
+	}
+	.indicator {
+		position: relative;
+		display: flex;
+		width: fit-content;
+		height: fit-content;
+		align-items: center;
+		justify-content: center;
+	}
+	.indicatorPulse {
+		position: absolute;
+		display: inline-flex;
+		height: 100%;
+		width: 100%;
+		border-radius: 9999px;
+		opacity: 0.75;
+	}
+	.indicatorPulse:is([data-status="online"], [data-status="available"]) {
+		background-color: oklch(87.1% 0.15 154.449);
+	}
+	.indicatorPulse[data-status="info"] {
+		background-color: oklch(82.7% 0.119 306.383);
+	}
+	.indicatorPulse:is([data-status="busy"], [data-status="error"]) {
+		background-color: oklch(80.8% 0.114 19.571);
+	}
+	.indicatorPulse[data-status="offline"] {
+		background-color: oklch(87.2% 0.01 258.338);
+	}
+	.indicatorPulse[data-status="away"] {
+		background-color: oklch(90.5% 0.182 98.111);
+	}
+	.indicatorPulse[data-status="warning"] {
+		background-color: oklch(83.7% 0.128 66.29);
+	}
+	.indicatorDot {
+		position: relative;
+		display: inline-flex;
+		border-radius: 9999px;
+	}
+	.innerBadge {
+		background-color: color-mix(in oklab, var(--background) 20%, transparent);
+		color: var(--background);
+	}
+	.innerBadgeOutline {
+		background-color: var(--muted);
+		color: var(--foreground);
+	}
+	.innerBadgeDefault {
+		background-color: var(--background);
+		color: var(--foreground);
+	}
+	.stack {
+		display: flex;
+		align-items: center;
+		border-radius: calc(var(--radius) + 4px);
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				color 150ms,
+				background-color 150ms,
+				border-color 150ms;
+		}
+	}
+	.stackWithBadge {
+		gap: 0.625rem;
+		padding-inline: 0.75rem;
+		padding-block: 0.5rem;
+	}
+	.stackWithoutBadge {
+		gap: 0.5rem;
+	}
+	.indicatorBadge {
+		display: flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius);
+	}
+	.indicatorBadgeXs {
+		padding: 0.25rem;
+	}
+	.indicatorBadgeSm {
+		padding: 0.375rem;
+	}
+	.indicatorBadgeLg {
+		padding: 0.625rem;
+	}
+	.indicatorBadgeRegular {
+		padding: 0.5rem;
+	}
+	.indicatorBadgeContent {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.indicatorInStack {
+		align-items: flex-start;
+	}
+	.stackText {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.125rem;
+	}
+	.stackPrimary {
+		font-weight: 600;
+		line-height: 1;
+	}
+	.stackSecondary {
+		margin-top: 0.125rem;
+		font-size: 0.75em;
+		opacity: 0.7;
+		line-height: 1;
+	}
+	.inlineBadge {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		border-radius: calc(var(--radius) + 4px);
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				color 150ms,
+				background-color 150ms,
+				border-color 150ms;
+		}
+	}
+	.inlineContent {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.inlinePrimary {
+		font-weight: 600;
+	}
+	.inlineSecondary {
+		font-weight: 400;
+	}
+	.indicatorPulsing {
+		@media (prefers-reduced-motion: no-preference) {
+			animation-duration: 2.25s;
+		}
+	}
+	@keyframes ping {
+		75%,
+		100% {
+			transform: scale(2);
+			opacity: 0;
+		}
+	}
+}
+@layer components {
+	:is(.stack, .inlineBadge)[data-tone] {
+		min-height: 28px;
+		width: fit-content;
+		padding: 5px 9px;
+		gap: 8px;
+		border-radius: 10px;
+		corner-shape: superellipse(1.25);
+		font-size: var(--text-caption);
+		line-height: 18px;
+	}
+	:is(.stack, .inlineBadge)[data-tone="success"] {
+		background: var(--success-bg);
+		color: var(--success-foreground);
+	}
+	:is(.stack, .inlineBadge)[data-tone="warning"] {
+		background: var(--warning-bg);
+		color: var(--warning-foreground);
+	}
+	:is(.stack, .inlineBadge)[data-tone="danger"] {
+		background: var(--error-bg);
+		color: var(--error-foreground);
+	}
+	:is(.stack, .inlineBadge)[data-tone="accent"] {
+		background: var(--info-bg);
+		color: var(--info-foreground);
+	}
+	:is(.stack, .inlineBadge)[data-tone="neutral"] {
+		background: var(--muted);
+		color: var(--muted-foreground);
+	}
+
+	:is(.stack, .inlineBadge) {
+		flex: 0 0 auto;
+		width: fit-content;
+		height: auto;
+		white-space: nowrap;
+	}
+}

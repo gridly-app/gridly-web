@@ -1,7 +1,7 @@
+import { clsx } from "clsx";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
-import { Input } from "../controls/Input";
 import { WarmTooltip } from "../overlays/WarmTooltip";
+import { Input } from "../spaceui/input";
 import {
 	Select as Root,
 	SelectItem,
@@ -9,6 +9,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../spaceui/select";
+import styles from "./Select.module.css";
 
 interface SelectOption {
 	value: string;
@@ -73,7 +74,7 @@ export function Select({
 			>
 				<SelectTrigger
 					aria-label={label}
-					className={cn("w-50 min-w-0 max-w-full", className)}
+					className={clsx(styles.trigger, className)}
 				>
 					{icon}
 					<SelectValue />
@@ -83,7 +84,7 @@ export function Select({
 				alignItemWithTrigger={false}
 				header={
 					searchable ? (
-						<div className="glide-select-search">
+						<div className={styles.search}>
 							<Input
 								nativeInput
 								ref={searchRef}

@@ -1,0 +1,26 @@
+.facts {
+	display: grid;
+	grid-template-columns: repeat(var(--detail-facts-columns, 2), minmax(0, 1fr));
+	gap: 12px;
+	margin: 0;
+}
+@media (width <= 580px) {
+	.facts {
+		gap: 8px;
+	}
+}
+.facts > div {
+	padding: 12px;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+}
+.facts dt {
+	color: var(--muted-foreground);
+	font-size: var(--text-caption);
+	margin-bottom: 4px;
+}
+.facts dd {
+	margin: 0;
+	font-size: var(--text-control);
+	font-weight: 600;
+}

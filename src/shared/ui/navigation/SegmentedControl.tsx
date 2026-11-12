@@ -6,11 +6,8 @@ import {
 	useTransform,
 } from "motion/react";
 import { useLayoutEffect, useRef } from "react";
-import {
-	segmentedControlItemVariants,
-	segmentedControlRootClassName,
-} from "@/shared/lib/spaceui/segmented-control";
 import { RadioGroup, RadioPrimitive } from "../spaceui/radio-group";
+import styles from "./SegmentedControl.module.css";
 
 interface SegmentedControlItem<T extends string> {
 	value: T;
@@ -96,12 +93,13 @@ export function SegmentedControl<T extends string>({
 			onValueChange={(next) => onValueChange(next as T)}
 			disabled={disabled}
 			aria-label={label}
-			className={segmentedControlRootClassName}
+			className={styles.root}
 		>
 			{items.some((item) => item.value === value) && (
 				<motion.span
 					aria-hidden="true"
-					className="rubber-segment-thumb"
+					className={styles.thumb}
+					data-slot="rubber-segment-thumb"
 					style={{ left, width }}
 				/>
 			)}
@@ -110,10 +108,7 @@ export function SegmentedControl<T extends string>({
 					key={item.value}
 					value={item.value}
 					disabled={item.disabled}
-					className={segmentedControlItemVariants({
-						size: "default",
-						state: "checked",
-					})}
+					className={styles.item}
 				>
 					{item.label}
 				</RadioPrimitive.Root>

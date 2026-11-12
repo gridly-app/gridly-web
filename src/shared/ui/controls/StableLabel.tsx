@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import styles from "./StableLabel.module.css";
 
 export function StableLabel({
 	children,
@@ -8,13 +9,13 @@ export function StableLabel({
 	variants: readonly string[];
 }) {
 	return (
-		<span className="stable-label">
+		<span className={styles.label}>
 			{variants.map((label) => (
-				<span key={label} className="stable-label-reserve" aria-hidden="true">
+				<span key={label} className={styles.reserve} aria-hidden="true">
 					{label}
 				</span>
 			))}
-			<span className="stable-label-value">{children}</span>
+			<span className={styles.value}>{children}</span>
 		</span>
 	);
 }

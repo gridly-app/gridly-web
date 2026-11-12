@@ -1,0 +1,18 @@
+.search {
+	padding: 8px;
+	border-bottom: 1px solid var(--border);
+}
+.search p {
+	padding: 12px 4px 4px;
+	font-size: var(--text-caption);
+	color: var(--muted-foreground);
+}
+.search + [data-slot="select-list"] {
+	max-height: min(280px, calc(var(--available-height) - 70px));
+}
+
+:where(.trigger) {
+	width: 200px;
+	min-width: 0;
+	max-width: 100%;
+}

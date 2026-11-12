@@ -1,0 +1,56 @@
+.alert[data-slot="alert"] {
+	flex-shrink: 0;
+	padding: 16px;
+	background: var(--card);
+	border-color: var(--border);
+	gap: 4px 12px;
+}
+.alert[data-tone="error"] {
+	border-color: color-mix(in srgb, var(--error-foreground) 25%, var(--border));
+	background: color-mix(in srgb, var(--error-bg) 22%, var(--card));
+}
+.alert[data-tone="warning"] {
+	border-color: color-mix(
+		in srgb,
+		var(--warning-foreground) 25%,
+		var(--border)
+	);
+	background: color-mix(in srgb, var(--warning-bg) 22%, var(--card));
+}
+.alert [data-slot="alert-description"] {
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+}
+.alert:not(:has([data-slot="alert-title"])) [data-slot="alert-description"] {
+	grid-row: 1;
+}
+.alert [data-slot="alert-action"] {
+	margin-left: 12px;
+}
+@media (width <= 580px) {
+	.alert [data-slot="alert-action"] {
+		grid-column: 2;
+		grid-row: 3;
+		justify-self: start;
+		margin: 8px 0 0;
+	}
+}
+
+.emptyFill {
+	min-height: 15rem;
+}
+
+.alertFill {
+	min-height: 10rem;
+	align-content: center;
+}
+
+.inset {
+	margin: var(--space-4);
+	width: calc(100% - 2 * var(--space-4));
+
+	@media (width <= 580px) {
+		margin: var(--space-3);
+		width: calc(100% - 2 * var(--space-3));
+	}
+}

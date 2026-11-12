@@ -1,0 +1,19 @@
+.trigger {
+	width: 1.75rem;
+	height: 1.75rem;
+	@media (width >= 40rem) {
+		width: 2rem;
+		height: 2rem;
+	}
+}
+.triggerLabel {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border-width: 0;
+}

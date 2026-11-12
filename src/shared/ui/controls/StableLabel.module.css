@@ -1,0 +1,17 @@
+.label {
+	display: inline-grid;
+	grid-template-areas: "label";
+	min-width: 0;
+	align-items: center;
+}
+.reserve,
+.value {
+	grid-area: label;
+}
+.reserve {
+	visibility: hidden;
+	pointer-events: none;
+}
+.value {
+	text-align: center;
+}

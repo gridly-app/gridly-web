@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { ComboboxOption } from "@/shared/lib";
 import { WarmTooltip } from "../overlays/WarmTooltip";
 import {
 	Select as Root,
@@ -8,7 +7,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../spaceui/select";
-export interface ComboboxProps {
+
+interface ComboboxOption {
+	value: string;
+	label: string;
+}
+
+interface ComboboxProps {
 	options: ComboboxOption[];
 	className?: string | undefined;
 	name?: string | undefined;
@@ -20,8 +25,6 @@ export interface ComboboxProps {
 	placeholder?: string | undefined;
 	"aria-label"?: string | undefined;
 }
-
-export type { ComboboxOption } from "@/shared/lib";
 
 export function Combobox({
 	options,

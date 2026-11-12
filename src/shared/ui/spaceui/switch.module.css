@@ -1,0 +1,67 @@
+@layer primitives {
+	.root {
+		display: inline-flex;
+		height: calc(var(--thumb-size) + 2px);
+		width: calc(var(--thumb-size) * 2 - 2px);
+		flex-shrink: 0;
+		align-items: center;
+		border-radius: 9999px;
+		padding: 1px;
+		outline-style: none;
+		--thumb-size: 1.25rem;
+		&:focus-visible {
+			outline-offset: 1px;
+			outline: 2px solid var(--ring);
+		}
+		&[data-checked] {
+			background-color: var(--primary);
+		}
+		&[data-disabled] {
+			cursor: not-allowed;
+			opacity: 0.64;
+		}
+		&[data-unchecked] {
+			background-color: var(--input);
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			transition: background-color 200ms;
+		}
+		@media (width >= 40rem) {
+			--thumb-size: 1rem;
+		}
+	}
+	.thumb {
+		pointer-events: none;
+		display: block;
+		aspect-ratio: 1 / 1;
+		height: 100%;
+		transform-origin: 0;
+		border-radius: var(--thumb-size);
+		background-color: var(--background);
+		will-change: transform;
+		:where(
+				:is(
+					[role="switch"]:active,
+					[data-slot="label"]:active,
+					[data-slot="field-label"]:active
+				)
+			)
+			& {
+			border-radius: var(--thumb-size) / calc(var(--thumb-size) * 1.1);
+			&:not(*[data-disabled]) {
+				scale: 110%;
+			}
+		}
+		&[data-checked] {
+			transform-origin: var(--thumb-size) 50%;
+			translate: calc(var(--thumb-size) - 4px);
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				translate 0.15s,
+				border-radius 0.15s,
+				scale 0.1s 0.1s,
+				transform-origin 0.15s;
+		}
+	}
+}

@@ -1,6 +1,8 @@
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
+import { clsx } from "clsx";
 import type React from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
+
+import css from "./separator.module.css";
 
 export function Separator({
 	className,
@@ -9,15 +11,10 @@ export function Separator({
 }: SeparatorPrimitive.Props): React.ReactElement {
 	return (
 		<SeparatorPrimitive
-			className={cn(
-				"shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:not-[[class^='h-']]:not-[[class*='_h-']]:self-stretch",
-				className,
-			)}
+			className={clsx(css.root, className)}
 			data-slot="separator"
 			orientation={orientation}
 			{...props}
 		/>
 	);
 }
-
-export { SeparatorPrimitive };

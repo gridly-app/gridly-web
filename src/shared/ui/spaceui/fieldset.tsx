@@ -2,7 +2,6 @@
 
 import { Fieldset as FieldsetPrimitive } from "@base-ui/react/fieldset";
 import type React from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
 
 export function Fieldset({
 	className,
@@ -16,17 +15,3 @@ export function Fieldset({
 		/>
 	);
 }
-export function FieldsetLegend({
-	className,
-	...props
-}: FieldsetPrimitive.Legend.Props): React.ReactElement {
-	return (
-		<FieldsetPrimitive.Legend
-			className={cn("font-semibold text-foreground", className)}
-			data-slot="fieldset-legend"
-			{...props}
-		/>
-	);
-}
-
-export { FieldsetPrimitive };

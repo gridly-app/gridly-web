@@ -4,8 +4,8 @@ import {
 	IconCircleCheck,
 	IconInfoCircle,
 } from "@tabler/icons-react";
+import { clsx } from "clsx";
 import type { ComponentProps, ReactNode } from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
 import {
 	Alert,
 	AlertAction,
@@ -15,6 +15,7 @@ import {
 } from "../spaceui/alert";
 import { Empty, EmptyDescription } from "../spaceui/empty";
 import { Spinner } from "../spaceui/spinner";
+import styles from "./Feedback.module.css";
 export type FeedbackProps = Omit<ComponentProps<"div">, "title"> & {
 	tone?:
 		| "error"
@@ -25,12 +26,14 @@ export type FeedbackProps = Omit<ComponentProps<"div">, "title"> & {
 		| "empty"
 		| undefined;
 	fill?: boolean | undefined;
+	inset?: boolean | undefined;
 	title?: string | undefined;
 	action?: ReactNode;
 };
 export function Feedback({
 	tone = "loading",
 	fill,
+	inset,
 	title,
 	action,
 	className,
@@ -39,7 +42,7 @@ export function Feedback({
 }: FeedbackProps) {
 	if (tone === "empty")
 		return (
-			<Empty className={cn(fill && "min-h-60", className)} {...props}>
+			<Empty className={clsx(fill && styles.emptyFill, className)} {...props}>
 				<EmptyDescription>{children}</EmptyDescription>
 			</Empty>
 		);
@@ -56,9 +59,10 @@ export function Feedback({
 		<Alert
 			variant={variant}
 			role={tone === "error" || tone === "warning" ? "alert" : "status"}
-			className={cn(
-				"product-alert",
-				fill && "min-h-40 content-center",
+			className={clsx(
+				styles.alert,
+				fill && styles.alertFill,
+				inset && styles.inset,
 				className,
 			)}
 			data-tone={variant}

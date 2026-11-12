@@ -1,0 +1,16 @@
+.actions {
+	border: 0;
+	background: transparent;
+	padding: 0;
+}
+
+.note {
+	display: block;
+	max-width: 240px;
+	margin-top: var(--space-1);
+	color: var(--muted-foreground);
+	font-size: var(--text-caption);
+	line-height: 18px;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}

@@ -13,8 +13,16 @@ import {
 	TableRow as SpaceTableRow,
 } from "../spaceui/table";
 import { Toolbar } from "../spaceui/toolbar";
+import styles from "./Table.module.css";
 
 export { TableBody, TableHead, TableHeader } from "../spaceui/table";
+
+export function TableNote({
+	as: Element = "small",
+	children,
+}: Pick<ComponentProps<"small">, "children"> & { as?: "small" | "span" }) {
+	return <Element className={styles.note}>{children}</Element>;
+}
 
 const HiddenColumns = createContext<readonly number[]>([]);
 
@@ -58,7 +66,7 @@ export function TableActions(props: ComponentProps<typeof Toolbar>) {
 	return (
 		<Toolbar
 			aria-label="Действия записи"
-			className="border-0 bg-transparent p-0"
+			className={styles.actions}
 			{...props}
 		/>
 	);

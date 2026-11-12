@@ -1,5 +1,5 @@
 import { type ComponentProps, useState } from "react";
-import { readPreference, writePreference } from "@/shared/lib/browserStorage";
+import { readPreference, writePreference } from "@/shared/lib";
 import { WarmTooltip } from "../overlays/WarmTooltip";
 import {
 	SidebarMenuButton as SpaceMenuButton,

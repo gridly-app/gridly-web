@@ -1,7 +1,7 @@
 "use client";
 
 import { type RefObject, useEffect, useRef } from "react";
-import { useIsomorphicLayoutEffect } from "@/shared/lib/spaceui/use-isomorphic-layout-effect";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 
 export function useEventListener<K extends keyof WindowEventMap>(
 	eventName: K,

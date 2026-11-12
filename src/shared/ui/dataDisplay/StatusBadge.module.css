@@ -1,0 +1,6 @@
+.mobileDetail {
+	display: none;
+	@media (width >= 40rem) {
+		display: inline;
+	}
+}

@@ -1,42 +1,41 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { clsx } from "clsx";
 import type * as React from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
 
-export const badgeVariants = cva(
-	"rounded-xl inline-flex w-fit h-auto shrink-0 items-center font-semibold transition-colors",
-	{
-		variants: {
-			variant: {
-				default: "border-transparent bg-muted text-foreground",
-				inverted: "border-transparent bg-foreground text-background",
-				outline: "border border-border bg-transparent text-foreground",
-			},
-			size: {
-				xs: "text-xs px-1.5 py-0.5 gap-1.5",
-				sm: "text-xs px-1.5 py-1 gap-1.5",
-				default: "text-xs px-1.5 py-1 gap-1.5",
-				md: "text-sm px-1.5 py-1 gap-2",
-				lg: "text-base px-1.5 py-1 gap-2",
-			},
-			badgeSize: {
-				xs: "text-[.725rem] leading-1 px-1.5 py-0.5 gap-0.5",
-				sm: "text-xs px-1.5 py-1 gap-1",
-				default: "text-xs px-2 py-1.5 gap-1.5",
-				md: "text-sm px-2 py-1.5 gap-1.5",
-				lg: "text-base px-2.5 py-2 gap-1.5",
-			},
-			circle: {
-				true: "aspect-square p-1.5",
-				false: "",
-			},
+import css from "./status-badge.module.css";
+
+export const badgeVariants = cva(css.badge, {
+	variants: {
+		variant: {
+			default: css.variantDefault,
+			inverted: css.variantInverted,
+			outline: css.variantOutline,
 		},
-		defaultVariants: {
-			variant: "default",
-			size: "default",
-			circle: false,
+		size: {
+			xs: css.sizeXs,
+			sm: css.sizeSm,
+			default: css.sizeSm,
+			md: css.sizeMd,
+			lg: css.sizeLg,
+		},
+		badgeSize: {
+			xs: css.badgeSizeXs,
+			sm: css.badgeSizeSm,
+			default: css.badgeSizeDefault,
+			md: css.badgeSizeMd,
+			lg: css.badgeSizeLg,
+		},
+		circle: {
+			true: css.circleTrue,
+			false: "",
 		},
 	},
-);
+	defaultVariants: {
+		variant: "default",
+		size: "default",
+		circle: false,
+	},
+});
 
 export interface BadgeProps
 	extends React.HTMLAttributes<HTMLDivElement>,
@@ -54,46 +53,41 @@ export function Badge({
 }: BadgeProps) {
 	return (
 		<div
-			className={cn(
+			className={clsx(
 				badgeVariants({ variant, badgeSize: size, circle }),
-				"rounded-lg",
+				css.badgeCircle,
 				className,
 			)}
 			{...props}
 		>
-			<span
-				className={cn(
-					"font-medium whitespace-pre-line leading-none",
-					contentClassName,
-				)}
-			>
+			<span className={clsx(css.badgeText, contentClassName)}>
 				{props.children}
 			</span>
 		</div>
 	);
 }
 
-export const statusIndicatorVariants = cva("rounded-md", {
+export const statusIndicatorVariants = cva(css.statusIndicator, {
 	variants: {
 		status: {
-			online: "bg-green-500",
-			offline: "bg-gray-400",
-			busy: "bg-red-500",
-			away: "bg-yellow-500",
-			available: "bg-green-500",
-			error: "bg-red-600",
-			warning: "bg-orange-500",
-			info: "bg-blue-500",
+			online: css.statusOnline,
+			offline: css.statusOffline,
+			busy: css.statusBusy,
+			away: css.statusAway,
+			available: css.statusOnline,
+			error: css.statusError,
+			warning: css.statusWarning,
+			info: css.statusInfo,
 		},
 		size: {
-			xs: "h-1.5 w-1.5",
-			sm: "h-2 w-2",
-			default: "h-2.5 w-2.5",
-			md: "h-3 w-3",
-			lg: "h-3.5 w-3.5",
+			xs: css.indicatorXs,
+			sm: css.indicatorSm,
+			default: css.indicatorDefault,
+			md: css.indicatorMd,
+			lg: css.indicatorLg,
 		},
 		animated: {
-			true: "animate-pulse",
+			true: css.animatedTrue,
 			false: "",
 		},
 	},
@@ -143,29 +137,14 @@ export function StatusBadge({
 }: StatusBadgeProps) {
 	const IndicatorComponent = ({ className }: { className?: string }) =>
 		showIndicator && (
-			<span
-				className={cn(
-					"relative flex justify-center items-center size-fit",
-					className,
-				)}
-			>
+			<span className={clsx(css.indicator, className)}>
 				<span
-					className={cn(
-						"absolute inline-flex h-full w-full rounded-full opacity-75",
-						animated && "animate-ping animation-duration-[2.25s]",
-						{
-							"bg-green-300": status === "online" || status === "available",
-							"bg-purple-300": status === "info",
-							"bg-red-300": status === "busy" || status === "error",
-							"bg-gray-300": status === "offline",
-							"bg-yellow-300": status === "away",
-							"bg-orange-300": status === "warning",
-						},
-					)}
+					className={clsx(css.indicatorPulse, animated && css.indicatorPulsing)}
+					data-status={status}
 				/>
 				<span
-					className={cn(
-						"relative inline-flex rounded-full",
+					className={clsx(
+						css.indicatorDot,
 						statusIndicatorVariants({ status, size, animated: false }),
 						indicatorClassName,
 					)}
@@ -175,18 +154,18 @@ export function StatusBadge({
 
 	const innerBadgeStyle =
 		variant === "inverted"
-			? "bg-background/20 text-background"
+			? css.innerBadge
 			: variant === "outline"
-				? "bg-muted text-foreground"
-				: "bg-background text-foreground";
+				? css.innerBadgeOutline
+				: css.innerBadgeDefault;
 
 	if (mode === "stack") {
 		return (
 			<div
-				className={cn(
-					"flex items-center rounded-xl transition-colors",
+				className={clsx(
+					css.stack,
 					badgeVariants({ variant, size }),
-					indicatorBadge ? "gap-2.5 py-2 px-3" : "gap-2",
+					indicatorBadge ? css.stackWithBadge : css.stackWithoutBadge,
 					className,
 				)}
 				data-slot="status-badge"
@@ -196,39 +175,32 @@ export function StatusBadge({
 					<Badge
 						size={size}
 						circle
-						className={cn(
-							"shrink-0 flex items-center justify-center rounded-lg",
+						className={clsx(
+							css.indicatorBadge,
 							size === "xs"
-								? "p-1"
+								? css.indicatorBadgeXs
 								: size === "sm"
-									? "p-1.5"
+									? css.indicatorBadgeSm
 									: size === "lg"
-										? "p-2.5"
-										: "p-2",
+										? css.indicatorBadgeLg
+										: css.indicatorBadgeRegular,
 							innerBadgeStyle,
 						)}
-						contentClassName="flex items-center justify-center"
+						contentClassName={clsx(css.indicatorBadgeContent)}
 					>
 						<IndicatorComponent />
 					</Badge>
 				) : (
-					<IndicatorComponent className="items-start" />
+					<IndicatorComponent className={clsx(css.indicatorInStack)} />
 				)}
-				<div className="flex flex-col items-start gap-0.5">
+				<div className={css.stackText}>
 					{primaryText && (
-						<span
-							className={cn("font-semibold leading-none", primaryTextClassName)}
-						>
+						<span className={clsx(css.stackPrimary, primaryTextClassName)}>
 							{primaryText}
 						</span>
 					)}
 					{props.children && (
-						<span
-							className={cn(
-								"text-[0.75em] opacity-70 leading-none mt-0.5",
-								secondaryTextClassName,
-							)}
-						>
+						<span className={clsx(css.stackSecondary, secondaryTextClassName)}>
 							{props.children}
 						</span>
 					)}
@@ -239,8 +211,8 @@ export function StatusBadge({
 
 	return (
 		<div
-			className={cn(
-				"inline-flex flex-wrap items-center gap-2 rounded-xl transition-colors",
+			className={clsx(
+				css.inlineBadge,
 				badgeVariants({ variant, size }),
 				className,
 			)}
@@ -248,17 +220,17 @@ export function StatusBadge({
 			{...props}
 		>
 			<Badge size={size} circle={!primaryText} className={innerBadgeStyle}>
-				<div className="flex items-center gap-2">
+				<div className={css.inlineContent}>
 					<IndicatorComponent />
 					{primaryText && (
-						<span className={cn("font-semibold", primaryTextClassName)}>
+						<span className={clsx(css.inlinePrimary, primaryTextClassName)}>
 							{primaryText}
 						</span>
 					)}
 				</div>
 			</Badge>
 			{props.children && (
-				<span className={cn("font-normal", secondaryTextClassName)}>
+				<span className={clsx(css.inlineSecondary, secondaryTextClassName)}>
 					{props.children}
 				</span>
 			)}

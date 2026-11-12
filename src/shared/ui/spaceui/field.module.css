@@ -1,0 +1,44 @@
+@layer primitives {
+	.root {
+		display: flex;
+		width: 100%;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+	.label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 1rem;
+		line-height: 1.125rem;
+		color: var(--foreground);
+		font-weight: 500;
+		&[data-disabled] {
+			opacity: 0.5;
+		}
+		@media (width >= 40rem) {
+			font-size: 0.875rem;
+			line-height: 1rem;
+		}
+	}
+	.error {
+		font-size: 0.75rem;
+		line-height: 1rem;
+		color: var(--destructive);
+		font-weight: 500;
+	}
+	:where(.group > :not(:last-child)) {
+		margin-block-end: 1rem;
+	}
+}
+@layer components {
+	.label {
+		font-size: var(--text-control);
+		line-height: 20px;
+	}
+	.root {
+		min-width: 0;
+		gap: var(--space-2);
+	}
+}

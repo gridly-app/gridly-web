@@ -1,0 +1,105 @@
+.panel {
+	min-width: 0;
+	min-height: 0;
+	flex: 1;
+	padding: 0;
+	gap: 0;
+	overflow: hidden;
+}
+.panel[data-slot="card"] {
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+}
+.panel > .toolbar {
+	flex-wrap: wrap;
+	border: 0;
+	padding: 16px;
+	gap: 8px;
+	border-bottom: 1px solid var(--border);
+	border-radius: 0;
+	flex-shrink: 0;
+	align-items: center;
+}
+.body {
+	min-width: 0;
+	padding: 0;
+}
+.toolbar
+	:is([data-slot="button"], [data-control="button"]):not([data-action-icon]) {
+	min-height: 36px;
+	height: 36px;
+	padding: 7px 12px;
+	font-size: var(--text-control);
+}
+.toolbar [data-rubber-segment] > [role="radio"] {
+	height: 30px;
+	min-height: 30px;
+	padding-inline: 12px;
+}
+.toolbar > [data-slot="input-group"] {
+	flex: 1 1 220px;
+	min-width: min(100%, 180px);
+}
+.toolbar > [data-slot="select-trigger"],
+.toolbar > [data-slot="select-button"] {
+	flex: 0 1 160px;
+	min-width: min(100%, 160px);
+	min-height: 36px;
+}
+.toolbar > [data-slot="field"] {
+	flex: 0 1 145px;
+	min-width: 130px;
+	gap: 4px;
+}
+.toolbar [data-slot="field-label"] {
+	font-size: var(--text-caption);
+	line-height: 16px;
+}
+.toolbar [data-slot="input-control"] [data-slot="input"],
+.panel > .toolbar [data-slot="combobox-input"] {
+	min-height: 34px;
+}
+.body [data-slot="table-cell"] [data-slot="toolbar"] {
+	gap: 4px;
+	flex-wrap: nowrap;
+}
+
+@media (width <= 580px) {
+	.toolbar > [data-slot="input-group"] {
+		flex-basis: 100%;
+	}
+	.toolbar > [data-slot="select-trigger"],
+	.toolbar > [data-slot="select-button"],
+	.toolbar > [data-slot="field"] {
+		flex: 1 1 140px;
+		min-width: 0;
+	}
+}
+
+@media (pointer: coarse) {
+	.toolbar
+		:is([data-slot="button"], [data-control="button"]):not([data-action-icon]),
+	.toolbar > [data-slot="select-trigger"],
+	.toolbar > [data-slot="select-button"] {
+		min-height: 44px;
+	}
+	.toolbar [data-rubber-segment] > [role="radio"] {
+		min-height: 40px;
+	}
+}
+
+.toolbar
+	> :is([data-slot="button"], [data-control="button"])[data-variant="default"],
+.toolbar
+	> *
+	> :is([data-slot="button"], [data-control="button"])[data-variant="default"] {
+	flex: 0 0 auto;
+	width: auto;
+	max-width: 100%;
+}
+
+.scrollArea {
+	min-height: 0;
+	flex: 1;
+}

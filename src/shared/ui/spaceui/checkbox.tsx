@@ -1,8 +1,10 @@
 "use client";
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox";
+import { clsx } from "clsx";
 import type React from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
+
+import css from "./checkbox.module.css";
 
 export function Checkbox({
 	className,
@@ -10,15 +12,12 @@ export function Checkbox({
 }: CheckboxPrimitive.Root.Props): React.ReactElement {
 	return (
 		<CheckboxPrimitive.Root
-			className={cn(
-				"relative inline-flex size-4.5 shrink-0 items-center justify-center rounded-[.25rem] border border-input bg-background not-dark:bg-clip-padding outline-none ring-ring transition-colors before:pointer-events-none before:absolute before:inset-0 before:rounded-[3px] not-data-disabled:not-data-checked:not-aria-invalid: focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-background aria-invalid:border-destructive/36 focus-visible:aria-invalid:border-destructive/64 focus-visible:aria-invalid:ring-destructive/48 data-disabled:cursor-not-allowed data-disabled:opacity-64 sm:size-4 dark:not-data-checked:bg-input/32 dark:aria-invalid:ring-destructive/24 dark:not-data-disabled:not-data-checked:not-aria-invalid: [[data-disabled],[data-checked],[aria-invalid]]:shadow-none",
-				className,
-			)}
+			className={clsx(css.root, className)}
 			data-slot="checkbox"
 			{...props}
 		>
 			<CheckboxPrimitive.Indicator
-				className="absolute -inset-px flex items-center justify-center rounded-[.25rem] text-primary-foreground data-unchecked:hidden data-checked:bg-primary data-indeterminate:text-foreground"
+				className={css.indicator}
 				data-slot="checkbox-indicator"
 				render={(
 					props: React.ComponentProps<"span">,
@@ -28,7 +27,7 @@ export function Checkbox({
 						{state.indeterminate ? (
 							<svg
 								aria-hidden="true"
-								className="size-3.5 sm:size-3"
+								className={css.svg}
 								fill="none"
 								height="24"
 								stroke="currentColor"
@@ -44,7 +43,7 @@ export function Checkbox({
 						) : (
 							<svg
 								aria-hidden="true"
-								className="size-3.5 sm:size-3"
+								className={css.svg}
 								fill="none"
 								height="24"
 								stroke="currentColor"
@@ -64,5 +63,3 @@ export function Checkbox({
 		</CheckboxPrimitive.Root>
 	);
 }
-
-export { CheckboxPrimitive };

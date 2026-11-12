@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import styles from "./ShapeBackdrop.module.css";
 import ShapeGrid from "./ShapeGrid";
 
 export function ShapeBackdrop({
@@ -28,7 +29,7 @@ export function ShapeBackdrop({
 		<div
 			ref={root}
 			aria-hidden="true"
-			className={`shape-backdrop ${className}`}
+			className={`${styles.backdrop} ${className}`}
 		>
 			<ShapeGrid
 				cellSize={48}

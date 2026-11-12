@@ -1,0 +1,146 @@
+@layer components {
+	.wrapper {
+		display: flex;
+		min-height: 100svh;
+		width: 100%;
+	}
+	.wrapper:has([data-variant="inset"]) {
+		background-color: var(--sidebar);
+	}
+	.staticPanel,
+	.panel,
+	.mobileContent {
+		display: flex;
+		height: 100%;
+		flex-direction: column;
+	}
+	.staticPanel {
+		width: var(--sidebar-width);
+		background-color: var(--sidebar);
+		color: var(--sidebar-foreground);
+	}
+	.panel,
+	.mobileContent {
+		width: 100%;
+	}
+	.desktop {
+		display: none;
+		color: var(--sidebar-foreground);
+	}
+	.gap {
+		position: relative;
+		width: var(--sidebar-width);
+		@media (prefers-reduced-motion: no-preference) {
+			transition: width 200ms linear;
+		}
+	}
+	.container {
+		position: fixed;
+		inset-block: 0;
+		z-index: 10;
+		display: none;
+		height: 100%;
+		width: var(--sidebar-width);
+		@media (prefers-reduced-motion: no-preference) {
+			transition:
+				left 200ms linear,
+				right 200ms linear,
+				width 200ms linear;
+		}
+	}
+	.panel {
+		background-color: var(--sidebar);
+	}
+	.desktop[data-side="left"] > .container {
+		left: 0;
+	}
+	.desktop[data-side="right"] > .container {
+		right: 0;
+	}
+	.desktop[data-side="right"] > .gap {
+		rotate: 180deg;
+	}
+	.desktop:is([data-variant="floating"], [data-variant="inset"]) > .container {
+		padding: 0.5rem;
+	}
+	.desktop[data-variant="sidebar"][data-side="left"] > .container {
+		border-right-width: 1px;
+	}
+	.desktop[data-variant="sidebar"][data-side="right"] > .container {
+		border-left-width: 1px;
+	}
+	.desktop[data-variant="floating"] > .container > .panel {
+		border: 1px solid var(--sidebar-border);
+		border-radius: var(--radius);
+	}
+	.desktop[data-collapsible="offcanvas"] > .gap {
+		width: 0;
+	}
+	.desktop[data-collapsible="offcanvas"][data-side="left"] > .container {
+		left: calc(-1 * var(--sidebar-width));
+	}
+	.desktop[data-collapsible="offcanvas"][data-side="right"] > .container {
+		right: calc(-1 * var(--sidebar-width));
+	}
+	.desktop[data-collapsible="icon"] > :is(.gap, .container) {
+		width: var(--sidebar-width-icon);
+	}
+	.desktop[data-collapsible="icon"]:is(
+			[data-variant="floating"],
+			[data-variant="inset"]
+		)
+		> .gap {
+		width: calc(var(--sidebar-width-icon) + 0.25rem * 4);
+	}
+	.desktop[data-collapsible="icon"]:is(
+			[data-variant="floating"],
+			[data-variant="inset"]
+		)
+		> .container {
+		width: calc(var(--sidebar-width-icon) + 0.25rem * 4 + 2px);
+	}
+	.content {
+		display: flex;
+		height: 100%;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.desktop[data-collapsible="icon"] .content {
+		overflow: hidden;
+	}
+	@media (width >= 48rem) {
+		.desktop {
+			display: block;
+		}
+		.container {
+			display: flex;
+		}
+	}
+	.section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 0.5rem;
+	}
+}
+.mobilePanel {
+	width: var(--sidebar-width);
+	background-color: var(--sidebar);
+	padding: 0;
+	color: var(--sidebar-foreground);
+}
+.mobileHeading {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border-width: 0;
+}
+.scrollArea {
+	min-height: 0;
+	flex: 1;
+}

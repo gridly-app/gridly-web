@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { StatusBadge as SpaceStatus } from "../spaceui/status-badge";
 import type { BadgeTone } from "./Badge";
+import styles from "./StatusBadge.module.css";
 export type StatusBadgeProps = {
 	status: "online" | "offline" | "busy" | "info" | "warning" | "error";
 	tone?: BadgeTone;
@@ -24,7 +25,9 @@ export function StatusBadge({
 			data-tone={tone}
 			mode={compact ? "stack" : "inline"}
 			size={compact ? "sm" : "md"}
-			secondaryTextClassName={compactOnMobile ? "hidden sm:inline" : ""}
+			secondaryTextClassName={
+				compactOnMobile ? (styles.mobileDetail ?? "") : ""
+			}
 		/>
 	);
 }

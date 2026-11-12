@@ -1,0 +1,176 @@
+@layer primitives {
+	.backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 50;
+		background-color: color-mix(in oklab, #000 10%, transparent);
+		backdrop-filter: blur(8px);
+		&[data-ending-style] {
+			opacity: 0;
+		}
+		&[data-starting-style] {
+			opacity: 0;
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			transition: all 200ms;
+		}
+	}
+	.viewport {
+		position: fixed;
+		inset: 0;
+		z-index: 50;
+		display: grid;
+	}
+	.viewportBottom {
+		display: grid;
+		grid-template-rows: 1fr auto;
+		padding-top: 3rem;
+	}
+	.viewportTop {
+		display: grid;
+		grid-template-rows: auto 1fr;
+		padding-bottom: 3rem;
+	}
+	.viewportLeft {
+		display: flex;
+		justify-content: flex-start;
+	}
+	.viewportRight {
+		display: flex;
+		justify-content: flex-end;
+	}
+	@media (width >= 40rem) {
+		.viewportInset {
+			padding: 1rem;
+		}
+		.popupInset {
+			border-radius: calc(var(--radius) + 8px);
+			border: 1px solid var(--border);
+		}
+		.popupInset::before {
+			content: "";
+			border-radius: calc(var(--radius) + 7px);
+		}
+		:is(.popupInset *)[data-slot="sheet-footer"] {
+			border-bottom-right-radius: calc(var(--radius) + 7px);
+			border-bottom-left-radius: calc(var(--radius) + 7px);
+		}
+	}
+	.popup {
+		position: relative;
+		display: flex;
+		max-height: 100%;
+		min-height: 0;
+		width: 100%;
+		min-width: 0;
+		flex-direction: column;
+		background-color: var(--popover);
+		color: var(--popover-foreground);
+		will-change: transform;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		&:not(
+				:where([data-theme="dark"] *):not(
+					:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+				)
+			) {
+			background-clip: padding-box;
+		}
+		&::before {
+			pointer-events: none;
+			position: absolute;
+			content: "";
+			inset: 0;
+		}
+		&[data-ending-style] {
+			opacity: 0;
+		}
+		&[data-starting-style] {
+			opacity: 0;
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			transition-property: opacity, translate;
+			transition-timing-function: ease;
+			transition-duration: 200ms;
+		}
+		@media (width < 40rem) {
+			&::before {
+				content: "";
+				display: none;
+			}
+		}
+	}
+	.popupBottom {
+		grid-row-start: 2;
+		border-top: 1px solid var(--border);
+		&[data-ending-style] {
+			translate: 0 2rem;
+		}
+		&[data-starting-style] {
+			translate: 0 2rem;
+		}
+	}
+	.popupTop {
+		border-bottom: 1px solid var(--border);
+		&[data-ending-style] {
+			translate: 0 -2rem;
+		}
+		&[data-starting-style] {
+			translate: 0 -2rem;
+		}
+	}
+	.popupLeft {
+		width: calc(100% - (3rem));
+		max-width: 28rem;
+		border-inline-end: 1px solid var(--border);
+		&[data-ending-style] {
+			translate: -2rem;
+		}
+		&[data-starting-style] {
+			translate: -2rem;
+		}
+	}
+	.popupRight {
+		grid-column-start: 2;
+		width: calc(100% - (3rem));
+		max-width: 28rem;
+		border-inline-start: 1px solid var(--border);
+		&[data-ending-style] {
+			translate: 2rem;
+		}
+		&[data-starting-style] {
+			translate: 2rem;
+		}
+	}
+	.popupInset::before {
+		content: "";
+		display: none;
+	}
+	.close {
+		position: absolute;
+		inset-inline-end: 0.5rem;
+		top: 0.5rem;
+	}
+	.header {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 1.5rem;
+		:where(:is([data-slot="sheet-popup"]:has([data-slot="sheet-panel"]))) & {
+			padding-bottom: 0.75rem;
+		}
+		@media (width < 40rem) {
+			padding-bottom: 1rem;
+		}
+	}
+	.title {
+		font-family: "Geist", "Geist Sans", system-ui, sans-serif;
+		font-size: 1.25rem;
+		font-weight: 600;
+		line-height: 1;
+	}
+	.description {
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		color: var(--muted-foreground);
+	}
+}

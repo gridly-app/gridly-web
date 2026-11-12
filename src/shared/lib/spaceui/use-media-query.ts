@@ -19,7 +19,3 @@ export function useMediaQuery(query: string, serverFallback = false): boolean {
 		() => serverFallback,
 	);
 }
-
-export function useIsMobile(): boolean {
-	return useMediaQuery("(max-width: 768px)", false);
-}

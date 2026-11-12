@@ -1,9 +1,11 @@
 "use client";
 
 import type { useRender } from "@base-ui/react/use-render";
+import { clsx } from "clsx";
 import type React from "react";
-import { cn } from "@/shared/lib/spaceui/utils";
 import { ScrollArea } from "@/shared/ui/spaceui/scroll-area";
+
+import css from "./table.module.css";
 
 export type TableVariant = "default" | "card";
 
@@ -20,16 +22,13 @@ export function Table({
 }: TableProps): React.ReactElement {
 	return (
 		<ScrollArea
-			className="relative w-full"
+			className={css.container}
 			clampContentMinWidth={false}
 			data-slot="table-container"
 			data-variant={variant}
 		>
 			<table
-				className={cn(
-					"w-full caption-bottom in-data-[variant=card]:border-separate in-data-[variant=card]:border-spacing-0 text-sm",
-					className,
-				)}
+				className={clsx(css.root, className)}
 				data-slot="table"
 				{...props}
 			/>
@@ -43,7 +42,7 @@ export function TableHeader({
 }: React.ComponentProps<"thead">): React.ReactElement {
 	return (
 		<thead
-			className={cn("[&_tr]:border-b", className)}
+			className={clsx(css.header, className)}
 			data-slot="table-header"
 			{...props}
 		/>
@@ -56,27 +55,8 @@ export function TableBody({
 }: React.ComponentProps<"tbody">): React.ReactElement {
 	return (
 		<tbody
-			className={cn(
-				"relative in-data-[variant=card]:*:[tr]:border-0 in-data-[variant=card]:*:[tr]:*:[td]:border-b in-data-[variant=card]:*:[tr:last-child]:*:[td]:border-b-0 in-data-[variant=card]:*:[tr]:*:[td]:bg-card in-data-[variant=card]:*:[tr]:first:*:[td]:first:rounded-ss-xl in-data-[variant=card]:*:[tr]:last:*:[td]:last:rounded-ee-xl in-data-[variant=card]:*:[tr]:first:*:[td]:last:rounded-se-xl in-data-[variant=card]:*:[tr]:last:*:[td]:first:rounded-es-xl in-data-[variant=card]:*:[tr]:hover:*:[td]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] in-data-[variant=card]:*:[tr]:data-[state=selected]:*:[td]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_4%)] dark:in-data-[variant=card]:*:[tr]:data-[state=selected]:*:[td]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_4%)] dark:in-data-[variant=card]:*:[tr]:hover:*:[td]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)]",
-				className,
-			)}
+			className={clsx(css.body, className)}
 			data-slot="table-body"
-			{...props}
-		/>
-	);
-}
-
-export function TableFooter({
-	className,
-	...props
-}: React.ComponentProps<"tfoot">): React.ReactElement {
-	return (
-		<tfoot
-			className={cn(
-				"border-t in-data-[variant=card]:border-none bg-transparent not-in-data-[variant=card]:bg-[color-mix(in_srgb,var(--card),var(--color-black)_2%)] font-medium dark:not-in-data-[variant=card]:bg-[color-mix(in_srgb,var(--card),var(--color-white)_2%)] [&>tr]:last:border-b-0",
-				className,
-			)}
-			data-slot="table-footer"
 			{...props}
 		/>
 	);
@@ -87,14 +67,7 @@ export function TableRow({
 	...props
 }: React.ComponentProps<"tr">): React.ReactElement {
 	return (
-		<tr
-			className={cn(
-				"relative border-b [&:last-child]:border-b-0 not-in-data-[variant=card]:hover:bg-[color-mix(in_srgb,var(--background),var(--color-black)_1%)] not-in-data-[variant=card]:data-[state=selected]:bg-[color-mix(in_srgb,var(--background),var(--color-black)_2%)] dark:not-in-data-[variant=card]:hover:bg-[color-mix(in_srgb,var(--background),var(--color-white)_1%)] dark:not-in-data-[variant=card]:data-[state=selected]:bg-[color-mix(in_srgb,var(--background),var(--color-white)_2%)]",
-				className,
-			)}
-			data-slot="table-row"
-			{...props}
-		/>
+		<tr className={clsx(css.row, className)} data-slot="table-row" {...props} />
 	);
 }
 
@@ -104,10 +77,7 @@ export function TableHead({
 }: React.ComponentProps<"th">): React.ReactElement {
 	return (
 		<th
-			className={cn(
-				"h-10 whitespace-nowrap px-2.5 text-left align-middle font-medium text-muted-foreground leading-none has-[[role=checkbox]]:w-px last:has-[[role=checkbox]]:ps-0 first:has-[[role=checkbox]]:pe-0",
-				className,
-			)}
+			className={clsx(css.head, className)}
 			data-slot="table-head"
 			{...props}
 		/>
@@ -120,27 +90,8 @@ export function TableCell({
 }: React.ComponentProps<"td">): React.ReactElement {
 	return (
 		<td
-			className={cn(
-				"whitespace-nowrap bg-clip-padding p-2.5 in-data-[slot=table-footer]:py-3.5 align-middle leading-none in-data-[variant=card]:first:ps-[calc(--spacing(2.5)-1px)] in-data-[variant=card]:last:pe-[calc(--spacing(2.5)-1px)] has-[[role=checkbox]]:w-px last:has-[[role=checkbox]]:ps-0 first:has-[[role=checkbox]]:pe-0",
-				className,
-			)}
+			className={clsx(css.cell, className)}
 			data-slot="table-cell"
-			{...props}
-		/>
-	);
-}
-
-export function TableCaption({
-	className,
-	...props
-}: React.ComponentProps<"caption">): React.ReactElement {
-	return (
-		<caption
-			className={cn(
-				"in-data-[variant=card]:my-4 mt-4 text-muted-foreground text-sm",
-				className,
-			)}
-			data-slot="table-caption"
 			{...props}
 		/>
 	);

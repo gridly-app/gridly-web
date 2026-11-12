@@ -1,0 +1,114 @@
+@layer primitives {
+	.emptyMedia {
+		display: flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		& svg {
+			pointer-events: none;
+			flex-shrink: 0;
+		}
+	}
+	.variantDefault {
+		background-color: transparent;
+	}
+	.variantIcon {
+		position: relative;
+		display: flex;
+		width: 2.25rem;
+		height: 2.25rem;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		border-radius: calc(var(--radius) - 2px);
+		border: 1px solid var(--border);
+		background-color: var(--card);
+		color: var(--foreground);
+		&:not(
+				:where([data-theme="dark"] *):not(
+					:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+				)
+			) {
+			background-clip: padding-box;
+		}
+		&::before {
+			pointer-events: none;
+			position: absolute;
+			inset: 0;
+			content: "";
+			border-radius: calc(var(--radius) - 3px);
+		}
+		& svg:not([data-icon-size]) {
+			width: 1.125rem;
+			height: 1.125rem;
+		}
+	}
+	.root {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1.5rem;
+		padding-inline: 1.5rem;
+		padding-block: 3rem;
+		text-align: center;
+		text-wrap: balance;
+		@media (width >= 48rem) {
+			padding-block: 5rem;
+		}
+	}
+	.header {
+		display: flex;
+		max-width: 24rem;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+	.media {
+		position: relative;
+		margin-bottom: 1.5rem;
+	}
+	.stackedMediaLeft {
+		pointer-events: none;
+		position: absolute;
+		bottom: 1px;
+		transform-origin: 0 100%;
+		rotate: calc(10deg * -1);
+		translate: -0.125rem;
+		scale: 84%;
+		box-shadow: none;
+	}
+	.stackedMediaRight {
+		pointer-events: none;
+		position: absolute;
+		bottom: 1px;
+		transform-origin: 100% 100%;
+		rotate: 10deg;
+		translate: 0.125rem;
+		scale: 84%;
+		box-shadow: none;
+	}
+	.title {
+		font-family: "Geist", "Geist Sans", system-ui, sans-serif;
+		font-size: 1.25rem;
+		line-height: calc(1.75 / 1.25);
+		font-weight: 600;
+	}
+	.description {
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		color: var(--muted-foreground);
+		& > a {
+			text-decoration-line: underline;
+			text-underline-offset: 4px;
+		}
+		& > a:hover {
+			color: var(--primary);
+		}
+		[data-slot="empty-title"] + & {
+			margin-top: 0.25rem;
+		}
+	}
+}

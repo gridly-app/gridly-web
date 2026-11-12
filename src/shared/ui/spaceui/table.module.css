@@ -1,0 +1,178 @@
+@layer primitives {
+	.container {
+		position: relative;
+		width: 100%;
+	}
+	.root {
+		width: 100%;
+		caption-side: bottom;
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		:where([data-variant="card"]) & {
+			border-collapse: separate;
+			border-spacing: 0;
+		}
+	}
+	.header tr {
+		border-bottom: 1px solid var(--border);
+	}
+	.body {
+		position: relative;
+	}
+
+	.row {
+		position: relative;
+		border-bottom: 1px solid var(--border);
+
+		&:last-child {
+			border-bottom-width: 0;
+		}
+	}
+
+	.container {
+		--table-hover: color-mix(in srgb, var(--background), #000 1%);
+		--table-selected: color-mix(in srgb, var(--background), #000 2%);
+		--table-footer: color-mix(in srgb, var(--card), #000 2%);
+
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			--table-hover: color-mix(in srgb, var(--background), #fff 1%);
+			--table-selected: color-mix(in srgb, var(--background), #fff 2%);
+			--table-footer: color-mix(in srgb, var(--card), #fff 2%);
+		}
+	}
+
+	@media (hover: hover) {
+		.container:where(:not([data-variant="card"])) .row:hover {
+			background-color: var(--table-hover);
+		}
+	}
+
+	.container:where(:not([data-variant="card"])) .row[data-state="selected"] {
+		background-color: var(--table-selected);
+	}
+
+	.container:where([data-variant="card"]) {
+		--card-row-hover: color-mix(in srgb, var(--card), #000 2%);
+		--card-row-selected: color-mix(in srgb, var(--card), #000 4%);
+
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			--card-row-hover: color-mix(in srgb, var(--card), #fff 2%);
+			--card-row-selected: color-mix(in srgb, var(--card), #fff 4%);
+		}
+
+		& .body > tr {
+			border-width: 0;
+		}
+
+		& .body > tr > td {
+			border-bottom: 1px solid var(--border);
+			background-color: var(--card);
+		}
+
+		& .body > tr:last-child > td {
+			border-bottom-width: 0;
+		}
+
+		& .body > tr:first-child > td:first-child {
+			border-start-start-radius: calc(var(--radius) + 4px);
+		}
+
+		& .body > tr:first-child > td:last-child {
+			border-start-end-radius: calc(var(--radius) + 4px);
+		}
+
+		& .body > tr:last-child > td:first-child {
+			border-end-start-radius: calc(var(--radius) + 4px);
+		}
+
+		& .body > tr:last-child > td:last-child {
+			border-end-end-radius: calc(var(--radius) + 4px);
+		}
+
+		@media (hover: hover) {
+			& .body > tr:hover > td {
+				background-color: var(--card-row-hover);
+			}
+		}
+
+		& .body > tr[data-state="selected"] > td {
+			background-color: var(--card-row-selected);
+		}
+	}
+
+	.head {
+		height: 2.5rem;
+		padding-inline: 0.625rem;
+		text-align: left;
+		vertical-align: middle;
+		white-space: nowrap;
+		color: var(--muted-foreground);
+		font-weight: 500;
+		line-height: 1;
+		&:has(:is([role="checkbox"])) {
+			width: 1px;
+		}
+		&:first-child:has(:is([role="checkbox"])) {
+			padding-inline-end: 0;
+		}
+		&:last-child:has(:is([role="checkbox"])) {
+			padding-inline-start: 0;
+		}
+	}
+	.cell {
+		background-clip: padding-box;
+		padding: 0.625rem;
+		vertical-align: middle;
+		white-space: nowrap;
+		line-height: 1;
+		:where([data-slot="table-footer"]) & {
+			padding-block: 0.875rem;
+		}
+		:where([data-variant="card"]) & {
+			&:first-child {
+				padding-inline-start: calc(0.625rem - 1px);
+			}
+			&:last-child {
+				padding-inline-end: calc(0.625rem - 1px);
+			}
+		}
+		&:has(:is([role="checkbox"])) {
+			width: 1px;
+		}
+		&:first-child:has(:is([role="checkbox"])) {
+			padding-inline-end: 0;
+		}
+		&:last-child:has(:is([role="checkbox"])) {
+			padding-inline-start: 0;
+		}
+	}
+}
+@layer components {
+	.head {
+		padding: 8px 10px;
+		background: var(--muted);
+		font-size: var(--text-caption);
+		line-height: 16px;
+		font-weight: 600;
+	}
+	.cell {
+		padding: 8px 10px;
+		font-size: var(--text-control);
+		line-height: 20px;
+		height: 52px;
+		vertical-align: middle;
+	}
+	.row {
+		@media (prefers-reduced-motion: no-preference) {
+			transition: background-color var(--duration-control);
+		}
+	}
+	.cell [data-slot="toolbar"] {
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+}

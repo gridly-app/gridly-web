@@ -74,31 +74,6 @@
 	--danger-text: var(--error-foreground);
 	--danger-border: var(--error);
 	--info-text: var(--info-foreground);
-	--sidebar-fg: var(--sidebar-foreground);
-	--sidebar-bg: var(--sidebar);
-	--sidebar-hover: var(--sidebar-accent);
-	--sidebar-selected: var(--sidebar-accent);
-	--sidebar-selected-fg: var(--sidebar-accent-foreground);
-	--sidebar-selected-icon: var(--sidebar-foreground);
-	--sidebar-muted: var(--text-secondary);
-	--sidebar-caption: var(--text-secondary);
-	--sidebar-control-bg: var(--sidebar);
-	--sidebar-control-fg: var(--sidebar-foreground);
-	--sidebar-control-border: var(--sidebar-border);
-	--sidebar-control-hover: var(--sidebar-accent);
-	--sidebar-profile-muted: var(--text-secondary);
-	--sidebar-trigger-fg: var(--sidebar-foreground);
-	--sidebar-trigger-border: var(--sidebar-border);
-	--sidebar-notification: var(--warning-foreground);
-	--demo-border: var(--border);
-	--demo-bg: var(--bg-elevated);
-	--demo-hover-bg: var(--accent-bg);
-	--demo-hover-border: var(--ring);
-	--demo-avatar-bg: var(--secondary);
-	--demo-avatar-fg: var(--secondary-foreground);
-	--auth-label: var(--text-primary);
-	--overview-bg: var(--success-bg);
-	--overview-fg: var(--success-foreground);
 	--surface-raised: var(--bg-elevated);
 	--workspace-inset: clamp(16px, 2vw, 32px);
 	--panel-inset: 24px;
@@ -195,4 +170,10 @@
 	--action-secondary-hover: var(--accent-bg);
 	--action-secondary-fg: var(--secondary-foreground);
 	--action-secondary-border: var(--border);
+}
+
+@media (width <= 580px) {
+	:root {
+		--panel-inset: 16px;
+	}
 }

@@ -1,0 +1,140 @@
+@layer primitives {
+	.input {
+		height: 2.125rem;
+		width: 100%;
+		min-width: 0;
+		border-radius: inherit;
+		padding-inline: calc(0.75rem - 1px);
+		color: var(--foreground);
+		outline-style: none;
+		line-height: 2.125rem;
+		&::placeholder {
+			color: color-mix(in oklab, var(--muted-foreground) 60%, transparent);
+		}
+		&:autofill {
+			-webkit-text-fill-color: var(--foreground);
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			transition: background-color 5000000s ease-in-out 0s;
+		}
+		@media (width >= 40rem) {
+			height: 1.875rem;
+			line-height: 1.875rem;
+		}
+	}
+	.inputSm {
+		height: 1.875rem;
+		padding-inline: calc(0.625rem - 1px);
+		line-height: 1.875rem;
+		@media (width >= 40rem) {
+			height: 1.625rem;
+			line-height: 1.625rem;
+		}
+	}
+	.inputLg {
+		height: 2.375rem;
+		line-height: 2.375rem;
+		@media (width >= 40rem) {
+			height: 2.125rem;
+			line-height: 2.125rem;
+		}
+	}
+	.inputSearch::-webkit-search-cancel-button {
+		appearance: none;
+	}
+	.inputSearch::-webkit-search-decoration {
+		appearance: none;
+	}
+	.inputSearch::-webkit-search-results-button {
+		appearance: none;
+	}
+	.inputSearch::-webkit-search-results-decoration {
+		appearance: none;
+	}
+	.inputFile {
+		color: var(--muted-foreground);
+		&::file-selector-button {
+			margin-inline-end: 0.75rem;
+			background-color: transparent;
+			font-size: 0.875rem;
+			line-height: 1.25rem;
+			color: var(--foreground);
+			font-weight: 500;
+		}
+	}
+	.styledControl {
+		position: relative;
+		display: inline-flex;
+		width: 100%;
+		border-radius: var(--radius);
+		border: 1px solid var(--input);
+		background-color: var(--background);
+		font-size: 1rem;
+		line-height: 1.5;
+		&:focus-within {
+			border-color: color-mix(in oklab, var(--foreground) 20%, transparent);
+			--focus-color: color-mix(in oklab, var(--foreground) 10%, transparent);
+			outline: 2px solid var(--focus-color, currentColor);
+		}
+		&:has(:disabled) {
+			pointer-events: none;
+			opacity: 0.5;
+		}
+		@media (prefers-reduced-motion: no-preference) {
+			transition: all 150ms;
+		}
+		&:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			) {
+			border-color: var(--input);
+			background-color: color-mix(in oklab, var(--input) 30%, transparent);
+			&:focus-within {
+				border-color: color-mix(in oklab, var(--foreground) 70%, transparent);
+				--focus-color: color-mix(in oklab, var(--foreground) 15%, transparent);
+			}
+		}
+		&:has([aria-invalid="true"]) {
+			border-color: var(--destructive);
+			&:focus-within {
+				--focus-color: color-mix(in oklab, var(--destructive) 20%, transparent);
+			}
+		}
+		@media (width >= 40rem) {
+			font-size: 0.875rem;
+			line-height: 1.25rem;
+		}
+	}
+}
+@layer components {
+	.control {
+		border-radius: var(--radius-control);
+		background: var(--card);
+		box-shadow: var(--shadow-control);
+	}
+	.input {
+		min-height: 38px;
+		line-height: 24px;
+		font-size: var(--text-control);
+	}
+	.control[data-size="lg"] .input {
+		min-height: 46px;
+	}
+	.control[data-size="sm"] .input {
+		min-height: 34px;
+	}
+	.input::placeholder {
+		color: var(--muted-foreground);
+		opacity: 1;
+	}
+	@media (pointer: coarse), (width <= 580px) {
+		.input {
+			min-height: 42px;
+			font-size: 16px;
+		}
+	}
+
+	.control:focus-within {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+	}
+}

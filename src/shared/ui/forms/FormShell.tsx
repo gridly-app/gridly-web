@@ -1,21 +1,49 @@
-import type { FormShellOptions } from "@/shared/lib";
-import { useFormShell } from "@/shared/lib";
+import { type ReactNode, useRef, useState } from "react";
+import { errorMessage } from "@/shared/lib";
 import { Button } from "../controls/Button";
 import { StableLabel } from "../controls/StableLabel";
 import { ErrorNotice } from "../feedback/ErrorNotice";
-import { Form } from "./Form";
+import { Form } from "../spaceui/form";
 import { FormActions } from "./FormLayout";
 
-export type FormShellProps = FormShellOptions & {
+interface FormShellProps {
+	children: ReactNode;
+	onSubmit: (data: FormData) => Promise<void>;
+	pending?: boolean | undefined;
+	submitLabel?: string | undefined;
 	submitVariant?: "default" | "destructive";
-};
+}
 
 export function FormShell({
 	submitVariant = "default",
-	...props
+	children,
+	onSubmit,
+	pending = false,
+	submitLabel = "Сохранить",
 }: FormShellProps) {
-	const { handleSubmit, children, error, pending, submitting, submitLabel } =
-		useFormShell(props);
+	const inFlight = useRef(false);
+	const [error, setError] = useState("");
+	const [submitting, setSubmitting] = useState(false);
+
+	async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+		e.preventDefault();
+		if (pending || inFlight.current) {
+			return;
+		}
+		const data = new FormData(e.currentTarget);
+		inFlight.current = true;
+
+		setError("");
+		setSubmitting(true);
+		try {
+			await onSubmit(data);
+		} catch (error) {
+			setError(errorMessage(error));
+		} finally {
+			inFlight.current = false;
+			setSubmitting(false);
+		}
+	}
 
 	return (
 		<Form
