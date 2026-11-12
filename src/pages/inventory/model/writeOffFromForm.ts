@@ -1,5 +1,5 @@
 import type { CommandPayloads, Stock } from "@/entities/warehouse";
-import { formNumber, formText } from "@/shared/lib";
+import { formNumber, formText, UserError } from "@/shared/lib";
 
 export function writeOffFromForm(
 	data: FormData,
@@ -8,12 +8,12 @@ export function writeOffFromForm(
 	const quantity = formNumber(data, "quantity");
 
 	if (!Number.isInteger(quantity) || quantity < 1) {
-		throw new Error("Укажите целое положительное количество");
+		throw new UserError("Укажите целое положительное количество");
 	}
 	if (quantity > (stock.availableQuantity ?? 0))
-		throw new Error("Количество превышает доступный остаток");
+		throw new UserError("Количество превышает доступный остаток");
 	if (!formText(data, "reason")) {
-		throw new Error("Укажите причину списания");
+		throw new UserError("Укажите причину списания");
 	}
 
 	return {

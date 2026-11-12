@@ -3,13 +3,13 @@ import { Link as RouterLink } from "react-router-dom";
 import type { Order } from "@/entities/warehouse";
 import { useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
+import { Button } from "@/shared/ui/controls";
 import {
-	Button,
 	Menu,
 	MenuLinkItem,
 	MenuPopup,
 	MenuTrigger,
-} from "@/shared/ui";
+} from "@/shared/ui/overlays";
 
 export function StockLinks({
 	warehouseId,

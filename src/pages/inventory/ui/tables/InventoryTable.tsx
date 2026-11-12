@@ -5,19 +5,21 @@ import {
 } from "@tabler/icons-react";
 import { Fragment, useState } from "react";
 import { StatusBadge as Badge, type Warehouse } from "@/entities/warehouse";
+import { Button, IconButton } from "@/shared/ui/controls";
 import {
-	Button,
-	IconButton,
 	Table,
 	TableActions,
 	TableBody,
 	TableCell,
 	TableHead,
 	TableHeader,
+	TableNote,
 	TableRow,
-} from "@/shared/ui";
-import type { InventoryStock } from "../model/inventoryStock";
+} from "@/shared/ui/dataDisplay";
+import type { InventoryStock } from "../../model/inventoryStock";
+import styles from "./InventoryTable.module.css";
 import { StockLinks } from "./StockLinks";
+import stockTableStyles from "./StockTable.module.css";
 
 export function InventoryTable({
 	items,
@@ -67,7 +69,10 @@ export function InventoryTable({
 					);
 					return (
 						<Fragment key={key}>
-							<TableRow data-unpriced-highlight={highlightUnpriced}>
+							<TableRow
+								className={stockTableStyles.unpriced}
+								data-unpriced-highlight={highlightUnpriced}
+							>
 								<TableCell>
 									<Button
 										variant="ghost"
@@ -113,10 +118,11 @@ export function InventoryTable({
 								rows.map((stock) => (
 									<TableRow
 										key={stock.id}
+										className={stockTableStyles.unpriced}
 										data-unpriced-highlight={highlightUnpriced}
 									>
 										<TableCell>
-											<span className="ps-8">
+											<span className={styles.batchLabel}>
 												Партия {(stock.batchId || stock.id).slice(0, 8)}
 											</span>
 										</TableCell>
@@ -131,9 +137,9 @@ export function InventoryTable({
 										</TableCell>
 										<TableCell>
 											{stock.isExpired && <Badge value="expired" />}
-											<span className="table-note">
+											<TableNote as="span">
 												{stock.expires || "Без срока"}
-											</span>
+											</TableNote>
 										</TableCell>
 										<TableCell>
 											<TableActions>

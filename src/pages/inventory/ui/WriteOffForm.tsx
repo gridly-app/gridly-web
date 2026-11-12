@@ -1,5 +1,6 @@
 import type { CommandPayloads, Stock } from "@/entities/warehouse";
-import { Field, FormShell, Input, Textarea } from "@/shared/ui";
+import { Input, Textarea } from "@/shared/ui/controls";
+import { Field, FormShell } from "@/shared/ui/forms";
 import { writeOffFromForm } from "../model/writeOffFromForm";
 
 export interface WriteOffFormProps {

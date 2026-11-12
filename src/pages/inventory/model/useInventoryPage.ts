@@ -1,23 +1,19 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-	forecastLabel,
-	incomingProduct,
-	productPrice,
 	type Stock,
-	selectInventoryLive,
 	stockZoneCells,
-	stockZoneId,
 	stockZoneNames,
 	useLiveWarehouseScope,
 	useSimulationCadence,
 } from "@/entities/warehouse";
 
-import type { InventoryStock } from "./inventoryStock";
+import { expectedDeliveries, stockRows, writeOffRows } from "./inventoryRows";
+
+type InventoryView = "stock" | "incoming" | "writeoffs";
 
 export function useInventoryPage() {
-	const { warehouse, execute, pending } =
-		useLiveWarehouseScope(selectInventoryLive);
+	const { warehouse, execute, pending } = useLiveWarehouseScope();
 	const cadence = useSimulationCadence(warehouse);
 	const [params, setParams] = useSearchParams();
 	const category = params.get("category") || "all";
@@ -43,12 +39,9 @@ export function useInventoryPage() {
 			{ replace: true },
 		);
 	}
-	const view =
-		params.get("view") === "writeoffs"
-			? "writeoffs"
-			: params.get("view") === "incoming"
-				? "incoming"
-				: "stock";
+	const viewParam = params.get("view");
+	const view: InventoryView =
+		viewParam === "writeoffs" || viewParam === "incoming" ? viewParam : "stock";
 	const filter =
 		params.get("price") === "missing"
 			? "unpriced"
@@ -80,62 +73,19 @@ export function useInventoryPage() {
 		setSelected((current) => (current === selected ? null : current));
 	}
 
-	function replenishment(productId: string) {
-		const incoming = incomingProduct(productId, warehouse, cadence);
-		return {
-			...incoming,
-			deliveries: incoming.deliveries.map((delivery) => ({
-				...delivery,
-				label: forecastLabel(delivery.forecast, warehouse.timezone),
-			})),
-		};
-	}
+	const searchFilters = { category, productFilter, searchQuery };
 	const expectedProducts =
 		view === "incoming"
-			? warehouse.products
-					.filter(
-						(product) =>
-							(!productFilter || product.id === productFilter) &&
-							(category === "all" || product.category === category) &&
-							`${product.name} ${product.sku}`
-								.toLowerCase()
-								.includes(searchQuery),
-					)
-					.map((product) => ({
-						...product,
-						incoming: replenishment(product.id),
-					}))
-					.filter((item) => item.incoming.quantity > 0)
+			? expectedDeliveries(warehouse, cadence, searchFilters)
 			: [];
-
-	const visibleStock: InventoryStock[] = warehouse.stock
-		.filter(
-			(s) =>
-				(filter === "zero" ? s.quantity === 0 : s.quantity > 0) &&
-				(!productFilter || s.product === productFilter) &&
-				(category === "all" || products.get(s.product)?.category === category),
-		)
-		.map((stock) => {
-			const cell = zoneCells.get(stock.cell);
-			return {
-				...stock,
-				zoneKey: cell ? stockZoneId(cell) : zoneName(stock),
-				productName: products.get(stock.product)?.name,
-				zoneName: zoneName(stock),
-			};
-		})
-		.filter(
-			(stock) =>
-				`${stock.productName ?? ""} ${stock.zoneName} ${stock.batchId ?? stock.id} ${products.get(stock.product)?.sku ?? ""}`
-					.toLowerCase()
-					.includes(searchQuery) &&
-				(filter !== "unpriced" ||
-					(stock.quantity > 0 &&
-						productPrice(products.get(stock.product)?.price) === null)) &&
-				(filter !== "expired" || stock.isExpired) &&
-				(filter !== "reserved" ||
-					(stock.reserved !== undefined && stock.reserved > 0)),
-		);
+	const visibleStock = stockRows(
+		warehouse.stock,
+		products,
+		zoneCells,
+		zoneName,
+		searchFilters,
+		filter,
+	);
 
 	function changeFilter(value: string) {
 		setParams(
@@ -150,7 +100,7 @@ export function useInventoryPage() {
 			{ replace: true },
 		);
 	}
-	function changeView(value: string) {
+	function changeView(value: InventoryView) {
 		setParams(
 			(current) => {
 				const next = new URLSearchParams();
@@ -178,32 +128,11 @@ export function useInventoryPage() {
 		setParams(view === "stock" ? {} : { view }, { replace: true });
 		setSearch("");
 	}
-	const dayFormatter = new Intl.DateTimeFormat("en-CA", {
-		timeZone: warehouse.timezone,
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
+	const writeOffs = writeOffRows(warehouse, products, searchFilters, {
+		filter,
+		from,
+		to,
 	});
-	const writeOffs = (warehouse.writeOffs ?? [])
-		.filter((item) => {
-			const product = products.get(item.product);
-			const day = Number.isFinite(Date.parse(item.time))
-				? dayFormatter.format(new Date(item.time))
-				: "";
-			return (
-				(filter !== "unpriced" || item.price === null) &&
-				(!productFilter || item.product === productFilter) &&
-				item.quantity > 0 &&
-				(category === "all" || product?.category === category) &&
-				(!from || (!!day && day >= from)) &&
-				(!to || (!!day && day <= to)) &&
-				(product?.name || item.product).toLowerCase().includes(searchQuery)
-			);
-		})
-		.map((item) => ({
-			...item,
-			productName: products.get(item.product)?.name || item.product,
-		}));
 
 	return {
 		warehouse,
