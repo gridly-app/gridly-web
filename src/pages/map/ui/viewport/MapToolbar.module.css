@@ -1,0 +1,45 @@
+.toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-shrink: 0;
+	padding: 12px 16px;
+	gap: 12px;
+}
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.toolbar[data-slot="toolbar"] {
+	border-radius: 0;
+	box-shadow: none;
+}
+
+@media (width <= 850px) {
+	.toolbar {
+		flex-wrap: wrap;
+	}
+	.button {
+		min-height: 32px;
+		font-size: 14px;
+		padding: 8px;
+	}
+}
+
+@media (width <= 580px) {
+	.toolbar {
+		padding: 12px;
+		align-items: flex-start;
+	}
+	.actions {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 4px;
+		padding: 0;
+	}
+	.button {
+		font-size: 14px;
+		padding: 7px 5px;
+	}
+}

@@ -1,0 +1,82 @@
+.dynamic {
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+}
+.mapPanel {
+	position: relative;
+	min-height: 0;
+
+	overflow: hidden;
+}
+.canvasStack {
+	position: relative;
+	flex-shrink: 0;
+	margin: auto;
+}
+.mapScroll {
+	height: 100%;
+	max-height: none;
+	padding: 0;
+	display: flex;
+	overflow: auto;
+	align-items: safe center;
+
+	background-size: 18px 18px;
+	touch-action: none;
+}
+.mapScroll[data-editing="false"] {
+	cursor: grab;
+}
+.mapScroll.isPanning {
+	cursor: grabbing;
+}
+.mapBottom {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	font-size: 14px;
+	color: var(--muted-foreground);
+	position: absolute;
+	bottom: 16px;
+	right: 16px;
+	z-index: 3;
+	padding: 8px;
+	border-radius: var(--radius-panel);
+}
+.zoomActions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.zoomButton {
+	padding: 7px;
+
+	color: var(--text);
+}
+.mapScroll[data-viewing="true"][data-editor="construction"] {
+	padding-top: calc(
+		var(--map-navigation-top) +
+		var(--map-navigation-height, 52px) +
+		var(--construction-toolbar-height, 180px) +
+		26px
+	);
+}
+.mapScroll[data-viewing="true"][data-editor="routes"] {
+	padding-top: calc(
+		var(--map-navigation-top) +
+		var(--map-navigation-height, 52px) +
+		var(--route-toolbar-height, 180px) +
+		24px
+	);
+}
+@media (width <= 580px) {
+	.mapBottom {
+		flex-wrap: wrap;
+		right: 8px;
+		bottom: 12px;
+		padding: 4px;
+	}
+}

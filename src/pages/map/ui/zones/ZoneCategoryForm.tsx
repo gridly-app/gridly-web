@@ -1,6 +1,8 @@
-import { Button, Field, Input, MiniCard } from "@/shared/ui";
+import { Button, Input } from "@/shared/ui/controls";
+import { Card } from "@/shared/ui/dataDisplay";
+import { Field } from "@/shared/ui/forms";
 import type { useZonePanel } from "../../model/zones/useZonePanel";
-import mapStyles from "../map/WarehouseMap.module.css";
+import mapStyles from "./ZonePanel.module.css";
 
 export interface ZoneCategoryFormProps {
 	model: Pick<
@@ -29,7 +31,7 @@ export function ZoneCategoryForm({ model }: ZoneCategoryFormProps) {
 				+ Добавить категорию
 			</Button>
 			{adding && (
-				<MiniCard>
+				<Card>
 					<Field
 						className={mapStyles.zoneField}
 						label="Название категории"
@@ -54,7 +56,7 @@ export function ZoneCategoryForm({ model }: ZoneCategoryFormProps) {
 					>
 						Создать категорию
 					</Button>
-				</MiniCard>
+				</Card>
 			)}
 		</>
 	);

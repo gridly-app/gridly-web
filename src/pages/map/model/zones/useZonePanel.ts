@@ -7,7 +7,7 @@ import type {
 } from "@/entities/warehouse";
 import { cellKey } from "@/entities/warehouse";
 
-import { errorMessage, id } from "@/shared/lib";
+import { errorMessage, id, UserError } from "@/shared/lib";
 
 export interface ZonePanelOptions {
 	w: Warehouse;
@@ -48,7 +48,7 @@ export function useZonePanel({
 		setError("");
 		setPending(true);
 		try {
-			if (!first) throw new Error("Выделите клетки хранения");
+			if (!first) throw new UserError("Выделите клетки хранения");
 			const same =
 				picked.every(
 					(cell) => cell.zone?.id && cell.zone.id === first.zone?.id,
@@ -76,9 +76,9 @@ export function useZonePanel({
 		setPending(true);
 		setError("");
 		try {
-			if (!first) throw new Error("Выделите клетки хранения");
+			if (!first) throw new UserError("Выделите клетки хранения");
 			if (!newName.trim()) {
-				throw new Error("Введите название категории");
+				throw new UserError("Введите название категории");
 			}
 			const categoryId = id();
 

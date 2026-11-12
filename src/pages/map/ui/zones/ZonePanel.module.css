@@ -1,0 +1,56 @@
+.zoneForm {
+	margin-bottom: 16px;
+}
+.zoneField {
+	font-size: 14px;
+}
+.zoneInput {
+	width: 100%;
+	font-size: 14px;
+}
+.zoneTextButton {
+	padding-inline: 0;
+	text-align: left;
+	font-size: 14px;
+}
+.zoneSubmit {
+	margin-top: 15px;
+}
+@media (width <= 580px) {
+	.zoneInput {
+		padding: 8px 5px;
+	}
+	.zoneButton {
+		font-size: 14px;
+		padding: 7px 5px;
+	}
+}
+
+.zoneFields {
+	padding: 0;
+	margin: 0;
+	min-width: 0;
+}
+
+.sectionCaption {
+	font-size: var(--text-caption);
+	line-height: 16px;
+	color: var(--muted-foreground);
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	margin: 0 0 16px;
+}
+
+.capacity {
+	display: flex;
+	justify-content: space-between;
+	font-size: 14px;
+	padding: 12px 0;
+}
+
+@media (width <= 580px) {
+	.capacity {
+		flex-direction: column;
+		gap: 8px;
+	}
+}

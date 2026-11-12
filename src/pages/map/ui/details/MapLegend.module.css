@@ -1,0 +1,32 @@
+.legend {
+	display: flex;
+	flex-wrap: wrap;
+	flex-shrink: 0;
+	gap: var(--space-2);
+	margin-top: auto;
+	padding-top: 20px;
+}
+
+.legendCaption {
+	width: 100%;
+}
+
+.legendSwatch {
+	width: var(--space-3);
+	min-width: var(--space-3);
+	height: var(--space-3);
+	padding: 0;
+}
+
+@media (width <= 850px) {
+	.legend {
+		margin-top: 20px;
+	}
+}
+
+@media (width <= 580px) {
+	.legend {
+		margin-top: 12px;
+		padding-top: 0;
+	}
+}

@@ -1,9 +1,9 @@
-import { selectMapLive, useLiveWarehouseScope } from "@/entities/warehouse";
+import { useLiveWarehouseScope } from "@/entities/warehouse";
 import { useTheme } from "@/shared/lib";
-import { WarehouseMap } from "./map/WarehouseMap";
+import { WarehouseMap } from "./viewport/WarehouseMap";
 
 export function MapPage() {
-	const { warehouse, execute, pending } = useLiveWarehouseScope(selectMapLive);
+	const { warehouse, execute, pending } = useLiveWarehouseScope();
 	const { dark } = useTheme();
 
 	return (

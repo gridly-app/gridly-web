@@ -1,0 +1,71 @@
+.spaceNavigationList {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.spaceNavigationTrigger {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+
+	color: inherit;
+	padding: 10px 12px;
+	font: inherit;
+	font-size: 14px;
+	cursor: pointer;
+}
+.spaceNavigationContent {
+	display: grid;
+	width: 210px;
+	padding: 5px;
+	gap: 2px;
+}
+.spaceNavigationContent p {
+	font-size: 14px;
+	color: var(--muted-foreground);
+	line-height: 1.6;
+	margin: 4px;
+}
+.navigationItem {
+	justify-content: flex-start;
+	min-height: 32px;
+	padding: 6px 9px;
+	font-size: 14px;
+	gap: 8px;
+}
+.navigationItem svg {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+}
+.mapViewNavigation {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	position: absolute;
+	top: var(--map-navigation-top);
+	left: calc((100% - var(--map-details-width)) / 2);
+	transform: translateX(-50%);
+	width: max-content;
+	max-width: calc(100% - var(--map-details-width) - 24px);
+	padding: 8px;
+	gap: 0;
+
+	backdrop-filter: blur(16px);
+	z-index: 5;
+	flex-shrink: 0;
+}
+@media (width <= 850px) {
+	.viewButton {
+		font-size: 14px;
+		padding: 8px;
+	}
+	.spaceNavigationList {
+		gap: 2px;
+	}
+}

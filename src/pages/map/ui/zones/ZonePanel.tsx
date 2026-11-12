@@ -1,13 +1,13 @@
-import { Button, ErrorNotice, Fieldset, Form, StableLabel } from "@/shared/ui";
+import { Button, StableLabel } from "@/shared/ui/controls";
+import { ErrorNotice } from "@/shared/ui/feedback";
+import { Fieldset, Form } from "@/shared/ui/forms";
 import type { ZonePanelOptions } from "../../model/zones/useZonePanel";
 import { useZonePanel } from "../../model/zones/useZonePanel";
-import mapStyles from "../map/WarehouseMap.module.css";
 import { ZoneCategoryForm } from "./ZoneCategoryForm";
 import { ZoneFields } from "./ZoneFields";
-import { ZoneSummary } from "./ZoneSummary";
+import mapStyles from "./ZonePanel.module.css";
 
 export type ZonePanelProps = ZonePanelOptions & {
-	showSummary?: boolean | undefined;
 	disabled?: boolean | undefined;
 };
 
@@ -21,7 +21,7 @@ export default function ZonePanel(props: ZonePanelProps) {
 				void model.save(event);
 			}}
 		>
-			{props.showSummary !== false && <ZoneSummary model={model} />}
+			<ZoneSummary model={model} />
 			<Fieldset
 				className={mapStyles.zoneFields}
 				disabled={props.disabled || model.pending}
@@ -42,5 +42,26 @@ export default function ZonePanel(props: ZonePanelProps) {
 				</Button>
 			</Fieldset>
 		</Form>
+	);
+}
+
+interface ZoneSummaryProps {
+	model: Pick<ReturnType<typeof useZonePanel>, "picked" | "first" | "capacity">;
+}
+
+function ZoneSummary({ model }: ZoneSummaryProps) {
+	const { picked, first, capacity } = model;
+	if (!first) return null;
+
+	return (
+		<>
+			<div className={mapStyles.sectionCaption}>
+				СКЛАДСКАЯ ЗОНА · {picked.length} КЛ.
+			</div>
+			<div className={mapStyles.capacity}>
+				<span>Вместимость</span>
+				<b>{capacity ?? "—"} м³</b>
+			</div>
+		</>
 	);
 }

@@ -1,6 +1,7 @@
-import { Combobox, Field, Input } from "@/shared/ui";
+import { Input } from "@/shared/ui/controls";
+import { Combobox, Field } from "@/shared/ui/forms";
 import type { useZonePanel } from "../../model/zones/useZonePanel";
-import mapStyles from "../map/WarehouseMap.module.css";
+import mapStyles from "./ZonePanel.module.css";
 
 export interface ZoneFieldsProps {
 	model: Pick<
