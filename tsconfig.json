@@ -1,22 +1,6 @@
 {
-	"compilerOptions": {
-		"target": "ES2022",
-		"lib": ["ES2022", "DOM", "DOM.Iterable"],
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
-		"jsx": "react-jsx",
-		"strict": true,
-		"skipLibCheck": true,
-		"noEmit": true,
-		"allowImportingTsExtensions": true,
-		"paths": {
-			"@/*": ["./src/*"]
-		},
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"types": ["vite/client", "node"],
-		"noUncheckedIndexedAccess": true,
-		"exactOptionalPropertyTypes": true
-	},
-	"include": ["src"]
+	"extends": "./tsconfig.app.json",
+	"files": [],
+	"include": [],
+	"references": [{ "path": "./tsconfig.app.json" }, { "path": "./tests" }]
 }

@@ -7,7 +7,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -18,7 +19,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -29,7 +31,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -40,7 +43,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -51,7 +55,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -62,7 +67,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -73,18 +79,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
-		]
-	},
-	{
-		"registry": "primitives-combobox",
-		"source": "https://www.spaceui.one/r/primitives-combobox.json",
-		"file": "src/shared/ui/spaceui/combobox.tsx",
-		"originalSha256": "45fcc3857bc120da08fc875f81ffe0401d3dee39ae4ac673694e14d5ec4db166",
-		"retrievedAt": "2026-11-04",
-		"installation": "shadcn CLI",
-		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -95,7 +91,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -106,7 +103,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -117,7 +115,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -128,7 +127,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -139,7 +139,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -150,7 +151,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -161,7 +163,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -172,7 +175,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -183,7 +187,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -194,29 +199,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
-		]
-	},
-	{
-		"registry": "primitives-meter",
-		"source": "https://www.spaceui.one/r/primitives-meter.json",
-		"file": "src/shared/ui/spaceui/meter.tsx",
-		"originalSha256": "b09c43b5a769cae7bf36a455911d068f53d9306690ab859d89bf3ce1719a29f6",
-		"retrievedAt": "2026-11-04",
-		"installation": "shadcn CLI",
-		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
-		]
-	},
-	{
-		"registry": "primitives-pagination",
-		"source": "https://www.spaceui.one/r/primitives-pagination.json",
-		"file": "src/shared/ui/spaceui/pagination.tsx",
-		"originalSha256": "001c8ec5474e83e894a20dfc42444f5f5c90fd5bb0a8eca169c7dcd4c66ed7d9",
-		"retrievedAt": "2026-11-04",
-		"installation": "shadcn CLI",
-		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -227,7 +211,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -238,7 +223,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -250,7 +236,8 @@
 		"installation": "shadcn CLI",
 		"adaptations": [
 			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
-			"Glide Select corner pop and moving highlight from https://reactbits.dev/c/micro/glide-select, adapted to Base UI selection and forms."
+			"Glide Select corner pop and moving highlight from https://reactbits.dev/c/micro/glide-select, adapted to Base UI selection and forms.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -261,7 +248,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -272,30 +260,22 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
 		"registry": "primitives-sidebar",
 		"source": "https://www.spaceui.one/r/primitives-sidebar.json",
-		"file": "src/shared/ui/spaceui/sidebar.tsx",
+		"file": "src/shared/ui/spaceui/sidebar/index.ts",
 		"originalSha256": "7642148edda52eb541508a7b165d4b47d9964c3eb5bacbb731a7e9ab7f82d7bd",
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
 			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
-			"Guard unsupported Cookie Store API; controlled state persists through the Gridly adapter."
-		]
-	},
-	{
-		"registry": "primitives-skeleton",
-		"source": "https://www.spaceui.one/r/primitives-skeleton.json",
-		"file": "src/shared/ui/spaceui/skeleton.tsx",
-		"originalSha256": "ea266261498fcd78822180d1132141a3e6165b4e1c754ee9a98bb68b5ef6b4c8",
-		"retrievedAt": "2026-11-04",
-		"installation": "shadcn CLI",
-		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Guard unsupported Cookie Store API; controlled state persists through the Gridly adapter.",
+			"Grouped the sidebar layout, provider, controls, and menu under sidebar/ with index.ts as the public entry point. Sidebar layout and presentation use colocated CSS modules.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -306,7 +286,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -317,7 +298,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -329,7 +311,8 @@
 		"installation": "shadcn CLI",
 		"adaptations": [
 			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
-			"Removed unused upstream import for noUnusedLocals compatibility."
+			"Removed unused upstream import for noUnusedLocals compatibility.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -340,7 +323,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -352,7 +336,8 @@
 		"installation": "shadcn CLI",
 		"adaptations": [
 			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
-			"Optional property types accept undefined for exactOptionalPropertyTypes compatibility."
+			"Optional property types accept undefined for exactOptionalPropertyTypes compatibility.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -363,7 +348,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -374,7 +360,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -385,7 +372,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -396,18 +384,8 @@
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
-		]
-	},
-	{
-		"registry": "hooks-browser-use-network",
-		"source": "https://www.spaceui.one/r/hooks-browser-use-network.json",
-		"file": "src/shared/lib/spaceui/use-network.ts",
-		"originalSha256": "ac34a11572683afb22a6cc88c28c16fc60c9729843fbbb39c02746576670347d",
-		"retrievedAt": "2026-11-04",
-		"installation": "shadcn CLI",
-		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Adapted styling to local CSS Modules and Gridly theme tokens."
 		]
 	},
 	{
@@ -457,23 +435,13 @@
 	{
 		"registry": "lib-segmented-control",
 		"source": "https://www.spaceui.one/r/lib-segmented-control.json",
-		"file": "src/shared/lib/spaceui/segmented-control.ts",
+		"file": "src/shared/ui/navigation/SegmentedControl.tsx",
 		"originalSha256": "96f08caf6e693864649db02d8765c7446018515edc2f6790d4853150276b4061",
 		"retrievedAt": "2026-11-04",
 		"installation": "shadcn CLI",
 		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
-		]
-	},
-	{
-		"registry": "lib-utils",
-		"source": "https://www.spaceui.one/r/lib-utils.json",
-		"file": "src/shared/lib/spaceui/utils.ts",
-		"originalSha256": "6aa71107ee63242aeece21f8ef9d3496700737a3043efda387bbd4f27f198cec",
-		"retrievedAt": "2026-11-04",
-		"installation": "shadcn CLI",
-		"adaptations": [
-			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting."
+			"Installed through bunx shadcn@latest add on 2026-11-04; registry target relocated to the existing Shared layer; project aliases and Biome formatting.",
+			"Segmented control styles now live in the adjacent CSS module."
 		]
 	}
 ]

@@ -3398,10 +3398,10 @@ routes:
               "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
             }
           }
-  - name: "Read-only fixture: DELETE /api/v1/warehouses/warehouse-demo/categories/:id"
+  - name: "Read-only fixture: POST /api/v1/warehouses/warehouse-demo/categories/:id/archive"
     request:
-      method: DELETE
-      url: /api/v1/warehouses/warehouse-demo/categories/:id
+      method: POST
+      url: /api/v1/warehouses/warehouse-demo/categories/:id/archive
     response:
       status: 501
       headers:

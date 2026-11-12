@@ -36,21 +36,10 @@
 	},
 	"css": {
 		"parser": {
-			"tailwindDirectives": true,
 			"cssModules": true
 		}
 	},
 	"overrides": [
-		{
-			"includes": ["src/app/styles/foundations.css"],
-			"linter": {
-				"rules": {
-					"complexity": {
-						"noImportantStyles": "off"
-					}
-				}
-			}
-		},
 		{
 			"includes": ["src/shared/ui/spaceui/**", "src/shared/lib/spaceui/**"],
 			"linter": {

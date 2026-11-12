@@ -5,7 +5,7 @@
 		"source": "https://github.com/DavidHDev/react-bits/blob/main/src/ts-default/Backgrounds/ShapeGrid/ShapeGrid.tsx",
 		"originalSha256": "dcae3cc4eb8673c7ad4eb370f3ddf353c22840f7b806ed7f2b8065e898e17e84",
 		"file": "src/shared/ui/visual/ShapeGrid.tsx",
-		"adaptations": "Upstream canvas engine; strict tuples, theme wrapper, decorative accessibility.",
+		"adaptations": "Canvas engine and geometry are in shapeGridEngine.ts and shapeGridGeometry.ts beside the React component. Strict tuples, theme wrapper, decorative accessibility.",
 		"retrievedAt": "2026-11-04"
 	},
 	{
