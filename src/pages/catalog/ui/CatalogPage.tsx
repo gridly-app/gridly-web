@@ -1,54 +1,35 @@
-import { IconColumns } from "@tabler/icons-react";
-import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useLiveWarehouseScope } from "@/entities/warehouse";
 import {
-	selectInventoryLive,
-	useLiveWarehouseScope,
-} from "@/entities/warehouse";
-import { readPreference, writePreference } from "@/shared/lib/browserStorage";
-import {
-	Button,
 	DataPanel,
-	Feedback,
-	ListFilters,
-	Menu,
-	MenuCheckboxItem,
-	MenuPopup,
-	MenuTrigger,
-	Modal,
-	Select,
 	useTableColumns,
-} from "@/shared/ui";
-import { type ProductColumn, productColumns } from "../model/productColumns";
+	useTableColumnVisibility,
+} from "@/shared/ui/dataDisplay";
+import { Feedback } from "@/shared/ui/feedback";
+import { Modal } from "@/shared/ui/overlays";
+import { productColumns } from "../model/productColumns";
 import { useCatalogDialog } from "../model/useCatalogDialog";
 import { useCatalogPage } from "../model/useCatalogPage";
 import { CatalogDialog } from "./CatalogDialog";
+import { CatalogFilters } from "./CatalogFilters";
 import { CatalogToolbar } from "./CatalogToolbar";
-import { CategoriesTable } from "./CategoriesTable";
-import { CategoryDetail } from "./CategoryDetail";
-import { ProductDetail } from "./ProductDetail";
-import { ProductsTable } from "./ProductsTable";
-
-const columnPreference = "gridly.catalog.columns";
+import { CategoriesTable } from "./categories/CategoriesTable";
+import { CategoryDetail } from "./categories/CategoryDetail";
+import { ProductDetail } from "./products/ProductDetail";
+import { ProductsTable } from "./products/ProductsTable";
 
 export function CatalogPage() {
-	const { warehouse, execute, command, pending } =
-		useLiveWarehouseScope(selectInventoryLive);
+	const { warehouse, execute, command, pending } = useLiveWarehouseScope();
+	const catalog = useCatalogPage(warehouse, command);
 	const {
-		status,
-		setStatus,
-		category,
-		setCategory,
 		empty,
 		noResults,
 		tab,
 		setTab,
-		search,
-		setSearch,
 		visibleProducts,
 		visibleCategories,
 		toggleProductArchive,
-	} = useCatalogPage(warehouse, command);
+	} = catalog;
 	const {
 		dialog,
 		close,
@@ -60,22 +41,11 @@ export function CatalogPage() {
 	} = useCatalogDialog(execute);
 
 	const categoryColumns = useTableColumns("categories", ["Товаров"]);
-	const [columns, setColumns] = useState<ProductColumn[]>(() => {
-		const stored = readPreference(
-			columnPreference,
-			"sku,category,volume,occupancy,quantity,price,shelf",
-		).split(",");
-		return productColumns
-			.filter((column) => stored.includes(column.key))
-			.map((column) => column.key);
-	});
-	function setColumn(key: ProductColumn, checked: boolean) {
-		const next = checked
-			? [...columns, key]
-			: columns.filter((column) => column !== key);
-		writePreference(columnPreference, next.join(","));
-		setColumns(next);
-	}
+	const products = useTableColumnVisibility(
+		"gridly.catalog.columns",
+		productColumns,
+		"visible",
+	);
 
 	const selectedCategory =
 		dialog?.type === "category" ? dialog.item : undefined;
@@ -104,7 +74,6 @@ export function CatalogPage() {
 				}
 				toolbar={
 					<>
-						{" "}
 						<CatalogToolbar
 							tab={tab}
 							canCreate={
@@ -115,78 +84,15 @@ export function CatalogPage() {
 							onTabChange={setTab}
 							onCreate={() => openNewItem(tab)}
 						/>
-						{tab === "categories" ? (
-							categoryColumns.button
-						) : (
-							<Menu>
-								<MenuTrigger render={<Button variant="secondary" size="sm" />}>
-									<IconColumns size={16} /> Столбцы
-								</MenuTrigger>
-								<MenuPopup align="end">
-									{productColumns.map((column) => (
-										<MenuCheckboxItem
-											key={column.key}
-											checked={columns.includes(column.key)}
-											closeOnClick={false}
-											onCheckedChange={(checked) =>
-												setColumn(column.key, checked)
-											}
-										>
-											{column.label}
-										</MenuCheckboxItem>
-									))}
-								</MenuPopup>
-							</Menu>
-						)}
-						<ListFilters
-							search={{
-								value: search,
-								onChange: setSearch,
-								"aria-label": "Поиск по каталогу",
-							}}
-							count={
-								[
-									status !== "all",
-									tab === "products" && category !== "all",
-								].filter(Boolean).length
-							}
-							onReset={() => {
-								setStatus("all");
-								setCategory("all");
-							}}
-						>
-							<Select
-								aria-label="Статус каталога"
-								value={status}
-								onValueChange={setStatus}
-								options={[
-									{ value: "all", label: "Все статусы" },
-									{ value: "active", label: "Активные" },
-									{ value: "archived", label: "Архив" },
-								]}
-							/>
-							{tab === "products" && (
-								<Select
-									aria-label="Категория товара"
-									value={category}
-									onValueChange={setCategory}
-									options={[
-										{ value: "all", label: "Все категории" },
-										...warehouse.categories.map((c) => ({
-											value: c.id,
-											label: c.name,
-										})),
-									]}
-								/>
-							)}
-						</ListFilters>
+						{tab === "categories" ? categoryColumns.button : products.button}
+						<CatalogFilters model={catalog} categories={warehouse.categories} />
 					</>
 				}
 			>
 				{tab === "products" ? (
 					<ProductsTable
 						items={visibleProducts}
-						columns={columns}
+						columns={products.visibleColumns}
 						pending={pending}
 						onEdit={editProduct}
 						onToggleArchive={toggleProductArchive}

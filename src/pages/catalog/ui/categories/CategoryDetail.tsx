@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import {
 	type Category,
 	type CategoryInput,
@@ -10,7 +9,11 @@ import {
 import { useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
 import { errorMessage } from "@/shared/lib";
-import { Button, Feedback, Link, Modal } from "@/shared/ui";
+import { Button } from "@/shared/ui/controls";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { Link } from "@/shared/ui/navigation";
+import { Modal } from "@/shared/ui/overlays";
+import styles from "./CategoryDetail.module.css";
 import { CategoryForm } from "./CategoryForm";
 import { CategoryStorage } from "./CategoryStorage";
 
@@ -63,24 +66,20 @@ export function CategoryDetail({
 					Архивировать категорию
 				</Button>
 			)}
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<nav className="flex flex-wrap gap-2" aria-label="Разделы по категории">
+			<div className={styles.actions}>
+				<nav className={styles.sectionLinks} aria-label="Разделы по категории">
 					{sections.map(([page, label]) => (
 						<Link
 							key={page}
 							asButton
 							size="sm"
 							variant="secondary"
-							render={
-								<RouterLink
-									to={{
-										pathname: warehousePath(mode, warehouse.id, page),
-										search: new URLSearchParams({
-											category: category.id,
-										}).toString(),
-									}}
-								/>
-							}
+							to={{
+								pathname: warehousePath(mode, warehouse.id, page),
+								search: new URLSearchParams({
+									category: category.id,
+								}).toString(),
+							}}
 						>
 							{label}
 						</Link>
@@ -99,21 +98,16 @@ export function CategoryDetail({
 			{editingName && category.allowedActions?.includes("edit") && (
 				<CategoryForm category={category} pending={pending} onSave={onSave} />
 			)}
-			<div className="flex flex-wrap items-center justify-between gap-2">
+			<div className={styles.storageHeader}>
 				<h3>Правила хранения</h3>
-				<Link
-					render={<RouterLink to={warehousePath(mode, warehouse.id, "map")} />}
-				>
+				<Link to={warehousePath(mode, warehouse.id, "map")}>
 					Открыть карту склада
 				</Link>
 			</div>
 			{map.loading ? (
 				<Feedback tone="loading">Загружаем зоны склада…</Feedback>
 			) : map.error ? (
-				<Feedback
-					tone="error"
-					action={<Button onClick={() => void map.retry()}>Повторить</Button>}
-				>
+				<Feedback tone="error" action={<RetryButton onRetry={map.retry} />}>
 					Не удалось загрузить зоны склада.
 				</Feedback>
 			) : (

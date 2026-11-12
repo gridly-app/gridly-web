@@ -1,19 +1,18 @@
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import type { Order, Warehouse } from "@/entities/warehouse";
 import { useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
 import {
-	Link,
 	ListFilters,
-	Select,
 	Table,
 	TableBody,
 	TableCell,
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/shared/ui";
+} from "@/shared/ui/dataDisplay";
+import { Select } from "@/shared/ui/forms";
+import { Link } from "@/shared/ui/navigation";
 
 export function ProductMovements({
 	productId,
@@ -130,20 +129,16 @@ export function ProductMovements({
 								<TableCell>
 									{row.order ? (
 										<Link
-											render={
-												<RouterLink
-													to={{
-														pathname: warehousePath(
-															mode,
-															warehouse.id,
-															row.order.kind,
-														),
-														search: new URLSearchParams({
-															order: row.order.id,
-														}).toString(),
-													}}
-												/>
-											}
+											to={{
+												pathname: warehousePath(
+													mode,
+													warehouse.id,
+													row.order.kind,
+												),
+												search: new URLSearchParams({
+													order: row.order.id,
+												}).toString(),
+											}}
 										>
 											{row.order.number}
 										</Link>

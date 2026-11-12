@@ -6,13 +6,10 @@ import {
 	IconPencil,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import { StatusBadge as Badge, type Product } from "@/entities/warehouse";
 
+import { Button, IconButton } from "@/shared/ui/controls";
 import {
-	Button,
-	IconButton,
-	Link,
 	Table,
 	TableActions,
 	TableBody,
@@ -20,9 +17,10 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/shared/ui";
-import type { CatalogProduct } from "../model/catalog";
-import { type ProductColumn, productColumns } from "../model/productColumns";
+} from "@/shared/ui/dataDisplay";
+import { Link } from "@/shared/ui/navigation";
+import type { CatalogProduct } from "../../model/catalog";
+import { type ProductColumn, productColumns } from "../../model/productColumns";
 
 export interface ProductsTableProps {
 	items: readonly CatalogProduct[];
@@ -108,13 +106,9 @@ export function ProductsTable({
 					<TableRow key={p.id}>
 						<TableCell>
 							<Link
-								render={
-									<RouterLink
-										to={{
-											search: new URLSearchParams({ product: p.id }).toString(),
-										}}
-									/>
-								}
+								to={{
+									search: new URLSearchParams({ product: p.id }).toString(),
+								}}
 							>
 								{p.name}
 							</Link>

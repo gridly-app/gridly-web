@@ -1,14 +1,14 @@
 import type { Category } from "@/entities/warehouse";
+import { Button } from "@/shared/ui/controls";
 import {
-	Button,
 	Table,
 	TableBody,
 	TableCell,
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/shared/ui";
-import type { CatalogCategory } from "../model/catalog";
+} from "@/shared/ui/dataDisplay";
+import type { CatalogCategory } from "../../model/catalog";
 
 export interface CategoriesTableProps {
 	items: readonly CatalogCategory[];

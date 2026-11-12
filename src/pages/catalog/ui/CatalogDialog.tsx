@@ -3,10 +3,10 @@ import type {
 	CategoryInput,
 	ProductInput,
 } from "@/entities/warehouse";
-import { Modal } from "@/shared/ui";
+import { Modal } from "@/shared/ui/overlays";
 import type { CatalogDialogState } from "../model/catalog";
-import { CategoryForm } from "./CategoryForm";
-import { ProductForm } from "./ProductForm";
+import { CategoryForm } from "./categories/CategoryForm";
+import { ProductForm } from "./products/ProductForm";
 
 export interface CatalogDialogProps {
 	dialog: CatalogDialogState | null;

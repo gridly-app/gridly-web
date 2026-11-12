@@ -1,6 +1,7 @@
 import type { Category, CategoryInput } from "@/entities/warehouse";
-import { Field, FormShell, Input } from "@/shared/ui";
-import { categoryFromForm } from "../model/categoryFromForm";
+import { Input } from "@/shared/ui/controls";
+import { Field, FormShell } from "@/shared/ui/forms";
+import { categoryFromForm } from "../../model/categoryFromForm";
 
 export interface CategoryFormProps {
 	category?: Category | undefined;

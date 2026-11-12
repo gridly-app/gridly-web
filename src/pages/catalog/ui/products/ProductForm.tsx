@@ -1,6 +1,7 @@
 import type { Category, Product, ProductInput } from "@/entities/warehouse";
-import { Combobox, Field, FormGrid, FormShell, Input } from "@/shared/ui";
-import { productFromForm } from "../model/productFromForm";
+import { Input } from "@/shared/ui/controls";
+import { Combobox, Field, FormGrid, FormShell } from "@/shared/ui/forms";
+import { productFromForm } from "../../model/productFromForm";
 
 export interface ProductFormProps {
 	categories: Category[];

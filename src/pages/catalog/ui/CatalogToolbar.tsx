@@ -1,5 +1,6 @@
 import { IconPlus } from "@tabler/icons-react";
-import { Button, SegmentedControl, StableLabel } from "@/shared/ui";
+import { Button, StableLabel } from "@/shared/ui/controls";
+import { SegmentedControl } from "@/shared/ui/navigation";
 import type { CatalogTab } from "../model/catalog";
 import catalogStyles from "./CatalogToolbar.module.css";
 

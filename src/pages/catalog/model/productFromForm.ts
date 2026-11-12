@@ -1,5 +1,5 @@
 import type { Product, ProductInput } from "@/entities/warehouse";
-import { formNumber, formText } from "@/shared/lib";
+import { formNumber, formText, UserError } from "@/shared/lib";
 
 export function productFromForm(
 	data: FormData,
@@ -14,16 +14,20 @@ export function productFromForm(
 		!Number.isFinite(Number(volume)) ||
 		Number(volume) <= 0
 	) {
-		throw new Error("Объём: положительное число, максимум 3 знака после точки");
+		throw new UserError(
+			"Объём: положительное число, максимум 3 знака после точки",
+		);
 	}
 	if (
 		price &&
 		(!/^\d+(\.\d{1,2})?$/.test(price) || !Number.isFinite(Number(price)))
 	) {
-		throw new Error("Цена: максимум 2 знака после точки");
+		throw new UserError("Цена: максимум 2 знака после точки");
 	}
 	if (!Number.isSafeInteger(shelf) || shelf < 0) {
-		throw new Error("Срок годности должен быть целым неотрицательным числом");
+		throw new UserError(
+			"Срок годности должен быть целым неотрицательным числом",
+		);
 	}
 
 	return {
