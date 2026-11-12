@@ -3,9 +3,10 @@ import {
 	type Robot,
 	type RobotInput,
 	robotCreateSchema,
+	robotParameterLimits,
 	robotUpdateSchema,
 } from "@/entities/warehouse";
-import { formNumber, formText } from "@/shared/lib";
+import { formNumber, formText, UserError } from "@/shared/lib";
 
 export function robotFromForm(
 	data: FormData,
@@ -18,14 +19,18 @@ export function robotFromForm(
 	const capacity = formText(data, "capacity");
 
 	if (!roles.length) {
-		throw new Error("Выберите хотя бы одну роль");
+		throw new UserError("Выберите хотя бы одну роль");
 	}
-	if (!Number.isInteger(speed) || speed < 1 || speed > 5) {
-		throw new Error("Скорость должна быть целым числом от 1 до 5");
+	if (!robotCreateSchema.shape.speed.safeParse(speed).success) {
+		const { min, max } = robotParameterLimits.speed;
+		throw new UserError(
+			`Скорость должна быть целым числом от ${min} до ${max}`,
+		);
 	}
-	if (!Number.isInteger(duration) || duration < 1 || duration > 20) {
-		throw new Error(
-			"Длительность действия должна быть целым числом от 1 до 20",
+	if (!robotCreateSchema.shape.duration.safeParse(duration).success) {
+		const { min, max } = robotParameterLimits.duration;
+		throw new UserError(
+			`Длительность действия должна быть целым числом от ${min} до ${max}`,
 		);
 	}
 	if (
@@ -33,7 +38,7 @@ export function robotFromForm(
 		!Number.isFinite(Number(capacity)) ||
 		Number(capacity) <= 0
 	) {
-		throw new Error(
+		throw new UserError(
 			"Грузоподъёмность: положительное число, максимум 3 знака после точки",
 		);
 	}
@@ -53,6 +58,6 @@ export function robotFromForm(
 		});
 	const position = formText(data, "position");
 	const cell = spawnCells.find((c) => `${c.x},${c.y}` === position);
-	if (!cell) throw new Error("Выберите свободную стартовую клетку");
+	if (!cell) throw new UserError("Выберите свободную стартовую клетку");
 	return robotCreateSchema.parse({ ...parameters, x: cell.x, y: cell.y });
 }

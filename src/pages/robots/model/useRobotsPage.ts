@@ -4,7 +4,6 @@ import {
 	type Robot,
 	robotAssignment,
 	robotRoleLabels,
-	selectRobotsLive,
 	useLiveWarehouseScope,
 } from "@/entities/warehouse";
 
@@ -13,8 +12,7 @@ const roleLabel = (role: string) =>
 	{ inbound: "Приёмка", outbound: "Отгрузка" }[role] ??
 	role;
 export function useRobotsPage() {
-	const { warehouse, execute, command, pending } =
-		useLiveWarehouseScope(selectRobotsLive);
+	const { warehouse, execute, command, pending } = useLiveWarehouseScope();
 	const [status, setStatus] = useState("all");
 	const [role, setRole] = useState("all");
 	const [search, setSearch] = useState("");

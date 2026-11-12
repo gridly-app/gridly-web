@@ -1,17 +1,17 @@
 import { useId, useState } from "react";
+import { robotParameterLimits } from "@/entities/warehouse";
+import { Checkbox, Input } from "@/shared/ui/controls";
+import { Feedback } from "@/shared/ui/feedback";
 import {
-	Checkbox,
 	CheckLabel,
-	Feedback,
 	Field,
 	FormGrid,
 	FormShell,
-	Input,
 	Select,
-} from "@/shared/ui";
+} from "@/shared/ui/forms";
 import type { RobotFormOptions } from "../model/createRobotForm";
 import { createRobotForm } from "../model/createRobotForm";
-import localLayout from "./Layout.module.css";
+import styles from "./RobotForm.module.css";
 
 export interface RobotFormProps extends RobotFormOptions {
 	pending: boolean;
@@ -58,7 +58,7 @@ export function RobotForm({
 				<Input name="name" defaultValue={robot?.name} required maxLength={80} />
 			</Field>
 			<Field label="Специализация *">
-				<div className={`${localLayout.row} ${localLayout.wrap}`}>
+				<div className={styles.controls}>
 					{roles.map((role) => (
 						<CheckLabel key={role.value} htmlFor={`${controlId}-${role.value}`}>
 							<Checkbox
@@ -76,10 +76,9 @@ export function RobotForm({
 				<Field label="Клеток за тик">
 					<Input
 						name="speed"
-						max={5}
+						{...robotParameterLimits.speed}
 						step={1}
 						type="number"
-						min={1}
 						defaultValue={robot?.speed || 2}
 						required
 					/>
@@ -87,10 +86,9 @@ export function RobotForm({
 				<Field label="Тиков на действие">
 					<Input
 						name="duration"
-						max={20}
+						{...robotParameterLimits.duration}
 						step={1}
 						type="number"
-						min={1}
 						defaultValue={robot?.duration || 3}
 						required
 					/>

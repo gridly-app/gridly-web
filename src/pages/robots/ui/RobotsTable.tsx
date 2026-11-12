@@ -1,22 +1,22 @@
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import { StatusBadge as Badge } from "@/entities/warehouse";
 import { useWorkspaceMode } from "@/shared/auth";
 import { warehousePath } from "@/shared/config";
 import { errorMessage } from "@/shared/lib";
+import { IconButton } from "@/shared/ui/controls";
 import {
-	ConfirmDialog,
-	IconButton,
-	Link,
 	Table,
 	TableActions,
 	TableBody,
 	TableCell,
 	TableHead,
 	TableHeader,
+	TableNote,
 	TableRow,
-} from "@/shared/ui";
+} from "@/shared/ui/dataDisplay";
+import { Link } from "@/shared/ui/navigation";
+import { ConfirmDialog } from "@/shared/ui/overlays";
 
 import type { useRobotsPage } from "../model/useRobotsPage";
 
@@ -80,20 +80,16 @@ export function RobotsTable({ model, hiddenColumns }: RobotsTableProps) {
 									<div>
 										{r.assignment.order.kind ? (
 											<Link
-												render={
-													<RouterLink
-														to={{
-															pathname: warehousePath(
-																mode,
-																warehouseId,
-																r.assignment.order.kind,
-															),
-															search: new URLSearchParams({
-																order: r.assignment.order.id,
-															}).toString(),
-														}}
-													/>
-												}
+												to={{
+													pathname: warehousePath(
+														mode,
+														warehouseId,
+														r.assignment.order.kind,
+													),
+													search: new URLSearchParams({
+														order: r.assignment.order.id,
+													}).toString(),
+												}}
 											>
 												{r.assignment.order.kind === "inbound"
 													? "Поставка"
@@ -103,7 +99,7 @@ export function RobotsTable({ model, hiddenColumns }: RobotsTableProps) {
 										) : (
 											<span>Заказ {r.assignment.order.number}</span>
 										)}
-										<small className="table-note">{r.assignment.detail}</small>
+										<TableNote>{r.assignment.detail}</TableNote>
 									</div>
 								)}
 							</TableCell>
