@@ -6,7 +6,6 @@ dist
 .artifacts/
 bruno/
 docs/
-scripts/
 tests/
 **/*.test.*
 **/*.spec.*
