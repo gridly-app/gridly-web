@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { z } from "zod";
-import { ApiError } from "@/shared/api";
+import { ApiError } from "@/shared/http";
 import { errorMessage, UserError } from "@/shared/lib";
 
 test("public messages never include exception text or diagnostic API details", () => {

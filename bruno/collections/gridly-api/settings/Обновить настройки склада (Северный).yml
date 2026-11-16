@@ -1,0 +1,44 @@
+info:
+  name: Обновить настройки склада (Северный)
+  type: http
+  seq: 5
+http:
+  method: PATCH
+  url: '{{baseUrl}}/warehouses/warehouse-north/settings'
+  body:
+    type: json
+    data: |-
+      {
+        "revision": 1,
+        "location": "Москва",
+        "low_stock_threshold": 12
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: PATCH
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/settings
+      body:
+        type: json
+        data: |-
+          {
+            "revision": 1,
+            "location": "Москва",
+            "low_stock_threshold": 12
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

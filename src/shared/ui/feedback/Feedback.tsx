@@ -14,17 +14,11 @@ import {
 	AlertTitle,
 } from "../spaceui/alert";
 import { Empty, EmptyDescription } from "../spaceui/empty";
-import { Spinner } from "../spaceui/spinner";
 import styles from "./Feedback.module.css";
+import { Skeleton } from "./Skeleton";
 export type FeedbackProps = Omit<ComponentProps<"div">, "title"> & {
 	tone?:
-		| "error"
-		| "success"
-		| "warning"
-		| "info"
-		| "loading"
-		| "empty"
-		| undefined;
+		"error" | "success" | "warning" | "info" | "loading" | "empty" | undefined;
 	fill?: boolean | undefined;
 	inset?: boolean | undefined;
 	title?: string | undefined;
@@ -46,7 +40,15 @@ export function Feedback({
 				<EmptyDescription>{children}</EmptyDescription>
 			</Empty>
 		);
-	const variant = tone === "loading" ? "info" : tone;
+	if (tone === "loading")
+		return (
+			<Skeleton
+				label={children ?? title}
+				layout={fill ? "table" : "lines"}
+				className={clsx(inset && styles.inset, className)}
+				{...props}
+			/>
+		);
 	const Icon =
 		tone === "error"
 			? IconAlertCircle
@@ -57,7 +59,7 @@ export function Feedback({
 					: IconInfoCircle;
 	return (
 		<Alert
-			variant={variant}
+			variant={tone}
 			role={tone === "error" || tone === "warning" ? "alert" : "status"}
 			className={clsx(
 				styles.alert,
@@ -65,15 +67,11 @@ export function Feedback({
 				inset && styles.inset,
 				className,
 			)}
-			data-tone={variant}
+			data-tone={tone}
 			{...props}
 		>
 			<AlertIcon>
-				{tone === "loading" ? (
-					<Spinner aria-hidden="true" />
-				) : (
-					<Icon aria-hidden="true" />
-				)}
+				<Icon aria-hidden="true" />
 			</AlertIcon>
 			{title && <AlertTitle>{title}</AlertTitle>}
 			<AlertDescription>{children}</AlertDescription>

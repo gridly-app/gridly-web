@@ -1,0 +1,147 @@
+info:
+  name: Список остатков (Северный)
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/inventory'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/inventory
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "stock-prod-coffee",
+                "batch_id": "batch-1",
+                "product_id": "prod-coffee",
+                "quantity": 42,
+                "reserved_quantity": 4,
+                "expires_on": "2027-01-31",
+                "cell_x": 2,
+                "cell_y": 2,
+                "cell_id": "cell-1",
+                "revision": 1,
+                "available_quantity": 38,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-tea",
+                "batch_id": "batch-2",
+                "product_id": "prod-tea",
+                "quantity": 28,
+                "reserved_quantity": 0,
+                "expires_on": "2027-01-31",
+                "cell_x": 3,
+                "cell_y": 3,
+                "cell_id": "cell-2",
+                "revision": 1,
+                "available_quantity": 28,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-pasta",
+                "batch_id": "batch-3",
+                "product_id": "prod-pasta",
+                "quantity": 64,
+                "reserved_quantity": 0,
+                "expires_on": "2027-01-31",
+                "cell_x": 5,
+                "cell_y": 4,
+                "cell_id": "cell-3",
+                "revision": 1,
+                "available_quantity": 64,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-lamp",
+                "batch_id": "batch-4",
+                "product_id": "prod-lamp",
+                "quantity": 12,
+                "reserved_quantity": 0,
+                "expires_on": null,
+                "cell_x": 6,
+                "cell_y": 6,
+                "cell_id": "cell-4",
+                "revision": 1,
+                "available_quantity": 12,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-box",
+                "batch_id": "batch-5",
+                "product_id": "prod-box",
+                "quantity": 19,
+                "reserved_quantity": 0,
+                "expires_on": null,
+                "cell_x": 10,
+                "cell_y": 7,
+                "cell_id": "cell-5",
+                "revision": 1,
+                "available_quantity": 19,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-prod-milk",
+                "batch_id": "batch-6",
+                "product_id": "prod-milk",
+                "quantity": 31,
+                "reserved_quantity": 3,
+                "expires_on": "2026-11-07",
+                "cell_x": 13,
+                "cell_y": 8,
+                "cell_id": "cell-6",
+                "revision": 1,
+                "available_quantity": 28,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-north-labels",
+                "batch_id": "batch-north-labels",
+                "product_id": "prod-labels",
+                "quantity": 8,
+                "reserved_quantity": 8,
+                "expires_on": null,
+                "cell_x": 2,
+                "cell_y": 2,
+                "cell_id": "cell-1",
+                "revision": 1,
+                "available_quantity": 0,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              },
+              {
+                "id": "stock-north-film",
+                "batch_id": "batch-north-film",
+                "product_id": "prod-film",
+                "quantity": 3,
+                "reserved_quantity": 0,
+                "expires_on": null,
+                "cell_x": 3,
+                "cell_y": 3,
+                "cell_id": "cell-2",
+                "revision": 1,
+                "available_quantity": 3,
+                "can_write_off": false,
+                "write_off_blocked_reason": "Статический пример Bruno: изменение остатков не сохраняется."
+              }
+            ],
+            "total": 8
+          }

@@ -1,13 +1,12 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseCommands } from "@/entities/warehouse/api/commands/restCommands";
-import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
-import { RestWarehouseRepository } from "@/entities/warehouse/api/repositories/restRepository";
-import { warehouseCommandSchema } from "@/entities/warehouse/model/commands/commandSchemas";
-import type { Warehouse } from "@/entities/warehouse/model/warehouse";
-import { writeOffFromForm } from "@/pages/inventory/model/writeOffFromForm";
-import { robotFromForm } from "@/pages/robots/model/robotFromForm";
-import { ApiError, FetchHttpClient, type RequestOptions } from "@/shared/api";
+import { writeOffFromForm } from "@/app/warehouse/warehouse-inventory/model/writeOffFromForm";
+import { robotFromForm } from "@/app/warehouse/warehouse-robots/model/robotFromForm";
+import { RestWarehouseCommands } from "@/app/warehouse-data/commands/restCommands";
+import { RestWarehouseRepository } from "@/app/warehouse-data/repositories/restRepository";
+import { warehouseCommandSchema } from "@/domain/warehouse/commands/commandSchemas";
+import type { Warehouse } from "@/domain/warehouse/warehouse";
+import { ApiError, FetchHttpClient, type RequestOptions } from "@/shared/http";
 import { warehouse } from "../../support/warehouse";
 
 function form() {
@@ -147,7 +146,6 @@ test("confirm derives action from freshly read kind; 201/202 receipts succeed", 
 });
 test("settings keep a separate revision, only send changed fields and retain server failures", async () => {
 	const cache = new QueryClient();
-	cache.setQueryData(warehouseKeys.detail("w"), warehouse());
 	const calls: { url: string; body: unknown }[] = [];
 	let status = 200;
 	let revision = 4;
@@ -177,6 +175,7 @@ test("settings keep a separate revision, only send changed fields and retain ser
 		});
 	});
 	const repo = new RestWarehouseRepository(client, cache);
+	cache.setQueryData(repo.keys.detail("w"), warehouse());
 	expect((await repo.get("w", undefined, "settings")).settings?.revision).toBe(
 		4,
 	);
@@ -197,10 +196,69 @@ test("settings keep a separate revision, only send changed fields and retain ser
 			}),
 		).rejects.toBeInstanceOf(ApiError);
 		expect(
-			cache.getQueryData<Warehouse>(warehouseKeys.detail("w"))?.settings
-				?.location,
+			cache.getQueryData<Warehouse>(repo.keys.detail("w"))?.settings?.location,
 		).toBe("Москва");
 	}
 	repo.clear();
 	cache.clear();
+});
+
+test("editing an item outside the current snapshot never sends a create request", async () => {
+	const snapshot = warehouse();
+	const calls: { path: string; method: RequestOptions["method"] }[] = [];
+	const commands = new RestWarehouseCommands(
+		{ request: async () => undefined },
+		async (path, { method }) => {
+			calls.push({ path, method });
+		},
+	);
+
+	await expect(
+		commands.execute(
+			"w",
+			{
+				action: "product",
+				value: {
+					id: "missing",
+					revision: 2,
+					name: "Product",
+					sku: "SKU",
+					category: "c",
+					volume: "1",
+					price: "1",
+					shelf: 0,
+				},
+			},
+			snapshot,
+		),
+	).rejects.toThrow("Обновите каталог");
+
+	await commands.execute(
+		"w",
+		{
+			action: "category",
+			value: { id: "category", revision: 3, name: "Category", cold: false },
+		},
+		snapshot,
+	);
+	await commands.execute(
+		"w",
+		{
+			action: "order",
+			value: {
+				id: "order",
+				revision: 3,
+				kind: "inbound",
+				party: "Test",
+				lines: [],
+				manual: snapshot.policy,
+			},
+		},
+		snapshot,
+	);
+
+	expect(calls).toEqual([
+		{ path: "/warehouses/w/categories/category", method: "PATCH" },
+		{ path: "/warehouses/w/orders/order", method: "PATCH" },
+	]);
 });

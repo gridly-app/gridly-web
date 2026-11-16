@@ -60,7 +60,6 @@ export async function warehouseSettingsScenario({
 	await expect(page.getByText("Сохранено", { exact: true })).toBeVisible();
 	await page.reload();
 	await expect(city).toHaveText("Казань");
-	console.log("PASS city settings recover from a stale revision");
 	api.settingsFailure = 404;
 	await page.reload();
 	await expect(page.getByRole("alert")).toContainText(
@@ -74,9 +73,6 @@ export async function warehouseSettingsScenario({
 	await page.getByRole("button", { name: "Повторить", exact: true }).click();
 	await expect(threshold).toBeEnabled();
 	await expect(threshold).toHaveValue("17");
-	console.log(
-		"PASS FEFO and settings persistence / revision conflict / missing API",
-	);
 	const setting = page.getByRole("switch").first();
 	const previousChecked = await setting.isChecked();
 	await setting.click();
@@ -103,5 +99,4 @@ export async function warehouseSettingsScenario({
 		"Проверьте введённые данные",
 	);
 	await page.keyboard.press("Escape");
-	console.log("PASS switch and warehouse creation error");
 }

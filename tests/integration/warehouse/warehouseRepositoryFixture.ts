@@ -1,6 +1,6 @@
-import { RestWarehouseRepository } from "@/entities/warehouse";
+import { RestWarehouseRepository } from "@/app/warehouse-data";
 
-import { ApiError, type RequestOptions } from "@/shared/api";
+import { ApiError, type RequestOptions } from "@/shared/http";
 
 export const warehouseDto = {
 	id: "w1",

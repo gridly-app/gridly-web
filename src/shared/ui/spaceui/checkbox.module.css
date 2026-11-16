@@ -13,10 +13,10 @@
 		outline-style: none;
 		--focus-color: var(--ring);
 		&:not(
-				:where([data-theme="dark"] *):not(
-					:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-				)
-			) {
+			:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			)
+		) {
 			background-clip: padding-box;
 		}
 		&::before {

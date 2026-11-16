@@ -6,4 +6,5 @@ export { DateRangeFields } from "./DateRangeFields";
 export { Field } from "./Field";
 export { CheckLabel, FormActions, FormGrid } from "./FormLayout";
 export { FormShell } from "./FormShell";
+export { SearchField } from "./SearchField";
 export { Select } from "./Select";

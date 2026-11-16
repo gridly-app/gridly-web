@@ -1,0 +1,22 @@
+info:
+  name: Настройки склада (Северный)
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/settings'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/settings
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: '{"revision": 1, "location": "Санкт-Петербург", "low_stock_threshold": 15, "allocation_policy": "fefo"}'

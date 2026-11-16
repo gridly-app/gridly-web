@@ -61,7 +61,4 @@ export async function accountScenario({
 	} finally {
 		await otherTab.close();
 	}
-	console.log(
-		"PASS signing in as another account ends the previous tab session",
-	);
 }

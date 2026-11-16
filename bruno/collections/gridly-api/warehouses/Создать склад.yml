@@ -1,0 +1,46 @@
+info:
+  name: Создать склад
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses'
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Тестовый склад",
+        "width": 16,
+        "height": 11,
+        "time_zone": "Europe/Moscow"
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Тестовый склад",
+            "width": 16,
+            "height": 11,
+            "time_zone": "Europe/Moscow"
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

@@ -1,0 +1,75 @@
+info:
+  name: Текущее состояние карты (Центральный)
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-demo/map/state'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/map/state
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "warehouse_id": "warehouse-demo",
+            "layout_version": 1,
+            "state_version": "120",
+            "tick": "120",
+            "as_of": "2026-11-02T08:38:46.491Z",
+            "robots": [
+              {
+                "id": "robot-1",
+                "x": 2,
+                "y": 2,
+                "status": "moving",
+                "motion_path": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 4
+                  },
+                  {
+                    "x": 2,
+                    "y": 3
+                  },
+                  {
+                    "x": 2,
+                    "y": 2
+                  }
+                ]
+              },
+              {
+                "id": "robot-2",
+                "x": 8,
+                "y": 5,
+                "status": "idle"
+              },
+              {
+                "id": "robot-3",
+                "x": 8,
+                "y": 0,
+                "status": "charging"
+              }
+            ]
+          }

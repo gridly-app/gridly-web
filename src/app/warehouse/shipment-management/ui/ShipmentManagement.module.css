@@ -1,0 +1,114 @@
+.page {
+	overflow: auto;
+	min-height: 0;
+	padding: var(--workspace-inset);
+	align-content: start;
+	display: grid;
+	gap: 16px;
+	min-width: 0;
+}
+.panel {
+	min-width: 0;
+}
+.page h1,
+.panel h2,
+.panel h3 {
+	margin: 0 0 10px;
+}
+.page p {
+	margin: 0 0 10px;
+	color: var(--text-secondary);
+}
+.fields,
+.row {
+	margin: 0;
+	min-width: 0;
+	border: 0;
+	padding: 0;
+	display: grid;
+	gap: 12px;
+	justify-items: start;
+}
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	margin-bottom: 12px;
+}
+fieldset.row {
+	width: 100%;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 10px;
+}
+.row > div,
+.fields > div {
+	min-width: 0;
+	display: grid;
+	gap: 5px;
+	font-size: var(--text-control);
+}
+.scroll {
+	overflow: auto;
+	max-height: 28rem;
+}
+.table {
+	border-collapse: separate;
+	border-spacing: 0;
+	text-align: left;
+	font-size: 0.875rem;
+}
+.table td,
+.table th {
+	border-bottom: 1px solid var(--border);
+}
+.table thead th {
+	position: sticky;
+	top: 0;
+	background: var(--bg-elevated);
+}
+
+.deliveryCard {
+	display: grid;
+	gap: 12px;
+	min-width: 0;
+}
+.deliveryCard h2 {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 650;
+}
+.deliveryAddresses > div {
+	padding: 0;
+	border: 0;
+	overflow-wrap: anywhere;
+}
+.deliverySelect {
+	width: 23rem;
+	gap: 12px;
+	height: 3.5rem;
+	padding-block: 4px;
+	font-size: 1.125rem;
+	font-weight: 600;
+	line-height: 1.25;
+}
+.deliverySelect [data-slot="select-value"] {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.deliveryOrder {
+	display: grid;
+	gap: 12px;
+	min-width: 0;
+}
+.deliveryOrder h2 {
+	margin: 0;
+	font-size: clamp(1.375rem, 2.6vw, 1.875rem);
+	font-weight: 650;
+}
+.deliveryOrder a {
+	justify-self: start;
+}

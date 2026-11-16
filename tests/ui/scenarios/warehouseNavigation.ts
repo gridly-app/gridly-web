@@ -22,6 +22,11 @@ export async function warehouseNavigationScenario({
 				: Infinity;
 		}),
 	).toBeLessThan(1);
+	await ready("map");
+	await page.reload();
+	await expect(page).toHaveURL(`${base}/warehouses/warehouse-demo/map`);
+	await expect(page.locator("canvas").first()).toBeVisible();
+
 	await page.goto(`${base}/warehouses/warehouse-demo/warehouses`);
 	await page.getByRole("combobox", { name: "Категория отчёта" }).click();
 	await expect(
@@ -85,7 +90,6 @@ export async function warehouseNavigationScenario({
 		}
 		await screenshot(path);
 	}
-	console.log("PASS all warehouse screens");
 	const sidebarTrigger = page.getByRole("button", {
 		name: "Переключить меню",
 		exact: true,

@@ -1,6 +1,6 @@
-import { AppProviders } from "@/app/composition/AppProviders";
-import type { AppDependencies } from "@/app/composition/dependencies";
-import { AppRouter } from "@/app/router/AppRouter";
+import { AppRouter } from "./app-routes.compose";
+import { AppProviders } from "./composition/app-providers.compose";
+import type { AppDependencies } from "./composition/dependencies.compose";
 
 export function App({ dependencies }: { dependencies: AppDependencies }) {
 	return (

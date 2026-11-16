@@ -69,10 +69,10 @@
 		will-change: transform;
 		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 		&:not(
-				:where([data-theme="dark"] *):not(
-					:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-				)
-			) {
+			:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			)
+		) {
 			background-clip: padding-box;
 		}
 		&::before {

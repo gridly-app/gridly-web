@@ -1,0 +1,66 @@
+info:
+  name: Загрузить документ
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/{{warehouseId}}/orders/{{orderId}}/shipment/documents'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+  body:
+    type: multipart-form
+    data:
+      - name: file
+        type: file
+        value: []
+      - name: name
+        type: text
+        value: Накладная
+      - name: category
+        type: text
+        value: transport
+      - name: previous_document_id
+        type: text
+        value: ''
+        disabled: true
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/orders/order-out-2087/shipment/documents
+      headers:
+        - name: Authorization
+          value: Bearer bruno-account-token
+      body:
+        type: multipart-form
+        data:
+          - name: file
+            type: file
+            value: []
+          - name: name
+            type: text
+            value: Накладная
+          - name: category
+            type: text
+            value: transport
+          - name: previous_document_id
+            type: text
+            value: ''
+            disabled: true
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический мок не сохраняет изменения."
+            }
+          }

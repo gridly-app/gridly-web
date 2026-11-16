@@ -1,0 +1,30 @@
+info:
+  name: Снимок отгрузки (недействительная ссылка)
+  type: http
+  seq: 4
+http:
+  method: GET
+  url: '{{baseUrl}}/public/shipments'
+settings:
+  followRedirects: false
+examples:
+  - name: '404'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/public/shipments
+    response:
+      status: 404
+      headers:
+        - name: Content-Type
+          value: application/json
+        - name: Cache-Control
+          value: no-store
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "SHIPMENT_NOT_FOUND",
+              "message": "Данные по ссылке недоступны."
+            }
+          }

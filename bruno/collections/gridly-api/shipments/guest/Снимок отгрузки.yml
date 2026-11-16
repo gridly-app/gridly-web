@@ -1,0 +1,177 @@
+info:
+  name: Снимок отгрузки
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/public/shipments'
+  headers:
+    - name: Authorization
+      value: Bearer {{guestToken}}
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/public/shipments
+      headers:
+        - name: Authorization
+          value: Bearer bruno-shipment-guest-token
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+        - name: Cache-Control
+          value: no-store
+      body:
+        type: json
+        data: |-
+          {
+            "order": {
+              "number": "ЗК-2087",
+              "recipient": "Интернет-заказ #2087",
+              "warehouse_name": "Центральный склад",
+              "time_zone": "Europe/Moscow",
+              "created_at": "2026-11-02T08:38:46.491Z",
+              "state": "active",
+              "status_reason": null,
+              "updated_at": "2026-11-13T09:00:00Z"
+            },
+            "warehouse": {
+              "priority": "high",
+              "quantities": [
+                {
+                  "unit": "pcs",
+                  "ready_quantity": 1,
+                  "processing_quantity": 0,
+                  "remaining_quantity": 1
+                }
+              ]
+            },
+            "items": [
+              {
+                "order_line_id": "order-line-coffee",
+                "sku": "FOOD-001",
+                "name": "Кофе в зёрнах",
+                "grade": null,
+                "quantity": 2,
+                "unit": "pcs",
+                "packaging": "Коробка",
+                "variant": null
+              },
+              {
+                "order_line_id": "order-line-lamp",
+                "sku": "HOME-014",
+                "name": "Лампа настольная",
+                "grade": null,
+                "quantity": 1,
+                "unit": "pcs",
+                "packaging": null,
+                "variant": null
+              }
+            ],
+            "plan": [
+              {
+                "date": "2026-11-12",
+                "order_line_id": "order-line-coffee",
+                "quantity": 2,
+                "unit": "pcs"
+              },
+              {
+                "date": "2026-11-13",
+                "order_line_id": "order-line-lamp",
+                "quantity": 1,
+                "unit": "pcs"
+              }
+            ],
+            "actual": [
+              {
+                "id": "shipment-fact-road",
+                "order_line_id": "order-line-coffee",
+                "quantity": 1,
+                "unit": "pcs",
+                "packaging": "Коробка",
+                "shipped_at": "2026-11-12T12:00:00Z",
+                "loaded_at": "2026-11-12T11:30:00Z",
+                "transport_type": "road",
+                "vehicle_number": "А123ВС 77",
+                "reference_number": "ТН-2087",
+                "comment": null
+              },
+              {
+                "id": "shipment-fact-rail",
+                "order_line_id": "order-line-lamp",
+                "quantity": 1,
+                "unit": "pcs",
+                "packaging": null,
+                "shipped_at": "2026-11-13T09:00:00Z",
+                "loaded_at": "2026-11-13T08:30:00Z",
+                "transport_type": "rail",
+                "vehicle_number": "52743106",
+                "reference_number": null,
+                "comment": null
+              }
+            ],
+            "milestones": [
+              {
+                "code": "accepted",
+                "state": "completed",
+                "occurred_at": "2026-11-02T08:38:46Z",
+                "planned_at": null,
+                "note": null
+              },
+              {
+                "code": "warehouse_preparation",
+                "state": "completed",
+                "occurred_at": "2026-11-10T07:30:00Z",
+                "planned_at": null,
+                "note": null
+              },
+              {
+                "code": "ready_to_ship",
+                "state": "completed",
+                "occurred_at": "2026-11-12T11:00:00Z",
+                "planned_at": null,
+                "note": null
+              },
+              {
+                "code": "loading",
+                "state": "completed",
+                "occurred_at": "2026-11-12T11:30:00Z",
+                "planned_at": null,
+                "note": null
+              },
+              {
+                "code": "handed_to_carrier",
+                "state": "current",
+                "occurred_at": "2026-11-12T12:00:00Z",
+                "planned_at": null,
+                "note": "Перевозчику переданы 2 из 3 единиц. Вторая коробка кофе ожидает отправки."
+              },
+              {
+                "code": "in_transit",
+                "state": "pending",
+                "occurred_at": null,
+                "planned_at": "2026-11-14T10:00:00Z",
+                "note": null
+              },
+              {
+                "code": "delivered",
+                "state": "pending",
+                "occurred_at": null,
+                "planned_at": "2026-11-15T13:00:00Z",
+                "note": null
+              }
+            ],
+            "documents": [
+              {
+                "id": "document-shipment-1",
+                "name": "Накладная",
+                "category": "transport",
+                "uploaded_at": "2026-11-12T12:15:00Z",
+                "version": 1
+              }
+            ]
+          }

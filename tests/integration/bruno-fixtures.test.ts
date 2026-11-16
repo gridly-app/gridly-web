@@ -1,32 +1,11 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { z } from "zod";
-import { RestWarehouseRepository } from "@/entities/warehouse/api/repositories/restRepository";
-import { warehouseSchema } from "@/entities/warehouse/model/warehouse";
-import { FetchHttpClient } from "@/shared/api";
+import { RestWarehouseRepository } from "@/app/warehouse-data/repositories/restRepository";
+import { warehouseSchema } from "@/domain/warehouse/warehouse";
+import { FetchHttpClient } from "@/shared/http";
+import { loadMockRoutes } from "../../bruno/mock-fixture";
 
-const fixtureSchema = z.object({
-	routes: z.array(
-		z.object({
-			name: z.string(),
-			request: z.object({ method: z.string(), url: z.string() }),
-			response: z.object({
-				status: z.number(),
-				body: z
-					.object({ type: z.literal("json"), data: z.string() })
-					.optional(),
-			}),
-			rules: z.unknown().optional(),
-		}),
-	),
-});
-const fixture = fixtureSchema.parse(
-	Bun.YAML.parse(
-		await Bun.file(
-			new URL("../../bruno/mocks/Gridly API.yml", import.meta.url),
-		).text(),
-	),
-);
+const fixture = { routes: await loadMockRoutes() };
 const warehouseId = "warehouse-demo";
 
 function repository() {

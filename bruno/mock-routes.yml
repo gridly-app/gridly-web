@@ -1,0 +1,300 @@
+# Порядок ответов, шаблоны путей и правила для Bruno Mock Server.
+- file: warehouses/Список складов (API недоступен).yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: x-gridly-scenario
+        operator: equals
+        value: unavailable
+- file: warehouses/Список складов (пусто).yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: x-gridly-scenario
+        operator: equals
+        value: empty
+- file: auth/Вход в аккаунт.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: body
+        key: login
+        operator: equals
+        value: admin@gridly.local
+      - target: body
+        key: password
+        operator: equals
+        value: gridly-demo
+- file: auth/Вход с неверным паролем.yml
+- file: auth/Обновить сессию аккаунта.yml
+- file: auth/Выйти из аккаунта.yml
+- file: auth/Зарегистрировать аккаунт.yml
+- file: sandbox/Получить токен песочницы.yml
+- file: sandbox/Проверить доступ к песочнице.yml
+- file: sandbox/Завершить доступ к песочнице.yml
+- file: warehouses/Список складов.yml
+- file: warehouses/Карточка склада (Центральный).yml
+- file: layout/Опубликованная планировка (Центральный).yml
+- file: layout/Черновик планировки (Центральный).yml
+- file: map/Текущее состояние карты (Центральный).yml
+- file: robots/Список роботов (Центральный).yml
+- file: categories/Список категорий (Центральный).yml
+- file: products/Список товаров (Центральный).yml
+- file: inventory/Список остатков (Центральный).yml
+- file: orders/Список заказов (Центральный).yml
+- file: events/Список событий (Центральный).yml
+- file: orders/Заказ ПР-1042 (Центральный).yml
+- file: orders/Заказ ЗК-2087 (Центральный).yml
+- file: orders/Заказ ЗК-2079 (Центральный).yml
+- file: warehouses/Создать склад.yml
+- file: warehouses/Переименовать склад (Центральный).yml
+- file: settings/Обновить правила обработки (Центральный).yml
+- file: layout/Изменить размер карты (Центральный).yml
+- file: layout/Опубликовать планировку (Центральный).yml
+- file: layout/Удалить черновик (Центральный).yml
+- file: simulation/Приостановить симуляцию (Центральный).yml
+- file: simulation/Возобновить симуляцию (Центральный).yml
+- file: robots/Добавить робота (Центральный).yml
+- file: robots/Изменить робота (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/robots/:id
+- file: robots/Удалить робота (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/robots/:id
+- file: categories/Создать категорию (Центральный).yml
+- file: categories/Изменить категорию (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/categories/:id
+- file: categories/Архивировать категорию (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/categories/:id/archive
+- file: products/Создать товар (Центральный).yml
+- file: products/Изменить товар (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/products/:id
+- file: products/Удалить товар (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/products/:id
+- file: orders/Создать заказ (Центральный).yml
+- file: orders/Изменить заказ (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/orders/:id
+- file: orders/Удалить заказ (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/orders/:id
+- file: products/Архивировать товар (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/products/:id/archive
+- file: orders/Выполнить действие с заказом (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/orders/:id/:action
+- file: tasks/Подтвердить складскую задачу (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/tasks/:id/:action
+- file: inventory/Списать остаток (Центральный).yml
+- file: map/Сводка по выбранным клеткам (Центральный).yml
+- file: layout/Предложить маршруты (Центральный).yml
+- file: warehouses/Карточка склада (Северный).yml
+- file: layout/Опубликованная планировка (Северный).yml
+- file: layout/Черновик планировки (Северный).yml
+- file: map/Текущее состояние карты (Северный).yml
+- file: robots/Список роботов (Северный).yml
+- file: categories/Список категорий (Северный).yml
+- file: products/Список товаров (Северный).yml
+- file: inventory/Список остатков (Северный).yml
+- file: orders/Список заказов (Северный).yml
+- file: events/Список событий (Северный).yml
+- file: orders/Заказ ПР-2198 (Северный).yml
+- file: orders/Заказ ЗК-3099 (Северный).yml
+- file: orders/Заказ ЗК-3094 (Северный).yml
+- file: orders/Заказ ЗК-3101 (Северный).yml
+- file: orders/Заказ ЗК-3110 (Северный).yml
+- file: orders/Заказ ПР-2201 (Северный).yml
+- file: settings/Обновить настройки склада (Центральный).yml
+- file: warehouses/Удалить склад (Центральный).yml
+- file: inventory/Изменить остаток (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/inventory/:id
+- file: inventory/Удалить остаток (Центральный).yml
+  path: /api/v1/warehouses/warehouse-demo/inventory/:id
+- file: settings/Обновить настройки склада (Северный).yml
+- file: warehouses/Удалить склад (Северный).yml
+- file: inventory/Изменить остаток (Северный).yml
+  path: /api/v1/warehouses/warehouse-north/inventory/:id
+- file: inventory/Удалить остаток (Северный).yml
+  path: /api/v1/warehouses/warehouse-north/inventory/:id
+- file: settings/Настройки склада (Центральный).yml
+- file: settings/Настройки склада (Северный).yml
+- file: shipments/guest/Снимок отгрузки (API недоступен).yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-shipment-guest-token
+      - target: header
+        key: x-gridly-scenario
+        operator: equals
+        value: unavailable
+- file: shipments/guest/Снимок отгрузки.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-shipment-guest-token
+- file: shipments/guest/Снимок отгрузки (недействительная ссылка).yml
+- file: shipments/guest/Скачать опубликованный документ.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-shipment-guest-token
+- file: shipments/guest/Скачать неизвестный документ.yml
+  path: /api/v1/public/shipments/documents/:document_id/download
+- file: shipments/guest/Скачать документ без ссылки.yml
+- file: shipments/operator/Рабочий снимок отгрузки.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-account-token
+- file: shipments/operator/Рабочий снимок без сессии.yml
+- file: shipments/operator/Записать план, факт и этапы.yml
+- file: shipments/operator/Выпустить ссылку.yml
+- file: shipments/operator/Отозвать ссылку.yml
+- file: shipments/operator/Загрузить документ.yml
+- file: shipments/operator/Опубликовать документ.yml
+  path: /api/v1/warehouses/warehouse-demo/orders/order-out-2087/shipment/documents/:document_id
+- file: shipments/admin/Журнал аудита.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-account-token
+- file: shipments/admin/Экспорт журнала аудита.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-account-token
+- file: shipments/admin/Диагностика заказа.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-account-token
+      - target: query
+        key: warehouse_id
+        operator: equals
+        value: warehouse-demo
+      - target: query
+        key: order_id
+        operator: equals
+        value: order-out-2087
+- file: shipments/admin/Диагностика системы.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-account-token
+- file: shipments/admin/Журнал аудита (недостаточно прав).yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-shipment-operator-token
+- file: shipments/admin/Журнал аудита (без сессии).yml
+- file: shipments/admin/Экспорт журнала аудита (недостаточно прав).yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-shipment-operator-token
+- file: shipments/admin/Экспорт журнала аудита (без сессии).yml
+- file: shipments/admin/Диагностика системы (недостаточно прав).yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-shipment-operator-token
+- file: shipments/admin/Диагностика системы (без сессии).yml
+- file: shipments/sandbox-admin/Журнал аудита.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-sandbox-token
+- file: shipments/sandbox-admin/Экспорт журнала аудита.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-sandbox-token
+- file: shipments/sandbox-admin/Диагностика заказа.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-sandbox-token
+      - target: query
+        key: warehouse_id
+        operator: equals
+        value: warehouse-demo
+      - target: query
+        key: order_id
+        operator: equals
+        value: order-out-2087
+- file: shipments/sandbox-admin/Диагностика системы.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-sandbox-token
+- file: shipments/sandbox-admin/Журнал аудита (без сессии).yml
+- file: shipments/sandbox-admin/Экспорт журнала аудита (без сессии).yml
+- file: shipments/sandbox-admin/Диагностика системы (без сессии).yml
+- file: shipments/admin/Пользователи.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-account-token
+- file: shipments/admin/Пользователи (недостаточно прав).yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-shipment-operator-token
+- file: shipments/admin/Пользователи (без сессии).yml
+- file: shipments/sandbox-admin/Пользователи.yml
+  rules:
+    operator: AND
+    conditions:
+      - target: header
+        key: authorization
+        operator: equals
+        value: Bearer bruno-sandbox-token
+- file: shipments/sandbox-admin/Пользователи (без сессии).yml

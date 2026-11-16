@@ -1,9 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "@/entities/warehouse";
-import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
+import { RestWarehouseRepository } from "@/app/warehouse-data";
 
-import { ApiError } from "@/shared/api";
+import { ApiError } from "@/shared/http";
 
 import {
 	warehouseDto,
@@ -42,7 +41,7 @@ describe("REST warehouse recovery", () => {
 		await expect(repository.get("w1", undefined, "map")).rejects.toMatchObject({
 			name: "TimeoutError",
 		});
-		expect(cache.getQueryData(warehouseKeys.detail("w1"))).toBeUndefined();
+		expect(cache.getQueryData(repository.keys.detail("w1"))).toBeUndefined();
 		await expect(repository.get("w1", undefined, "map")).resolves.toMatchObject(
 			{
 				version: 1,
@@ -84,7 +83,7 @@ describe("REST warehouse recovery", () => {
 		}
 	});
 
-	test("fallback polling resumes after an individual map state request hangs", async () => {
+	test("fallback polling recovers without marking the unavailable stream connected", async () => {
 		const base = warehouseRepositoryFixture();
 		const cache = new QueryClient();
 		let polls = 0;
@@ -93,7 +92,7 @@ describe("REST warehouse recovery", () => {
 			Promise.withResolvers<void>();
 		const unsubscribe = cache.getQueryCache().subscribe(() => {
 			const live = cache.getQueryData<{ stateVersion: string }>(
-				warehouseKeys.live("w1"),
+				repository.keys.live("w1"),
 			);
 			if (live?.stateVersion === "2") mapUpdated();
 		});
@@ -122,7 +121,7 @@ describe("REST warehouse recovery", () => {
 			await updated;
 			expect(polls).toBeGreaterThanOrEqual(2);
 			expect(failedPoll?.reason).toMatchObject({ name: "TimeoutError" });
-			expect(cache.getQueryData(warehouseKeys.connection("w1"))).toBe(false);
+			expect(cache.getQueryData(repository.keys.connection("w1"))).toBe(true);
 		} finally {
 			release();
 			unsubscribe();
@@ -182,7 +181,7 @@ describe("REST warehouse recovery", () => {
 				new TextEncoder().encode("event: RESYNC_REQUIRED\ndata: {}\n\n"),
 			);
 			await reconnected;
-			expect(cache.getQueryData(warehouseKeys.live("w1"))).toMatchObject({
+			expect(cache.getQueryData(repository.keys.live("w1"))).toMatchObject({
 				layoutVersion: 2,
 				stateVersion: "2",
 			});

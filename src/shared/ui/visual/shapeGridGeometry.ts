@@ -1,13 +1,6 @@
 // Adapted from React Bits Shape Grid. License: docs/react-bits-LICENSE.md.
 // https://github.com/DavidHDev/react-bits
 
-export interface Layout {
-	stepX: number;
-	stepY: number;
-	radius?: number;
-	side?: number;
-}
-
 export type Point = [number, number];
 type Matrix = [
 	number,
@@ -33,22 +26,25 @@ interface View {
 	reach: number;
 }
 
-const SQRT3 = Math.sqrt(3);
 const FAR = 2.5;
 
 export const clamp = (value: number, min: number, max: number) =>
 	Math.min(Math.max(value, min), max);
 
-const multiply = (a: Matrix, b: Matrix): Matrix =>
-	[0, 1, 2, 3, 4, 5, 6, 7, 8].map((k) => {
-		const r = k - (k % 3);
-		const c = k % 3;
-		return (
-			(a[r] ?? 0) * (b[c] ?? 0) +
-			(a[r + 1] ?? 0) * (b[c + 3] ?? 0) +
-			(a[r + 2] ?? 0) * (b[c + 6] ?? 0)
-		);
-	}) as Matrix;
+function multiply(a: Matrix, b: Matrix): Matrix {
+	const [a00, a01, a02, a10, a11, a12, a20, a21, a22] = a;
+	const [b00, b01, b02, b10, b11, b12, b20, b21, b22] = b;
+
+	function row(x: number, y: number, z: number): [number, number, number] {
+		return [
+			x * b00 + y * b10 + z * b20,
+			x * b01 + y * b11 + z * b21,
+			x * b02 + y * b12 + z * b22,
+		];
+	}
+
+	return [...row(a00, a01, a02), ...row(a10, a11, a12), ...row(a20, a21, a22)];
+}
 
 const invert = (m: Matrix): Matrix => {
 	const [a, b, c, d, e, f, g, h, i] = m;
@@ -57,16 +53,16 @@ const invert = (m: Matrix): Matrix => {
 	const C = d * h - e * g;
 	const det = a * A + b * B + c * C;
 	return [
-		A,
-		c * h - b * i,
-		b * f - c * e,
-		B,
-		a * i - c * g,
-		c * d - a * f,
-		C,
-		b * g - a * h,
-		a * e - b * d,
-	].map((value) => value / det) as Matrix;
+		A / det,
+		(c * h - b * i) / det,
+		(b * f - c * e) / det,
+		B / det,
+		(a * i - c * g) / det,
+		(c * d - a * f) / det,
+		C / det,
+		(b * g - a * h) / det,
+		(a * e - b * d) / det,
+	];
 };
 
 export const project = (m: Matrix, x: number, y: number): Point => {
@@ -190,94 +186,4 @@ export const viewFor = (
 		far,
 		reach,
 	};
-};
-
-export const layoutFor = (shape: string, size: number): Layout => {
-	if (shape === "hexagon") {
-		const radius = size / SQRT3;
-		return { stepX: radius * 1.5, stepY: size, radius };
-	}
-	if (shape === "triangle") {
-		const side = (size * 2) / SQRT3;
-		return { stepX: side / 2, stepY: size, side };
-	}
-	return { stepX: size, stepY: size };
-};
-
-export const centerOf = (
-	shape: string,
-	layout: Layout,
-	i: number,
-	j: number,
-): Point => {
-	const { stepX, stepY } = layout;
-	if (shape === "hexagon")
-		return [i * stepX, j * stepY + (Math.abs(i) % 2 === 1 ? stepY / 2 : 0)];
-	if (shape === "triangle") {
-		const up = (((i + j) % 2) + 2) % 2 === 0;
-		return [i * stepX, j * stepY + (up ? stepY * (2 / 3) : stepY / 3)];
-	}
-	if (shape === "cross" || shape === "dot") return [i * stepX, j * stepY];
-	return [(i + 0.5) * stepX, (j + 0.5) * stepY];
-};
-
-export const traceCell = (
-	ctx: CanvasRenderingContext2D,
-	shape: string,
-	layout: Layout,
-	size: number,
-	i: number,
-	j: number,
-	x: number,
-	y: number,
-	inset: number,
-) => {
-	if (shape === "hexagon") {
-		const r = (layout.radius ?? 0) - inset;
-		for (let k = 0; k < 6; k++) {
-			const angle = (Math.PI / 3) * k;
-			const px = x + r * Math.cos(angle);
-			const py = y + r * Math.sin(angle);
-			if (k === 0) ctx.moveTo(px, py);
-			else ctx.lineTo(px, py);
-		}
-		ctx.closePath();
-	} else if (shape === "triangle") {
-		const up = (((i + j) % 2) + 2) % 2 === 0;
-		const half = (layout.side ?? 0) / 2 - inset * 1.7;
-		const height = size - inset * 2.6;
-		const top = up ? y - height * (2 / 3) : y + height * (2 / 3);
-		const base = up ? y + height / 3 : y - height / 3;
-		ctx.moveTo(x, top);
-		ctx.lineTo(x + half, base);
-		ctx.lineTo(x - half, base);
-		ctx.closePath();
-	} else if (shape === "diamond") {
-		const r = size / 2 - inset;
-		ctx.moveTo(x, y - r);
-		ctx.lineTo(x + r, y);
-		ctx.lineTo(x, y + r);
-		ctx.lineTo(x - r, y);
-		ctx.closePath();
-	} else if (shape === "circle") {
-		ctx.moveTo(x + size / 2 - inset, y);
-		ctx.arc(x, y, Math.max(0.5, size / 2 - inset), 0, Math.PI * 2);
-	} else if (shape === "tile") {
-		const half = size / 2 - Math.max(inset, size * 0.06);
-		const r = Math.min(half, size * 0.22);
-		ctx.roundRect(x - half, y - half, half * 2, half * 2, r);
-	} else if (shape === "cross") {
-		const arm = size * 0.16 + inset;
-		ctx.moveTo(x - arm, y);
-		ctx.lineTo(x + arm, y);
-		ctx.moveTo(x, y - arm);
-		ctx.lineTo(x, y + arm);
-	} else if (shape === "dot") {
-		const r = size * 0.05 + inset;
-		ctx.moveTo(x + r, y);
-		ctx.arc(x, y, r, 0, Math.PI * 2);
-	} else {
-		const half = size / 2 - inset;
-		ctx.rect(x - half, y - half, half * 2, half * 2);
-	}
 };

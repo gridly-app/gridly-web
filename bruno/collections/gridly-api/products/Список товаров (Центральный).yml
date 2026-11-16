@@ -1,0 +1,99 @@
+info:
+  name: Список товаров (Центральный)
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-demo/products'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/products
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "prod-coffee",
+                "name": "Кофе в зёрнах",
+                "sku": "FOOD-001",
+                "category_id": "cat-food",
+                "unit_volume": 0.8,
+                "price": "890",
+                "default_shelf_life_days": 365,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-tea",
+                "name": "Чай зелёный",
+                "sku": "FOOD-002",
+                "category_id": "cat-food",
+                "unit_volume": 0.4,
+                "price": "420",
+                "default_shelf_life_days": 540,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-pasta",
+                "name": "Паста ригатони",
+                "sku": "FOOD-003",
+                "category_id": "cat-food",
+                "unit_volume": 0.6,
+                "price": "190",
+                "default_shelf_life_days": 720,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-lamp",
+                "name": "Лампа настольная",
+                "sku": "HOME-014",
+                "category_id": "cat-house",
+                "unit_volume": 2.5,
+                "price": "2490",
+                "default_shelf_life_days": 0,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-box",
+                "name": "Короб для хранения",
+                "sku": "HOME-021",
+                "category_id": "cat-house",
+                "unit_volume": 3.2,
+                "price": "1190",
+                "default_shelf_life_days": 0,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              },
+              {
+                "id": "prod-milk",
+                "name": "Молоко 3.2%",
+                "sku": "COLD-004",
+                "category_id": "cat-cold",
+                "unit_volume": 1,
+                "price": "110",
+                "default_shelf_life_days": 14,
+                "revision": 1,
+                "is_archived": false,
+                "allowed_actions": []
+              }
+            ],
+            "total": 6
+          }

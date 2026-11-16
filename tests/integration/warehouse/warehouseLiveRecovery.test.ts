@@ -1,13 +1,12 @@
 import { expect, test } from "bun:test";
 import { QueryObserver } from "@tanstack/react-query";
-import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
-import type { Warehouse } from "@/entities/warehouse/model/warehouse";
+import type { Warehouse } from "@/domain/warehouse/warehouse";
 
 import { event, harness, patch, until } from "./liveStreamFixture";
 
 test("resource events finish the active read and queue one follow-up", async () => {
 	const h = harness();
-	const queryKey = warehouseKeys.resource("w", "inventory");
+	const queryKey = h.keys.resource("w", "inventory");
 	h.cache.setQueryData(queryKey, 0);
 	let reads = 0;
 	let canceled = false;
@@ -44,8 +43,8 @@ test("resource events finish the active read and queue one follow-up", async () 
 		source.send(event(patch("4", { stock_changes })));
 		await until(
 			() =>
-				h.cache.getQueryData<Warehouse>(warehouseKeys.detail("w"))
-					?.stateVersion === "4",
+				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.stateVersion ===
+				"4",
 		);
 		expect(reads).toBe(1);
 		expect(canceled).toBe(false);

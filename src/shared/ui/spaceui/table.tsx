@@ -11,19 +11,20 @@ export type TableVariant = "default" | "card";
 
 export type TableProps = React.ComponentProps<"table"> & {
 	variant?: TableVariant;
+	containerClassName?: string | undefined;
 	render?: useRender.ComponentProps<"div">["render"];
 };
 
 export function Table({
 	className,
+	containerClassName,
 	variant = "default",
 	render,
 	...props
 }: TableProps): React.ReactElement {
 	return (
 		<ScrollArea
-			className={css.container}
-			clampContentMinWidth={false}
+			className={clsx(css.container, containerClassName)}
 			data-slot="table-container"
 			data-variant={variant}
 		>

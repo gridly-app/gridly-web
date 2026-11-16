@@ -1,0 +1,142 @@
+info:
+  name: Список заказов (Центральный)
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-demo/orders'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/orders
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "order-in-1042",
+                "number": "ПР-1042",
+                "kind": "inbound",
+                "counterparty_text": "ООО «Северный путь»",
+                "status": "active",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 1,
+                "quantity": 36,
+                "stage": 1,
+                "allowed_actions": [],
+                "tasks": [
+                  {
+                    "id": "task-in-1",
+                    "type": "unload",
+                    "status": "active",
+                    "allowed_actions": []
+                  }
+                ],
+                "lines": [
+                  {
+                    "product_id": "prod-coffee",
+                    "quantity": 20,
+                    "expires_on": "2027-05-21",
+                    "id": "order-in-1042-line-1"
+                  },
+                  {
+                    "product_id": "prod-tea",
+                    "quantity": 16,
+                    "expires_on": "2027-08-29",
+                    "id": "order-in-1042-line-2"
+                  }
+                ]
+              },
+              {
+                "id": "order-out-2087",
+                "number": "ЗК-2087",
+                "kind": "outbound",
+                "counterparty_text": "Интернет-заказ #2087",
+                "status": "active",
+                "created_at": "2026-11-02T08:38:46.491Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 1,
+                "quantity": 3,
+                "stage": 2,
+                "allowed_actions": [],
+                "tasks": [
+                  {
+                    "id": "task-out-1",
+                    "type": "pick",
+                    "status": "active",
+                    "allowed_actions": []
+                  }
+                ],
+                "lines": [
+                  {
+                    "product_id": "prod-coffee",
+                    "quantity": 2,
+                    "expires_on": null,
+                    "id": "order-line-coffee"
+                  },
+                  {
+                    "product_id": "prod-lamp",
+                    "quantity": 1,
+                    "expires_on": null,
+                    "id": "order-line-lamp"
+                  }
+                ]
+              },
+              {
+                "id": "order-out-2079",
+                "number": "ЗК-2079",
+                "kind": "outbound",
+                "counterparty_text": "ИП Волкова",
+                "status": "completed",
+                "created_at": "2026-11-01T08:38:46.494Z",
+                "confirmations": {
+                  "confirm_unload": false,
+                  "confirm_pick": false,
+                  "confirm_putaway": false,
+                  "confirm_load": false,
+                  "revision": 1
+                },
+                "revision": 2,
+                "quantity": 10,
+                "stage": 3,
+                "allowed_actions": [],
+                "lines": [
+                  {
+                    "product_id": "prod-pasta",
+                    "quantity": 6,
+                    "expires_on": null,
+                    "id": "order-out-2079-line-1"
+                  },
+                  {
+                    "product_id": "prod-tea",
+                    "quantity": 4,
+                    "expires_on": null,
+                    "id": "order-out-2079-line-2"
+                  }
+                ]
+              }
+            ],
+            "total": 3
+          }

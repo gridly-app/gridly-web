@@ -56,5 +56,4 @@ export async function ordersScenario({ page, ready, signIn }: UiScenario) {
 	await page
 		.getByRole("button", { name: "Сохранить форму", exact: true })
 		.click();
-	console.log("PASS order draft and API error");
 }

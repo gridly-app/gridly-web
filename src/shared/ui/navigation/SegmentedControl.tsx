@@ -85,12 +85,18 @@ export function SegmentedControl<T extends string>({
 			stop?.();
 		};
 	}, [value, items, reduce, left, right]);
+	function handleValueChange(next: unknown) {
+		const item = items.find((item) => item.value === next);
+
+		if (item) onValueChange(item.value);
+	}
+
 	return (
 		<RadioGroup
 			ref={track}
 			data-rubber-segment=""
 			value={value}
-			onValueChange={(next) => onValueChange(next as T)}
+			onValueChange={handleValueChange}
 			disabled={disabled}
 			aria-label={label}
 			className={styles.root}

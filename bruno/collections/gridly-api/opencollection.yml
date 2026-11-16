@@ -1,0 +1,7 @@
+opencollection: 1.0.0
+info:
+  name: Gridly API
+bundled: false
+docs:
+  type: text/markdown
+  content: Для локальных запросов выполните `bun run mock:prepare`, запустите Gridly API в Mock Servers и выберите окружение Mock. Для живого API выберите Backend.

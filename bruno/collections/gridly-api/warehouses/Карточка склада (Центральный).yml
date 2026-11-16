@@ -1,0 +1,80 @@
+info:
+  name: Карточка склада (Центральный)
+  type: http
+  seq: 3
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-demo'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "warehouse-demo",
+            "name": "Центральный склад",
+            "width": 16,
+            "height": 11,
+            "time_zone": "Europe/Moscow",
+            "published_version": 1,
+            "revision": 1,
+            "simulation_mode": "paused",
+            "worker_health": "healthy",
+            "tick": "120",
+            "state_version": "120",
+            "as_of": "2026-11-02T08:38:46.491Z",
+            "workflow_policy": {
+              "confirm_unload": false,
+              "confirm_pick": false,
+              "confirm_putaway": false,
+              "confirm_load": false,
+              "revision": 1
+            },
+            "allowed_actions": [],
+            "summary": {
+              "robotCount": 3,
+              "productCount": 6,
+              "activeRobots": 2,
+              "hasWaitingInbound": true,
+              "orders": {
+                "inbound": {
+                  "total": 1,
+                  "active": 1,
+                  "completed": 0
+                },
+                "outbound": {
+                  "total": 2,
+                  "active": 1,
+                  "completed": 1
+                }
+              }
+            },
+            "cabinet_settings": {
+              "location": "Москва, ул. Складочная, 1",
+              "placement": "fefo",
+              "allowMixedCategories": false,
+              "reserveOnStart": true,
+              "lowStockThreshold": 10,
+              "reportViews": []
+            },
+            "write_offs": [
+              {
+                "id": "writeoff-1",
+                "product": "prod-coffee",
+                "quantity": 2,
+                "time": "2026-11-02T08:00:00Z",
+                "price": null,
+                "reason": "Повреждена упаковка"
+              }
+            ]
+          }

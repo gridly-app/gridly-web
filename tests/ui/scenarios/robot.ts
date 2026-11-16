@@ -33,5 +33,4 @@ export async function robotScenario({ api, page, ready, signIn }: UiScenario) {
 	await dialog.getByRole("button", { name: "Сохранить", exact: true }).click();
 	await expect(dialog).toHaveCount(0);
 	await expect(page.getByText("UI робот", { exact: true })).toBeVisible();
-	console.log("PASS robot spawn selection and failed save preserves form");
 }

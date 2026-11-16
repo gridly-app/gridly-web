@@ -1,0 +1,134 @@
+.page {
+	max-width: 1420px;
+	margin: 0 auto;
+	padding: 0 clamp(14px, 4vw, 56px) 48px;
+	display: grid;
+	gap: 16px;
+}
+.top {
+	display: flex;
+	gap: 18px;
+	align-items: center;
+	padding: 20px 0;
+	color: var(--text-secondary);
+}
+.top strong {
+	color: var(--accent);
+	font-size: 1.4rem;
+}
+.hero,
+.panel {
+	min-width: 0;
+}
+.hero {
+	padding: clamp(14px, 3vw, 28px);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-panel);
+	border-top: 4px solid var(--accent);
+}
+.heading {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+}
+.heading h1 {
+	font-size: clamp(1.8rem, 4vw, 3rem);
+	line-height: 1.1;
+	margin: 8px 0;
+}
+.page h2 {
+	font-size: 1.125rem;
+	margin: 0 0 12px;
+}
+.page p {
+	margin: 0 0 12px;
+	color: var(--text-secondary);
+}
+.facts {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(175px, 100%), 1fr));
+	gap: 14px;
+	padding: 16px 0;
+	margin: 12px 0 20px;
+	border-block: 1px solid var(--border);
+}
+.facts dt {
+	font-size: 0.8rem;
+	color: var(--text-secondary);
+}
+.facts dd {
+	margin: 4px 0 0;
+	font-variant-numeric: tabular-nums;
+}
+.scroll {
+	overflow: auto;
+	max-height: 32rem;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+}
+.table {
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.875rem;
+	font-variant-numeric: tabular-nums;
+	text-align: left;
+}
+.table th,
+.table td {
+	text-align: left;
+	border-bottom: 1px solid var(--border);
+}
+.table tbody tr:last-child > * {
+	border-bottom: 0;
+}
+.table tbody tr:nth-child(even) {
+	background: var(--bg-page);
+}
+.table thead th {
+	position: sticky;
+	top: 0;
+	background: var(--bg-elevated);
+	z-index: 1;
+	white-space: nowrap;
+}
+.filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 12px 0;
+}
+.filters > div {
+	display: grid;
+	gap: 4px;
+	font-size: 0.8rem;
+}
+
+.options,
+.totals {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	font-size: 0.85rem;
+	padding: 0;
+	margin: 12px 0;
+}
+.totals {
+	list-style: none;
+}
+.options summary {
+	cursor: pointer;
+}
+.table caption {
+	padding: 10px;
+	text-align: start;
+	font-weight: 600;
+}
+
+.scroll:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}

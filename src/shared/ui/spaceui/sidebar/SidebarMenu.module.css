@@ -19,7 +19,8 @@
 		}
 	}
 	.menuButton:focus-visible {
-		box-shadow: 0 0 0 2px var(--sidebar-ring);
+		outline: 2px solid var(--sidebar-ring);
+		outline-offset: -2px;
 	}
 	@media (forced-colors: active) {
 		.menuButton:focus-visible {

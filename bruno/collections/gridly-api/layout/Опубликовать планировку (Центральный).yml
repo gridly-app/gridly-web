@@ -1,0 +1,62 @@
+info:
+  name: Опубликовать планировку (Центральный)
+  type: http
+  seq: 5
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/layout/commit'
+  body:
+    type: json
+    data: |-
+      {
+        "base_version": 1,
+        "draft_revision": 1,
+        "cells": [
+          {
+            "x": 1,
+            "y": 1,
+            "kind": "aisle",
+            "capacity_volume": 0,
+            "zone": null
+          }
+        ],
+        "routes": []
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/layout/commit
+      body:
+        type: json
+        data: |-
+          {
+            "base_version": 1,
+            "draft_revision": 1,
+            "cells": [
+              {
+                "x": 1,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": 0,
+                "zone": null
+              }
+            ],
+            "routes": []
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

@@ -1,0 +1,74 @@
+info:
+  name: Список роботов (Центральный)
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-demo/robots'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/robots
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "robot-1",
+                "name": "R-01 · Атлас",
+                "x": 1,
+                "y": 5,
+                "roles": [
+                  "inbound",
+                  "outbound"
+                ],
+                "speed": 1.2,
+                "action_ticks": 2,
+                "capacity_volume": "120",
+                "status": "working",
+                "revision": 1,
+                "allowed_actions": []
+              },
+              {
+                "id": "robot-2",
+                "name": "R-02 · Нова",
+                "x": 8,
+                "y": 5,
+                "roles": [
+                  "outbound"
+                ],
+                "speed": 1.5,
+                "action_ticks": 2,
+                "capacity_volume": "90",
+                "status": "idle",
+                "revision": 1,
+                "allowed_actions": []
+              },
+              {
+                "id": "robot-3",
+                "name": "R-03 · Пиксель",
+                "x": 8,
+                "y": 0,
+                "roles": [
+                  "inbound",
+                  "outbound"
+                ],
+                "speed": 1,
+                "action_ticks": 3,
+                "capacity_volume": "100",
+                "status": "charging",
+                "revision": 1,
+                "allowed_actions": []
+              }
+            ],
+            "total": 3
+          }

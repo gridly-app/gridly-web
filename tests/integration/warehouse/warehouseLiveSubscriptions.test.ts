@@ -1,15 +1,13 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
-import type { Warehouse } from "@/entities/warehouse/model/warehouse";
+import type { Warehouse } from "@/domain/warehouse/warehouse";
 
 import { channel, event, patch, until } from "./liveStreamFixture";
 
 test("repository shares a stream, skips healthy map polling and resyncs on resubscribe", async () => {
-	const { RestWarehouseRepository } = await import(
-		"@/entities/warehouse/api/repositories/restRepository"
-	);
-	const { ApiError } = await import("@/shared/api");
+	const { RestWarehouseRepository } =
+		await import("@/app/warehouse-data/repositories/restRepository");
+	const { ApiError } = await import("@/shared/http");
 	const cache = new QueryClient();
 	const channels: ReturnType<typeof channel>[] = [];
 	let reads = 0,
@@ -88,8 +86,8 @@ test("repository shares a stream, skips healthy map polling and resyncs on resub
 		channels[0]?.send(event(patch()));
 		await until(
 			() =>
-				cache.getQueryData<Warehouse>(warehouseKeys.detail("w"))
-					?.stateVersion === "2",
+				cache.getQueryData<Warehouse>(repo.keys.detail("w"))?.stateVersion ===
+				"2",
 		);
 		await repo.get("w", undefined, "map");
 		expect(reads).toBe(1);
@@ -104,7 +102,7 @@ test("repository shares a stream, skips healthy map polling and resyncs on resub
 		repo.clear();
 		await until(() => channels[1]?.canceled === true);
 		releaseNext();
-		expect(cache.getQueryData(warehouseKeys.detail("w"))).toBeUndefined();
+		expect(cache.getQueryData(repo.keys.detail("w"))).toBeUndefined();
 	} finally {
 		releaseFirst();
 		releaseSecond();

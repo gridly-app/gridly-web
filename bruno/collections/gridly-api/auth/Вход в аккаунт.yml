@@ -1,0 +1,42 @@
+info:
+  name: Вход в аккаунт
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: '{{baseUrl}}/auth/login'
+  body:
+    type: json
+    data: |-
+      {
+        "login": "admin@gridly.local",
+        "password": "gridly-demo"
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/auth/login
+      body:
+        type: json
+        data: |-
+          {
+            "login": "admin@gridly.local",
+            "password": "gridly-demo"
+          }
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "access_token": "bruno-account-token",
+            "user": {
+              "login": "admin@gridly.local"
+            }
+          }

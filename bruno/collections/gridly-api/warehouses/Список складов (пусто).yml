@@ -1,0 +1,32 @@
+info:
+  name: Список складов (пусто)
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses'
+  headers:
+    - name: x-gridly-scenario
+      value: empty
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses
+      headers:
+        - name: x-gridly-scenario
+          value: empty
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [],
+            "total": 0
+          }

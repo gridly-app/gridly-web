@@ -1,12 +1,12 @@
 import { expect, test } from "bun:test";
-import type { Cell } from "@/entities/warehouse";
-import { storageBlocks } from "@/entities/warehouse/model/layout/blockRoutes";
-import { findWarehousePath } from "@/entities/warehouse/model/layout/findWarehousePath";
 import {
 	prepareRobotMotionTrack,
 	robotMotionPosition,
-} from "@/pages/map/lib/canvas/robotMotion";
-import { requiredAt } from "@/shared/lib/requiredAt";
+} from "@/app/warehouse/warehouse-map/lib/canvas/robotMotion";
+import type { Cell } from "@/domain/warehouse";
+import { storageBlocks } from "@/domain/warehouse/layout/blockRoutes";
+import { findWarehousePath } from "@/domain/warehouse/layout/findWarehousePath";
+import { requiredAt } from "@/shared/invariants";
 
 test("shelves merge only within adjacent matching zones and mock paths can pass below storage", () => {
 	const cells: Cell[] = [

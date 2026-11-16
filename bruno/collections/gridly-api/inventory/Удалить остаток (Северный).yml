@@ -1,0 +1,28 @@
+info:
+  name: Удалить остаток (Северный)
+  type: http
+  seq: 7
+http:
+  method: DELETE
+  url: '{{baseUrl}}/warehouses/warehouse-north/inventory/stock-prod-coffee'
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: DELETE
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/inventory/stock-prod-coffee
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

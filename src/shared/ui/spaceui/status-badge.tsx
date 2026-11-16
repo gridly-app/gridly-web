@@ -38,7 +38,8 @@ export const badgeVariants = cva(css.badge, {
 });
 
 export interface BadgeProps
-	extends React.HTMLAttributes<HTMLDivElement>,
+	extends
+		React.HTMLAttributes<HTMLDivElement>,
 		VariantProps<typeof badgeVariants> {
 	contentClassName?: string;
 }
@@ -99,7 +100,8 @@ export const statusIndicatorVariants = cva(css.statusIndicator, {
 });
 
 export interface StatusBadgeProps
-	extends React.HTMLAttributes<HTMLDivElement>,
+	extends
+		React.HTMLAttributes<HTMLDivElement>,
 		VariantProps<typeof badgeVariants> {
 	status?:
 		| "online"

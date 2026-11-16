@@ -1,0 +1,41 @@
+info:
+  name: Сводка по выбранным клеткам (Центральный)
+  type: http
+  seq: 3
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/map/selection-summary'
+  body:
+    type: json
+    data: |-
+      {
+        "cell_keys": [
+          "1,1"
+        ]
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/map/selection-summary
+      body:
+        type: json
+        data: |-
+          {
+            "cell_keys": [
+              "1,1"
+            ]
+          }
+    response:
+      status: 501
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический пример Bruno не рассчитывает данные для произвольной карты."
+            }
+          }

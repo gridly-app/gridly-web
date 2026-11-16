@@ -1,0 +1,95 @@
+.panel {
+	padding: clamp(16px, 3vw, 28px);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	background: var(--card);
+	min-width: 0;
+}
+.heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+.heading h2 {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 650;
+}
+.steps {
+	--marker: 24px;
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.steps li {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	position: relative;
+	padding-inline-end: 12px;
+	font-size: 0.875rem;
+	overflow-wrap: anywhere;
+}
+.steps li:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	top: calc(var(--marker) / 2 - 1px);
+	left: var(--marker);
+	right: 0;
+	height: 2px;
+	background: var(--border);
+}
+.steps li[data-connected="true"]::before {
+	background: var(--primary);
+}
+.marker {
+	display: grid;
+	place-items: center;
+	width: var(--marker);
+	height: var(--marker);
+	border: 2px solid var(--border);
+	border-radius: 50%;
+	margin-bottom: 7px;
+	background: var(--card);
+}
+.steps [data-state="completed"] .marker,
+.steps [data-state="current"] .marker {
+	background: var(--primary);
+	color: var(--primary-foreground);
+	border-color: var(--primary);
+}
+.steps [data-state="current"] .marker {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+.steps small,
+.steps time {
+	color: var(--muted-foreground);
+	font-size: 0.75rem;
+}
+@media (width <= 1020px) {
+	.steps {
+		grid-template-columns: 1fr;
+	}
+	.steps li {
+		padding: 2px 0 18px 38px;
+		min-height: 48px;
+	}
+	.steps li:not(:last-child)::before {
+		top: var(--marker);
+		bottom: 0;
+		left: calc(var(--marker) / 2 - 1px);
+		width: 2px;
+		height: auto;
+	}
+	.marker {
+		position: absolute;
+		left: 0;
+		top: 0;
+	}
+}

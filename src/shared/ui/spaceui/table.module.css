@@ -2,9 +2,11 @@
 	.container {
 		position: relative;
 		width: 100%;
+		min-width: 0;
 	}
 	.root {
-		width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
 		caption-side: bottom;
 		font-size: 0.875rem;
 		line-height: 1.25rem;
@@ -105,8 +107,7 @@
 	}
 
 	.head {
-		height: 2.5rem;
-		padding-inline: 0.625rem;
+		height: 44px;
 		text-align: left;
 		vertical-align: middle;
 		white-space: nowrap;
@@ -116,54 +117,28 @@
 		&:has(:is([role="checkbox"])) {
 			width: 1px;
 		}
-		&:first-child:has(:is([role="checkbox"])) {
-			padding-inline-end: 0;
-		}
-		&:last-child:has(:is([role="checkbox"])) {
-			padding-inline-start: 0;
-		}
 	}
 	.cell {
 		background-clip: padding-box;
-		padding: 0.625rem;
 		vertical-align: middle;
 		white-space: nowrap;
 		line-height: 1;
-		:where([data-slot="table-footer"]) & {
-			padding-block: 0.875rem;
-		}
-		:where([data-variant="card"]) & {
-			&:first-child {
-				padding-inline-start: calc(0.625rem - 1px);
-			}
-			&:last-child {
-				padding-inline-end: calc(0.625rem - 1px);
-			}
-		}
 		&:has(:is([role="checkbox"])) {
 			width: 1px;
-		}
-		&:first-child:has(:is([role="checkbox"])) {
-			padding-inline-end: 0;
-		}
-		&:last-child:has(:is([role="checkbox"])) {
-			padding-inline-start: 0;
 		}
 	}
 }
 @layer components {
 	.head {
-		padding: 8px 10px;
 		background: var(--muted);
 		font-size: var(--text-caption);
 		line-height: 16px;
 		font-weight: 600;
 	}
 	.cell {
-		padding: 8px 10px;
 		font-size: var(--text-control);
 		line-height: 20px;
-		height: 52px;
+		height: 56px;
 		vertical-align: middle;
 	}
 	.row {

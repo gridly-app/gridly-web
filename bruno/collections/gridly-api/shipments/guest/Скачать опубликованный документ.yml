@@ -1,0 +1,32 @@
+info:
+  name: Скачать опубликованный документ
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/public/shipments/documents/{{documentId}}/download'
+  headers:
+    - name: Authorization
+      value: Bearer {{guestToken}}
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/public/shipments/documents/document-shipment-1/download
+      headers:
+        - name: Authorization
+          value: Bearer bruno-shipment-guest-token
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: text/plain; charset=utf-8
+        - name: Content-Disposition
+          value: attachment; filename=shipment-example.txt
+        - name: Cache-Control
+          value: no-store
+      body:
+        type: text
+        data: Gridly shipment document sample.

@@ -1,7 +1,7 @@
 import { expect, spyOn, test } from "bun:test";
-import { ApiError, FetchHttpClient } from "@/shared/api";
-import { BrowserSessionRepository } from "@/shared/auth";
-import { memoryStorage } from "@/shared/lib/browserStorage";
+import { BrowserSessionRepository } from "@/app/session";
+import { memoryStorage } from "@/shared/browser/browserStorage";
+import { ApiError, FetchHttpClient } from "@/shared/http";
 import {
 	accountStorage,
 	immediateLock,
@@ -37,15 +37,14 @@ test("remembered account waits for a confirmed refresh and network errors are re
 
 test("terminal refresh 401 ends only the account session", async () => {
 	const storage = accountStorage("operator");
-	storage.setItem("demo", "keep");
+	storage.setItem("sandbox", "keep");
 	let clears = 0;
-	let session: BrowserSessionRepository;
 	const http = new FetchHttpClient(
 		"/api",
 		async () => Response.json({ message: "expired" }, { status: 401 }),
 		{ onUnauthorized: () => session.expire() },
 	);
-	session = new BrowserSessionRepository(
+	const session: BrowserSessionRepository = new BrowserSessionRepository(
 		http,
 		storage,
 		() => {
@@ -57,7 +56,7 @@ test("terminal refresh 401 ends only the account session", async () => {
 	expect(session.getSnapshot().status).toBe("ended");
 	expect(session.current()).toBe("");
 	expect(clears).toBe(1);
-	expect(storage.getItem("demo")).toBe("keep");
+	expect(storage.getItem("sandbox")).toBe("keep");
 });
 
 test("a forbidden response does not terminate a restored account", async () => {
@@ -77,7 +76,6 @@ test("a forbidden response does not terminate a restored account", async () => {
 
 test("refresh rejects a different identity before storing its bearer", async () => {
 	const storage = accountStorage("operator");
-	let account: BrowserSessionRepository;
 	const http = new FetchHttpClient(
 		"/api",
 		async () =>
@@ -86,7 +84,7 @@ test("refresh rejects a different identity before storing its bearer", async () 
 			withRefresh: (refresh, signal) => account.withRefresh(refresh, signal),
 		},
 	);
-	account = new BrowserSessionRepository(
+	const account: BrowserSessionRepository = new BrowserSessionRepository(
 		http,
 		storage,
 		undefined,

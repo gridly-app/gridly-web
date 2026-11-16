@@ -4,6 +4,7 @@ import {
 	type RefObject,
 	useContext,
 	useEffect,
+	useEffectEvent,
 	useState,
 } from "react";
 
@@ -29,19 +30,28 @@ export function useImmersiveState() {
 export function useImmersiveRegion(
 	active: boolean,
 	region: RefObject<HTMLElement | null>,
-	returnFocus?: RefObject<HTMLElement | null> | undefined,
+	returnFocus: RefObject<HTMLElement | null>,
 ) {
 	const setActive = useContext(actionContext);
+	const restoreFocus = useEffectEvent((previous: Element | null) => {
+		const target = returnFocus.current ?? previous;
+
+		if (target instanceof HTMLElement && target.isConnected) {
+			target.focus({ preventScroll: true });
+		}
+	});
+
 	useEffect(() => {
 		if (!active) return;
+
 		const previous = document.activeElement;
+
 		setActive(true);
 		region.current?.focus({ preventScroll: true });
+
 		return () => {
 			setActive(false);
-			const target = returnFocus?.current ?? previous;
-			if (target instanceof HTMLElement && target.isConnected)
-				target.focus({ preventScroll: true });
+			restoreFocus(previous);
 		};
-	}, [active, region, returnFocus, setActive]);
+	}, [active, region, setActive]);
 }

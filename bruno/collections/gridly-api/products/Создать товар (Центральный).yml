@@ -1,0 +1,54 @@
+info:
+  name: Создать товар (Центральный)
+  type: http
+  seq: 3
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/products'
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Тестовый товар",
+        "is_archived": false,
+        "sku": "sandbox-COFFEE",
+        "category_id": "cat-food",
+        "unit_volume": 1,
+        "price": null,
+        "has_shelf_life": false,
+        "default_shelf_life_days": null
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/products
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Тестовый товар",
+            "is_archived": false,
+            "sku": "sandbox-COFFEE",
+            "category_id": "cat-food",
+            "unit_volume": 1,
+            "price": null,
+            "has_shelf_life": false,
+            "default_shelf_life_days": null
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

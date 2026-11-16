@@ -1,4 +1,4 @@
-import type { KeyValueStorage } from "../storage";
+import type { KeyValueStorage } from "../../browser/storage";
 
 export function formDraftPrefix(scope: readonly string[]) {
 	return `gridly.forms:${JSON.stringify(scope)}:`;

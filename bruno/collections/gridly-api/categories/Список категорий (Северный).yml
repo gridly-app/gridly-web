@@ -1,0 +1,63 @@
+info:
+  name: Список категорий (Северный)
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/categories'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/categories
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "cat-food",
+                "name": "Продукты",
+                "storage_kind": "general",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 3,
+                "allowed_actions": []
+              },
+              {
+                "id": "cat-house",
+                "name": "Для дома",
+                "storage_kind": "general",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 2,
+                "allowed_actions": []
+              },
+              {
+                "id": "cat-cold",
+                "name": "Охлаждённые",
+                "storage_kind": "cold",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 1,
+                "allowed_actions": []
+              },
+              {
+                "id": "cat-supplies",
+                "name": "Упаковка",
+                "storage_kind": "general",
+                "is_archived": false,
+                "revision": 1,
+                "product_count": 3,
+                "allowed_actions": []
+              }
+            ],
+            "total": 4
+          }

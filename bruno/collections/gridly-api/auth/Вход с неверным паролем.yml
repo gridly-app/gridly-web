@@ -1,0 +1,42 @@
+info:
+  name: Вход с неверным паролем
+  type: http
+  seq: 4
+http:
+  method: POST
+  url: '{{baseUrl}}/auth/login'
+  body:
+    type: json
+    data: |-
+      {
+        "login": "admin@gridly.local",
+        "password": "wrong-password"
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '401'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/auth/login
+      body:
+        type: json
+        data: |-
+          {
+            "login": "admin@gridly.local",
+            "password": "wrong-password"
+          }
+    response:
+      status: 401
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "INVALID_CREDENTIALS",
+              "message": "Используйте admin@gridly.local и пароль gridly-demo."
+            }
+          }

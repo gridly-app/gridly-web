@@ -1,4 +1,4 @@
-import { memoryStorage } from "@/shared/lib/browserStorage";
+import { memoryStorage } from "@/shared/browser/browserStorage";
 
 export function accountStorage(login: string) {
 	const storage = memoryStorage();

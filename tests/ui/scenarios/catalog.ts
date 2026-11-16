@@ -128,7 +128,6 @@ export async function catalogScenario({
 		pastaCard.getByRole("link", { name: "ЗК-2079", exact: true }),
 	).toBeVisible();
 	await page.keyboard.press("Escape");
-	console.log("PASS linked product and order cards");
 	await page.getByRole("button", { name: "Столбцы", exact: true }).click();
 	await page
 		.getByRole("menuitemcheckbox", { name: "Артикул", exact: true })
@@ -183,5 +182,4 @@ export async function catalogScenario({
 	await page.keyboard.press("Escape");
 	await expect(dialog).toHaveCount(0);
 	await expect(create).toBeFocused();
-	console.log("PASS forms, combobox, keyboard, failed save and retry");
 }

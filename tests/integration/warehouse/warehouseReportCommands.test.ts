@@ -1,14 +1,11 @@
 import { expect, test } from "bun:test";
-import { RestWarehouseCommands } from "@/entities/warehouse/api/commands/restCommands";
-import { warehouseDto } from "@/entities/warehouse/api/contracts/warehouseDto";
-import { warehouseFromDto } from "@/entities/warehouse/api/repositories/restMappers";
-import type { RequestOptions } from "@/shared/api";
-import { requiredAt } from "@/shared/lib/requiredAt";
+import { RestWarehouseCommands } from "@/app/warehouse-data/commands/restCommands";
+import { warehouseFromDto } from "@/app/warehouse-data/repositories/restMappers";
+import { warehouseDto } from "@/app/warehouse-data/warehouses/warehouseDto";
+import type { RequestOptions } from "@/shared/http";
+import { requiredAt } from "@/shared/invariants";
 
-import {
-	reportWarehouse as base,
-	payload,
-} from "../../support/reportWarehouse";
+import { reportWarehouse as base, payload } from "./reportWarehouse";
 
 test("archive and settings mutations preserve scoped paths and revision preconditions", async () => {
 	const calls: { path: string; options: RequestOptions }[] = [];
@@ -53,9 +50,12 @@ test("archive and settings mutations preserve scoped paths and revision precondi
 });
 test("cabinet values remain warehouse specific in REST fixtures", () => {
 	const north = warehouseFromDto(
-		warehouseDto.parse(payload("North: Warehouse details")),
+		warehouseDto.parse(payload("Карточка склада (Северный)")),
 	);
 	expect(north.id).not.toBe(base.id);
-	expect(north.cabinet?.placement).toBe("fifo");
-	expect(base.cabinet?.placement).toBe("fefo");
+	expect(north.cabinet?.location).toBe(
+		"Санкт-Петербург, 3-й Верхний переулок, 6",
+	);
+	expect(north.cabinet?.lowStockThreshold).toBe(15);
+	expect(base.cabinet?.lowStockThreshold).toBe(10);
 });

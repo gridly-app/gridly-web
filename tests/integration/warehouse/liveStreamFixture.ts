@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
-import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
-import { WarehouseLiveStream } from "@/entities/warehouse/api/repositories/liveStream";
-import type { Warehouse } from "@/entities/warehouse/model/warehouse";
+import { WarehouseLiveStream } from "@/app/warehouse-data/live/liveStream";
+import { createWarehouseKeys } from "@/app/warehouse-data/queries/queryKeys";
+import type { Warehouse } from "@/domain/warehouse/warehouse";
 import { warehouse } from "../../support/warehouse";
 
 const encoder = new TextEncoder();
@@ -70,6 +70,7 @@ export function harness(
 	timing = { heartbeatMs: 10000, fallbackMs: 10, retryMs: [10] },
 ) {
 	const cache = new QueryClient();
+	const warehouseKeys = createWarehouseKeys("stream-test");
 	cache.setQueryData(warehouseKeys.detail("w"), warehouse());
 	const channels: ReturnType<typeof channel>[] = [];
 	const urls: string[] = [];
@@ -79,6 +80,7 @@ export function harness(
 	const live = new WarehouseLiveStream(
 		{
 			id: "w",
+			keys: warehouseKeys,
 			cache,
 			timing,
 			snapshotReady: () => true,
@@ -106,6 +108,7 @@ export function harness(
 		(error) => errors.push(error),
 	);
 	return {
+		keys: warehouseKeys,
 		live,
 		cache,
 		channels,

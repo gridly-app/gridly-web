@@ -1,0 +1,86 @@
+info:
+  name: Пользователи
+  type: http
+  seq: 11
+http:
+  method: GET
+  url: '{{baseUrl}}/admin/shipment-users'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/admin/shipment-users
+      headers:
+        - name: Authorization
+          value: Bearer bruno-account-token
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "user-sandbox-admin",
+                "name": "Анна Смирнова",
+                "login": "admin@gridly.local",
+                "kind": "account",
+                "revision": 1,
+                "warehouses": [
+                  {
+                    "warehouse_id": "warehouse-demo",
+                    "warehouse_name": "Центральный склад",
+                    "permissions": [
+                      "warehouse.manage",
+                      "shipment.manage",
+                      "shipment.audit"
+                    ]
+                  },
+                  {
+                    "warehouse_id": "warehouse-north",
+                    "warehouse_name": "Северный склад",
+                    "permissions": [
+                      "warehouse.view"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "user-sandbox-operator",
+                "name": "Иван Петров",
+                "login": "operator@gridly.local",
+                "kind": "account",
+                "revision": 1,
+                "warehouses": [
+                  {
+                    "warehouse_id": "warehouse-demo",
+                    "warehouse_name": "Центральный склад",
+                    "permissions": [
+                      "warehouse.view",
+                      "shipment.manage"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "guest-order-2087",
+                "name": "Гость по ссылке",
+                "kind": "guest",
+                "warehouse_id": "warehouse-demo",
+                "warehouse_name": "Центральный склад",
+                "order_id": "order-out-2087",
+                "order_number": "ЗК-2087",
+                "time_zone": "Europe/Moscow",
+                "status": "active",
+                "expires_at": "2099-01-01T00:00:00Z"
+              }
+            ]
+          }

@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
-import { FetchHttpClient } from "@/shared/api";
-import { BrowserSessionRepository } from "@/shared/auth";
-import { memoryStorage } from "@/shared/lib/browserStorage";
+import { BrowserSessionRepository } from "@/app/session";
+import { memoryStorage } from "@/shared/browser/browserStorage";
+import { FetchHttpClient } from "@/shared/http";
 import {
 	accountStorage,
 	immediateLock,

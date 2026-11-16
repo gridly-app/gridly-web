@@ -1,0 +1,22 @@
+info:
+  name: Настройки склада (Центральный)
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-demo/settings'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/settings
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: '{"revision": 1, "location": "Москва", "low_stock_threshold": 10, "allocation_policy": "fefo"}'

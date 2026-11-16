@@ -1,0 +1,2119 @@
+info:
+  name: Опубликованная планировка (Северный)
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/layout'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/layout
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "version": 1,
+            "width": 16,
+            "height": 11,
+            "cells": [
+              {
+                "x": 0,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 0,
+                "kind": "charging",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 0,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 1,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 2,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 2,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 2,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 2,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 2,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 3,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 3,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 3,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 3,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 3,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 4,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 4,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 4,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 4,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 4,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 5,
+                "kind": "receiving",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 5,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 5,
+                "kind": "shipping",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 6,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 6,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 6,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 6,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 6,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 7,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 7,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 7,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 7,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 7,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 3,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 4,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 6,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-food-left",
+                  "name": "Продукты",
+                  "categoryId": "cat-food"
+                }
+              },
+              {
+                "x": 7,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 8,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 11,
+                "y": 8,
+                "kind": "storage_general",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-house-right",
+                  "name": "Для дома",
+                  "categoryId": "cat-house"
+                }
+              },
+              {
+                "x": 12,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 8,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 14,
+                "y": 8,
+                "kind": "storage_cold",
+                "capacity_volume": "24",
+                "zone": {
+                  "id": "zone-cat-cold-right",
+                  "name": "Холодная зона",
+                  "categoryId": "cat-cold"
+                }
+              },
+              {
+                "x": 15,
+                "y": 8,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 9,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 9,
+                "kind": "aisle",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 9,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 0,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 1,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 2,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 3,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 4,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 5,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 6,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 7,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 8,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 9,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 10,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 11,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 12,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 13,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 14,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              },
+              {
+                "x": 15,
+                "y": 10,
+                "kind": "empty",
+                "capacity_volume": "0"
+              }
+            ],
+            "routes": [
+              {
+                "id": "2,2",
+                "keys": [
+                  "2,2",
+                  "2,3",
+                  "2,4",
+                  "3,2",
+                  "3,3",
+                  "3,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 4
+                  },
+                  {
+                    "x": 2,
+                    "y": 3
+                  },
+                  {
+                    "x": 2,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 2,
+                    "y": 2
+                  },
+                  {
+                    "x": 3,
+                    "y": 2
+                  },
+                  {
+                    "x": 3,
+                    "y": 3
+                  },
+                  {
+                    "x": 3,
+                    "y": 4
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "5,2",
+                "keys": [
+                  "5,2",
+                  "5,3",
+                  "5,4",
+                  "6,2",
+                  "6,3",
+                  "6,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 4
+                  },
+                  {
+                    "x": 5,
+                    "y": 3
+                  },
+                  {
+                    "x": 5,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 5,
+                    "y": 2
+                  },
+                  {
+                    "x": 6,
+                    "y": 2
+                  },
+                  {
+                    "x": 6,
+                    "y": 3
+                  },
+                  {
+                    "x": 6,
+                    "y": 4
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "10,2",
+                "keys": [
+                  "10,2",
+                  "10,3",
+                  "10,4",
+                  "11,2",
+                  "11,3",
+                  "11,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 4
+                  },
+                  {
+                    "x": 10,
+                    "y": 3
+                  },
+                  {
+                    "x": 10,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 10,
+                    "y": 2
+                  },
+                  {
+                    "x": 11,
+                    "y": 2
+                  },
+                  {
+                    "x": 11,
+                    "y": 3
+                  },
+                  {
+                    "x": 11,
+                    "y": 4
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "13,2",
+                "keys": [
+                  "13,2",
+                  "13,3",
+                  "13,4",
+                  "14,2",
+                  "14,3",
+                  "14,4"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 4
+                  },
+                  {
+                    "x": 13,
+                    "y": 3
+                  },
+                  {
+                    "x": 13,
+                    "y": 2
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 13,
+                    "y": 2
+                  },
+                  {
+                    "x": 14,
+                    "y": 2
+                  },
+                  {
+                    "x": 14,
+                    "y": 3
+                  },
+                  {
+                    "x": 14,
+                    "y": 4
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "2,6",
+                "keys": [
+                  "2,6",
+                  "2,7",
+                  "2,8",
+                  "3,6",
+                  "3,7",
+                  "3,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 2,
+                    "y": 6
+                  },
+                  {
+                    "x": 3,
+                    "y": 6
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "5,6",
+                "keys": [
+                  "5,6",
+                  "5,7",
+                  "5,8",
+                  "6,6",
+                  "6,7",
+                  "6,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 5,
+                    "y": 6
+                  },
+                  {
+                    "x": 6,
+                    "y": 6
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "10,6",
+                "keys": [
+                  "10,6",
+                  "10,7",
+                  "10,8",
+                  "11,6",
+                  "11,7",
+                  "11,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 10,
+                    "y": 6
+                  },
+                  {
+                    "x": 11,
+                    "y": 6
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              },
+              {
+                "id": "13,6",
+                "keys": [
+                  "13,6",
+                  "13,7",
+                  "13,8",
+                  "14,6",
+                  "14,7",
+                  "14,8"
+                ],
+                "inbound": [
+                  {
+                    "x": 0,
+                    "y": 5
+                  },
+                  {
+                    "x": 1,
+                    "y": 5
+                  },
+                  {
+                    "x": 2,
+                    "y": 5
+                  },
+                  {
+                    "x": 3,
+                    "y": 5
+                  },
+                  {
+                    "x": 4,
+                    "y": 5
+                  },
+                  {
+                    "x": 5,
+                    "y": 5
+                  },
+                  {
+                    "x": 6,
+                    "y": 5
+                  },
+                  {
+                    "x": 7,
+                    "y": 5
+                  },
+                  {
+                    "x": 8,
+                    "y": 5
+                  },
+                  {
+                    "x": 9,
+                    "y": 5
+                  },
+                  {
+                    "x": 10,
+                    "y": 5
+                  },
+                  {
+                    "x": 11,
+                    "y": 5
+                  },
+                  {
+                    "x": 12,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 5
+                  },
+                  {
+                    "x": 13,
+                    "y": 6
+                  }
+                ],
+                "outbound": [
+                  {
+                    "x": 13,
+                    "y": 6
+                  },
+                  {
+                    "x": 14,
+                    "y": 6
+                  },
+                  {
+                    "x": 14,
+                    "y": 5
+                  },
+                  {
+                    "x": 15,
+                    "y": 5
+                  }
+                ]
+              }
+            ]
+          }

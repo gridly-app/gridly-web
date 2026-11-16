@@ -1,0 +1,28 @@
+info:
+  name: Журнал аудита (без сессии)
+  type: http
+  seq: 6
+http:
+  method: GET
+  url: '{{baseUrl}}/admin/shipment-audit'
+settings:
+  followRedirects: false
+examples:
+  - name: '401'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/admin/shipment-audit
+    response:
+      status: 401
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "UNAUTHENTICATED",
+              "message": "Войдите в аккаунт."
+            }
+          }

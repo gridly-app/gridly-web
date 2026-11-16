@@ -26,7 +26,6 @@ export async function inventoryScenario({ page, ready, signIn }: UiScenario) {
 	await expect(
 		page.getByRole("button", { name: "Партия", exact: true }),
 	).toHaveCount(0);
-	console.log("PASS grouped inventory without direct mutation controls");
 
 	await page
 		.getByRole("button", { name: "Списать", exact: true })
@@ -38,5 +37,4 @@ export async function inventoryScenario({ page, ready, signIn }: UiScenario) {
 		.fill("Проверка списания");
 	await dialog.getByRole("button", { name: "Подтвердить списание" }).click();
 	await expect(dialog).toHaveCount(0);
-	console.log("PASS write-off");
 }

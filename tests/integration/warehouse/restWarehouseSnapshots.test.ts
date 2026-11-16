@@ -1,8 +1,7 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
-import { RestWarehouseRepository } from "@/entities/warehouse/api/repositories/restRepository";
-import { ApiError } from "@/shared/api";
+import { RestWarehouseRepository } from "@/app/warehouse-data/repositories/restRepository";
+import { ApiError } from "@/shared/http";
 
 const metadata = {
 	id: "w",
@@ -37,7 +36,7 @@ test("REST rejects an unknown warehouse time zone before caching metadata", asyn
 		status: 502,
 		code: "INVALID_RESPONSE",
 	});
-	expect(cache.getQueryData(warehouseKeys.detail("w"))).toBeUndefined();
+	expect(cache.getQueryData(repository.keys.detail("w"))).toBeUndefined();
 });
 
 test("a full REST snapshot preserves the published trajectory at an equal numeric version", async () => {
@@ -80,7 +79,7 @@ test("a full REST snapshot preserves the published trajectory at an equal numeri
 		{ x: 0, y: 0 },
 		{ x: 1, y: 0 },
 	];
-	cache.setQueryData(warehouseKeys.detail("w"), {
+	cache.setQueryData(repository.keys.detail("w"), {
 		...snapshot,
 		stateVersion: "2",
 		robots: snapshot.robots.map((robot) => ({

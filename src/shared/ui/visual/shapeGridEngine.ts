@@ -2,48 +2,16 @@
 // https://github.com/DavidHDev/react-bits
 
 import {
-	centerOf,
 	clamp,
 	flatView,
-	type Layout,
-	layoutFor,
 	type Point,
 	project,
-	traceCell,
 	viewFor,
 } from "./shapeGridGeometry";
 
-export interface ShapeGridSettings {
-	shape: string;
-	cellSize: number;
-	lineWidth: number;
-	direction: string;
-	speed: number;
+export interface ShapeGridColors {
 	lineColor: string;
 	hoverColor: string;
-	hoverFillColor: string;
-	fillOpacity: number;
-	rainbow: boolean;
-	tone: number;
-	tiltX: number;
-	tiltY: number;
-	radius: number;
-	trail: number;
-	glow: number;
-	twinkle: number;
-	clickCascade: boolean;
-	intro: boolean;
-	paused: boolean;
-	dpr?: number | undefined;
-}
-
-interface Cascade {
-	x: number;
-	y: number;
-	time: number;
-	power: number;
-	reach: number;
-	hue: number;
 }
 
 interface ShapeGridEngine {
@@ -51,14 +19,13 @@ interface ShapeGridEngine {
 	stop: () => void;
 }
 
-export const DIRECTIONS: Record<string, Point> = {
-	right: [1, 0],
-	left: [-1, 0],
-	up: [0, -1],
-	down: [0, 1],
-	diagonal: [Math.SQRT1_2, -Math.SQRT1_2],
-	none: [0, 0],
-};
+const CELL_SIZE = 48;
+const LINE_WIDTH = 1;
+const SCROLL_SPEED = 0.18 * 60 * Math.SQRT1_2;
+const HOVER_RADIUS = 1.5 * CELL_SIZE;
+const HOVER_TRAIL = 0.6;
+const HOVER_FILL = 0.12;
+const HOVER_GLOW = 0.15;
 const OFFSET = 32768;
 const MAX_PIXELS = 8e6;
 
@@ -69,20 +36,17 @@ const smoothstep = (edge0: number, edge1: number, value: number) => {
 
 export const smootherstep = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
 
-const hash = (i: number, j: number) => {
-	const s = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
-	return s - Math.floor(s);
-};
-
 const keyOf = (i: number, j: number) => (i + OFFSET) * 65536 + (j + OFFSET);
 
-const tint = (hue: number, lightness: number) =>
-	`hsl(${(((hue % 360) + 360) % 360).toFixed(1)}, 90%, ${(lightness * 100).toFixed(1)}%)`;
+const centerOf = (i: number, j: number): Point => [
+	(i + 0.5) * CELL_SIZE,
+	(j + 0.5) * CELL_SIZE,
+];
 
 export function startShapeGrid(
 	container: HTMLDivElement,
 	canvas: HTMLCanvasElement,
-	getSettings: () => ShapeGridSettings,
+	getColors: () => ShapeGridColors,
 	reduce: boolean,
 ): ShapeGridEngine | undefined {
 	const ctx = canvas.getContext("2d");
@@ -111,17 +75,13 @@ export function startShapeGrid(
 		spotVY: 0,
 		spotPower: 0,
 		lit: new Map<number, number>(),
-		hues: new Map<number, number>(),
-		cascades: [] as Cascade[],
-		cascadeHue: 0,
 	};
 
 	const resize = () => {
-		const s = getSettings();
 		const width = Math.max(1, container.clientWidth);
 		const height = Math.max(1, container.clientHeight);
-		const view = viewFor(s.tiltX, s.tiltY, width, height, s.cellSize);
-		let ratio = s.dpr ?? Math.min(window.devicePixelRatio || 1, 2);
+		const view = viewFor(12, -8, width, height, CELL_SIZE);
+		let ratio = Math.min(window.devicePixelRatio, 2);
 		const pixels = view.width * view.height * ratio * ratio;
 		if (pixels > MAX_PIXELS) ratio *= Math.sqrt(MAX_PIXELS / pixels);
 		state.width = width;
@@ -149,103 +109,49 @@ export function startShapeGrid(
 		return project(inverse, x, y);
 	};
 
-	const range = (
-		layout: Layout,
-		margin: number,
-	): [number, number, number, number] => {
-		const { stepX, stepY } = layout;
-		const { view } = state;
-		return [
-			Math.floor((state.offsetX + view.x0 - margin) / stepX) - 1,
-			Math.ceil((state.offsetX + view.x0 + view.width + margin) / stepX) + 1,
-			Math.floor((state.offsetY + view.y0 - margin) / stepY) - 1,
-			Math.ceil((state.offsetY + view.y0 + view.height + margin) / stepY) + 1,
-		];
-	};
+	const illuminate = (dt: number) => {
+		const decay = Math.exp(-dt / HOVER_TRAIL);
 
-	const nearestCell = (
-		s: ShapeGridSettings,
-		layout: Layout,
-		wx: number,
-		wy: number,
-	) => {
-		const { stepX, stepY } = layout;
-		const ci = Math.round(wx / stepX);
-		const cj = Math.round(wy / stepY);
-		let best = Infinity;
-		let cell: Point = [ci, cj];
-		for (let i = ci - 2; i <= ci + 2; i++) {
-			for (let j = cj - 2; j <= cj + 2; j++) {
-				const [x, y] = centerOf(s.shape, layout, i, j);
-				const d = (x - wx) ** 2 + (y - wy) ** 2;
-				if (d < best) {
-					best = d;
-					cell = [i, j];
-				}
-			}
-		}
-		return cell;
-	};
-
-	const illuminate = (s: ShapeGridSettings, layout: Layout, dt: number) => {
-		const decay = Math.exp(-dt / s.trail);
 		for (const [key, value] of state.lit) {
 			const next = value * decay;
+
 			if (next < 0.004) {
 				state.lit.delete(key);
-				state.hues.delete(key);
-			} else state.lit.set(key, next);
+				continue;
+			}
+
+			state.lit.set(key, next);
 		}
+
 		if (state.spotPower < 0.01) return;
+
 		const wx = state.spotX + state.offsetX;
 		const wy = state.spotY + state.offsetY;
-		const reach = Math.max(s.radius, 0.5) * s.cellSize;
-		const [hi, hj] = nearestCell(s, layout, wx, wy);
-		const spanI = Math.ceil(reach / layout.stepX) + 2;
-		const spanJ = Math.ceil(reach / layout.stepY) + 2;
-		const hue = state.time * 120;
-		for (let i = hi - spanI; i <= hi + spanI; i++) {
-			for (let j = hj - spanJ; j <= hj + spanJ; j++) {
-				const [x, y] = centerOf(s.shape, layout, i, j);
+		const column = Math.ceil(wx / CELL_SIZE) - 1;
+		const row = Math.ceil(wy / CELL_SIZE) - 1;
+		const span = Math.ceil(HOVER_RADIUS / CELL_SIZE) + 2;
+
+		for (let i = column - span; i <= column + span; i++) {
+			for (let j = row - span; j <= row + span; j++) {
+				const [x, y] = centerOf(i, j);
 				const distance = Math.hypot(x - wx, y - wy);
-				let value =
-					s.radius > 0 ? smoothstep(reach, reach * 0.15, distance) : 0;
-				if (i === hi && j === hj) value = Math.max(value, 1);
-				value *= state.spotPower;
-				if (value <= 0.004) continue;
+				const intensity =
+					i === column && j === row
+						? 1
+						: smoothstep(HOVER_RADIUS, HOVER_RADIUS * 0.15, distance);
+				const value = intensity * state.spotPower;
 				const key = keyOf(i, j);
-				if (value > (state.lit.get(key) ?? 0)) {
+
+				if (value > 0.004 && value > (state.lit.get(key) ?? 0)) {
 					state.lit.set(key, value);
-					state.hues.set(key, hue + ((x + y) / s.cellSize) * 12);
 				}
 			}
 		}
-	};
-
-	const cascadeAt = (s: ShapeGridSettings, x: number, y: number) => {
-		let value = 0;
-		for (const cascade of state.cascades) {
-			const ring = Math.round(
-				Math.hypot(x - cascade.x, y - cascade.y) / s.cellSize,
-			);
-			const local = state.time - cascade.time - ring * 0.055;
-			if (local < 0) continue;
-			const pulse =
-				Math.exp(-((local / 0.085) ** 2)) *
-				cascade.power *
-				Math.max(0, 1 - ring / cascade.reach);
-			if (pulse > value) {
-				value = pulse;
-				state.cascadeHue = cascade.hue + ring * 16;
-			}
-		}
-		return value;
 	};
 
 	const draw = () => {
-		const s = getSettings();
 		const { view, ratio } = state;
-		const layout = layoutFor(s.shape, s.cellSize);
+		const { lineColor, hoverColor } = getColors();
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.globalCompositeOperation = "source-over";
 		ctx.globalAlpha = 1;
@@ -256,54 +162,37 @@ export function startShapeGrid(
 		const top = view.y0;
 		const right = view.x0 + view.width;
 		const bottom = view.y0 + view.height;
-		const size = s.cellSize;
-		const [i0, i1, j0, j1] = range(layout, size);
-		const markers = s.shape === "cross" || s.shape === "dot";
-		const elapsed = state.time - state.startedAt;
-		const introRadius =
-			s.intro && !reduce ? elapsed * view.reach * 1.8 : Infinity;
+		const i0 = Math.floor((state.offsetX + left - CELL_SIZE) / CELL_SIZE) - 1;
+		const i1 = Math.ceil((state.offsetX + right + CELL_SIZE) / CELL_SIZE) + 1;
+		const j0 = Math.floor((state.offsetY + top - CELL_SIZE) / CELL_SIZE) - 1;
+		const j1 = Math.ceil((state.offsetY + bottom + CELL_SIZE) / CELL_SIZE) + 1;
+		const introRadius = reduce
+			? Infinity
+			: (state.time - state.startedAt) * view.reach * 1.8;
 		const originX = state.width / 2;
 		const originY = state.height / 2;
 		const centerX = originX + state.offsetX;
 		const centerY = originY + state.offsetY;
 
-		ctx.lineWidth = s.lineWidth;
+		ctx.lineWidth = LINE_WIDTH;
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
-		ctx.strokeStyle = s.lineColor;
-		ctx.fillStyle = s.lineColor;
+		ctx.strokeStyle = lineColor;
 		ctx.beginPath();
-		if (s.shape === "square") {
-			for (let i = i0; i <= i1; i++) {
-				const x = i * layout.stepX - state.offsetX;
-				ctx.moveTo(x, top - size);
-				ctx.lineTo(x, bottom + size);
-			}
-			for (let j = j0; j <= j1; j++) {
-				const y = j * layout.stepY - state.offsetY;
-				ctx.moveTo(left - size, y);
-				ctx.lineTo(right + size, y);
-			}
-		} else {
-			for (let i = i0; i <= i1; i++) {
-				for (let j = j0; j <= j1; j++) {
-					const [cx, cy] = centerOf(s.shape, layout, i, j);
-					traceCell(
-						ctx,
-						s.shape,
-						layout,
-						size,
-						i,
-						j,
-						cx - state.offsetX,
-						cy - state.offsetY,
-						0,
-					);
-				}
-			}
+
+		for (let i = i0; i <= i1; i++) {
+			const x = i * CELL_SIZE - state.offsetX;
+			ctx.moveTo(x, top - CELL_SIZE);
+			ctx.lineTo(x, bottom + CELL_SIZE);
 		}
-		if (s.shape === "dot") ctx.fill();
-		else ctx.stroke();
+
+		for (let j = j0; j <= j1; j++) {
+			const y = j * CELL_SIZE - state.offsetY;
+			ctx.moveTo(left - CELL_SIZE, y);
+			ctx.lineTo(right + CELL_SIZE, y);
+		}
+
+		ctx.stroke();
 
 		if (introRadius !== Infinity) {
 			const gradient = ctx.createRadialGradient(
@@ -323,85 +212,33 @@ export function startShapeGrid(
 			ctx.globalCompositeOperation = "source-over";
 		}
 
-		const glowing = s.glow > 0;
+		const highlightSize = CELL_SIZE - LINE_WIDTH;
+
 		for (let i = i0; i <= i1; i++) {
 			for (let j = j0; j <= j1; j++) {
-				const [cx, cy] = centerOf(s.shape, layout, i, j);
-				const key = keyOf(i, j);
-				let value = state.lit.get(key) ?? 0;
-				let hue = state.hues.get(key) ?? 0;
-				if (state.cascades.length) {
-					const pulse = cascadeAt(s, cx, cy);
-					if (pulse > value) {
-						value = pulse;
-						hue = state.cascadeHue;
-					}
-				}
-				if (s.twinkle > 0 && !reduce) {
-					const seed = hash(i, j);
-					const wave = Math.sin(state.time * (0.35 + seed * 0.5) + seed * 40);
-					const sparkle = s.twinkle * 0.7 * Math.max(0, wave) ** 18;
-					if (sparkle > value) {
-						value = sparkle;
-						hue = seed * 360;
-					}
-				}
-				if (introRadius !== Infinity) {
-					const front = introRadius - Math.hypot(cx - centerX, cy - centerY);
-					if (front < 0) continue;
-					const wave = Math.exp(-((front / (size * 1.4)) ** 2)) * 0.85;
-					if (wave > value) {
-						value = wave;
-						hue =
-							(Math.atan2(cy - centerY, cx - centerX) * 180) / Math.PI +
-							state.time * 120;
-					}
-				}
+				const [cx, cy] = centerOf(i, j);
+				const front = introRadius - Math.hypot(cx - centerX, cy - centerY);
+
+				if (front < 0) continue;
+
+				const wave = Math.exp(-((front / (CELL_SIZE * 1.4)) ** 2)) * 0.85;
+				const value = Math.max(state.lit.get(keyOf(i, j)) ?? 0, wave);
+
 				if (value <= 0.01) continue;
-				const color = s.rainbow ? tint(hue, s.tone) : s.hoverColor;
-				const x = cx - state.offsetX;
-				const y = cy - state.offsetY;
+
+				const x = cx - state.offsetX - highlightSize / 2;
+				const y = cy - state.offsetY - highlightSize / 2;
+				const alpha = Math.min(1, value);
+
 				ctx.beginPath();
-				traceCell(
-					ctx,
-					s.shape,
-					layout,
-					size,
-					i,
-					j,
-					x,
-					y,
-					markers ? value * size * 0.08 : s.lineWidth * 0.5,
-				);
-				if (markers) {
-					ctx.globalAlpha = Math.min(1, value);
-					if (glowing) {
-						ctx.shadowColor = color;
-						ctx.shadowBlur = s.glow * 14 * value;
-					}
-					if (s.shape === "dot") {
-						ctx.fillStyle = color;
-						ctx.fill();
-					} else {
-						ctx.strokeStyle = color;
-						ctx.lineWidth = s.lineWidth * (1 + value * 0.6);
-						ctx.stroke();
-					}
-					ctx.shadowBlur = 0;
-					continue;
-				}
-				if (s.fillOpacity > 0) {
-					ctx.globalAlpha = Math.min(1, value) * s.fillOpacity;
-					ctx.fillStyle = s.rainbow ? color : s.hoverFillColor;
-					ctx.fill();
-				}
-				ctx.globalAlpha = Math.min(1, value) * 0.85;
-				if (glowing) {
-					ctx.shadowColor = color;
-					ctx.shadowBlur = s.glow * 16 * value;
-				}
-				ctx.strokeStyle = color;
-				ctx.lineWidth = s.lineWidth;
+				ctx.rect(x, y, highlightSize, highlightSize);
+				ctx.globalAlpha = alpha * HOVER_FILL;
+				ctx.fillStyle = hoverColor;
+				ctx.fill();
+				ctx.globalAlpha = alpha * 0.85;
+				ctx.shadowColor = hoverColor;
+				ctx.shadowBlur = HOVER_GLOW * 16 * value;
+				ctx.strokeStyle = hoverColor;
 				ctx.stroke();
 				ctx.shadowBlur = 0;
 			}
@@ -428,7 +265,6 @@ export function startShapeGrid(
 	const frame = (now: number) => {
 		state.raf = 0;
 		if (!state.alive) return;
-		const s = getSettings();
 		const dt = state.last ? Math.min(0.05, (now - state.last) / 1000) : 1 / 60;
 		state.last = now;
 		resize();
@@ -436,41 +272,37 @@ export function startShapeGrid(
 			state.started = true;
 			state.startedAt = state.time;
 		}
-		if (!s.paused) {
-			state.time += dt;
-			if (!reduce) {
-				const [dx, dy] = DIRECTIONS[s.direction] ?? [0, 0];
-				state.offsetX -= dx * s.speed * 60 * dt;
-				state.offsetY -= dy * s.speed * 60 * dt;
-			}
-			const want = state.inside ? 1 : 0;
-			state.spotPower +=
-				(want - state.spotPower) * (1 - Math.exp(-(want ? 10 : 5) * dt));
-			const stiffness = 220;
-			const damping = 2 * Math.sqrt(stiffness) * 0.85;
-			state.spotVX +=
-				(stiffness * (state.pointerX - state.spotX) - damping * state.spotVX) *
-				dt;
-			state.spotVY +=
-				(stiffness * (state.pointerY - state.spotY) - damping * state.spotVY) *
-				dt;
-			state.spotX += state.spotVX * dt;
-			state.spotY += state.spotVY * dt;
-			illuminate(s, layoutFor(s.shape, s.cellSize), dt);
-			state.cascades = state.cascades.filter(
-				(cascade) => state.time - cascade.time < cascade.reach * 0.055 + 0.4,
-			);
+		state.time += dt;
+
+		if (!reduce) {
+			state.offsetX -= SCROLL_SPEED * dt;
+			state.offsetY += SCROLL_SPEED * dt;
 		}
+
+		const want = state.inside ? 1 : 0;
+		const stiffness = 220;
+		const damping = 2 * Math.sqrt(stiffness) * 0.85;
+
+		state.spotPower +=
+			(want - state.spotPower) * (1 - Math.exp(-(want ? 10 : 5) * dt));
+		state.spotVX +=
+			(stiffness * (state.pointerX - state.spotX) - damping * state.spotVX) *
+			dt;
+		state.spotVY +=
+			(stiffness * (state.pointerY - state.spotY) - damping * state.spotVY) *
+			dt;
+		state.spotX += state.spotVX * dt;
+		state.spotY += state.spotVY * dt;
+
+		illuminate(dt);
 		draw();
+
 		const settled =
-			s.paused ||
-			(s.speed === 0 || s.direction === "none" || reduce
-				? state.lit.size === 0 &&
-					state.cascades.length === 0 &&
-					s.twinkle === 0 &&
-					state.spotPower < 0.005 &&
-					state.time - state.startedAt > 3
-				: false);
+			reduce &&
+			state.lit.size === 0 &&
+			state.spotPower < 0.005 &&
+			state.time - state.startedAt > 3;
+
 		if (!settled && state.visible) state.raf = requestAnimationFrame(frame);
 		else state.last = 0;
 	};
@@ -509,24 +341,6 @@ export function startShapeGrid(
 		state.inside = false;
 	};
 
-	const onDown = (event: PointerEvent) => {
-		if (reduce) return;
-		const s = getSettings();
-		if (!s.clickCascade) return;
-		const point = pointFrom(event);
-		if (!point) return;
-		state.cascades.push({
-			x: point[0] + state.offsetX,
-			y: point[1] + state.offsetY,
-			time: state.time,
-			power: 1,
-			reach: Math.hypot(state.view.width, state.view.height) / s.cellSize,
-			hue: state.time * 120,
-		});
-		if (state.cascades.length > 6) state.cascades.shift();
-		wake();
-	};
-
 	const resizeObserver = new ResizeObserver(() => {
 		resize();
 		draw();
@@ -541,7 +355,6 @@ export function startShapeGrid(
 	visibility.observe(container);
 
 	window.addEventListener("pointermove", onMove, { passive: true });
-	window.addEventListener("pointerdown", onDown, { passive: true });
 	document.documentElement.addEventListener("pointerleave", onLeave);
 	window.addEventListener("blur", onLeave);
 
@@ -560,7 +373,6 @@ export function startShapeGrid(
 			resizeObserver.disconnect();
 			visibility.disconnect();
 			window.removeEventListener("pointermove", onMove);
-			window.removeEventListener("pointerdown", onDown);
 			document.documentElement.removeEventListener("pointerleave", onLeave);
 			window.removeEventListener("blur", onLeave);
 		},

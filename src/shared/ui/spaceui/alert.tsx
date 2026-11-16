@@ -52,8 +52,7 @@ const iconVariantStyles: Record<
 };
 
 export interface AlertProps
-	extends React.ComponentProps<"div">,
-		VariantProps<typeof alertVariants> {}
+	extends React.ComponentProps<"div">, VariantProps<typeof alertVariants> {}
 
 export function Alert({
 	className,
@@ -85,12 +84,6 @@ export function AlertIcon({
 	const { variant = "default" } = React.useContext(AlertContext);
 	const styles = iconVariantStyles[variant] ?? iconVariantStyles.default;
 
-	const renderedChildren = React.isValidElement(children)
-		? React.cloneElement(children as React.ReactElement<any>, {
-				weight: (children.props as any)?.weight ?? "Filled",
-			})
-		: children;
-
 	return (
 		<div
 			className={clsx(
@@ -103,7 +96,7 @@ export function AlertIcon({
 			data-slot="alert-icon"
 			{...props}
 		>
-			{renderedChildren}
+			{children}
 		</div>
 	);
 }

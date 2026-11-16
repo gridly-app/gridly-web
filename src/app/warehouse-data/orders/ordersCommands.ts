@@ -1,0 +1,117 @@
+import type { WarehouseCommand } from "@/domain/warehouse";
+import { parseResponse } from "@/shared/http";
+import { UserError } from "@/shared/lib";
+import type { RestCommandContext } from "../commands/context";
+import { requireRevision } from "../commands/context";
+import { policyToDto } from "../contracts/contractMappers";
+import { orderDto } from "./orderDto";
+
+async function runOrderAction(
+	context: RestCommandContext,
+	orderId: string,
+	action: string,
+	reason?: string | undefined,
+	revision?: number | undefined,
+) {
+	const { http, base, send } = context;
+	const o = parseResponse(
+		orderDto,
+		await http.request(`${base}/orders/${encodeURIComponent(orderId)}`),
+	);
+
+	if (!o.allowed_actions?.includes(action)) {
+		throw new UserError("Действие больше недоступно. Обновите заказ.");
+	}
+	await send(
+		`/orders/${encodeURIComponent(orderId)}/${encodeURIComponent(action)}`,
+		{
+			revision: requireRevision(revision ?? o.revision),
+			...(action === "confirm"
+				? { action: o.kind === "inbound" ? "unload" : "load" }
+				: {}),
+			...(reason ? { reason } : {}),
+		},
+	);
+}
+
+export async function saveOrder(
+	context: RestCommandContext,
+	command: Extract<WarehouseCommand, { action: "order" }>,
+): Promise<void> {
+	const { warehouse, send } = context;
+	const order = command.value;
+	const id = order.id;
+	const existing = warehouse.orders.find((entry) => entry.id === id);
+
+	await send(
+		id ? `/orders/${encodeURIComponent(id)}` : "/orders",
+		{
+			...(id
+				? { revision: requireRevision(order.revision ?? existing?.revision) }
+				: { kind: order.kind }),
+			counterparty_text: order.party.trim(),
+			lines: order.lines.map((line) => ({
+				...(id && line.id ? { id: line.id } : {}),
+				product_id: line.product,
+				quantity: line.quantity,
+				...(order.kind === "inbound"
+					? { expires_on: line.expires || null }
+					: {}),
+			})),
+			...policyToDto(order.manual),
+		},
+		id ? "PATCH" : "POST",
+	);
+}
+
+export async function runLegacyOrderAction(
+	context: RestCommandContext,
+	command: Extract<WarehouseCommand, { action: "start" | "cancel" }>,
+): Promise<void> {
+	const { warehouse } = context;
+
+	await runOrderAction(
+		context,
+		command.value,
+		command.action,
+		undefined,
+		warehouse.orders.find((order) => order.id === command.value)?.revision,
+	);
+}
+
+export async function applyOrderAction(
+	context: RestCommandContext,
+	command: Extract<WarehouseCommand, { action: "orderAction" }>,
+): Promise<void> {
+	await runOrderAction(
+		context,
+		command.value.id,
+		command.value.action,
+		command.value.reason,
+		command.value.revision,
+	);
+}
+
+export async function confirmTask(
+	context: RestCommandContext,
+	command: Extract<WarehouseCommand, { action: "taskAction" }>,
+): Promise<void> {
+	const { base, http, send } = context;
+	const o = parseResponse(
+		orderDto,
+		await http.request(
+			`${base}/orders/${encodeURIComponent(command.value.orderId)}`,
+		),
+	);
+	const task = o.tasks?.find((t) => t.id === command.value.id);
+
+	if (!task?.allowed_actions?.includes(command.value.action)) {
+		throw new UserError("Подтверждение задачи недоступно");
+	}
+	await send(
+		`/tasks/${encodeURIComponent(task.id)}/${encodeURIComponent(command.value.action)}`,
+		{
+			revision: command.value.revision ?? task.revision,
+		},
+	);
+}

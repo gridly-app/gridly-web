@@ -1,14 +1,20 @@
 import { accountScenario } from "./scenarios/account";
+import { administrationScenario } from "./scenarios/administration";
 import { catalogScenario } from "./scenarios/catalog";
-import { demoScenario } from "./scenarios/demo";
 import { destructiveConfirmationScenario } from "./scenarios/destructiveConfirmation";
 import { inventoryScenario } from "./scenarios/inventory";
+import { loadingScenario } from "./scenarios/loading";
 import { mapEditorScenario } from "./scenarios/mapEditor";
+import { mapSessionScenario } from "./scenarios/mapSession";
 import { ordersScenario } from "./scenarios/orders";
 import { permissionsScenario } from "./scenarios/permissions";
 import { responsiveLayoutScenario } from "./scenarios/responsiveLayout";
 import { robotScenario } from "./scenarios/robot";
 import { routeDragScenario } from "./scenarios/routeDrag";
+import { sandboxScenario } from "./scenarios/sandbox";
+import { shipmentsScenario } from "./scenarios/shipments";
+import { systemErrorsScenario } from "./scenarios/systemErrors";
+import { warehouseDeletionScenario } from "./scenarios/warehouseDeletion";
 import { warehouseDimensionsScenario } from "./scenarios/warehouseDimensions";
 import { warehouseLiveScenario } from "./scenarios/warehouseLive";
 import { warehouseNavigationScenario } from "./scenarios/warehouseNavigation";
@@ -17,8 +23,10 @@ import { warehouseSettingsScenario } from "./scenarios/warehouseSettings";
 import { output, runScenarios } from "./uiBrowserFixture";
 
 const scenarios = [
+	["loading", loadingScenario],
 	["account", accountScenario],
 	["warehouse-navigation", warehouseNavigationScenario],
+	["warehouse-deletion", warehouseDeletionScenario],
 	["catalog", catalogScenario],
 	["inventory", inventoryScenario],
 	["warehouse-live", warehouseLiveScenario],
@@ -27,20 +35,28 @@ const scenarios = [
 	["warehouse-settings", warehouseSettingsScenario],
 	["warehouse-dimensions", warehouseDimensionsScenario],
 	["orders", ordersScenario],
+	["shipments", shipmentsScenario],
+	["administration", administrationScenario],
+	["system-errors", systemErrorsScenario],
 	["map-editor", mapEditorScenario],
+	["map-session", mapSessionScenario],
 	["route-drag", routeDragScenario],
 	["warehouse-report", warehouseReportScenario],
 	["responsive-layout", responsiveLayoutScenario],
 	["permissions", permissionsScenario],
-	["demo", demoScenario],
+	["sandbox", sandboxScenario],
 ] as const;
 
 const name = process.env.GRIDLY_UI_SCENARIO;
-if (name === "warehouse-live" && process.env.GRIDLY_UI_URL)
-	throw new Error("The warehouse-live scenario requires the local SSE fixture");
+const localOnly = ["loading", "warehouse-live", "map-session"];
+if (name && localOnly.includes(name) && process.env.GRIDLY_UI_URL)
+	throw new Error(`The ${name} scenario requires the local Vite fixture`);
 const selected = name
 	? scenarios.filter(([scenario]) => scenario === name)
-	: scenarios;
+	: scenarios.filter(
+			([scenario]) =>
+				!process.env.GRIDLY_UI_URL || !localOnly.includes(scenario),
+		);
 if (!selected.length) throw new Error(`Unknown UI scenario: ${name}`);
 
 await runScenarios(selected);

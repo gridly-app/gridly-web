@@ -1,0 +1,182 @@
+info:
+  name: Записать план, факт и этапы
+  type: http
+  seq: 3
+http:
+  method: PUT
+  url: '{{baseUrl}}/warehouses/{{warehouseId}}/orders/{{orderId}}/shipment'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+  body:
+    type: json
+    data: |-
+      {
+        "revision": {{shipmentRevision}},
+        "priority": "high",
+        "status_reason": null,
+        "plan": [
+          {
+            "date": "{{planDate}}",
+            "order_line_id": "{{orderLineId}}",
+            "quantity": 2,
+            "unit": "pcs"
+          }
+        ],
+        "actual": [
+          {
+            "id": "shipment-fact-road",
+            "order_line_id": "{{orderLineId}}",
+            "quantity": 1,
+            "unit": "pcs",
+            "packaging": "Коробка",
+            "shipped_at": "{{shippedAt}}",
+            "loaded_at": "{{loadedAt}}",
+            "transport_type": "road",
+            "vehicle_number": "А123ВС 77",
+            "reference_number": "ТН-2087",
+            "comment": null
+          },
+          {
+            "id": "shipment-fact-rail",
+            "order_line_id": "{{orderLineId}}",
+            "quantity": 1,
+            "unit": "pcs",
+            "packaging": "Коробка",
+            "shipped_at": "{{railShippedAt}}",
+            "loaded_at": "{{railLoadedAt}}",
+            "transport_type": "rail",
+            "vehicle_number": "52743106",
+            "reference_number": null,
+            "comment": null
+          }
+        ],
+        "transport_milestones": [
+          {
+            "code": "loading",
+            "state": "completed",
+            "occurred_at": "{{loadedAt}}",
+            "planned_at": null,
+            "note": null
+          },
+          {
+            "code": "handed_to_carrier",
+            "state": "current",
+            "occurred_at": "{{shippedAt}}",
+            "planned_at": null,
+            "note": null
+          },
+          {
+            "code": "in_transit",
+            "state": "pending",
+            "occurred_at": null,
+            "planned_at": null,
+            "note": null
+          },
+          {
+            "code": "delivered",
+            "state": "pending",
+            "occurred_at": null,
+            "planned_at": null,
+            "note": null
+          }
+        ]
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: PUT
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/orders/order-out-2087/shipment
+      headers:
+        - name: Authorization
+          value: Bearer bruno-account-token
+      body:
+        type: json
+        data: |-
+          {
+            "revision": 1,
+            "priority": "high",
+            "status_reason": null,
+            "plan": [
+              {
+                "date": "2026-11-12",
+                "order_line_id": "order-line-coffee",
+                "quantity": 2,
+                "unit": "pcs"
+              }
+            ],
+            "actual": [
+              {
+                "id": "shipment-fact-road",
+                "order_line_id": "order-line-coffee",
+                "quantity": 1,
+                "unit": "pcs",
+                "packaging": "Коробка",
+                "shipped_at": "2026-11-12T12:00:00Z",
+                "loaded_at": "2026-11-12T11:30:00Z",
+                "transport_type": "road",
+                "vehicle_number": "А123ВС 77",
+                "reference_number": "ТН-2087",
+                "comment": null
+              },
+              {
+                "id": "shipment-fact-rail",
+                "order_line_id": "order-line-coffee",
+                "quantity": 1,
+                "unit": "pcs",
+                "packaging": "Коробка",
+                "shipped_at": "2026-11-13T09:00:00Z",
+                "loaded_at": "2026-11-13T08:30:00Z",
+                "transport_type": "rail",
+                "vehicle_number": "52743106",
+                "reference_number": null,
+                "comment": null
+              }
+            ],
+            "transport_milestones": [
+              {
+                "code": "loading",
+                "state": "completed",
+                "occurred_at": "2026-11-12T11:30:00Z",
+                "planned_at": null,
+                "note": null
+              },
+              {
+                "code": "handed_to_carrier",
+                "state": "current",
+                "occurred_at": "2026-11-12T12:00:00Z",
+                "planned_at": null,
+                "note": null
+              },
+              {
+                "code": "in_transit",
+                "state": "pending",
+                "occurred_at": null,
+                "planned_at": null,
+                "note": null
+              },
+              {
+                "code": "delivered",
+                "state": "pending",
+                "occurred_at": null,
+                "planned_at": null,
+                "note": null
+              }
+            ]
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический мок не сохраняет изменения."
+            }
+          }

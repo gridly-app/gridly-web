@@ -1,4 +1,4 @@
-import { UserError } from "./UserError";
+import { UserError } from "@/shared/invariants";
 
 export function formText(data: FormData, key: string): string {
 	const value = data.get(key);

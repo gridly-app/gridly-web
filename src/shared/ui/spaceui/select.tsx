@@ -105,12 +105,14 @@ export function SelectPopup({
 						data-glide-select=""
 						{...props}
 					>
-						<SelectPrimitive.ScrollUpArrow
-							className={css.scrollUpArrow}
-							data-slot="select-scroll-up-arrow"
-						>
-							<ChevronUpIcon className={css.chevronUpIcon} />
-						</SelectPrimitive.ScrollUpArrow>
+						{!header && (
+							<SelectPrimitive.ScrollUpArrow
+								className={css.scrollUpArrow}
+								data-slot="select-scroll-up-arrow"
+							>
+								<ChevronUpIcon className={css.chevronUpIcon} />
+							</SelectPrimitive.ScrollUpArrow>
+						)}
 						<div className={css.popupSurface}>
 							{header}
 							<SelectPrimitive.List
@@ -131,12 +133,14 @@ export function SelectPopup({
 								{children}
 							</SelectPrimitive.List>
 						</div>
-						<SelectPrimitive.ScrollDownArrow
-							className={css.scrollDownArrow}
-							data-slot="select-scroll-down-arrow"
-						>
-							<ChevronDownIcon className={css.chevronUpIcon} />
-						</SelectPrimitive.ScrollDownArrow>
+						{!header && (
+							<SelectPrimitive.ScrollDownArrow
+								className={css.scrollDownArrow}
+								data-slot="select-scroll-down-arrow"
+							>
+								<ChevronDownIcon className={css.chevronUpIcon} />
+							</SelectPrimitive.ScrollDownArrow>
+						)}
 					</SelectPrimitive.Popup>
 				</SelectPrimitive.Positioner>
 			</SelectPrimitive.Portal>

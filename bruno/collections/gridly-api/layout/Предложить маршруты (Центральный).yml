@@ -1,0 +1,53 @@
+info:
+  name: Предложить маршруты (Центральный)
+  type: http
+  seq: 7
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/layout/routes/propose'
+  body:
+    type: json
+    data: |-
+      {
+        "cells": [
+          {
+            "x": 1,
+            "y": 1,
+            "kind": "aisle",
+            "capacity_volume": 0,
+            "zone": null
+          }
+        ]
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/layout/routes/propose
+      body:
+        type: json
+        data: |-
+          {
+            "cells": [
+              {
+                "x": 1,
+                "y": 1,
+                "kind": "aisle",
+                "capacity_volume": 0,
+                "zone": null
+              }
+            ]
+          }
+    response:
+      status: 501
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический пример Bruno не рассчитывает данные для произвольной карты."
+            }
+          }

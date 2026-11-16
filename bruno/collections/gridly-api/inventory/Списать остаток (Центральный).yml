@@ -1,0 +1,46 @@
+info:
+  name: Списать остаток (Центральный)
+  type: http
+  seq: 3
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/inventory/write-offs'
+  body:
+    type: json
+    data: |-
+      {
+        "stock_id": "stock-prod-coffee",
+        "revision": 1,
+        "quantity": 1,
+        "reason": "Тестовое списание"
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/inventory/write-offs
+      body:
+        type: json
+        data: |-
+          {
+            "stock_id": "stock-prod-coffee",
+            "revision": 1,
+            "quantity": 1,
+            "reason": "Тестовое списание"
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

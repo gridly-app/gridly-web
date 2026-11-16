@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
-import { ApiError } from "@/shared/api";
-import { UserError } from "./UserError";
+import { ApiError } from "@/shared/http";
+import { UserError } from "@/shared/invariants";
 
 const retryMessage = "Не удалось выполнить действие. Попробуйте ещё раз.";
 const validationMessage = "Проверьте введённые данные и попробуйте ещё раз.";

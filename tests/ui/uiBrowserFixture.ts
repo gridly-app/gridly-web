@@ -5,24 +5,30 @@ import { startUiTestServer } from "./uiTestServer";
 
 export const output = new URL("../../.artifacts/ui/", import.meta.url).pathname;
 
+const readySelectors: Record<string, string> = {
+	map: "canvas",
+	history: "[data-history-log]",
+	settings: "form",
+	information: "[data-information-dashboard]",
+};
+
 async function ready(page: Page, base: string, path: string) {
 	await page.goto(`${base}/warehouses/warehouse-demo/${path}`);
-	await expect(
-		page
-			.locator(
-				path === "map"
-					? "canvas"
-					: path === "history"
-						? "[data-history-log]"
-						: path === "settings"
-							? "form"
-							: path === "information"
-								? "[data-information-dashboard]"
-								: "[data-slot=table]",
-			)
-			.first(),
-	).toBeVisible();
+	const selector = readySelectors[path] ?? "[data-slot=table]";
+
+	await expect(page.locator(selector).first()).toBeVisible();
 }
+
+export async function setPageHidden(page: Page, hidden: boolean) {
+	await page.evaluate((hidden) => {
+		Object.defineProperty(document, "hidden", {
+			configurable: true,
+			value: hidden,
+		});
+		document.dispatchEvent(new Event("visibilitychange"));
+	}, hidden);
+}
+
 async function screenshot(page: Page, name: string) {
 	await page.screenshot({ path: `${output}/${name}.png`, fullPage: true });
 }
@@ -108,6 +114,7 @@ export async function runScenarios(
 				try {
 					await run(scenario);
 					expect(scenario.errors).toEqual([]);
+					console.log(`PASS ${name}`);
 				} catch (error) {
 					console.error(`FAIL ${name}`);
 					console.error(

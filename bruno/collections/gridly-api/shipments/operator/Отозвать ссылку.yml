@@ -1,0 +1,34 @@
+info:
+  name: Отозвать ссылку
+  type: http
+  seq: 5
+http:
+  method: DELETE
+  url: '{{baseUrl}}/warehouses/{{warehouseId}}/orders/{{orderId}}/shipment/share-link'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: DELETE
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/orders/order-out-2087/shipment/share-link
+      headers:
+        - name: Authorization
+          value: Bearer bruno-account-token
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический мок не сохраняет изменения."
+            }
+          }

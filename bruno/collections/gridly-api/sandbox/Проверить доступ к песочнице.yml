@@ -1,0 +1,32 @@
+info:
+  name: Проверить доступ к песочнице
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/sandbox/access'
+  headers:
+    - name: Authorization
+      value: Bearer {{sandboxToken}}
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/sandbox/access
+      headers:
+        - name: Authorization
+          value: Bearer bruno-sandbox-token
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "access_id": "bruno-sandbox-access",
+            "initial_warehouse_id": "warehouse-demo"
+          }

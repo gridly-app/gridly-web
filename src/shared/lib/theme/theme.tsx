@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { KeyValueStorage } from "../storage";
+import type { KeyValueStorage } from "../../browser/storage";
 import { ThemeContext } from "./themeContext";
 import { useThemeState } from "./useThemeState";
 

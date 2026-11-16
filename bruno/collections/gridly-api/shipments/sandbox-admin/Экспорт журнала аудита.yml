@@ -1,0 +1,32 @@
+info:
+  name: Экспорт журнала аудита
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/sandbox/admin/shipment-audit/export?warehouse_id={{warehouseId}}&order_id={{orderId}}'
+  headers:
+    - name: Authorization
+      value: Bearer {{sandboxToken}}
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/sandbox/admin/shipment-audit/export
+      headers:
+        - name: Authorization
+          value: Bearer bruno-sandbox-token
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: text/csv; charset=utf-8
+        - name: Content-Disposition
+          value: attachment; filename=sandbox-shipment-audit.csv
+      body:
+        type: text
+        data: |-
+          id,occurred_at,event_type,result,actor_id,source,warehouse_id,order_id,changes,correlation_id
+          sandbox-shipment-audit-1,2026-11-12T12:16:00Z,shipment.document.published,success,,sandbox,warehouse-demo,order-out-2087,"[{""field"":""published"",""before"":false,""after"":true}]",sandbox-shipment-correlation-1

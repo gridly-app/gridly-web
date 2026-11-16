@@ -101,5 +101,4 @@ export async function routeDragScenario({
 	).toBeVisible();
 	await expect.poll(previewPixel).toEqual(basePixel);
 	await page.mouse.up();
-	console.log("PASS an invalid route drag clears the last valid preview");
 }

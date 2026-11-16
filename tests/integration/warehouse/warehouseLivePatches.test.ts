@@ -1,10 +1,9 @@
 import { expect, test } from "bun:test";
-import { warehouseKeys } from "@/entities/warehouse/api/queries/queryKeys";
-import type { Warehouse } from "@/entities/warehouse/model/warehouse";
 import {
 	prepareRobotMotionTrack,
 	robotMotionPosition,
-} from "@/pages/map/lib/canvas/robotMotion";
+} from "@/app/warehouse/warehouse-map/lib/canvas/robotMotion";
+import type { Warehouse } from "@/domain/warehouse/warehouse";
 
 import { event, harness, patch, until } from "./liveStreamFixture";
 
@@ -16,7 +15,7 @@ test("patch updates positions once, retains idle microsteps and invalidates affe
 			invalidated.push(JSON.stringify(e.query.queryKey));
 	});
 	for (const name of ["orders", "inventory", "history"])
-		h.cache.setQueryData(warehouseKeys.resource("w", name), {});
+		h.cache.setQueryData(h.keys.resource("w", name), {});
 	h.live.start();
 	try {
 		await until(() => h.live.healthy);
@@ -32,14 +31,12 @@ test("patch updates positions once, retains idle microsteps and invalidates affe
 		);
 		await until(
 			() =>
-				h.cache.getQueryData<Warehouse>(warehouseKeys.detail("w"))
-					?.stateVersion === "2",
+				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.stateVersion ===
+				"2",
 		);
-		const robot = h.cache.getQueryData<Warehouse>(warehouseKeys.detail("w"))
+		const robot = h.cache.getQueryData<Warehouse>(h.keys.detail("w"))
 			?.robots[0];
-		expect(h.cache.getQueryData(warehouseKeys.live("w"))).not.toHaveProperty(
-			"stock",
-		);
+		expect(h.cache.getQueryData(h.keys.live("w"))).not.toHaveProperty("stock");
 		expect(robot?.motionPath).toEqual([
 			{ x: 0, y: 0 },
 			{ x: 1, y: 0 },
@@ -58,7 +55,7 @@ test("patch updates positions once, retains idle microsteps and invalidates affe
 		});
 		expect(robotMotionPosition(track, 300)).toEqual({ x: 1, y: 0 });
 		expect(invalidated).toContain(
-			JSON.stringify(warehouseKeys.resource("w", "inventory")),
+			JSON.stringify(h.keys.resource("w", "inventory")),
 		);
 		source.send(event(patch("2", { robots: [] })));
 		await Bun.sleep(15);
@@ -95,8 +92,7 @@ test("gaps, unknown robots, malformed patches and RESYNC_REQUIRED reload before 
 			h.channels[0]?.send(message);
 			await until(() => h.resyncs > 0 && h.channels.length > 1);
 			expect(
-				h.cache.getQueryData<Warehouse>(warehouseKeys.detail("w"))
-					?.stateVersion,
+				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.stateVersion,
 			).toBe("1");
 			expect(h.urls[1]).toContain("since_version=1");
 		} finally {
@@ -137,8 +133,7 @@ test("invalid trajectories and layout changes resynchronize rather than enter th
 			h.channels[0]?.send(event(patch("2", changes)));
 			await until(() => h.resyncs > 0);
 			expect(
-				h.cache.getQueryData<Warehouse>(warehouseKeys.detail("w"))?.robots[0]
-					?.x,
+				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.robots[0]?.x,
 			).toBe(0);
 		} finally {
 			h.live.stop();

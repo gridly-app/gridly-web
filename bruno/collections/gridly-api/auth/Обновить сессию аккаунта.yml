@@ -1,0 +1,25 @@
+info:
+  name: Обновить сессию аккаунта
+  type: http
+  seq: 2
+http:
+  method: POST
+  url: '{{baseUrl}}/auth/refresh'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/auth/refresh
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "access_token": "bruno-account-token"
+          }

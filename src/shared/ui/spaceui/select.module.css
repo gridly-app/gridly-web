@@ -161,10 +161,10 @@
 		border: 1px solid var(--border);
 		background-color: var(--popover);
 		&:not(
-				:where([data-theme="dark"] *):not(
-					:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-				)
-			) {
+			:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			)
+		) {
 			background-clip: padding-box;
 		}
 		&::before {
@@ -309,6 +309,9 @@
 		min-height: 40px;
 		font-size: var(--text-control);
 		line-height: 20px;
+		&:focus {
+			box-shadow: none;
+		}
 	}
 	.popup {
 		filter: drop-shadow(0 8px 12px #0000000d);

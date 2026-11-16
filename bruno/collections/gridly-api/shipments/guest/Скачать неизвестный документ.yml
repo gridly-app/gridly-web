@@ -1,0 +1,30 @@
+info:
+  name: Скачать неизвестный документ
+  type: http
+  seq: 5
+http:
+  method: GET
+  url: '{{baseUrl}}/public/shipments/documents/document-missing/download'
+settings:
+  followRedirects: false
+examples:
+  - name: '404'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/public/shipments/documents/document-missing/download
+    response:
+      status: 404
+      headers:
+        - name: Content-Type
+          value: application/json
+        - name: Cache-Control
+          value: no-store
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "SHIPMENT_NOT_FOUND",
+              "message": "Данные по ссылке недоступны."
+            }
+          }

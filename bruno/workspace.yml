@@ -4,6 +4,8 @@ info:
   type: workspace
 
 collections:
+  - name: "Gridly API"
+    path: collections/gridly-api
 
 specs:
 

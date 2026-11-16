@@ -1,0 +1,44 @@
+info:
+  name: Изменить размер карты (Центральный)
+  type: http
+  seq: 4
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/layout/resize'
+  body:
+    type: json
+    data: |-
+      {
+        "width": 17,
+        "height": 11,
+        "base_version": 1
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/layout/resize
+      body:
+        type: json
+        data: |-
+          {
+            "width": 17,
+            "height": 11,
+            "base_version": 1
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

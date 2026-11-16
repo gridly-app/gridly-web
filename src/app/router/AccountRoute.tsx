@@ -1,16 +1,12 @@
-import { lazy, type ReactNode } from "react";
-import { Navigate } from "react-router-dom";
-import { useWarehouses } from "@/entities/warehouse";
-import { useSession } from "@/shared/auth";
-import { warehousePath } from "@/shared/config";
-import { errorMessage, readPreference, useOnlineStatus } from "@/shared/lib";
-import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { type ReactNode, Suspense } from "react";
+import { Outlet } from "react-router-dom";
+import { useSession } from "@/ports/session";
+import { useOnlineStatus } from "@/shared/lib";
+import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
+import { useWarehouseRuntime } from "../composition/app-providers.compose";
+import { WorkspaceProviders } from "../composition/workspace-providers.compose";
 
-const AuthPage = lazy(() =>
-	import("@/pages/auth").then((module) => ({ default: module.AuthPage })),
-);
-
-export function AuthRoute() {
+export function AuthRoute({ signIn }: { signIn: ReactNode }) {
 	const online = useOnlineStatus();
 	const { error } = useSession();
 	if (!online)
@@ -19,13 +15,14 @@ export function AuthRoute() {
 				Нет соединения. Для входа подключитесь к сети.{error && <p>{error}</p>}
 			</Feedback>
 		);
-	return <AuthPage />;
+	return <Suspense fallback={<Skeleton layout="form" />}>{signIn}</Suspense>;
 }
 
-export function AccountRoute({ children }: { children: ReactNode }) {
-	const { user, status, error, restore } = useSession();
+export function AccountRoute({ signIn }: { signIn: ReactNode }) {
+	const { user, status, error, restore, scopeId } = useSession();
+	const warehouse = useWarehouseRuntime("account");
 	if (status === "restoring")
-		return <Feedback tone="loading">Восстанавливаем сессию…</Feedback>;
+		return <Skeleton layout="page" label="Восстанавливаем сессию…" />;
 	if (status === "error")
 		return (
 			<Feedback
@@ -37,29 +34,11 @@ export function AccountRoute({ children }: { children: ReactNode }) {
 			</Feedback>
 		);
 
-	return user ? children : <AuthRoute />;
-}
+	if (!user) return <AuthRoute signIn={signIn} />;
 
-export function WorkspaceEntry() {
-	const query = useWarehouses();
-	const last = readPreference("gridly.last");
-	if (query.isPending)
-		return <Feedback tone="loading">Загружаем склады…</Feedback>;
-	if (query.error)
-		return (
-			<Feedback
-				tone="error"
-				title="Не удалось загрузить склады"
-				action={
-					<RetryButton variant="secondary" size="sm" onRetry={query.refetch} />
-				}
-			>
-				{errorMessage(query.error)}
-			</Feedback>
-		);
-	const id =
-		query.data?.find((warehouse) => warehouse.id === last)?.id ??
-		query.data?.[0]?.id ??
-		"new";
-	return <Navigate replace to={warehousePath("standard", id)} />;
+	return (
+		<WorkspaceProviders key={scopeId} mode="standard" warehouse={warehouse}>
+			<Outlet />
+		</WorkspaceProviders>
+	);
 }

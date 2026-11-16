@@ -29,6 +29,7 @@ export async function responsiveLayoutScenario({
 				name: "Иллюстрация складского сценария",
 			});
 			await expect(scenarioPanel).toBeVisible();
+			await page.evaluate(() => document.fonts.ready.then(() => undefined));
 			const panelHeight = await scenarioPanel.evaluate(
 				(el) => el.getBoundingClientRect().height,
 			);
@@ -155,5 +156,4 @@ export async function responsiveLayoutScenario({
 	await page.evaluate(() => {
 		document.documentElement.style.zoom = "";
 	});
-	console.log("PASS responsive themes, mobile sheet and 200% zoom");
 }

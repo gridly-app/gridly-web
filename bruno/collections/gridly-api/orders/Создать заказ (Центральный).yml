@@ -1,0 +1,62 @@
+info:
+  name: Создать заказ (Центральный)
+  type: http
+  seq: 9
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/orders'
+  body:
+    type: json
+    data: |-
+      {
+        "kind": "outbound",
+        "counterparty_text": "Тестовый контрагент",
+        "lines": [
+          {
+            "product_id": "prod-coffee",
+            "quantity": 2
+          }
+        ],
+        "confirm_unload": false,
+        "confirm_pick": false,
+        "confirm_putaway": false,
+        "confirm_load": false
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/orders
+      body:
+        type: json
+        data: |-
+          {
+            "kind": "outbound",
+            "counterparty_text": "Тестовый контрагент",
+            "lines": [
+              {
+                "product_id": "prod-coffee",
+                "quantity": 2
+              }
+            ],
+            "confirm_unload": false,
+            "confirm_pick": false,
+            "confirm_putaway": false,
+            "confirm_load": false
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

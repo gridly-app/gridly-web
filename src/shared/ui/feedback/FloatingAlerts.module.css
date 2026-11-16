@@ -1,0 +1,23 @@
+.viewport {
+	position: fixed;
+	z-index: 60;
+	inset: auto max(16px, env(safe-area-inset-right))
+		max(16px, env(safe-area-inset-bottom)) auto;
+	inline-size: min(27rem, calc(100% - 32px));
+	max-inline-size: calc(100% - env(safe-area-inset-right) - 16px);
+	max-block-size: 45dvh;
+	display: grid;
+	gap: 8px;
+	overflow: clip;
+	overflow-clip-margin: 12px;
+	pointer-events: none;
+}
+
+.viewport > div {
+	pointer-events: auto;
+}
+
+.viewport [data-slot="alert"] {
+	background: var(--popover);
+	box-shadow: var(--shadow-floating);
+}

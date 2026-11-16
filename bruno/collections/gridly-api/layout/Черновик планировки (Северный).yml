@@ -1,0 +1,27 @@
+info:
+  name: Черновик планировки (Северный)
+  type: http
+  seq: 8
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/layout/draft'
+settings:
+  followRedirects: false
+examples:
+  - name: '404'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/layout/draft
+    response:
+      status: 404
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "message": "Черновика карты нет."
+            }
+          }

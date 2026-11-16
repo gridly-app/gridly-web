@@ -1,4 +1,3 @@
 @layer base, primitives, components;
 @import "./foundations.css";
 @import "./theme.css";
-@import "./publicPageTheme.css";

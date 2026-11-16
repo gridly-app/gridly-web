@@ -1,0 +1,46 @@
+info:
+  name: Опубликовать документ
+  type: http
+  seq: 7
+http:
+  method: PATCH
+  url: '{{baseUrl}}/warehouses/{{warehouseId}}/orders/{{orderId}}/shipment/documents/{{documentId}}'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+  body:
+    type: json
+    data: |-
+      {
+        "published": true
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: PATCH
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/orders/order-out-2087/shipment/documents/document-shipment-1
+      headers:
+        - name: Authorization
+          value: Bearer bruno-account-token
+      body:
+        type: json
+        data: |-
+          {
+            "published": true
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Статический мок не сохраняет изменения."
+            }
+          }

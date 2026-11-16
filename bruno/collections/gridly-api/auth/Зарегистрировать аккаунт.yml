@@ -1,0 +1,41 @@
+info:
+  name: Зарегистрировать аккаунт
+  type: http
+  seq: 5
+http:
+  method: POST
+  url: '{{baseUrl}}/auth/register'
+  body:
+    type: json
+    data: |-
+      {
+        "login": "sandbox@example.test",
+        "password": "gridly-demo"
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/auth/register
+      body:
+        type: json
+        data: |-
+          {
+            "login": "sandbox@example.test",
+            "password": "gridly-demo"
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "message": "Статический мок Bruno не сохраняет новые аккаунты. Используйте тестовый вход."
+            }
+          }

@@ -75,7 +75,7 @@
 		height: auto;
 	}
 	[hidden]:where(:not([hidden="until-found"])) {
-		/* biome-ignore lint/complexity/noImportantStyles: preserve the HTML hidden state when a component sets display */
+		/* Keep hidden elements hidden when a component sets display. */
 		display: none !important;
 	}
 	body {
@@ -86,6 +86,9 @@
 		-webkit-font-smoothing: antialiased;
 		font-size: 16px;
 		line-height: 1.5;
+	}
+	body:has(#root:empty) {
+		background: #fff;
 	}
 	h1 {
 		font-size: 2rem;
@@ -116,4 +119,24 @@
 		outline: 2px solid var(--ring);
 		outline-offset: 3px;
 	}
+}
+
+table :is(th, td) {
+	padding: var(--table-cell-padding);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow-wrap: anywhere;
+}
+
+table :is(th, td) :where(*) {
+	font-size: inherit;
+	min-inline-size: 0;
+	max-inline-size: 100%;
+}
+
+table {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 0;
 }

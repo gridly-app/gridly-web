@@ -3,8 +3,10 @@ import type { ReactNode } from "react";
 import { Button, type ButtonProps } from "./Button";
 import styles from "./IconButton.module.css";
 
-export interface IconButtonProps
-	extends Omit<ButtonProps, "children" | "size"> {
+export interface IconButtonProps extends Omit<
+	ButtonProps,
+	"children" | "size"
+> {
 	label: string;
 	icon: ReactNode;
 }

@@ -1,0 +1,34 @@
+info:
+  name: Удалить черновик (Центральный)
+  type: http
+  seq: 6
+http:
+  method: DELETE
+  url: '{{baseUrl}}/warehouses/warehouse-demo/layout/draft'
+  headers:
+    - name: If-Match
+      value: '"1"'
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: DELETE
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/layout/draft
+      headers:
+        - name: If-Match
+          value: '"1"'
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

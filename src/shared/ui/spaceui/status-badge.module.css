@@ -159,6 +159,7 @@
 	.indicator {
 		position: relative;
 		display: flex;
+		flex-shrink: 0;
 		width: fit-content;
 		height: fit-content;
 		align-items: center;
@@ -255,13 +256,14 @@
 	}
 	.stackText {
 		display: flex;
+		min-inline-size: 0;
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 0.125rem;
 	}
 	.stackPrimary {
 		font-weight: 600;
-		line-height: 1;
+		line-height: inherit;
 	}
 	.stackSecondary {
 		margin-top: 0.125rem;
@@ -341,7 +343,17 @@
 	:is(.stack, .inlineBadge) {
 		flex: 0 0 auto;
 		width: fit-content;
+		max-inline-size: 100%;
 		height: auto;
-		white-space: nowrap;
+	}
+	.inlineBadge > .badge {
+		max-inline-size: 100%;
+	}
+	.stackPrimary,
+	.stackSecondary,
+	.inlinePrimary,
+	.inlineSecondary {
+		white-space: normal;
+		overflow-wrap: anywhere;
 	}
 }

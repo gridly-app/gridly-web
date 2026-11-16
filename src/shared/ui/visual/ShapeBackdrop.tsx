@@ -31,18 +31,7 @@ export function ShapeBackdrop({
 			aria-hidden="true"
 			className={`${styles.backdrop} ${className}`}
 		>
-			<ShapeGrid
-				cellSize={48}
-				speed={0.18}
-				lineColor={colors.line}
-				hoverColor={colors.hover}
-				fillOpacity={0.12}
-				tiltX={12}
-				tiltY={-8}
-				fade={0.8}
-				glow={0.15}
-				clickCascade={false}
-			/>
+			<ShapeGrid lineColor={colors.line} hoverColor={colors.hover} />
 		</div>
 	);
 }

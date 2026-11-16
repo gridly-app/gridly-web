@@ -3,8 +3,10 @@ import { WarmTooltip } from "../overlays/WarmTooltip";
 import type { ButtonProps as SpaceButtonProps } from "../spaceui/button";
 import { Button as SpaceButton } from "../spaceui/button";
 import styles from "./Button.module.css";
-export interface ButtonProps
-	extends Omit<SpaceButtonProps, "variant" | "size"> {
+export interface ButtonProps extends Omit<
+	SpaceButtonProps,
+	"variant" | "size"
+> {
 	variant?:
 		| "default"
 		| "secondary"

@@ -1,0 +1,71 @@
+info:
+  name: Журнал аудита
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: '{{baseUrl}}/sandbox/admin/shipment-audit?warehouse_id={{warehouseId}}&order_id={{orderId}}&limit=50&offset=0'
+  headers:
+    - name: Authorization
+      value: Bearer {{sandboxToken}}
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/sandbox/admin/shipment-audit
+      headers:
+        - name: Authorization
+          value: Bearer bruno-sandbox-token
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "warehouse_id": "warehouse-demo",
+                "warehouse_name": "Центральный склад",
+                "order_id": "order-out-2087",
+                "order_number": "ЗК-2087",
+                "time_zone": "Europe/Moscow",
+                "id": "guest-view-1",
+                "occurred_at": "2026-11-12T12:20:00Z",
+                "event_type": "shipment.viewed",
+                "result": "success",
+                "actor_id": "guest-order-2087",
+                "actor_name": "Гость по ссылке",
+                "source": "guest",
+                "changes": [],
+                "correlation_id": "guest-view-correlation-1"
+              },
+              {
+                "id": "sandbox-shipment-audit-1",
+                "occurred_at": "2026-11-12T12:16:00Z",
+                "event_type": "shipment.document.published",
+                "result": "success",
+                "actor_id": "sandbox-operator",
+                "source": "sandbox",
+                "warehouse_id": "warehouse-demo",
+                "order_id": "order-out-2087",
+                "changes": [
+                  {
+                    "field": "published",
+                    "before": false,
+                    "after": true
+                  }
+                ],
+                "correlation_id": "sandbox-shipment-correlation-1",
+                "warehouse_name": "Центральный склад",
+                "order_number": "ЗК-2087",
+                "time_zone": "Europe/Moscow",
+                "actor_name": "Оператор песочница"
+              }
+            ],
+            "total": 2
+          }

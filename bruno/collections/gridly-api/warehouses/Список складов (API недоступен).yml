@@ -1,0 +1,33 @@
+info:
+  name: Список складов (API недоступен)
+  type: http
+  seq: 5
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses'
+  headers:
+    - name: x-gridly-scenario
+      value: unavailable
+settings:
+  followRedirects: false
+examples:
+  - name: '503'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses
+      headers:
+        - name: x-gridly-scenario
+          value: unavailable
+    response:
+      status: 503
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "message": "Тестовая недоступность API"
+            }
+          }

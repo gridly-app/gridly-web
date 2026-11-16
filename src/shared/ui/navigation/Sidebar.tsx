@@ -1,10 +1,8 @@
-import { type ComponentProps, useState } from "react";
-import { readPreference, writePreference } from "@/shared/lib";
+import type { ComponentProps } from "react";
 import { WarmTooltip } from "../overlays/WarmTooltip";
 import {
 	SidebarMenuButton as SpaceMenuButton,
 	Sidebar as SpaceSidebar,
-	SidebarProvider as SpaceSidebarProvider,
 	SidebarTrigger as SpaceSidebarTrigger,
 	useSidebar,
 } from "../spaceui/sidebar";
@@ -15,25 +13,9 @@ export {
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuItem,
+	SidebarProvider,
 	useSidebar,
 } from "../spaceui/sidebar";
-export function SidebarProvider(
-	props: ComponentProps<typeof SpaceSidebarProvider>,
-) {
-	const [open, setOpen] = useState(
-		() => readPreference("gridly.sidebar") !== "false",
-	);
-	return (
-		<SpaceSidebarProvider
-			{...props}
-			open={open}
-			onOpenChange={(next) => {
-				setOpen(next);
-				writePreference("gridly.sidebar", String(next));
-			}}
-		/>
-	);
-}
 export function Sidebar(props: ComponentProps<typeof SpaceSidebar>) {
 	return <SpaceSidebar collapsible="icon" {...props} />;
 }

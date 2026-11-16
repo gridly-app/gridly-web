@@ -1,0 +1,33 @@
+info:
+  name: Получить токен песочницы
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: '{{baseUrl}}/sandbox/access'
+  headers:
+    - name: Idempotency-Key
+      value: gridly-sandbox-access
+settings:
+  followRedirects: false
+examples:
+  - name: '201'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/sandbox/access
+      headers:
+        - name: Idempotency-Key
+          value: gridly-sandbox-access
+    response:
+      status: 201
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "access_id": "bruno-sandbox-access",
+            "access_token": "bruno-sandbox-token",
+            "initial_warehouse_id": "warehouse-demo"
+          }

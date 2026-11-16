@@ -1,0 +1,50 @@
+info:
+  name: Заказ ПР-2201 (Северный)
+  type: http
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/orders/order-north-2201'
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/orders/order-north-2201
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-north-2201",
+            "number": "ПР-2201",
+            "kind": "inbound",
+            "counterparty_text": "ООО «Северная упаковка»",
+            "status": "waiting_confirmation",
+            "created_at": "2026-11-13T09:00:00Z",
+            "revision": 1,
+            "quantity": 26,
+            "allowed_actions": [],
+            "lines": [
+              {
+                "id": "order-north-2201-line-1",
+                "product_id": "prod-film",
+                "quantity": 2,
+                "expires_on": null
+              },
+              {
+                "product_id": "prod-labels",
+                "quantity": 16,
+                "expires_on": null,
+                "id": "order-north-2201-line-2"
+              },
+              {
+                "product_id": "prod-box",
+                "quantity": 8,
+                "expires_on": null,
+                "id": "order-north-2201-line-3"
+              }
+            ]
+          }

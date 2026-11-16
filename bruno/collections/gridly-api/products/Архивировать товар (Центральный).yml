@@ -1,0 +1,40 @@
+info:
+  name: Архивировать товар (Центральный)
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/products/prod-coffee/archive'
+  body:
+    type: json
+    data: |-
+      {
+        "revision": 1
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/products/prod-coffee/archive
+      body:
+        type: json
+        data: |-
+          {
+            "revision": 1
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

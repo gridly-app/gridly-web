@@ -1,26 +1,9 @@
 import { expect, type Page } from "@playwright/test";
-import { z } from "zod";
+import { createAdminMock } from "../../bruno/admin-mock";
+import { loadMockRoutes } from "../../bruno/mock-fixture";
+import { mockWarehouseDeletion } from "../../bruno/warehouse-mock";
 
-const schema = z.object({
-	routes: z.array(
-		z.object({
-			name: z.string(),
-			request: z.object({ method: z.string(), url: z.string() }),
-			response: z.object({
-				status: z.number(),
-				body: z.object({ data: z.string() }).optional(),
-			}),
-			rules: z.unknown().optional(),
-		}),
-	),
-});
-const fixture = schema.parse(
-	Bun.YAML.parse(
-		await Bun.file(
-			new URL("../../bruno/mocks/Gridly API.yml", import.meta.url),
-		).text(),
-	),
-);
+const fixture = { routes: await loadMockRoutes() };
 
 const permissions = [
 	"create-product",
@@ -36,13 +19,18 @@ const permissions = [
 	"delete",
 	"edit",
 ];
+const shipmentPaths = [
+	"/api/v1/admin/shipment-users",
+	"/api/v1/sandbox/admin/shipment-users",
+	"/api/v1/warehouses/warehouse-demo/orders/order-out-2087/shipment",
+];
 const seed = new Map(
 	fixture.routes
 		.filter(
 			(item) =>
 				item.request.method === "GET" &&
 				item.response.status === 200 &&
-				!item.rules &&
+				(!item.rules || shipmentPaths.includes(item.request.url)) &&
 				item.response.body,
 		)
 		.map((item) => [
@@ -52,17 +40,18 @@ const seed = new Map(
 );
 
 export async function installUiApi(page: Page, hasLocalStream: boolean) {
+	const adminMock = createAdminMock();
 	const api = {
 		mapStateReads: 0,
 		mutations: 0,
 		readOnly: false,
 		failProduct: false,
 		offlineData: false,
-		failDemo: false,
+		failSandbox: false,
 		settingsFailure: 0,
 		failRobot: true,
-		demoStarts: 0,
-		demoStores: new Map<string, typeof seed>(),
+		sandboxStarts: 0,
+		sandboxStores: new Map<string, typeof seed>(),
 		accountStore: structuredClone(seed),
 	};
 	function prepare(value: unknown): unknown {
@@ -81,13 +70,31 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 			]),
 		);
 	}
-	await page.route("**/api/v1/**", async (route) => {
+	await page.context().route("**/api/v1/**", async (route) => {
 		const request = route.request(),
 			path = new URL(request.url()).pathname,
 			method = request.method();
 		const authorization = request.headers().authorization ?? "";
-		const demo = api.demoStores.get(authorization);
-		const store = demo ?? api.accountStore;
+		const sandbox = api.sandboxStores.get(authorization);
+		const store = sandbox ?? api.accountStore;
+		const admin = await adminMock.handle(
+			new Request(request.url(), {
+				method,
+				headers: request.headers(),
+				...(request.postData() && { body: request.postData() }),
+			}),
+			api.accountStore,
+			sandbox,
+		);
+		if (admin) {
+			await route.fulfill({
+				status: admin.status,
+				headers: Object.fromEntries(admin.headers),
+				body: await admin.text(),
+			});
+			return;
+		}
+
 		if (path.endsWith("/map/state")) api.mapStateReads++;
 		if (path.endsWith("/stream")) {
 			if (hasLocalStream) await route.continue();
@@ -114,40 +121,71 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 			});
 			return;
 		}
-		if (method === "POST" && path === "/api/v1/demo/sessions") {
-			if (api.failDemo) {
+		if (method === "POST" && path === "/api/v1/sandbox/access") {
+			if (api.failSandbox) {
 				await route.fulfill({
 					status: 503,
-					json: { error: { message: "Тестовая ошибка запуска демо" } },
+					json: { error: { message: "Тестовая ошибка запуска песочница" } },
 				});
 				return;
 			}
-			const access_token = `ui-demo-${++api.demoStarts}`;
-			api.demoStores.set(`Bearer ${access_token}`, structuredClone(seed));
+			const access_token = `ui-sandbox-${++api.sandboxStarts}`;
+			api.sandboxStores.set(`Bearer ${access_token}`, structuredClone(seed));
 			await route.fulfill({
 				status: 201,
 				json: {
-					...seed.get("/api/v1/demo/session"),
-					session_id: access_token,
+					...seed.get("/api/v1/sandbox/access"),
+					access_id: access_token,
 					access_token,
 				},
 			});
 			return;
 		}
-		if (path === "/api/v1/demo/session") {
-			if (!demo) {
+		if (
+			path.startsWith("/api/v1/sandbox/admin/") ||
+			path === "/api/v1/admin/shipment-users"
+		) {
+			const canRead = path.startsWith("/api/v1/sandbox/")
+				? !!sandbox
+				: authorization === "Bearer bruno-account-token";
+			const response = canRead
+				? fixture.routes.find(
+						(item) =>
+							item.request.method === method &&
+							item.request.url === path &&
+							item.response.status === 200 &&
+							(item.rules?.conditions ?? []).every(
+								(condition) =>
+									condition.target !== "query" ||
+									new URL(request.url()).searchParams.get(condition.key) ===
+										condition.value,
+							),
+					)?.response
+				: undefined;
+			await route.fulfill({
+				status: response?.status ?? 401,
+				headers: Object.fromEntries(
+					(response?.headers ?? []).map(({ name, value }) => [name, value]),
+				),
+				body: response?.body?.data ?? "",
+			});
+			return;
+		}
+		if (path === "/api/v1/sandbox/access") {
+			if (!sandbox) {
 				await route.fulfill({ status: 401 });
 				return;
 			}
 			if (method === "DELETE") {
-				api.demoStores.delete(authorization);
+				adminMock.closeSandbox(sandbox);
+				api.sandboxStores.delete(authorization);
 				await route.fulfill({ status: 204 });
 				return;
 			}
 			await route.fulfill({
 				json: {
 					...seed.get(path),
-					session_id: authorization.replace("Bearer ", ""),
+					access_id: authorization.replace("Bearer ", ""),
 				},
 			});
 			return;
@@ -156,6 +194,19 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 			await route.fulfill({
 				status: 503,
 				json: { error: { message: "Тестовая недоступность API" } },
+			});
+			return;
+		}
+		const warehouseDeletion = mockWarehouseDeletion(
+			new Request(request.url(), { method, headers: request.headers() }),
+			store,
+		);
+		if (warehouseDeletion) {
+			if (method === "DELETE") api.mutations++;
+			await route.fulfill({
+				status: warehouseDeletion.status,
+				headers: Object.fromEntries(warehouseDeletion.headers),
+				body: await warehouseDeletion.text(),
 			});
 			return;
 		}
@@ -170,13 +221,13 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 					path,
 				) &&
 				(path.endsWith("/auth/login")
-					? item.name === "Login — admin"
+					? item.response.status === 200
 					: !item.rules),
 		);
 		if (
 			method !== "GET" &&
 			!path.includes("/auth/") &&
-			!path.includes("/demo/")
+			!path.includes("/sandbox/")
 		) {
 			api.mutations++;
 			await Bun.sleep(150);

@@ -1,0 +1,44 @@
+info:
+  name: Заказ ЗК-3101 (Северный)
+  type: http
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/orders/order-north-3101'
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/orders/order-north-3101
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "order-north-3101",
+            "number": "ЗК-3101",
+            "kind": "outbound",
+            "counterparty_text": "ООО «Балтийская доставка»",
+            "status": "created",
+            "created_at": "2026-11-13T09:00:00Z",
+            "revision": 1,
+            "quantity": 4,
+            "allowed_actions": [],
+            "lines": [
+              {
+                "id": "order-north-3101-line-1",
+                "product_id": "prod-labels",
+                "quantity": 2,
+                "expires_on": null
+              },
+              {
+                "product_id": "prod-film",
+                "quantity": 2,
+                "expires_on": null,
+                "id": "order-north-3101-line-2"
+              }
+            ]
+          }

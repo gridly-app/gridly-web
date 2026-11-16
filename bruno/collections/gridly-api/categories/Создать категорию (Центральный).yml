@@ -1,0 +1,42 @@
+info:
+  name: Создать категорию (Центральный)
+  type: http
+  seq: 3
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/categories'
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Тестовая категория",
+        "storage_kind": "general"
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/categories
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Тестовая категория",
+            "storage_kind": "general"
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

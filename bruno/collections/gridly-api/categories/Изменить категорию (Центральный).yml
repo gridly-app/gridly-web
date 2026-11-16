@@ -1,0 +1,44 @@
+info:
+  name: Изменить категорию (Центральный)
+  type: http
+  seq: 4
+http:
+  method: PATCH
+  url: '{{baseUrl}}/warehouses/warehouse-demo/categories/cat-food'
+  body:
+    type: json
+    data: |-
+      {
+        "revision": 1,
+        "name": "Тестовая категория",
+        "storage_kind": "general"
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: PATCH
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/categories/cat-food
+      body:
+        type: json
+        data: |-
+          {
+            "revision": 1,
+            "name": "Тестовая категория",
+            "storage_kind": "general"
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

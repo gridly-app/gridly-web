@@ -1,0 +1,6 @@
+[fmt]
+useTabs = true
+ignorePatterns = ["bruno/**/*.yml"]
+
+[lint.rules]
+"no-empty" = "error"

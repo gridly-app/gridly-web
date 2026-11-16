@@ -1,0 +1,51 @@
+info:
+  name: Список событий (Северный)
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: '{{baseUrl}}/warehouses/warehouse-north/events'
+settings:
+  followRedirects: false
+examples:
+  - name: '200'
+    request:
+      method: GET
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-north/events
+    response:
+      status: 200
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "id": "event-1",
+                "created_at": "2026-09-01T06:00:00Z",
+                "event_type": "warehouse.created",
+                "entity_locator": "warehouse:warehouse-north",
+                "message": "Склад создан",
+                "detail": "Северный склад"
+              },
+              {
+                "id": "event-north-receipt",
+                "created_at": "2026-11-11T12:30:00Z",
+                "event_type": "inventory.received",
+                "entity_locator": "stock:stock-north-film",
+                "message": "Партия поступила",
+                "detail": "Плёнка упаковочная · 3 шт."
+              },
+              {
+                "id": "event-north-reserve",
+                "created_at": "2026-11-13T09:00:00Z",
+                "event_type": "inventory.reserved",
+                "entity_locator": "stock:stock-north-labels",
+                "message": "Партия зарезервирована",
+                "detail": "Этикетки для коробов · 8 шт."
+              }
+            ],
+            "total": 3
+          }

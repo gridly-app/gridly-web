@@ -250,10 +250,10 @@
 		background-color: var(--popover);
 		color: var(--destructive-foreground);
 		&:not(
-				:where([data-theme="dark"] *):not(
-					:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-				)
-			) {
+			:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			)
+		) {
 			background-clip: padding-box;
 		}
 		@media (hover: hover) {
@@ -318,10 +318,10 @@
 		background-color: var(--popover);
 		color: var(--foreground);
 		&:not(
-				:where([data-theme="dark"] *):not(
-					:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-				)
-			) {
+			:where([data-theme="dark"] *):not(
+				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
+			)
+		) {
 			background-clip: padding-box;
 		}
 		@media (hover: hover) {
@@ -426,9 +426,9 @@
 	}
 	.root[data-variant="default"]:hover:not(:disabled, [aria-disabled="true"]),
 	.root[data-variant="default"][data-pressed]:not(
-		:disabled,
-		[aria-disabled="true"]
-	) {
+			:disabled,
+			[aria-disabled="true"]
+		) {
 		background: var(--accent-hover);
 	}
 }

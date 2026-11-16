@@ -1,0 +1,56 @@
+info:
+  name: Добавить робота (Центральный)
+  type: http
+  seq: 3
+http:
+  method: POST
+  url: '{{baseUrl}}/warehouses/warehouse-demo/robots'
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Тестовый робот",
+        "roles": [
+          "outbound"
+        ],
+        "speed": 1.2,
+        "action_ticks": 2,
+        "capacity_volume": 120,
+        "x": 1,
+        "y": 1
+      }
+settings:
+  followRedirects: false
+examples:
+  - name: '501'
+    request:
+      method: POST
+      url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/robots
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Тестовый робот",
+            "roles": [
+              "outbound"
+            ],
+            "speed": 1.2,
+            "action_ticks": 2,
+            "capacity_volume": 120,
+            "x": 1,
+            "y": 1
+          }
+    response:
+      status: 501
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": {
+              "code": "STATIC_MOCK",
+              "message": "Bruno возвращает статические примеры. Для сохранения изменений подключите backend."
+            }
+          }

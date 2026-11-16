@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import type { KeyValueStorage } from "../../browser/storage";
 import { usePrefersTheme } from "../spaceui/use-prefers-theme";
-import type { KeyValueStorage } from "../storage";
 import type { ThemeState } from "./themeContext";
 
 export function useThemeState(storage: KeyValueStorage): ThemeState {

@@ -1,7 +1,4 @@
-import {
-	type Warehouse,
-	warehouseSchema,
-} from "@/entities/warehouse/model/warehouse";
+import { type Warehouse, warehouseSchema } from "@/domain/warehouse";
 export function warehouse(): Warehouse {
 	return warehouseSchema.parse({
 		id: "w",

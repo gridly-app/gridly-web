@@ -39,5 +39,4 @@ export async function permissionsScenario({
 	await expect(
 		page.getByRole("button", { name: "Товар", exact: true }),
 	).toBeEnabled();
-	console.log("PASS permissions and API retry");
 }

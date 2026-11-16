@@ -18,5 +18,4 @@ export async function destructiveConfirmationScenario({
 	expect(api.mutations).toBe(beforeDelete);
 	await page.getByRole("button", { name: "Отмена", exact: true }).click();
 	expect(api.mutations).toBe(beforeDelete);
-	console.log("PASS destructive confirmation");
 }
