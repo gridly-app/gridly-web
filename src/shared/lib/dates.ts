@@ -78,3 +78,24 @@ export function dateRangeError(from: string, to: string) {
 
 	return null;
 }
+
+const utcInstant = z.iso.datetime();
+const dateTimeMinuteLength = 16;
+const dateTimeSecondLength = 19;
+
+export function toUtcDateTimeInput(value: string | number | null, precision: "minute" | "second" = "second") {
+	if (value === null) return "";
+
+	const date = new Date(value);
+	const length = precision === "minute" ? dateTimeMinuteLength : dateTimeSecondLength;
+
+	return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, length) : "";
+}
+
+export function parseUtcDateTimeInput(value: string) {
+	const suffix = value.length === dateTimeMinuteLength ? ":00Z" : "Z";
+	const instant = `${value}${suffix}`;
+	const result = utcInstant.safeParse(instant);
+
+	return result.success ? new Date(result.data).toISOString() : null;
+}
