@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import {
 	prepareRobotMotionTrack,
 	robotMotionPosition,
-} from "@/app/warehouse/warehouse-map/lib/canvas/robotMotion";
+} from "@/app/modules/warehouse/warehouse-map/lib/canvas/robotMotion";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 
 import { event, harness, patch, until } from "./liveStreamFixture";

@@ -1,6 +1,6 @@
 import { expect, mock, test } from "bun:test";
 import { act } from "react";
-import { mountDom } from "../../../../../tests/support/dom";
+import { mountDom } from "../../../../../../tests/support/dom";
 import { LayoutIssueList } from "./LayoutIssueList";
 
 test("clicking a layout validation issue selects the cell identified by the server", async () => {

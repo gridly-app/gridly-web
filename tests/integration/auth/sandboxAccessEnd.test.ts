@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { AnonymousSandboxAccess } from "@/app/session/model/AnonymousSandboxAccess";
+import { AnonymousSandboxAccess } from "@/app/modules/session/model/AnonymousSandboxAccess";
 
 import {
 	base,

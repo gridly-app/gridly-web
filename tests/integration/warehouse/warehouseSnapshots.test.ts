@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { RestWarehouseRepository } from "@/app/warehouse-data";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 
 import { warehouseRepositoryFixture } from "./warehouseRepositoryFixture";
 

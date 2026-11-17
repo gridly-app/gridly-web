@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { robotFromForm } from "@/app/warehouse/warehouse-robots/model/robotFromForm";
+import { robotFromForm } from "@/app/modules/warehouse/warehouse-robots/model/robotFromForm";
 
 function form() {
 	const data = new FormData();

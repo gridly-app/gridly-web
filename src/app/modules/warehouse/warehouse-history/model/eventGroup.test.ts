@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { historyEventGroup } from "@/app/warehouse/warehouse-history/model/eventGroup";
+import { historyEventGroup } from "@/app/modules/warehouse/warehouse-history/model/eventGroup";
 
 test("history recognizes real untyped REST messages without an unexplained Other group", () => {
 	expect(

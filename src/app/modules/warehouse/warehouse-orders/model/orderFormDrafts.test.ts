@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import {
 	OrderFormDrafts,
 	type SavedOrderForm,
-} from "@/app/warehouse/warehouse-orders/model/orderFormDrafts";
+} from "@/app/modules/warehouse/warehouse-orders/model/orderFormDrafts";
 
 function memory() {
 	const data = new Map<string, string>();

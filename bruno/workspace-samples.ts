@@ -2,20 +2,20 @@ import { z } from "zod";
 import {
 	categoryDto,
 	productDto,
-} from "../src/app/warehouse-data/catalog/catalogDto";
-import { eventDto } from "../src/app/warehouse-data/history/historyDto";
-import { stockDto } from "../src/app/warehouse-data/inventory/inventoryDto";
-import { layoutDto } from "../src/app/warehouse-data/layout/layout.dto";
-import { orderDto } from "../src/app/warehouse-data/orders/orderDto";
-import { robotDto } from "../src/app/warehouse-data/robots/robotDto";
-import { warehouseDto } from "../src/app/warehouse-data/warehouses/warehouseDto";
+} from "../src/app/modules/warehouse-data/catalog/catalogDto";
+import { eventDto } from "../src/app/modules/warehouse-data/history/historyDto";
+import { stockDto } from "../src/app/modules/warehouse-data/inventory/inventoryDto";
+import { layoutDto } from "../src/app/modules/warehouse-data/layout/layout.dto";
+import { orderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
+import { robotDto } from "../src/app/modules/warehouse-data/robots/robotDto";
+import { warehouseDto } from "../src/app/modules/warehouse-data/warehouses/warehouseDto";
 import {
 	type AuditEvent,
 	auditSchema,
 	systemSchema,
 	usersSchema,
-} from "../src/app/administration/model/shipmentAudit";
-import { workingShipmentSchema } from "../src/app/warehouse/shipment-management/model/shipment.dto";
+} from "../src/app/modules/administration/model/shipmentAudit";
+import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
 import type { MockStore } from "./admin-mock";
 import { recentOrders } from "./order-samples";
 import { sampleShipment } from "./shipment-samples";

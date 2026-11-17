@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { warehouseDto } from "@/app/warehouse-data/warehouses/warehouseDto";
+import { warehouseDto } from "@/app/modules/warehouse-data/warehouses/warehouseDto";
 import { parseResponse } from "@/shared/http";
 
 test("warehouse REST metadata rejects an unsupported time zone", () => {

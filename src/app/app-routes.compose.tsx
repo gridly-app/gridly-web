@@ -10,24 +10,24 @@ import {
 import type { RouteDescription, WorkspaceAccess } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { Skeleton } from "@/shared/ui/feedback";
-import { administrationRoute } from "./administration";
+import { administrationRoute } from "./modules/administration";
 import { useWorkspaceHttp } from "./composition/workspace-providers.compose";
-import { landingRoute } from "./landing";
+import { landingRoute } from "./modules/landing";
 import { AccountRoute, AuthRoute } from "./router/AccountRoute";
 import { NavigationConfirmation } from "./router/NavigationConfirmation";
 import { RouteFailure } from "./router/RouteFailure";
 import { SandboxEntry, SandboxRoute } from "./router/SandboxRoute";
 import { WorkspaceEntry } from "./router/WorkspaceEntry";
-import { shipmentPortalRoute } from "./shipment-portal";
-import { ShipmentProgress } from "./shipment-progress";
-import { signInRoute } from "./sign-in";
+import { shipmentPortalRoute } from "./modules/shipment-portal";
+import { ShipmentProgress } from "./modules/shipment-progress";
+import { signInRoute } from "./modules/sign-in";
 import {
 	readLastWarehouse,
 	WarehouseOrderCard,
 	warehouseChildren,
 	warehouseWorkspaceRoute,
-} from "./warehouse";
-import { warehouseSettingsRoute } from "./warehouse-settings";
+} from "./modules/warehouse";
+import { warehouseSettingsRoute } from "./modules/warehouse-settings";
 
 const WorkspaceShell = lazy(warehouseWorkspaceRoute.load);
 const LandingPage = lazy(landingRoute.load);

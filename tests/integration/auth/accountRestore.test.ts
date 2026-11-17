@@ -1,5 +1,5 @@
 import { expect, spyOn, test } from "bun:test";
-import { BrowserSessionRepository } from "@/app/session";
+import { BrowserSessionRepository } from "@/app/modules/session";
 import { memoryStorage } from "@/shared/browser/browserStorage";
 import { ApiError, FetchHttpClient } from "@/shared/http";
 import {

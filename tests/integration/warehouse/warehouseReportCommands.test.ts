@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
-import { RestWarehouseCommands } from "@/app/warehouse-data/commands/restCommands";
-import { warehouseFromDto } from "@/app/warehouse-data/repositories/restMappers";
-import { warehouseDto } from "@/app/warehouse-data/warehouses/warehouseDto";
+import { RestWarehouseCommands } from "@/app/modules/warehouse-data/commands/restCommands";
+import { warehouseFromDto } from "@/app/modules/warehouse-data/repositories/restMappers";
+import { warehouseDto } from "@/app/modules/warehouse-data/warehouses/warehouseDto";
 import type { RequestOptions } from "@/shared/http";
 import { requiredAt } from "@/shared/invariants";
 

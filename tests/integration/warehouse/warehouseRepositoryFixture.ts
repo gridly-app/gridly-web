@@ -1,4 +1,4 @@
-import { RestWarehouseRepository } from "@/app/warehouse-data";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 
 import { ApiError, type RequestOptions } from "@/shared/http";
 

@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import {
 	prepareRobotMotionTrack,
 	robotMotionPosition,
-} from "@/app/warehouse/warehouse-map/lib/canvas/robotMotion";
+} from "@/app/modules/warehouse/warehouse-map/lib/canvas/robotMotion";
 import type { Cell } from "@/domain/warehouse";
 import { storageBlocks } from "@/domain/warehouse/layout/blockRoutes";
 import { findWarehousePath } from "@/domain/warehouse/layout/findWarehousePath";

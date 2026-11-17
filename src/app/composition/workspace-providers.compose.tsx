@@ -3,7 +3,7 @@ import { createContext, type ReactNode, useContext } from "react";
 import {
 	WarehouseRepositoryProvider,
 	warehouseData,
-} from "@/app/warehouse-data";
+} from "@/app/modules/warehouse-data";
 import { WorkspaceModeProvider } from "@/ports/session";
 import { WarehouseDataProvider } from "@/ports/warehouse";
 import type { AppDependencies } from "./dependencies.compose";

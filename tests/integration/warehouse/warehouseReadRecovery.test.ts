@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "@/app/warehouse-data";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 
 import { ApiError } from "@/shared/http";
 

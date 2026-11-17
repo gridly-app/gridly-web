@@ -3,12 +3,12 @@ import {
 	buildReport,
 	previousPeriod,
 	type ReportFilters,
-} from "@/app/warehouse/warehouse-information/model/report";
-import { reportCsv } from "@/app/warehouse/warehouse-information/model/reportCsv";
+} from "@/app/modules/warehouse/warehouse-information/model/report";
+import { reportCsv } from "@/app/modules/warehouse/warehouse-information/model/reportCsv";
 import type { Warehouse } from "@/domain/warehouse";
 import { requiredAt } from "@/shared/invariants";
 
-import { reportWarehouse as base } from "../../../../../tests/integration/warehouse/reportWarehouse";
+import { reportWarehouse as base } from "../../../../../../tests/integration/warehouse/reportWarehouse";
 
 const filters: ReportFilters = {
 	from: "2026-11-01",

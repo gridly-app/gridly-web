@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { act } from "react";
-import { mountDom } from "../../../../../tests/support/dom";
+import { mountDom } from "../../../../../../tests/support/dom";
 import { MapSizeFields } from "./MapSizeFields";
 
 test("a server validation error is announced by the matching dimension field", async () => {

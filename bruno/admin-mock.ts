@@ -1,22 +1,22 @@
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
-import { productDto } from "../src/app/warehouse-data/catalog/catalogDto";
-import { orderDto } from "../src/app/warehouse-data/orders/orderDto";
-import { warehouseDto } from "../src/app/warehouse-data/warehouses/warehouseDto";
+import { productDto } from "../src/app/modules/warehouse-data/catalog/catalogDto";
+import { orderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
+import { warehouseDto } from "../src/app/modules/warehouse-data/warehouses/warehouseDto";
 import {
 	type AuditEvent,
 	accountUserUpdateSchema,
 	auditSchema,
 	systemSchema,
 	usersSchema,
-} from "../src/app/administration/model/shipmentAudit";
+} from "../src/app/modules/administration/model/shipmentAudit";
 import {
 	type GuestLink,
 	guestLinkInputSchema,
-} from "../src/app/administration/model/guestLink.dto";
+} from "../src/app/modules/administration/model/guestLink.dto";
 import { type GuestSection, guestSectionSchema } from "../src/domain/shipment";
-import { guestShipmentSchema } from "../src/app/shipment-portal/model/guestShipment.dto";
-import { workingShipmentSchema } from "../src/app/warehouse/shipment-management/model/shipment.dto";
+import { guestShipmentSchema } from "../src/app/modules/shipment-portal/model/guestShipment.dto";
+import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
 import { sampleShipment } from "./shipment-samples";
 
 export type MockStore = Map<string, unknown>;

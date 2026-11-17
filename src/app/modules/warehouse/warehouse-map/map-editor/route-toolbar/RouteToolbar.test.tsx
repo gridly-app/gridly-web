@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, mock, test } from "bun:test";
 import { act } from "react";
 import { WarmTooltipGroup } from "@/shared/ui/overlays";
-import { mountDom } from "../../../../../../tests/support/dom";
+import { mountDom } from "../../../../../../../tests/support/dom";
 import { RouteToolbar, type RouteToolbarProps } from "./index";
 
 let dom: ReturnType<typeof mountDom>;

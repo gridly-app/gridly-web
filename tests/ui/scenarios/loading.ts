@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 import type { UiScenario } from "../uiBrowserFixture";
 
 export async function loadingScenario({ base, page, signIn }: UiScenario) {
-	const landingChunk = "**/src/app/landing/Landing.tsx";
+	const landingChunk = "**/src/app/modules/landing/Landing.tsx";
 	const landing = Promise.withResolvers<void>();
 	await page.route(landingChunk, async (route) => {
 		await landing.promise;

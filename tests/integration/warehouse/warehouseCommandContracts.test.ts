@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { writeOffFromForm } from "@/app/warehouse/warehouse-inventory/model/writeOffFromForm";
-import { robotFromForm } from "@/app/warehouse/warehouse-robots/model/robotFromForm";
-import { RestWarehouseCommands } from "@/app/warehouse-data/commands/restCommands";
-import { RestWarehouseRepository } from "@/app/warehouse-data/repositories/restRepository";
+import { writeOffFromForm } from "@/app/modules/warehouse/warehouse-inventory/model/writeOffFromForm";
+import { robotFromForm } from "@/app/modules/warehouse/warehouse-robots/model/robotFromForm";
+import { RestWarehouseCommands } from "@/app/modules/warehouse-data/commands/restCommands";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data/repositories/restRepository";
 import { warehouseCommandSchema } from "@/domain/warehouse/commands/commandSchemas";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 import { ApiError, FetchHttpClient, type RequestOptions } from "@/shared/http";

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { BrowserSessionRepository } from "@/app/session/api/repository";
+import { BrowserSessionRepository } from "@/app/modules/session/api/repository";
 import { FetchHttpClient } from "@/shared/http";
 
 import {

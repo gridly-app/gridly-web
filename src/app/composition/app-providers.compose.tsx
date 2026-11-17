@@ -5,13 +5,13 @@ import {
 	useLayoutEffect,
 	useSyncExternalStore,
 } from "react";
-import { SessionProvider } from "@/app/session";
+import { SessionProvider } from "@/app/modules/session";
 import { SandboxAccessProvider } from "@/ports/session";
 import { WarehouseUiProvider } from "@/ports/warehouse";
 import { runtimeNotices, ThemeProvider, useTheme } from "@/shared/lib";
 import { FloatingAlerts, ToastProvider } from "@/shared/ui/feedback";
 import { WarmTooltipGroup } from "@/shared/ui/overlays";
-import { DeleteWarehouseDialog, StatusBadge } from "../warehouse-ui";
+import { DeleteWarehouseDialog, StatusBadge } from "../modules/warehouse-ui";
 import type { AppDependencies } from "./dependencies.compose";
 
 const WorkspaceRuntimes = createContext<{

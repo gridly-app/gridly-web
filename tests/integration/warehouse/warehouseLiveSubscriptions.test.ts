@@ -6,7 +6,7 @@ import { channel, event, patch, until } from "./liveStreamFixture";
 
 test("repository shares a stream, skips healthy map polling and resyncs on resubscribe", async () => {
 	const { RestWarehouseRepository } =
-		await import("@/app/warehouse-data/repositories/restRepository");
+		await import("@/app/modules/warehouse-data/repositories/restRepository");
 	const { ApiError } = await import("@/shared/http");
 	const cache = new QueryClient();
 	const channels: ReturnType<typeof channel>[] = [];

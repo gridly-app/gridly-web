@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { BrowserSessionRepository } from "@/app/session";
-import { RestWarehouseRepository } from "@/app/warehouse-data";
+import { BrowserSessionRepository } from "@/app/modules/session";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 import { memoryStorage } from "@/shared/browser";
 import { channel, until } from "./liveStreamFixture";
 import {

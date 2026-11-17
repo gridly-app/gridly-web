@@ -14,8 +14,8 @@ import {
 } from "@/ports/warehouse";
 import { WarmTooltipGroup } from "@/shared/ui/overlays";
 
-import { mountDom } from "../../../../tests/support/dom";
-import { warehouse } from "../../../../tests/support/warehouse";
+import { mountDom } from "../../../../../tests/support/dom";
+import { warehouse } from "../../../../../tests/support/warehouse";
 import {
 	CanvasWarehouseRenderer,
 	type LayoutRenderState,

@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { z } from "zod";
-import { guestLinksSchema } from "@/app/administration/model/guestLink.dto";
-import { workingShipmentSchema } from "@/app/warehouse/shipment-management/model/shipment.dto";
+import { guestLinksSchema } from "@/app/modules/administration/model/guestLink.dto";
+import { workingShipmentSchema } from "@/app/modules/warehouse/shipment-management/model/shipment.dto";
 import { createAdminMock, type MockStore } from "../../bruno/admin-mock";
 import {
 	loadBrunoMockRoutes,
@@ -11,12 +11,12 @@ import {
 import {
 	shiftDay,
 	warehouseDay,
-} from "../../src/app/warehouse/warehouse-information/model/reportPeriod";
-import { productDto } from "../../src/app/warehouse-data/catalog/catalogDto";
-import { eventDto } from "../../src/app/warehouse-data/history/historyDto";
-import { orderDto } from "../../src/app/warehouse-data/orders/orderDto";
-import { robotDto } from "../../src/app/warehouse-data/robots/robotDto";
-import { warehouseDto } from "../../src/app/warehouse-data/warehouses/warehouseDto";
+} from "../../src/app/modules/warehouse/warehouse-information/model/reportPeriod";
+import { productDto } from "../../src/app/modules/warehouse-data/catalog/catalogDto";
+import { eventDto } from "../../src/app/modules/warehouse-data/history/historyDto";
+import { orderDto } from "../../src/app/modules/warehouse-data/orders/orderDto";
+import { robotDto } from "../../src/app/modules/warehouse-data/robots/robotDto";
+import { warehouseDto } from "../../src/app/modules/warehouse-data/warehouses/warehouseDto";
 
 const base = "http://gridly.test/api/v1";
 const links = "/admin/warehouses/warehouse-demo/shipment-links";

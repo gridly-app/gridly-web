@@ -2,8 +2,8 @@ import { QueryClient } from "@tanstack/react-query";
 import {
 	AnonymousSandboxAccess,
 	BrowserSessionRepository,
-} from "@/app/session";
-import { RestWarehouseRepository } from "@/app/warehouse-data";
+} from "@/app/modules/session";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 import { environment } from "@/shared/config";
 import { FetchHttpClient } from "@/shared/http";
 import { availableStorage, browserStorage } from "@/shared/lib";

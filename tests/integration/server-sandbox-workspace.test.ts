@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { AnonymousSandboxAccess } from "@/app/session/model/AnonymousSandboxAccess";
-import { RestWarehouseRepository } from "@/app/warehouse-data";
+import { AnonymousSandboxAccess } from "@/app/modules/session/model/AnonymousSandboxAccess";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 
 const base = "http://gridly-sandbox.test/api/v1";
 const sessions: AnonymousSandboxAccess[] = [];

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { stockDto } from "@/app/warehouse-data/inventory/inventoryDto";
-import { stockFromDto } from "@/app/warehouse-data/repositories/restMappers";
+import { stockDto } from "@/app/modules/warehouse-data/inventory/inventoryDto";
+import { stockFromDto } from "@/app/modules/warehouse-data/repositories/restMappers";
 
 const stock = {
 	id: "stock-1",

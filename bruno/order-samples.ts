@@ -1,9 +1,9 @@
-import type { ProductDto } from "../src/app/warehouse-data/catalog/catalogDto";
-import type { OrderDto } from "../src/app/warehouse-data/orders/orderDto";
+import type { ProductDto } from "../src/app/modules/warehouse-data/catalog/catalogDto";
+import type { OrderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
 import {
 	shiftDay,
 	warehouseDay,
-} from "../src/app/warehouse/warehouse-information/model/reportPeriod";
+} from "../src/app/modules/warehouse/warehouse-information/model/reportPeriod";
 import { counterparties } from "./shipment-samples";
 
 const hours = 3600000;

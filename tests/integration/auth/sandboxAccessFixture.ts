@@ -1,4 +1,4 @@
-import { AnonymousSandboxAccess } from "@/app/session/model/AnonymousSandboxAccess";
+import { AnonymousSandboxAccess } from "@/app/modules/session/model/AnonymousSandboxAccess";
 export const base = "http://gridly-sandbox.test/api/v1";
 
 export const credentials = (id = "first") => ({
