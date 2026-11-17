@@ -23,6 +23,7 @@ export interface EditLayoutToolbarOptions {
 	};
 	pending: boolean;
 	palette: Record<CellType, string>;
+	onHeightChange: (height: number | undefined) => void;
 }
 
 export function useEditLayoutToolbar({
@@ -30,6 +31,7 @@ export function useEditLayoutToolbar({
 	pending,
 	palette,
 	categories,
+	onHeightChange,
 }: EditLayoutToolbarOptions) {
 	const [page, setPage] = useState(0);
 	const container = useRef<HTMLDivElement>(null);
@@ -42,8 +44,7 @@ export function useEditLayoutToolbar({
 		const element = container.current;
 		const track = measure.current;
 		if (!element || !track) return;
-		const workspace = element.closest<HTMLElement>("[data-map-workspace]");
-		const observer = new ResizeObserver(() => {
+		const update = () => {
 			setAvailableWidth(
 				element.clientWidth -
 					2 * parseFloat(getComputedStyle(element).paddingInlineStart),
@@ -54,23 +55,19 @@ export function useEditLayoutToolbar({
 					(item) => item.getBoundingClientRect().width + 4,
 				),
 			);
-			workspace?.style.setProperty(
-				"--construction-toolbar-height",
-				`${element.getBoundingClientRect().height}px`,
-			);
-		});
+			onHeightChange(element.getBoundingClientRect().height);
+		};
 
+		const observer = new ResizeObserver(update);
 		observer.observe(element);
 		observer.observe(track);
-		if (workspace) {
-			observer.observe(workspace);
-		}
+		update();
 
 		return () => {
 			observer.disconnect();
-			workspace?.style.removeProperty("--construction-toolbar-height");
+			onHeightChange(undefined);
 		};
-	}, []);
+	}, [onHeightChange]);
 	const itemWidth = (name: string, index: number) =>
 		widths[index] ?? name.length * 7.2 + 28;
 	const contentWidth = Math.max(0, availableWidth - 18);

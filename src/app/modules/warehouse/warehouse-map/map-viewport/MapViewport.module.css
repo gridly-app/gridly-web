@@ -59,13 +59,13 @@
 .mapScroll[data-viewing="true"][data-editor="construction"] {
 	padding-top: calc(
 		var(--map-navigation-top) + var(--map-navigation-height, 52px) +
-			var(--construction-toolbar-height, 180px) + 26px
+			var(--map-editor-height, 180px) + 26px
 	);
 }
 .mapScroll[data-viewing="true"][data-editor="routes"] {
 	padding-top: calc(
 		var(--map-navigation-top) + var(--map-navigation-height, 52px) +
-			var(--route-toolbar-height, 180px) + 24px
+			var(--map-editor-height, 180px) + 24px
 	);
 }
 @media (width <= 580px) {

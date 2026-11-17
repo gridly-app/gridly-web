@@ -24,6 +24,7 @@ export interface RouteToolbarProps {
 	};
 	pending: boolean;
 	className?: string | undefined;
+	onHeightChange?: ((height: number | undefined) => void) | undefined;
 }
 
 export function RouteToolbar({
@@ -31,24 +32,25 @@ export function RouteToolbar({
 	pending,
 	editor,
 	className = "",
+	onHeightChange,
 }: RouteToolbarProps) {
 	const container = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		const element = container.current;
-		const workspace = element?.closest<HTMLElement>("[data-map-workspace]");
-		if (!element || !workspace) return;
-		const observer = new ResizeObserver(() =>
-			workspace.style.setProperty(
-				"--route-toolbar-height",
-				`${element.getBoundingClientRect().height}px`,
-			),
-		);
+		if (!element || !onHeightChange) return;
+
+		const measure = () =>
+			onHeightChange(element.getBoundingClientRect().height);
+		const observer = new ResizeObserver(measure);
+
 		observer.observe(element);
+		measure();
+
 		return () => {
 			observer.disconnect();
-			workspace.style.removeProperty("--route-toolbar-height");
+			onHeightChange(undefined);
 		};
-	}, []);
+	}, [onHeightChange]);
 
 	function handleSave() {
 		void model.save();

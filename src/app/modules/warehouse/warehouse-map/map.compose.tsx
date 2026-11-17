@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { type ComponentProps, type CSSProperties, useState } from "react";
 
 import { MapEditor } from "./map-editor";
 import { MapInspector } from "./map-inspector";
@@ -32,6 +32,11 @@ export function MapLayout({
 	cellErrors: InspectorProps["cellErrors"];
 }) {
 	const editorMode = editing ? editor.mode : undefined;
+	const [editorHeight, setEditorHeight] = useState<number>();
+	const style: CSSProperties & { "--map-editor-height"?: string } =
+		editorHeight === undefined
+			? {}
+			: { "--map-editor-height": `${editorHeight}px` };
 
 	return (
 		<>
@@ -43,8 +48,9 @@ export function MapLayout({
 				routeEditor={routeEditor}
 				palette={legend.palette}
 				pending={pending}
+				onHeightChange={setEditorHeight}
 			/>
-			<div className={styles.mapLayout}>
+			<div className={styles.mapLayout} style={style}>
 				<MapViewport model={canvas} viewing={viewing} editorMode={editorMode} />
 				<MapInspector
 					className={styles.mapDetails}

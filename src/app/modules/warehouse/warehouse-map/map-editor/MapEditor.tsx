@@ -22,6 +22,7 @@ interface MapEditorProps {
 	palette: EditLayoutToolbarProps["palette"];
 	pending: boolean;
 	className?: string | undefined;
+	onHeightChange: (height: number | undefined) => void;
 }
 
 export function MapEditor({
@@ -32,6 +33,7 @@ export function MapEditor({
 	palette,
 	pending,
 	className,
+	onHeightChange,
 }: MapEditorProps) {
 	return (
 		<>
@@ -53,12 +55,14 @@ export function MapEditor({
 					pending={pending}
 					palette={palette}
 					categories={editor.categories}
+					onHeightChange={onHeightChange}
 				/>
 			)}
 			{editing && editor.mode === "routes" && (
 				<RouteToolbar
 					className={className}
 					model={routeEditor}
+					onHeightChange={onHeightChange}
 					editor={editor}
 					pending={pending}
 				/>
