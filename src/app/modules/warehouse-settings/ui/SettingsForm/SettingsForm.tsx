@@ -6,9 +6,9 @@ import { Field, Form, FormActions, FormGrid, Label } from "@/shared/ui/forms";
 import {
 	type SettingsFormOptions,
 	useSettingsForm,
-} from "../model/useSettingsForm";
-import styles from "../WarehouseSettings.module.css";
-import { LocationAndMapSettings } from "./LocationAndMapSettings";
+} from "../../model/useSettingsForm";
+import styles from "../../shared.module.css";
+import { LocationAndMapSettings } from "../LocationAndMapSettings/LocationAndMapSettings";
 
 export function SettingsForm({
 	section,

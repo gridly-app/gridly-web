@@ -26,7 +26,7 @@ import {
 	MenuSubmenuTrigger,
 	MenuTrigger,
 } from "@/shared/ui/overlays";
-import { useWorkspaceNotice } from "../useWorkspaceNotice";
+import { useWorkspaceNotice } from "../../model/workspace/useWorkspaceNotice";
 import styles from "./ProfileMenu.module.css";
 
 export function ProfileMenu() {

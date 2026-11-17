@@ -9,7 +9,10 @@ import { Button, Input } from "@/shared/ui/controls";
 import { Field, FormGrid, FormShell } from "@/shared/ui/forms";
 import { Modal } from "@/shared/ui/overlays";
 import styles from "./NewWarehouse.module.css";
-import { warehouseFormLimits, warehouseFromForm } from "./warehouseFromForm";
+import {
+	warehouseFormLimits,
+	warehouseFromForm,
+} from "../../model/workspace/creation/warehouseFromForm";
 
 export function NewWarehouse() {
 	const [open, setOpen] = useState(true);

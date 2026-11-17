@@ -4,9 +4,9 @@ import { errorMessage } from "@/shared/lib";
 import { Button, Input } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 import { Field, Form, FormActions } from "@/shared/ui/forms";
-import { useSettingsDraft } from "../model/useSettingsDraft";
-import type { SettingsWarehouse } from "../model/warehouseFields";
-import styles from "../WarehouseSettings.module.css";
+import { useSettingsDraft } from "../../model/useSettingsDraft";
+import type { SettingsWarehouse } from "../../model/warehouseFields";
+import styles from "../../shared.module.css";
 
 export function CabinetSettings({
 	w,

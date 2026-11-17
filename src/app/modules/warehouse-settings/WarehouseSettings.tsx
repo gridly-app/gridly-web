@@ -21,9 +21,9 @@ import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { ScrollArea } from "@/shared/ui/navigation";
 import { useSettingsPage } from "./model/useSettingsPage";
 import type { SettingsWarehouse } from "./model/warehouseFields";
-import { CabinetSettings } from "./ui/CabinetSettings";
-import { SettingsForm } from "./ui/SettingsForm";
-import styles from "./WarehouseSettings.module.css";
+import { CabinetSettings } from "./ui/CabinetSettings/CabinetSettings";
+import { SettingsForm } from "./ui/SettingsForm/SettingsForm";
+import styles from "./shared.module.css";
 
 export function WarehouseSettings({
 	warehouse: selectedWarehouse,

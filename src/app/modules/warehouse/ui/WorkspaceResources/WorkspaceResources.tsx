@@ -9,8 +9,8 @@ import { ApiError } from "@/shared/http";
 import { errorMessage, useOnlineStatus } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
-import { ConnectionStatus } from "./ConnectionStatus";
-import { useWorkspaceCommands } from "./useWorkspaceCommands";
+import { ConnectionStatus } from "../ConnectionStatus/ConnectionStatus";
+import { useWorkspaceCommands } from "../../model/workspace/content/useWorkspaceCommands";
 
 export function WorkspaceResources({
 	warehouse,

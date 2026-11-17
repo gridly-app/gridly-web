@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { matchRoutes } from "react-router-dom";
 import type { WarehouseRouteHandle } from "@/ports/navigation";
 import { warehouseAccess } from "@/ports/navigation";
-import { warehouseChildren } from "./index";
+import { warehouseChildren } from "../..";
 
 test("the management route is available in the account workspace while shared sections also match in sandbox", () => {
 	const options = {

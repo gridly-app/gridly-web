@@ -7,11 +7,11 @@ import { ApiError } from "@/shared/http";
 import { errorMessage } from "@/shared/lib";
 import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
 import { SidebarTrigger } from "@/shared/ui/navigation";
-import { NewWarehouse } from "../creation/NewWarehouse";
-import { RememberWarehouse } from "../lastWarehouse";
-import type { useWarehouseRoute } from "../warehouseSection";
+import { NewWarehouse } from "../NewWarehouse/NewWarehouse";
+import { RememberWarehouse } from "../../model/workspace/lastWarehouse";
+import type { useWarehouseRoute } from "../../model/workspace/warehouseSection";
 import styles from "./WorkspaceContent.module.css";
-import { WorkspaceResources } from "./WorkspaceResources";
+import { WorkspaceResources } from "../WorkspaceResources/WorkspaceResources";
 
 type WarehouseRoute = NonNullable<ReturnType<typeof useWarehouseRoute>>;
 

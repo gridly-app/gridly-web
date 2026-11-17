@@ -4,8 +4,8 @@ import { errorMessage } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice, Feedback } from "@/shared/ui/feedback";
 import { Field, Form, FormActions, Select } from "@/shared/ui/forms";
-import cities from "../config/cities.json";
-import { useSettingsDraft } from "../model/useSettingsDraft";
+import cities from "../../config/cities.json";
+import { useSettingsDraft } from "../../model/useSettingsDraft";
 
 export function WarehouseCityForm({
 	settings,

@@ -4,7 +4,7 @@ export {
 	WarehouseOrderCard,
 	warehouseChildren,
 } from "./warehouse-routes.compose";
-export { readLastWarehouse } from "./workspace/lastWarehouse";
+export { readLastWarehouse } from "./model/workspace/lastWarehouse";
 
 export const warehouseWorkspaceRoute = {
 	id: "warehouse",

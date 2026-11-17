@@ -2,10 +2,10 @@ import { useRef, useState } from "react";
 import type { CommandExecutor } from "@/domain/warehouse";
 import { blocksLayoutWrite, useLayoutOperation } from "@/ports/warehouse";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
-import type { SettingsWarehouse } from "../model/warehouseFields";
-import styles from "../WarehouseSettings.module.css";
-import { WarehouseCityForm } from "./WarehouseCityForm";
-import { WarehouseDimensionsForm } from "./WarehouseDimensionsForm";
+import type { SettingsWarehouse } from "../../model/warehouseFields";
+import styles from "../../shared.module.css";
+import { WarehouseCityForm } from "../WarehouseCityForm/WarehouseCityForm";
+import { WarehouseDimensionsForm } from "../WarehouseDimensionsForm/WarehouseDimensionsForm";
 
 export function LocationAndMapSettings({
 	w,

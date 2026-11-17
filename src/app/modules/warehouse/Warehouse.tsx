@@ -4,9 +4,9 @@ import { ImmersiveProvider } from "@/shared/lib";
 import { SidebarProvider } from "@/shared/ui/navigation";
 import workspaceStyles from "./Warehouse.module.css";
 import { WarehouseNavigation } from "./warehouse-navigation";
-import { WorkspaceContent } from "./workspace/content/WorkspaceContent";
-import { WorkspaceSidebar } from "./workspace/sidebar/WorkspaceSidebar";
-import { useWarehouseRoute } from "./workspace/warehouseSection";
+import { WorkspaceContent } from "./ui/WorkspaceContent/WorkspaceContent";
+import { WorkspaceSidebar } from "./ui/WorkspaceSidebar/WorkspaceSidebar";
+import { useWarehouseRoute } from "./model/workspace/warehouseSection";
 
 export function Warehouse() {
 	const { warehouseId } = useParams();

@@ -14,8 +14,8 @@ import {
 	SidebarHeader,
 	SidebarTrigger,
 } from "@/shared/ui/navigation";
-import { ProfileMenu } from "./ProfileMenu";
-import { WorkspaceSelector } from "./WorkspaceSelector";
+import { ProfileMenu } from "../ProfileMenu/ProfileMenu";
+import { WorkspaceSelector } from "../WorkspaceSelector/WorkspaceSelector";
 import styles from "./WorkspaceSidebar.module.css";
 
 export function WorkspaceSidebar({
