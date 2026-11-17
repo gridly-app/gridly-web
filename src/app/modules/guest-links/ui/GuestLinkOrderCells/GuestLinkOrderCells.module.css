@@ -1,0 +1,12 @@
+.orderMarkers {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1);
+}
+
+.orderMarker {
+	max-inline-size: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

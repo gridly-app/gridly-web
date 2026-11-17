@@ -1,11 +1,11 @@
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 
-import { guestSections, guestLinkStatuses } from "@/domain/shipment";
+import { guestLinkStatuses } from "@/domain/shipment";
 import type { Order, Warehouse } from "@/domain/warehouse";
 
-import { textSearch } from "@/shared/lib";
 import type { GuestLink } from "../../api/guestLink.dto";
+import { filterGuestLinkRows } from "../../model/guestLinkRows";
 
 import { Button } from "@/shared/ui/controls";
 import { ListFilters } from "@/shared/ui/dataDisplay";
@@ -49,20 +49,7 @@ export function WarehouseGuestLinksList({
 
 	if (!links) return null;
 
-	const matches = textSearch(search);
-	const rows = links.filter(
-		(link) =>
-			(status === "all" || link.status === status) &&
-			matches([
-				link.name,
-				...link.order_ids.map((id) => {
-					const order = orderById.get(id);
-
-					return order ? `${order.party} ${order.number}` : id;
-				}),
-				...link.sections.map((section) => guestSections[section]),
-			]),
-	);
+	const rows = filterGuestLinkRows(links, orderById, search, status);
 
 	const canCreate = orderById.size > 0 && !isSaving && !isCreationBlocked;
 
@@ -94,9 +81,9 @@ export function WarehouseGuestLinksList({
 				</Button>
 			</div>
 			<GuestLinksTable
-				warehouse={warehouse}
-				orderById={orderById}
-				links={rows}
+				warehouseId={warehouse.id}
+				timezone={warehouse.timezone}
+				rows={rows}
 				isSaving={isSaving}
 				onCopy={onCopy}
 				onEdit={onEdit}

@@ -1,6 +1,6 @@
-import type { ProductDto } from "../src/app/modules/warehouse-data/catalog/catalogDto";
-import type { OrderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
-import type { WarehouseDto } from "../src/app/modules/warehouse-data/warehouses/warehouseDto";
+import type { ProductDto } from "../src/app/modules/warehouse-data/api/catalog/catalogDto";
+import type { OrderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
+import type { WarehouseDto } from "../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
 import { warehouseDay } from "../src/app/modules/warehouse/warehouse-information/model/reportPeriod";
 import {
 	type WorkingShipment,

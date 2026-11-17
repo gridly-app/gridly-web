@@ -1,7 +1,7 @@
 import type { Warehouse } from "@/domain/warehouse";
 import type { WorkspaceMode } from "@/ports/session";
 
-import type { FetchHttpClient } from "@/shared/http";
+import type { HttpClient } from "@/shared/http";
 
 import { WarehouseGuestLinks } from "./ui/WarehouseGuestLinks/WarehouseGuestLinks";
 
@@ -11,7 +11,7 @@ export function GuestLinks({
 	warehouse,
 	initialOrder,
 }: {
-	http: FetchHttpClient;
+	http: HttpClient;
 	mode: WorkspaceMode;
 	warehouse: Warehouse;
 	initialOrder: string | null;

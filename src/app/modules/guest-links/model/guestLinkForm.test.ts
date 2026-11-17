@@ -12,7 +12,7 @@ test("rejects an impossible expiry date before JavaScript normalizes it", () => 
 		sections: [],
 		hasUnavailableOrders: false,
 	};
-	const expiration = { initial: "", original: undefined };
+	const expiration = { initialFieldValue: "", storedExpiresAt: undefined };
 	const result = readGuestLinkForm(form, selection, expiration);
 
 	expect(result.input).toBeUndefined();
@@ -30,8 +30,8 @@ test("keeps sub-minute precision when editing an unchanged expiry", () => {
 		hasUnavailableOrders: false,
 	};
 	const expiration = {
-		initial: "2099-02-28T12:00",
-		original: "2099-02-28T12:00:59.999Z",
+		initialFieldValue: "2099-02-28T12:00",
+		storedExpiresAt: "2099-02-28T12:00:59.999Z",
 	};
 	const result = readGuestLinkForm(form, selection, expiration);
 
@@ -48,7 +48,7 @@ test("converts a date from a minute-precision input to an explicit UTC instant",
 		sections: [],
 		hasUnavailableOrders: false,
 	};
-	const expiration = { initial: "", original: undefined };
+	const expiration = { initialFieldValue: "", storedExpiresAt: undefined };
 	const result = readGuestLinkForm(form, selection, expiration);
 
 	expect(result.input?.expires_at).toBe("2099-02-28T12:00:00.000Z");

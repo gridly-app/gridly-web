@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
-import { productDto } from "../src/app/modules/warehouse-data/catalog/catalogDto";
-import { orderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
-import { warehouseDto } from "../src/app/modules/warehouse-data/warehouses/warehouseDto";
+import { productDto } from "../src/app/modules/warehouse-data/api/catalog/catalogDto";
+import { orderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
+import { warehouseDto } from "../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
 import { type AuditEvent } from "../src/domain/shipment";
 import { auditSchema } from "../src/app/modules/audit/api/audit.dto";
 import { systemSchema } from "../src/app/modules/system/api/system.dto";

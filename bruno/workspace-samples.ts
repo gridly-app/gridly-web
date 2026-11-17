@@ -2,13 +2,13 @@ import { z } from "zod";
 import {
 	categoryDto,
 	productDto,
-} from "../src/app/modules/warehouse-data/catalog/catalogDto";
-import { eventDto } from "../src/app/modules/warehouse-data/history/historyDto";
-import { stockDto } from "../src/app/modules/warehouse-data/inventory/inventoryDto";
-import { layoutDto } from "../src/app/modules/warehouse-data/layout/layout.dto";
-import { orderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
-import { robotDto } from "../src/app/modules/warehouse-data/robots/robotDto";
-import { warehouseDto } from "../src/app/modules/warehouse-data/warehouses/warehouseDto";
+} from "../src/app/modules/warehouse-data/api/catalog/catalogDto";
+import { eventDto } from "../src/app/modules/warehouse-data/api/history/historyDto";
+import { stockDto } from "../src/app/modules/warehouse-data/api/inventory/inventoryDto";
+import { layoutDto } from "../src/app/modules/warehouse-data/api/layout/layout.dto.ts";
+import { orderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
+import { robotDto } from "../src/app/modules/warehouse-data/api/robots/robotDto";
+import { warehouseDto } from "../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
 import { type AuditEvent } from "../src/domain/shipment";
 import { auditSchema } from "../src/app/modules/audit/api/audit.dto";
 import { systemSchema } from "../src/app/modules/system/api/system.dto";

@@ -1,0 +1,86 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import type { HttpClient } from "@/shared/http";
+
+import type {
+	GuestLink,
+	GuestLinkInput,
+	GuestLinkList,
+} from "../api/guestLink.dto";
+import {
+	revokeGuestLink,
+	updateGuestLink,
+	useGuestLinksQueryKey,
+} from "../api/guestLinksApi";
+
+type Change =
+	| { type: "update"; id: string; revision: number; input: GuestLinkInput }
+	| { type: "revoke"; id: string };
+
+export function useGuestLinkChanges(
+	http: HttpClient,
+	path: string,
+	onChanged: (change: Change) => void,
+) {
+	const client = useQueryClient();
+	const queryKey = useGuestLinksQueryKey(path);
+
+	function applyChange(change: Change) {
+		if (change.type === "revoke") return revokeGuestLink(http, path, change.id);
+
+		return updateGuestLink(
+			http,
+			path,
+			change.id,
+			change.revision,
+			change.input,
+		);
+	}
+
+	async function handleSuccess(_result: void, change: Change) {
+		if (change.type === "revoke") {
+			await client.cancelQueries({ queryKey, exact: true });
+
+			client.setQueryData<GuestLinkList>(queryKey, (current) => {
+				if (!current) return;
+
+				const items = current.items.map<GuestLink>((link) =>
+					link.id === change.id ? { ...link, status: "revoked" } : link,
+				);
+
+				return { items };
+			});
+		}
+
+		onChanged(change);
+
+		await client.invalidateQueries({ queryKey, exact: true });
+	}
+
+	const mutation = useMutation({
+		mutationFn: applyChange,
+		onSuccess: handleSuccess,
+	});
+
+	function updateLink(link: GuestLink, input: GuestLinkInput) {
+		mutation.mutate({
+			type: "update",
+			id: link.id,
+			revision: link.revision,
+			input,
+		});
+	}
+
+	function revokeLink(id: string) {
+		mutation.mutate({ type: "revoke", id });
+	}
+
+	return {
+		updateLink,
+		revokeLink,
+		isPending: mutation.isPending,
+		isRevoking: mutation.isPending && mutation.variables?.type === "revoke",
+		error: mutation.error,
+		resetError: mutation.reset,
+	};
+}

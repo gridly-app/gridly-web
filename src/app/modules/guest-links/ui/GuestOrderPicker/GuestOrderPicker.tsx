@@ -14,10 +14,12 @@ type GuestOrder = Pick<Order, "id" | "number" | "party">;
 
 export function GuestOrderPicker({
 	orders,
+	disabled,
 	selectedIds,
 	onCheck,
 }: {
 	orders: GuestOrder[];
+	disabled: boolean;
 	selectedIds: ReadonlySet<string>;
 	onCheck: (id: string, checked: boolean) => void;
 }) {
@@ -29,7 +31,7 @@ export function GuestOrderPicker({
 	);
 
 	return (
-		<fieldset className={shared.fieldset}>
+		<fieldset className={shared.fieldset} disabled={disabled}>
 			<legend className={shared.legend}>
 				Заказы на отгрузку · {selectedIds.size}
 			</legend>
@@ -50,6 +52,7 @@ export function GuestOrderPicker({
 						<label key={order.id} className={shared.checkRow} htmlFor={id}>
 							<Checkbox
 								id={id}
+								disabled={disabled}
 								checked={selectedIds.has(order.id)}
 								onCheckedChange={handleCheck}
 							/>

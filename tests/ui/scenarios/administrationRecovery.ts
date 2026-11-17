@@ -7,7 +7,7 @@ import type { UiScenario } from "../uiBrowserFixture";
 export async function administrationRecoveryScenario(scenario: UiScenario) {
 	await scenario.signIn();
 	await checkUserConflict(scenario);
-	await checkLostLinkResponse(scenario);
+	await checkLinkCreationRecovery(scenario);
 }
 
 async function checkUserConflict({ page, base, api }: UiScenario) {
@@ -71,41 +71,52 @@ async function checkUserConflict({ page, base, api }: UiScenario) {
 	expect(saves).toBe(2);
 }
 
-async function checkLostLinkResponse({ page, base, api }: UiScenario) {
+async function checkLinkCreationRecovery({ page, base, api }: UiScenario) {
 	const mock = createAdminMock();
 	const name = "Ссылка с потерянным ответом";
+	const firstResponse = Promise.withResolvers<void>();
+	const routePattern = "**/api/v1/admin/warehouses/*/shipment-links";
 	let issues = 0;
 
-	await page.route(
-		"**/api/v1/admin/warehouses/*/shipment-links",
-		async (route) => {
-			const request = route.request();
-			const method = request.method();
-			const response = await mock.handle(
-				new Request(request.url(), {
-					method,
-					headers: request.headers(),
-					body: request.postData(),
-				}),
-				api.accountStore,
-			);
+	await page.route(routePattern, async (route) => {
+		const request = route.request();
+		const method = request.method();
 
-			if (!response) return route.fallback();
+		if (method === "GET" && issues === 2) {
+			return route.fulfill({
+				status: 503,
+				json: { code: "UPSTREAM_UNAVAILABLE" },
+			});
+		}
 
-			if (method === "POST") {
-				expect(response.status).toBe(201);
-				issues++;
+		const response = await mock.handle(
+			new Request(request.url(), {
+				method,
+				headers: request.headers(),
+				body: request.postData(),
+			}),
+			api.accountStore,
+		);
+
+		if (!response) return route.fallback();
+
+		if (method === "POST") {
+			expect(response.status).toBe(201);
+			issues++;
+
+			if (issues === 1) {
+				await firstResponse.promise;
 
 				return route.abort("connectionreset");
 			}
+		}
 
-			return route.fulfill({
-				status: response.status,
-				headers: Object.fromEntries(response.headers),
-				body: await response.text(),
-			});
-		},
-	);
+		return route.fulfill({
+			status: response.status,
+			headers: Object.fromEntries(response.headers),
+			body: await response.text(),
+		});
+	});
 	await page.goto(
 		`${base}/admin/shipments?tab=links&warehouse_id=warehouse-demo`,
 	);
@@ -116,9 +127,28 @@ async function checkLostLinkResponse({ page, base, api }: UiScenario) {
 	await create.click();
 	await editor.getByLabel("Название").fill(name);
 	await editor.getByRole("checkbox", { name: /ЗК-2087/ }).check();
-	await editor.getByRole("button", { name: "Выпустить ссылку" }).click();
-	await expect(editor.getByRole("alert").last()).toBeVisible();
-	await page.keyboard.press("Escape");
+	const issue = editor.getByRole("button", { name: "Выпустить ссылку" });
+
+	try {
+		await issue.click();
+		await expect(editor.getByLabel("Название")).toBeDisabled();
+		await expect(editor.getByLabel("Действует до (UTC)")).toBeDisabled();
+		await expect(
+			editor.getByRole("checkbox", { name: /ЗК-2087/ }),
+		).toBeDisabled();
+	} finally {
+		firstResponse.resolve();
+	}
+
+	const acknowledge = page.getByRole("button", {
+		name: "Я проверил список, разрешить новый выпуск",
+	});
+
+	await expect(editor.getByRole("alert")).toContainText(
+		"Сервер мог выпустить ссылку",
+	);
+	await expect(acknowledge).toHaveCount(0);
+	await editor.getByRole("button", { name: "Перейти к списку" }).click();
 	await expect(editor).toHaveCount(0);
 	await page.getByRole("link", { name: "Заказы", exact: true }).click();
 	await page
@@ -130,8 +160,28 @@ async function checkLostLinkResponse({ page, base, api }: UiScenario) {
 		.filter({ hasText: "Сервер мог выпустить ссылку" });
 	await expect(notice).toBeVisible();
 	await expect(create).toBeDisabled();
-	await notice.getByRole("button", { name: "Повторить" }).click();
+	await notice.getByRole("button", { name: "Обновить список" }).click();
 	await expect(page.getByRole("cell", { name, exact: true })).toHaveCount(1);
 	await expect(create).toBeDisabled();
+	await expect(acknowledge).toBeVisible();
 	expect(issues).toBe(1);
+
+	await acknowledge.click();
+	await create.click();
+	await editor.getByLabel("Название").fill("Подтверждённый выпуск");
+	await editor.getByRole("checkbox", { name: /ЗК-2087/ }).check();
+	await issue.click();
+
+	await expect(
+		page.getByText("Доступ сохранён.", { exact: true }),
+	).toBeVisible();
+	await expect(page.getByRole("alert")).toContainText(
+		"Сервис временно недоступен",
+	);
+	await expect(
+		page.getByRole("button", { name: "Копировать ссылку", exact: true }),
+	).toBeVisible();
+	expect(issues).toBe(2);
+
+	await page.unroute(routePattern);
 }

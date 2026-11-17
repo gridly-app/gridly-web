@@ -1,15 +1,19 @@
 import { useState } from "react";
 
-import type { FetchHttpClient } from "@/shared/http";
-import { useGuestLinkMutation } from "../api/guestLinksApi";
+import type { HttpClient } from "@/shared/http";
 
 import type { GuestLink, GuestLinkInput } from "../api/guestLink.dto";
+import { useGuestLinkChanges } from "./useGuestLinkChanges";
+import { useGuestLinkCreation } from "./useGuestLinkCreation";
+
+export type GuestLinkEditor =
+	{ type: "create" } | { type: "update"; link: GuestLink };
 
 export type GuestLinkDialog =
-	{ type: "create" } | { type: "update" | "revoke"; link: GuestLink };
+	GuestLinkEditor | { type: "revoke"; link: GuestLink };
 
 export function useGuestLinkActions(
-	http: FetchHttpClient,
+	http: HttpClient,
 	path: string,
 	onSaved: () => void,
 ) {
@@ -17,35 +21,45 @@ export function useGuestLinkActions(
 		text: string;
 		tone: "success" | "error";
 	} | null>(null);
-	const {
-		mutation,
-		attempt,
-		issued,
-		startCreation,
-		acknowledgeUnknownCreation,
-	} = useGuestLinkMutation(http, path, (result) => {
+
+	function showSaved(text: string) {
 		onSaved();
-
-		const text =
-			result.type === "revoke" ? "Ссылка отозвана." : "Доступ сохранён.";
-
 		setNotice({ text, tone: "success" });
-	});
+	}
 
-	function handleSave(form: GuestLinkDialog, input: GuestLinkInput) {
-		if (form.type === "revoke") return;
-
-		if (form.type === "update") {
-			const { id, revision } = form.link;
-			mutation.mutate({ type: "update", id, revision, input });
+	const creation = useGuestLinkCreation(http, path);
+	const changes = useGuestLinkChanges(http, path, (change) => {
+		if (change.type === "revoke") {
+			creation.forgetIssuedLink(change.id);
+			showSaved("Ссылка отозвана.");
 
 			return;
 		}
 
-		startCreation(input);
+		showSaved("Доступ сохранён.");
+	});
+
+	function saveLink(editor: GuestLinkEditor, input: GuestLinkInput) {
+		if (editor.type === "update") {
+			changes.updateLink(editor.link, input);
+
+			return;
+		}
+
+		void creation.startCreation(input).then(handleCreationResult);
 	}
 
-	function clearNotice() {
+	function handleCreationResult(created: boolean) {
+		if (created) showSaved("Доступ сохранён.");
+	}
+
+	function retryCreation() {
+		void creation.retryCreation().then(handleCreationResult);
+	}
+
+	function resetFeedback() {
+		creation.resetError();
+		changes.resetError();
 		setNotice(null);
 	}
 
@@ -62,13 +76,14 @@ export function useGuestLinkActions(
 	}
 
 	return {
-		mutation,
-		attempt,
-		acknowledgeUnknownCreation,
-		issued,
+		creation: { ...creation, retryCreation },
+		changeError: changes.error,
+		isRevoking: changes.isRevoking,
+		isBusy: creation.isPending || changes.isPending,
 		notice,
-		handleSave,
+		saveLink,
+		revokeLink: changes.revokeLink,
 		handleCopy,
-		clearNotice,
+		resetFeedback,
 	};
 }

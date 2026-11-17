@@ -6,6 +6,7 @@ COPY index.html tsconfig.app.json vite.config.ts ./
 COPY tsconfig.app.json ./tsconfig.json
 COPY src/ ./src/
 ARG VITE_API_BASE_URL
+ARG VITE_ADMIN_GUEST_LINK_REPLAY
 RUN bun run build
 
 FROM nginx:alpine

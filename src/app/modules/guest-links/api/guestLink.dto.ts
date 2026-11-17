@@ -42,3 +42,5 @@ export const createdGuestLinkSchema = guestLinkSchema.extend({
 
 export type GuestLinkInput = z.infer<typeof guestLinkInputSchema>;
 export type GuestLink = z.infer<typeof guestLinkSchema>;
+export type GuestLinkList = z.infer<typeof guestLinksSchema>;
+export type CreatedGuestLink = z.infer<typeof createdGuestLinkSchema>;

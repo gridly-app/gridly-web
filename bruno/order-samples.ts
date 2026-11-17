@@ -1,5 +1,5 @@
-import type { ProductDto } from "../src/app/modules/warehouse-data/catalog/catalogDto";
-import type { OrderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
+import type { ProductDto } from "../src/app/modules/warehouse-data/api/catalog/catalogDto";
+import type { OrderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
 import {
 	shiftDay,
 	warehouseDay,
