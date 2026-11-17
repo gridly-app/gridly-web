@@ -1,64 +1,82 @@
 .landingFeatures {
-	width: min(1200px, calc(100% - 48px));
+	width: min(1200px, calc(100% - var(--space-12)));
 	margin: 0 auto;
-	padding: 64px 0;
+	padding: var(--space-16) 0;
 }
+
+@media (width <= 700px) {
+	.landingFeatures {
+		width: calc(100% - var(--space-8));
+		padding: var(--space-10) 0;
+	}
+}
+
 .sectionIntro {
-	margin-bottom: 32px;
+	margin-bottom: var(--space-8);
 }
+
 .sectionIntro h2 {
+	margin: 0;
+
 	font-size: clamp(28px, 3.5vw, 40px);
 	font-weight: 600;
 	letter-spacing: -0.04em;
 	line-height: 1.2;
-	margin: 0;
 }
+
 .featureGrid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 16px;
+	gap: var(--space-4);
 }
+
+@media (width <= 700px) {
+	.featureGrid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
 .featureCard {
-	padding: 32px;
+	padding: var(--space-8);
+
 	border: 1px solid var(--border);
 	border-radius: 24px;
 	background: var(--card);
 	box-shadow: var(--shadow-panel);
 }
+
+@media (width <= 1000px) {
+	.featureCard {
+		padding: var(--space-6);
+	}
+}
+
 .featureIcon {
 	display: grid;
 	place-items: center;
 	width: 48px;
 	height: 48px;
+	margin-bottom: var(--space-6);
+
 	border: 1px solid var(--border);
 	border-radius: 16px;
 	background: var(--accent-bg);
 	color: var(--primary);
-	margin-bottom: 24px;
 }
-.featureCard h3 {
+
+.cardTitle {
+	margin: 0 0 var(--space-3);
+
 	font-size: 20px;
 	line-height: 28px;
-	margin: 0 0 12px;
 	letter-spacing: -0.02em;
 }
-.featureCard p {
+
+.cardDescription {
 	margin: 0;
-	font-size: 14px;
+
+	font-size: var(--text-control);
 	line-height: 24px;
+
 	color: var(--muted-foreground);
-}
-@media (width <= 1000px) {
-	.featureCard {
-		padding: 24px;
-	}
-}
-@media (width <= 700px) {
-	.landingFeatures {
-		width: calc(100% - 32px);
-		padding: 40px 0;
-	}
-	.featureGrid {
-		grid-template-columns: minmax(0, 1fr);
-	}
 }

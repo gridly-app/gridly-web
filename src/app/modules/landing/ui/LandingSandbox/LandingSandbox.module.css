@@ -1,0 +1,64 @@
+.landingCta {
+	width: min(1200px, calc(100% - var(--space-12)));
+	margin: var(--space-16) auto var(--space-8);
+	padding: var(--space-16) var(--space-6);
+
+	text-align: center;
+}
+
+@media (width <= 1000px) {
+	.landingCta {
+		padding: var(--space-8);
+	}
+}
+
+@media (width <= 700px) {
+	.landingCta {
+		width: calc(100% - var(--space-8));
+		margin-top: var(--space-10);
+		padding: var(--space-6);
+	}
+}
+
+.sandboxCopy {
+	min-width: 0;
+}
+
+.sandboxTitle {
+	margin: var(--space-4) 0 var(--space-6);
+
+	font-size: clamp(28px, 3.5vw, 40px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1.2;
+}
+
+.sandboxDescription {
+	max-width: 48ch;
+	margin: 0 auto var(--space-6);
+
+	font-size: var(--text-body);
+	line-height: 24px;
+
+	color: var(--muted-foreground);
+}
+
+@media (width <= 700px) {
+	.descriptionBreak {
+		display: none;
+	}
+}
+
+.ctaButton {
+	margin-top: var(--space-2);
+}
+
+.sandboxNote {
+	display: block;
+	margin-top: var(--space-4);
+
+	font-size: var(--text-caption);
+	line-height: 16px;
+
+	color: var(--muted-foreground);
+}

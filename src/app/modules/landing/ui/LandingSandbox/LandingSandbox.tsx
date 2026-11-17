@@ -6,29 +6,27 @@ import { useLandingSandbox } from "../../model/useLandingSandbox";
 import landingStyles from "./LandingSandbox.module.css";
 
 export function LandingSandbox() {
-	const { openSandbox, pending, error } = useLandingSandbox();
+	const { handleOpenSandbox, isPending, error } = useLandingSandbox();
 
 	return (
 		<section id="sandbox" className={landingStyles.landingCta}>
 			<div className={landingStyles.sandboxCopy}>
-				<h2>
+				<h2 className={landingStyles.sandboxTitle}>
 					<StaticText text="Давайте приведём" />
 					<br />
 					<StaticText text="всё в движение." />
 				</h2>
-				<p>
+				<p className={landingStyles.sandboxDescription}>
 					<StaticText text="Готовый склад с товарами, роботами и заказами. " />
-					<br />
+					<br className={landingStyles.descriptionBreak} />
 					<StaticText text="Исследуйте платформу и пробуйте свои сценарии." />
 				</p>
 				<ErrorNotice message={error} />
 				<Button
 					size="lg"
 					className={landingStyles.ctaButton}
-					onClick={() => {
-						void openSandbox();
-					}}
-					disabled={pending}
+					onClick={handleOpenSandbox}
+					disabled={isPending}
 				>
 					Открыть песочницу <IconArrowUpRight size={19} />
 				</Button>

@@ -1,11 +1,23 @@
+import { useState } from "react";
+
 import { SegmentedControl } from "@/shared/ui/navigation";
 import { StaticText } from "@/shared/ui/visual";
-import { useLandingScenario } from "../../model/useLandingScenario";
+import {
+	landingScenarios,
+	type LandingScenarioId,
+	scenarioOptions,
+} from "../../config/landingScenarios";
+import { ScenarioPreview } from "../ScenarioPreview/ScenarioPreview";
+
 import landingStyles from "./LandingWorkflow.module.css";
-import { ScenarioPreview } from "./ScenarioPreview";
 
 export function LandingWorkflow() {
-	const { scenarios, selected, selectScenario } = useLandingScenario();
+	const [selectedId, setSelectedId] = useState<LandingScenarioId>("inbound");
+	const selected = landingScenarios[selectedId];
+
+	function handleScenarioChange(id: LandingScenarioId) {
+		setSelectedId(id);
+	}
 
 	return (
 		<section id="workflow" className={landingStyles.landingWorkflow}>
@@ -24,12 +36,9 @@ export function LandingWorkflow() {
 					<div className={landingStyles.scenarioControls}>
 						<SegmentedControl
 							aria-label="Складские сценарии"
-							value={selected.id}
-							onValueChange={selectScenario}
-							items={scenarios.map((scenario) => ({
-								value: scenario.id,
-								label: scenario.label,
-							}))}
+							value={selectedId}
+							onValueChange={handleScenarioChange}
+							items={scenarioOptions}
 						/>
 					</div>
 					<div
@@ -45,7 +54,7 @@ export function LandingWorkflow() {
 						</p>
 					</div>
 				</div>
-				<ScenarioPreview scenario={selected} />
+				<ScenarioPreview scenarioId={selectedId} />
 			</div>
 		</section>
 	);

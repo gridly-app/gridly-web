@@ -39,8 +39,8 @@ export function LandingFeatures() {
 						<span className={landingStyles.featureIcon}>
 							<Icon aria-hidden="true" size={24} stroke={1.6} />
 						</span>
-						<h3>{title}</h3>
-						<p>{text}</p>
+						<h3 className={landingStyles.cardTitle}>{title}</h3>
+						<p className={landingStyles.cardDescription}>{text}</p>
 					</article>
 				))}
 			</div>

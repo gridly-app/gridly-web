@@ -46,6 +46,16 @@ export async function sandboxScenario({
 	).toBe(true);
 	await page.mouse.move(200, 200);
 	await screenshot("landing-pointer");
+
+	const map = page.locator('[data-scenario-map="outbound"]');
+
+	await expect(map.locator("animateMotion")).toHaveCount(4);
+	await page.emulateMedia({ reducedMotion: "reduce" });
+	await expect(map.locator("animateMotion")).toHaveCount(0);
+	await expect(map.locator("svg")).toBeVisible();
+	await page.emulateMedia({ reducedMotion: "no-preference" });
+	await expect(map.locator("animateMotion")).toHaveCount(4);
+
 	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.reload();
 	await expect(page.locator('[data-slot="shape-grid-canvas"]')).toBeVisible();

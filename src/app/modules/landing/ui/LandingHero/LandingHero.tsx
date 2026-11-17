@@ -6,6 +6,10 @@ import landingStyles from "./LandingHero.module.css";
 
 export function LandingHero() {
 	const { user } = useSession();
+	const primaryAction = user
+		? { to: "/app", label: "Мои склады" }
+		: { to: "/auth", label: "Войти" };
+
 	return (
 		<section className={landingStyles.landingHero}>
 			<ShapeBackdrop />
@@ -21,10 +25,10 @@ export function LandingHero() {
 					<Button
 						size="lg"
 						className={landingStyles.heroButton}
-						render={<Link to={user ? "/app" : "/auth"} />}
+						render={<Link to={primaryAction.to} />}
 					>
 						<StableLabel variants={["Мои склады", "Войти"]}>
-							{user ? "Мои склады" : "Войти"}
+							{primaryAction.label}
 						</StableLabel>
 					</Button>
 					{!user && (
