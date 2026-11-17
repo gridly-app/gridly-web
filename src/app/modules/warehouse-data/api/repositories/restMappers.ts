@@ -14,7 +14,7 @@ import type { CategoryDto, ProductDto } from "../catalog/catalogDto";
 import { policyFromDto, wireKinds } from "../contracts/contractMappers";
 import type { EventDto } from "../history/historyDto";
 import type { StockDto } from "../inventory/inventoryDto";
-import type { LayoutDto, MapStateDto } from "../layout/layout.dto";
+import type { LayoutDto, MapStateDto } from "../layout/layout.dto.ts";
 import type { OrderDto } from "../orders/orderDto";
 import type { RobotDto } from "../robots/robotDto";
 import type { WarehouseDto } from "../warehouses/warehouseDto";

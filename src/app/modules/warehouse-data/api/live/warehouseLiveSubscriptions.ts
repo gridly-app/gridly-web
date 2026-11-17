@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
 import type { HttpClient } from "@/shared/http";
-import type { WarehouseKeys } from "../queries/queryKeys";
+import type { WarehouseKeys } from "../../model/queries/queryKeys";
 import { WarehouseLiveStream } from "./liveStream";
 
 interface LiveSnapshots {

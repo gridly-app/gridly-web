@@ -4,7 +4,7 @@ import { ApiError, type HttpClient, parseResponse } from "@/shared/http";
 import { categoryDto, productDto } from "../catalog/catalogDto";
 import { eventDto } from "../history/historyDto";
 import { stockDto } from "../inventory/inventoryDto";
-import { type LayoutDto, layoutDto } from "../layout/layout.dto";
+import { type LayoutDto, layoutDto } from "../layout/layout.dto.ts";
 import { readMapState } from "../live/readMapState";
 import { orderDto } from "../orders/orderDto";
 import { robotDto } from "../robots/robotDto";

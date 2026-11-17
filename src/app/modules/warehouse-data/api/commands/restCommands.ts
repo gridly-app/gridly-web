@@ -16,7 +16,7 @@ import {
 	saveOrder,
 } from "../orders/ordersCommands";
 import { deleteRobot, saveRobot } from "../robots/robotsCommands";
-import { warehouseSettingsDto } from "../settings/settings.dto";
+import { warehouseSettingsDto } from "../settings/settings.dto.ts";
 import { saveSettings, setSimulation } from "../settings/settingsCommands";
 import {
 	type RestCommandContext,

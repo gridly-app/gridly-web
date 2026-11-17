@@ -17,11 +17,11 @@ import {
 } from "@/shared/http";
 import { RestWarehouseCommands } from "../commands/restCommands";
 import { serializeLayoutCells } from "../layout/layoutCells";
-import { LayoutResource } from "../layout/layoutResource";
+import { LayoutResource } from "../../model/layout/layoutResource";
 import { WarehouseLiveSubscriptions } from "../live/warehouseLiveSubscriptions";
 import { orderDto } from "../orders/orderDto";
-import { createWarehouseKeys } from "../queries/queryKeys";
-import { commandResources } from "../queries/resources";
+import { createWarehouseKeys } from "../../model/queries/queryKeys";
+import { commandResources } from "../../model/queries/resources";
 import { createdWarehouseDto, warehouseDto } from "../warehouses/warehouseDto";
 import { readWarehouseCollection } from "./readWarehouseCollection";
 import type { MutationOptions, WarehouseRepository } from "./repository";

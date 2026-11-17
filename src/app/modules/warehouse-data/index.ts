@@ -1,3 +1,3 @@
-export { RestWarehouseRepository } from "./repositories/restRepository";
+export { RestWarehouseRepository } from "./api/repositories/restRepository";
 export { WarehouseRepositoryProvider } from "./WarehouseRepositoryProvider";
-export { warehouseData } from "./warehouseData";
+export { warehouseData } from "./model/warehouseData";

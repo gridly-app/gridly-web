@@ -17,7 +17,7 @@ import {
 	useWarehouseResources,
 	useWarehouses,
 } from "./queries/queries";
-import { useWarehouseRepository } from "./WarehouseRepositoryProvider";
+import { useWarehouseRepository } from "../WarehouseRepositoryProvider";
 
 function useWarehouseCache() {
 	const cache = useQueryClient();

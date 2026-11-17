@@ -4,7 +4,7 @@ import { toLiveState } from "@/domain/warehouse";
 import type { WarehouseResource } from "@/ports/warehouse";
 import { ApiError, type HttpClient } from "@/shared/http";
 import { readSse, type ServerEvent } from "@/shared/realtime";
-import type { WarehouseKeys } from "../queries/queryKeys";
+import type { WarehouseKeys } from "../../model/queries/queryKeys";
 import { applyRobotPatch } from "./applyRobotPatch";
 import { statePatchDto } from "./statePatch";
 

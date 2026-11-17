@@ -7,7 +7,7 @@ import type {
 } from "@/domain/warehouse";
 import type { MutationReceipt, WarehouseResource } from "@/ports/warehouse";
 
-import type { WarehouseKeys } from "../queries/queryKeys";
+import type { WarehouseKeys } from "../../model/queries/queryKeys";
 
 export interface MutationOptions {
 	operationId: string;

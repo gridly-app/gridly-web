@@ -6,7 +6,7 @@ import type { WarehouseResource } from "@/ports/warehouse";
 import { useWarehouseScope } from "@/ports/warehouse";
 import { ApiError } from "@/shared/http";
 import { usePageVisible } from "@/shared/lib";
-import { useWarehouseRepository } from "../WarehouseRepositoryProvider";
+import { useWarehouseRepository } from "../../WarehouseRepositoryProvider";
 import { warehouseResourceData } from "./resources";
 
 export function useOrder(id: string, orderId: string | null) {

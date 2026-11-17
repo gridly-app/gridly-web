@@ -1,6 +1,6 @@
 import { skipToken, useQuery } from "@tanstack/react-query";
 import type { LayoutOperation } from "@/ports/warehouse";
-import { useWarehouseRepository } from "../WarehouseRepositoryProvider";
+import { useWarehouseRepository } from "../../WarehouseRepositoryProvider";
 
 export function useLayoutOperation(id: string) {
 	const repository = useWarehouseRepository();

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { type HttpClient, parseResponse } from "@/shared/http";
-import { legacyMapStateDto, mapStateDto } from "../layout/layout.dto";
+import { legacyMapStateDto, mapStateDto } from "../layout/layout.dto.ts";
 
 export async function readMapState(
 	http: HttpClient,
