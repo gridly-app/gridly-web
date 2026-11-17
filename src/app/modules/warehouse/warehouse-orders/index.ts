@@ -27,6 +27,6 @@ export const ordersRoute = {
 } as const;
 
 export const loadOrderDialog = () =>
-	import("./ui/details/WarehouseOrderDialog").then(
+	import("./ui/WarehouseOrderDialog/WarehouseOrderDialog").then(
 		({ WarehouseOrderDialog }) => ({ default: WarehouseOrderDialog }),
 	);

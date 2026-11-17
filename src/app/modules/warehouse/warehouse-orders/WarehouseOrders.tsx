@@ -17,10 +17,10 @@ import type { OrdersPageOptions } from "./model/useOrdersPage";
 import { useOrdersPage } from "./model/useOrdersPage";
 import type { OrderScreenWarehouse } from "./model/warehouseFields";
 import { warehouseFields } from "./model/warehouseFields";
-import { OrderDetailDialog } from "./ui/details/OrderDetailDialog";
-import { OrderCreationDialog } from "./ui/form/OrderCreationDialog";
-import { OrdersToolbar } from "./ui/OrdersToolbar";
-import { OrdersTable } from "./ui/table/OrdersTable";
+import { OrderDetailDialog } from "./ui/OrderDetailDialog/OrderDetailDialog";
+import { OrderCreationDialog } from "./ui/OrderCreationDialog/OrderCreationDialog";
+import { OrdersToolbar } from "./ui/OrdersToolbar/OrdersToolbar";
+import { OrdersTable } from "./ui/OrdersTable/OrdersTable";
 
 export type OrdersPageProps = OrdersPageOptions;
 

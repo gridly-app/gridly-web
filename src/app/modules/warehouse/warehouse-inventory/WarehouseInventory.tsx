@@ -4,11 +4,11 @@ import { Feedback } from "@/shared/ui/feedback";
 import { SegmentedControl } from "@/shared/ui/navigation";
 import { Modal } from "@/shared/ui/overlays";
 import { useInventoryPage } from "./model/useInventoryPage";
-import { InventoryFilters } from "./ui/InventoryFilters";
-import { ExpectedDeliveriesTable } from "./ui/tables/ExpectedDeliveriesTable";
-import { InventoryTable } from "./ui/tables/InventoryTable";
-import { WriteOffsTable } from "./ui/tables/WriteOffsTable";
-import { WriteOffForm } from "./ui/WriteOffForm";
+import { InventoryFilters } from "./ui/InventoryFilters/InventoryFilters";
+import { ExpectedDeliveriesTable } from "./ui/ExpectedDeliveriesTable/ExpectedDeliveriesTable";
+import { InventoryTable } from "./ui/InventoryTable/InventoryTable";
+import { WriteOffsTable } from "./ui/WriteOffsTable/WriteOffsTable";
+import { WriteOffForm } from "./ui/WriteOffForm/WriteOffForm";
 
 export function WarehouseInventory() {
 	const model = useInventoryPage();

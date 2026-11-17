@@ -11,13 +11,13 @@ import { productColumns } from "./model/productColumns";
 import { useCatalogDialog } from "./model/useCatalogDialog";
 import { useCatalogPage } from "./model/useCatalogPage";
 import { warehouseFields } from "./model/warehouseFields";
-import { CatalogDialog } from "./ui/CatalogDialog";
-import { CatalogFilters } from "./ui/CatalogFilters";
-import { CatalogToolbar } from "./ui/CatalogToolbar";
-import { CategoriesTable } from "./ui/categories/CategoriesTable";
-import { CategoryDetail } from "./ui/categories/CategoryDetail";
-import { ProductDetail } from "./ui/products/ProductDetail";
-import { ProductsTable } from "./ui/products/ProductsTable";
+import { CatalogDialog } from "./ui/CatalogDialog/CatalogDialog";
+import { CatalogFilters } from "./ui/CatalogFilters/CatalogFilters";
+import { CatalogToolbar } from "./ui/CatalogToolbar/CatalogToolbar";
+import { CategoriesTable } from "./ui/CategoriesTable/CategoriesTable";
+import { CategoryDetail } from "./ui/CategoryDetail/CategoryDetail";
+import { ProductDetail } from "./ui/ProductDetail/ProductDetail";
+import { ProductsTable } from "./ui/ProductsTable/ProductsTable";
 
 export function WarehouseCatalog() {
 	const { warehouse, execute, command, pending } =

@@ -3,9 +3,9 @@ import { Button } from "@/shared/ui/controls";
 import { DataPanel, useTableColumns } from "@/shared/ui/dataDisplay";
 import { Modal } from "@/shared/ui/overlays";
 import { useRobotsPage } from "./model/useRobotsPage";
-import { RobotFilters } from "./ui/RobotFilters";
-import { RobotForm } from "./ui/RobotForm";
-import { RobotsTable } from "./ui/RobotsTable";
+import { RobotFilters } from "./ui/RobotFilters/RobotFilters";
+import { RobotForm } from "./ui/RobotForm/RobotForm";
+import { RobotsTable } from "./ui/RobotsTable/RobotsTable";
 
 export function WarehouseRobots() {
 	const model = useRobotsPage();
