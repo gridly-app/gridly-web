@@ -1,5 +1,6 @@
 import { accountScenario } from "./scenarios/account";
 import { administrationScenario } from "./scenarios/administration";
+import { administrationRecoveryScenario } from "./scenarios/administrationRecovery";
 import { catalogScenario } from "./scenarios/catalog";
 import { destructiveConfirmationScenario } from "./scenarios/destructiveConfirmation";
 import { inventoryScenario } from "./scenarios/inventory";
@@ -38,6 +39,7 @@ const scenarios = [
 	["orders", ordersScenario],
 	["shipments", shipmentsScenario],
 	["administration", administrationScenario],
+	["administration-recovery", administrationRecoveryScenario],
 	["system-errors", systemErrorsScenario],
 	["map-editor", mapEditorScenario],
 	["map-session", mapSessionScenario],
