@@ -1,5 +1,5 @@
 import { Button } from "@/shared/ui/controls";
-import chartStyles from "../ReportChart.module.css";
+import chartStyles from "../../shared.module.css";
 import styles from "./Donut.module.css";
 
 interface Slice {

@@ -1,9 +1,9 @@
 import { statusLabels } from "@/domain/warehouse";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
-import type { WarehouseReport } from "../../../model/chartData";
-import chartStyles from "../ReportChart.module.css";
-import { Donut } from "./Donut";
+import type { WarehouseReport } from "../../model/chartData";
+import chartStyles from "../../shared.module.css";
+import { Donut } from "../Donut/Donut";
 
 const statusColor = (status: string) =>
 	["received", "shipped", "completed"].includes(status)

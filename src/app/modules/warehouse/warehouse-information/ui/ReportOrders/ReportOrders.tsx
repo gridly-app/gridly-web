@@ -12,14 +12,13 @@ import {
 	useTableColumns,
 } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
-import { shortDay, type WarehouseReport } from "../model/chartData";
-import { warehouseDay } from "../model/report";
+import { shortDay, type WarehouseReport } from "../../model/chartData";
+import { warehouseDay } from "../../model/report";
 import {
 	type ReportRange,
 	reportOrderPageSize,
-} from "../model/useReportFilters";
-import layoutStyles from "../WarehouseInformation.module.css";
-import chartStyles from "./charts/ReportChart.module.css";
+} from "../../model/useReportFilters";
+import layoutStyles from "../../shared.module.css";
 
 interface ReportOrdersProps {
 	orders: WarehouseReport["orders"];
@@ -52,10 +51,10 @@ export function ReportOrders({
 		<section
 			ref={sectionRef}
 			tabIndex={-1}
-			className={chartStyles.chartCard}
+			className={layoutStyles.chartCard}
 			aria-label="Операции за выбранный период"
 		>
-			<div className={chartStyles.chartHeading}>
+			<div className={layoutStyles.chartHeading}>
 				<div>
 					<h3>
 						{selectedRange

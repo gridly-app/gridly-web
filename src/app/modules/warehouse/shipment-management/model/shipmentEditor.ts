@@ -10,6 +10,8 @@ import {
 import { UserError } from "@/shared/lib";
 import type { WorkingShipment } from "./shipment.dto";
 
+export type ShipmentPlanRow = { clientId: string; entry: Plan };
+
 export const transportStages = (
 	Object.keys(stages) as Milestone["code"][]
 ).slice(3);
@@ -73,12 +75,4 @@ export function shipmentDraft(
 		actual,
 		transport_milestones: milestones,
 	};
-}
-
-export function dateInput(value: string | null) {
-	if (!value) return "";
-	return new Date(value).toISOString().slice(0, 19);
-}
-export function utcInput(value: string) {
-	return value ? new Date(`${value}Z`).toISOString() : null;
 }

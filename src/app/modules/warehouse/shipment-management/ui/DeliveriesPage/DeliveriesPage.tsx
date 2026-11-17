@@ -24,8 +24,8 @@ import { Link } from "@/shared/ui/navigation";
 import {
 	type WorkingShipment,
 	workingShipmentSchema,
-} from "../model/shipment.dto";
-import styles from "./ShipmentManagement.module.css";
+} from "../../model/shipment.dto.ts";
+import styles from "../../shared.module.css";
 
 const trackingSchema = workingShipmentSchema
 	.pick({ order: true, milestones: true, items: true, route: true })

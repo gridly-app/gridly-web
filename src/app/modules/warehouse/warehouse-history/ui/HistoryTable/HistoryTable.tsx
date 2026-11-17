@@ -7,7 +7,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui/dataDisplay";
-import type { useHistoryPage } from "../model/useHistoryPage";
+import type { useHistoryPage } from "../../model/useHistoryPage";
 import styles from "./HistoryTable.module.css";
 
 interface HistoryTableProps {

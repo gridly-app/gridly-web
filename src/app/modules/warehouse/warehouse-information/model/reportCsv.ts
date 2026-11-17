@@ -1,14 +1,11 @@
 import { productPrice } from "@/domain/warehouse";
+import { encodeCsv } from "@/shared/lib";
 import { buildReport, previousPeriod, type ReportFilters } from "./report";
 import type { ReportWarehouse } from "./warehouseFields";
 
 export function reportCsv(w: ReportWarehouse, filters: ReportFilters) {
 	const report = buildReport(w, filters);
-	const safe = (value: unknown) => {
-		const raw = String(value ?? "");
-		return `"${(/^\s*[=+\-@]|^[\t\r\n]/.test(raw) ? "'" : "") + raw.replaceAll('"', '""')}"`;
-	};
-	const rows: unknown[][] = [
+	const rows: (string | number | null)[][] = [
 		["Склад", w.name],
 		["Период", filters.from, filters.to],
 		["Тип", filters.kind],
@@ -64,5 +61,5 @@ export function reportCsv(w: ReportWarehouse, filters: ReportFilters) {
 			["Оценка отгрузок", result.outbound.value],
 		);
 	}
-	return `\uFEFF${rows.map((r) => r.map(safe).join(";")).join("\r\n")}`;
+	return encodeCsv(rows, { separator: ";", includeBom: true });
 }

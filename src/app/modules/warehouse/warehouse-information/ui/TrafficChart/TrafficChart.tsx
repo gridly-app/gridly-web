@@ -3,11 +3,10 @@ import { Button } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
 import { SegmentedControl } from "@/shared/ui/navigation";
-import { trafficBuckets, type WarehouseReport } from "../../../model/chartData";
-import { previousPeriod, type ReportFilters } from "../../../model/report";
-import chartStyles from "../ReportChart.module.css";
-import styles from "./TrafficChart.module.css";
-import { TrafficPlot } from "./TrafficPlot";
+import { trafficBuckets, type WarehouseReport } from "../../model/chartData";
+import { previousPeriod, type ReportFilters } from "../../model/report";
+import chartStyles from "../../shared.module.css";
+import { TrafficPlot } from "../TrafficPlot/TrafficPlot";
 
 interface Props {
 	report: WarehouseReport;
@@ -70,8 +69,8 @@ export function TrafficChart({
 					]}
 				/>
 			</div>
-			<div className={styles.chartControls}>
-				<div className={styles.legend}>
+			<div className={chartStyles.chartControls}>
+				<div className={chartStyles.legend}>
 					{(["inbound", "outbound"] as const).map((kind) => (
 						<Button
 							key={kind}
@@ -79,7 +78,7 @@ export function TrafficChart({
 							size="sm"
 							selected={visible[kind]}
 							onClick={() => toggle(kind)}
-							className={styles.legendButton}
+							className={chartStyles.legendButton}
 							data-series={kind}
 						>
 							<span

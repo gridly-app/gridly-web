@@ -1,6 +1,6 @@
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { DateRangeFields, Select } from "@/shared/ui/forms";
-import type { useHistoryPage } from "../model/useHistoryPage";
+import type { useHistoryPage } from "../../model/useHistoryPage";
 
 interface HistoryFiltersProps {
 	model: Pick<

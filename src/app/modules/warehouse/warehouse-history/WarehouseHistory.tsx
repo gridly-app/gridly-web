@@ -1,8 +1,8 @@
 import { DataPanel, useTableColumns } from "@/shared/ui/dataDisplay";
 import { Feedback } from "@/shared/ui/feedback";
 import { useHistoryPage } from "./model/useHistoryPage";
-import { HistoryFilters } from "./ui/HistoryFilters";
-import { HistoryTable } from "./ui/HistoryTable";
+import { HistoryFilters } from "./ui/HistoryFilters/HistoryFilters";
+import { HistoryTable } from "./ui/HistoryTable/HistoryTable";
 
 export function WarehouseHistory() {
 	const model = useHistoryPage();

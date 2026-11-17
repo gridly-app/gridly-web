@@ -10,7 +10,7 @@ export const deliveriesRoute = {
 	access: warehouseAccess,
 	resources: ["orders", "catalog"],
 	load: () =>
-		import("./ui/DeliveriesPage").then(({ DeliveriesPage }) => ({
+		import("./ui/DeliveriesPage/DeliveriesPage").then(({ DeliveriesPage }) => ({
 			default: DeliveriesPage,
 		})),
 } as const;
@@ -21,7 +21,7 @@ export const shipmentRoute = {
 	access: ["standard"],
 	resources: [],
 	load: () =>
-		import("./ui/ShipmentManagement").then(({ ShipmentManagement }) => ({
+		import("./ShipmentManagement").then(({ ShipmentManagement }) => ({
 			default: ShipmentManagement,
 		})),
 } as const;

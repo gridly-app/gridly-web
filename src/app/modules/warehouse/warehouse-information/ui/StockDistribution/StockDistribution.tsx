@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Badge } from "@/shared/ui/dataDisplay";
-import type { WarehouseReport } from "../../../model/chartData";
-import chartStyles from "../ReportChart.module.css";
-import { Donut } from "./Donut";
+import type { WarehouseReport } from "../../model/chartData";
+import chartStyles from "../../shared.module.css";
+import { Donut } from "../Donut/Donut";
 
 export function StockDistribution({ report }: { report: WarehouseReport }) {
 	const [selected, setSelected] = useState("all");

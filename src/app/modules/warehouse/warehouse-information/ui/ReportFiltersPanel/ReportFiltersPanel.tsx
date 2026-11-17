@@ -4,7 +4,7 @@ import { Checkbox } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { DateRangeFields, Field, Label, Select } from "@/shared/ui/forms";
 import { SegmentedControl } from "@/shared/ui/navigation";
-import type { ReportFilters } from "../model/report";
+import type { ReportFilters } from "../../model/report";
 import styles from "./ReportFiltersPanel.module.css";
 
 interface ReportFiltersPanelProps {

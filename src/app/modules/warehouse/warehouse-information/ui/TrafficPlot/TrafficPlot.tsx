@@ -1,5 +1,5 @@
 import { ScrollArea } from "@/shared/ui/navigation";
-import { shortDay, type TrafficBucket } from "../../../model/chartData";
+import { shortDay, type TrafficBucket } from "../../model/chartData";
 import {
 	BOTTOM,
 	LEFT,
@@ -7,9 +7,9 @@ import {
 	TOP,
 	type TrafficSeries,
 	trafficPlotGeometry,
-} from "../../../model/trafficPlotGeometry";
-import styles from "./TrafficChart.module.css";
-import { TrafficPoint } from "./TrafficPoint";
+} from "../../model/trafficPlotGeometry";
+import styles from "../../shared.module.css";
+import { TrafficPoint } from "../TrafficPoint/TrafficPoint";
 
 export function TrafficPlot({
 	buckets,

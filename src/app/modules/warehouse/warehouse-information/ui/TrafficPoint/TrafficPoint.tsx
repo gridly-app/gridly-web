@@ -1,13 +1,13 @@
 import { Button } from "@/shared/ui/controls";
 import { WarmTooltip } from "@/shared/ui/overlays";
-import { shortDay, type TrafficBucket } from "../../../model/chartData";
+import { shortDay, type TrafficBucket } from "../../model/chartData";
 import {
 	BOTTOM,
 	TOP,
 	type TrafficPlotGeometry,
 	type TrafficSeries,
-} from "../../../model/trafficPlotGeometry";
-import styles from "./TrafficChart.module.css";
+} from "../../model/trafficPlotGeometry";
+import styles from "../../shared.module.css";
 
 export function TrafficPoint({
 	bucket,

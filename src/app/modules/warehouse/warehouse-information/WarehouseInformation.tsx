@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useWarehouseScreen } from "@/ports/warehouse";
+import { saveFile } from "@/shared/http";
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
 import { ScrollArea } from "@/shared/ui/navigation";
@@ -7,15 +8,15 @@ import { buildReport, previousPeriod, warehouseDay } from "./model/report";
 import { reportCsv } from "./model/reportCsv";
 import { useReportFilters } from "./model/useReportFilters";
 import { warehouseFields } from "./model/warehouseFields";
-import { CategoryDistribution } from "./ui/charts/distribution/CategoryDistribution";
-import { StatusDistribution } from "./ui/charts/distribution/StatusDistribution";
-import { StockDistribution } from "./ui/charts/distribution/StockDistribution";
-import { TrafficChart } from "./ui/charts/traffic/TrafficChart";
-import { ReportFinancialMetrics } from "./ui/metrics/ReportFinancialMetrics";
-import { ReportMetrics } from "./ui/metrics/ReportMetrics";
-import { ReportFiltersPanel } from "./ui/ReportFiltersPanel";
-import { ReportOrders } from "./ui/ReportOrders";
-import styles from "./WarehouseInformation.module.css";
+import { CategoryDistribution } from "./ui/CategoryDistribution/CategoryDistribution";
+import { StatusDistribution } from "./ui/StatusDistribution/StatusDistribution";
+import { StockDistribution } from "./ui/StockDistribution/StockDistribution";
+import { TrafficChart } from "./ui/TrafficChart/TrafficChart";
+import { ReportFinancialMetrics } from "./ui/ReportFinancialMetrics/ReportFinancialMetrics";
+import { ReportMetrics } from "./ui/ReportMetrics/ReportMetrics";
+import { ReportFiltersPanel } from "./ui/ReportFiltersPanel/ReportFiltersPanel";
+import { ReportOrders } from "./ui/ReportOrders/ReportOrders";
+import styles from "./shared.module.css";
 
 export function WarehouseInformation() {
 	const { warehouse: w } = useWarehouseScreen(warehouseFields);
@@ -59,15 +60,14 @@ export function WarehouseInformation() {
 		.sort((a, b) => b.created.localeCompare(a.created));
 
 	function download() {
-		const url = URL.createObjectURL(
-			new Blob([reportCsv(w, filters)], { type: "text/csv;charset=utf-8" }),
-		);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = `gridly-${w.id}-${filters.from}-${filters.to}.csv`;
-		a.click();
-		URL.revokeObjectURL(url);
+		const file = new Blob([reportCsv(w, filters)], {
+			type: "text/csv;charset=utf-8",
+		});
+		const filename = `gridly-${w.id}-${filters.from}-${filters.to}.csv`;
+
+		saveFile(file, filename);
 	}
+
 	return (
 		<ScrollArea className={styles.pageScroll}>
 			<section className={styles.dashboard} data-information-dashboard="">
