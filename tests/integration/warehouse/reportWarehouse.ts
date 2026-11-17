@@ -2,17 +2,17 @@ import { z } from "zod";
 import {
 	categoryDto,
 	productDto,
-} from "@/app/modules/warehouse-data/catalog/catalogDto";
-import { stockDto } from "@/app/modules/warehouse-data/inventory/inventoryDto";
-import { orderDto } from "@/app/modules/warehouse-data/orders/orderDto";
+} from "@/app/modules/warehouse-data/api/catalog/catalogDto";
+import { stockDto } from "@/app/modules/warehouse-data/api/inventory/inventoryDto";
+import { orderDto } from "@/app/modules/warehouse-data/api/orders/orderDto";
 import {
 	categoryFromDto,
 	orderFromDto,
 	productFromDto,
 	stockFromDto,
 	warehouseFromDto,
-} from "@/app/modules/warehouse-data/repositories/restMappers";
-import { warehouseDto } from "@/app/modules/warehouse-data/warehouses/warehouseDto";
+} from "@/app/modules/warehouse-data/api/repositories/restMappers";
+import { warehouseDto } from "@/app/modules/warehouse-data/api/warehouses/warehouseDto";
 import type { Warehouse } from "@/domain/warehouse";
 
 import { loadMockRoutes } from "../../../bruno/mock-fixture";

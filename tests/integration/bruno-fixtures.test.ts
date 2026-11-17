@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "@/app/modules/warehouse-data/repositories/restRepository";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data/api/repositories/restRepository";
 import { warehouseSchema } from "@/domain/warehouse/warehouse";
 import { FetchHttpClient } from "@/shared/http";
 import { loadMockRoutes } from "../../bruno/mock-fixture";

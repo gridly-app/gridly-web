@@ -13,11 +13,11 @@ import {
 	shiftDay,
 	warehouseDay,
 } from "../../src/app/modules/warehouse/warehouse-information/model/reportPeriod";
-import { productDto } from "../../src/app/modules/warehouse-data/catalog/catalogDto";
-import { eventDto } from "../../src/app/modules/warehouse-data/history/historyDto";
-import { orderDto } from "../../src/app/modules/warehouse-data/orders/orderDto";
-import { robotDto } from "../../src/app/modules/warehouse-data/robots/robotDto";
-import { warehouseDto } from "../../src/app/modules/warehouse-data/warehouses/warehouseDto";
+import { productDto } from "../../src/app/modules/warehouse-data/api/catalog/catalogDto";
+import { eventDto } from "../../src/app/modules/warehouse-data/api/history/historyDto";
+import { orderDto } from "../../src/app/modules/warehouse-data/api/orders/orderDto";
+import { robotDto } from "../../src/app/modules/warehouse-data/api/robots/robotDto";
+import { warehouseDto } from "../../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
 
 const base = "http://gridly.test/api/v1";
 const links = "/admin/warehouses/warehouse-demo/shipment-links";

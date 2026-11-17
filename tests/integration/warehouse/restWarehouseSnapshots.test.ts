@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "@/app/modules/warehouse-data/repositories/restRepository";
+import { RestWarehouseRepository } from "@/app/modules/warehouse-data/api/repositories/restRepository";
 import { ApiError } from "@/shared/http";
 
 const metadata = {
