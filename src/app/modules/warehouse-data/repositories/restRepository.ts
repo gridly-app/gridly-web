@@ -21,6 +21,7 @@ import { LayoutResource } from "../layout/layoutResource";
 import { WarehouseLiveSubscriptions } from "../live/warehouseLiveSubscriptions";
 import { orderDto } from "../orders/orderDto";
 import { createWarehouseKeys } from "../queries/queryKeys";
+import { commandResources } from "../queries/resources";
 import { createdWarehouseDto, warehouseDto } from "../warehouses/warehouseDto";
 import { readWarehouseCollection } from "./readWarehouseCollection";
 import type { MutationOptions, WarehouseRepository } from "./repository";
@@ -197,6 +198,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 				`/warehouses/${encodeURIComponent(id)}/layout/routes/propose`,
 				{
 					method: "POST",
+					readOnly: true,
 					body: {
 						cells: serializeLayoutCells(cells, zoneIds),
 					},
@@ -214,7 +216,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 			selectionSummarySchema,
 			await this.http.request(
 				`/warehouses/${encodeURIComponent(id)}/map/selection-summary`,
-				{ method: "POST", body: { cell_keys: keys }, signal },
+				{ method: "POST", readOnly: true, body: { cell_keys: keys }, signal },
 			),
 		);
 	}
@@ -275,7 +277,31 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		};
 
 		if (isLayoutCommand(command)) {
+			const signal = this.session.signal;
+			const keys = this.keys;
+
 			await this.layout.execute(id, command, execute);
+			signal.throwIfAborted();
+
+			const related = commandResources(command.action)
+				.filter((resource) => resource !== "map" && resource !== "metadata")
+				.map((resource) => keys.resource(id, resource));
+
+			await Promise.all(
+				[
+					...related,
+					keys.live(id),
+					keys.orders(id),
+					keys.selectionSummaries(id),
+					keys.all,
+				].map((queryKey) =>
+					this.cache.invalidateQueries({
+						queryKey,
+						exact: queryKey === keys.all,
+					}),
+				),
+			);
+			signal.throwIfAborted();
 		} else {
 			await execute(command);
 		}

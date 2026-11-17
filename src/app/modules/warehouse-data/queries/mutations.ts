@@ -71,7 +71,8 @@ export function useWarehouseCommand(id: string, fallbackWarehouse?: Warehouse) {
 				});
 		},
 		onSuccess: async (_data: MutationReceipt, command) => {
-			if (!active.current || session.aborted) return;
+			if (!active.current || session.aborted || isLayoutCommand(command))
+				return;
 
 			if (command.action === "deleteWarehouse") {
 				const detail = { queryKey: warehouseKeys.warehouse(id) };
@@ -91,17 +92,11 @@ export function useWarehouseCommand(id: string, fallbackWarehouse?: Warehouse) {
 			}
 
 			await Promise.all([
-				...commandResources(command.action)
-					.filter(
-						(resource) =>
-							!isLayoutCommand(command) ||
-							(resource !== "map" && resource !== "metadata"),
-					)
-					.map((resource) =>
-						cache.invalidateQueries({
-							queryKey: warehouseKeys.resource(id, resource),
-						}),
-					),
+				...commandResources(command.action).map((resource) =>
+					cache.invalidateQueries({
+						queryKey: warehouseKeys.resource(id, resource),
+					}),
+				),
 				cache.invalidateQueries({ queryKey: warehouseKeys.live(id) }),
 				cache.invalidateQueries({ queryKey: warehouseKeys.orders(id) }),
 				cache.invalidateQueries({

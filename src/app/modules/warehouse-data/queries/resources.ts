@@ -82,6 +82,8 @@ export function commandResources(
 			return ["robots", "metadata", "history"];
 		case "settings":
 			return ["metadata", "history"];
+		case "saveMap":
+			return ["map", "catalog", "robots", "metadata", "history"];
 		default:
 			return ["map", "robots", "metadata", "history"];
 	}

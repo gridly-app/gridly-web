@@ -12,22 +12,31 @@ import {
 describe("REST warehouse layout commands", () => {
 	test("publication sends the version and the draft revision of the submitted snapshot", async () => {
 		const base = warehouseRepositoryFixture();
+		const cache = new QueryClient();
 		const writes: Array<{ path: string; options: RequestOptions }> = [];
-		const repository = new RestWarehouseRepository({
-			async request(path, options) {
-				if (path === "/warehouses/w1")
-					return { ...warehouseDto, allowed_actions: ["save-map"] };
-				if (options?.method === "POST" && path.endsWith("/layout/commit")) {
-					writes.push({ path, options });
+		const repository = new RestWarehouseRepository(
+			{
+				async request(path, options) {
+					if (path === "/warehouses/w1")
+						return { ...warehouseDto, allowed_actions: ["save-map"] };
+					if (options?.method === "POST" && path.endsWith("/layout/commit")) {
+						writes.push({ path, options });
 
-					return { version: 2 };
-				}
+						return { version: 2 };
+					}
 
-				return base.http.request(path, options);
+					return base.http.request(path, options);
+				},
 			},
-		});
+			cache,
+		);
 
 		await repository.get("w1");
+		const catalogKey = repository.keys.resource("w1", "catalog");
+		cache.setQueryData(
+			catalogKey,
+			await repository.get("w1", undefined, "catalog"),
+		);
 		const receipt = await repository.execute("w1", {
 			action: "saveMap",
 			value: {
@@ -39,6 +48,7 @@ describe("REST warehouse layout commands", () => {
 		});
 
 		expect(receipt).toEqual({ id: "w1", applied: true });
+		expect(cache.getQueryState(catalogKey)?.isInvalidated).toBe(true);
 		expect(writes).toMatchObject([
 			{
 				path: "/warehouses/w1/layout/commit",
