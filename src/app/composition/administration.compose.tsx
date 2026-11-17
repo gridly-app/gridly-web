@@ -200,14 +200,12 @@ function RecentErrorsWithAudit({
 	auditPath: string;
 }) {
 	const [loadAll, setLoadAll] = useState(false);
-	const { query, events, hasChanged } = useAuditEvents(http, auditPath, {
+	const { query, events, isComplete } = useAuditEvents(http, auditPath, {
 		enabled: input.items.length > 0,
 		loadAll,
 	});
 	const isDenied =
 		query.error instanceof ApiError && [401, 403].includes(query.error.status);
-	const isComplete =
-		query.isSuccess && !query.isFetching && !query.hasNextPage && !hasChanged;
 
 	function handleLoadAll() {
 		setLoadAll(true);
