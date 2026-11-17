@@ -12,7 +12,7 @@ import { Link } from "@/shared/ui/navigation";
 import { ShapeBackdrop } from "@/shared/ui/visual";
 import { useAuthenticate } from "./model/useAuthenticate";
 import authStyles from "./SignIn.module.css";
-import { CredentialsForm } from "./ui/CredentialsForm";
+import { CredentialsForm } from "./ui/CredentialsForm/CredentialsForm";
 
 export function SignIn() {
 	const model = useAuthenticate();

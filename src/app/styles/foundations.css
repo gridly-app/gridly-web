@@ -75,7 +75,6 @@
 		height: auto;
 	}
 	[hidden]:where(:not([hidden="until-found"])) {
-		/* Keep hidden elements hidden when a component sets display. */
 		display: none !important;
 	}
 	body {

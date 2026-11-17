@@ -4,6 +4,7 @@ import type { AuthMode, Credentials } from "./contracts";
 
 export interface SessionState {
 	scopeId: number;
+	sessionId: string | null;
 	user: string;
 	status: "restoring" | "active" | "ended" | "error";
 	error: string;

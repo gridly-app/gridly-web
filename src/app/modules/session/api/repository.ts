@@ -18,6 +18,7 @@ import {
 
 export interface AccountSnapshot {
 	scopeId: number;
+	sessionId: string | null;
 	status: "restoring" | "active" | "ended" | "error";
 	user: string;
 	error: string;
@@ -48,6 +49,7 @@ export class BrowserSessionRepository {
 			status: user ? "restoring" : "ended",
 			error: "",
 			scopeId: this.generation,
+			sessionId: this.account?.id ?? null,
 		};
 	}
 	getSnapshot = () => this.snapshot;
@@ -167,7 +169,14 @@ export class BrowserSessionRepository {
 			assertActive();
 			this.clearData();
 			this.account = canRemember ? this.persistence.remember(user) : null;
-			this.publish({ user, status: "active", error: "", scopeId: generation });
+			this.publish({
+				user,
+				status: "active",
+				error: "",
+				scopeId: generation,
+				sessionId: this.account?.id ?? null,
+			});
+
 			return user;
 		};
 		return this.lock ? this.lock(signIn, signal) : signIn();
@@ -183,6 +192,7 @@ export class BrowserSessionRepository {
 			status: "ended",
 			error,
 			scopeId: this.generation,
+			sessionId: null,
 		});
 	}
 	expire = (message = "Сеанс завершён. Войдите снова.") => {

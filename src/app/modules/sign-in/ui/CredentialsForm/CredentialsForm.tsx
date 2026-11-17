@@ -3,7 +3,7 @@ import { useId } from "react";
 import { Button, Checkbox, Input } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 import { CheckLabel, Field, Form } from "@/shared/ui/forms";
-import type { useAuthenticate } from "../model/useAuthenticate";
+import type { useAuthenticate } from "../../model/useAuthenticate";
 import authStyles from "./CredentialsForm.module.css";
 
 interface CredentialsFormProps {
