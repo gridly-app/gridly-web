@@ -39,4 +39,33 @@ export async function permissionsScenario({
 	await expect(
 		page.getByRole("button", { name: "Товар", exact: true }),
 	).toBeEnabled();
+
+	await ready("map");
+	const warehouse = /\/api\/v1\/warehouses\/warehouse-demo(?:\?.*)?$/;
+	await page.route(warehouse, (route) =>
+		route.fulfill({
+			status: 403,
+			json: { error: { message: "Доступ к складу отозван" } },
+		}),
+	);
+	await expect(page.getByText("Склад недоступен", { exact: true })).toBeVisible(
+		{
+			timeout: 10000,
+		},
+	);
+	await expect(page.locator("[data-map-workspace]")).toHaveCount(0);
+
+	await page.unroute(warehouse);
+	await page.getByRole("button", { name: "Повторить", exact: true }).click();
+	await expect(page.locator("[data-map-workspace]")).toBeVisible();
+	await page.route("**/warehouses/warehouse-demo/categories?*", (route) =>
+		route.fulfill({
+			status: 403,
+			json: { error: { message: "Доступ к каталогу отозван" } },
+		}),
+	);
+	await expect(
+		page.getByText("Доступ к разделу закрыт", { exact: true }),
+	).toBeVisible({ timeout: 10000 });
+	await expect(page.locator("[data-map-workspace]")).toHaveCount(0);
 }

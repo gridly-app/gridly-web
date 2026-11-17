@@ -5,14 +5,23 @@ import {
 } from "@/app/modules/session";
 import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 import { environment } from "@/shared/config";
-import { FetchHttpClient } from "@/shared/http";
+import { ApiError, FetchHttpClient } from "@/shared/http";
 import { availableStorage, browserStorage } from "@/shared/lib";
 
 export type AppDependencies = ReturnType<typeof createDependencies>;
 
 function createWarehouseRuntime(http: FetchHttpClient) {
 	const queryClient = new QueryClient({
-		defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
+		defaultOptions: {
+			queries: {
+				retry: (attempt, error) =>
+					attempt < 1 &&
+					!(
+						error instanceof ApiError && [401, 403, 404].includes(error.status)
+					),
+				refetchOnWindowFocus: true,
+			},
+		},
 	});
 	const repository = new RestWarehouseRepository(http, queryClient);
 

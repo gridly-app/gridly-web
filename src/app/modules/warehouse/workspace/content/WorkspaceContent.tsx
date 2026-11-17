@@ -3,13 +3,13 @@ import { Navigate, Outlet } from "react-router-dom";
 import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouse, useWarehouses } from "@/ports/warehouse";
+import { ApiError } from "@/shared/http";
 import { errorMessage } from "@/shared/lib";
 import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
 import { SidebarTrigger } from "@/shared/ui/navigation";
 import { NewWarehouse } from "../creation/NewWarehouse";
 import { RememberWarehouse } from "../lastWarehouse";
 import type { useWarehouseRoute } from "../warehouseSection";
-import { ConnectionStatus } from "./ConnectionStatus";
 import styles from "./WorkspaceContent.module.css";
 import { WorkspaceResources } from "./WorkspaceResources";
 
@@ -44,13 +44,17 @@ function WarehouseSectionContent({
 		return <Navigate replace to={warehousePath(mode, list[0]?.id ?? "new")} />;
 	}
 
-	if (!snapshot.data) {
+	const error = snapshot.error ?? snapshot.failureReason;
+	const accessLost =
+		error instanceof ApiError && (error.status === 403 || error.status === 404);
+
+	if (!snapshot.data || accessLost) {
 		return (
 			<Feedback
 				inset
 				tone="error"
 				fill
-				title="Не удалось загрузить склад"
+				title={accessLost ? "Склад недоступен" : "Не удалось загрузить склад"}
 				action={
 					<RetryButton
 						variant="secondary"
@@ -59,7 +63,7 @@ function WarehouseSectionContent({
 					/>
 				}
 			>
-				{errorMessage(snapshot.error)}
+				{errorMessage(error)}
 			</Feedback>
 		);
 	}
@@ -67,7 +71,6 @@ function WarehouseSectionContent({
 	return (
 		<>
 			<RememberWarehouse warehouseId={warehouseId} />
-			<ConnectionStatus warehouseId={warehouseId} />
 			<WorkspaceResources
 				warehouse={snapshot.data}
 				isSnapshotStale={snapshot.isError}

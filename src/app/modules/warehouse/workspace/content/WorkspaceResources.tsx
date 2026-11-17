@@ -5,9 +5,11 @@ import {
 	type WarehouseResource,
 	WarehouseScopeProvider,
 } from "@/ports/warehouse";
+import { ApiError } from "@/shared/http";
 import { errorMessage, useOnlineStatus } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
+import { ConnectionStatus } from "./ConnectionStatus";
 import { useWorkspaceCommands } from "./useWorkspaceCommands";
 
 export function WorkspaceResources({
@@ -28,14 +30,18 @@ export function WorkspaceResources({
 	const resource = useWarehouseResources(warehouse, resources);
 	const online = useOnlineStatus();
 	const commands = useWorkspaceCommands(warehouse.id, isSnapshotStale);
+	const accessLost =
+		resource.error instanceof ApiError && resource.error.status === 403;
 
-	if (resource.loading) return loadingFallback;
-	if (resource.error && !resource.hasData)
+	if (resource.loading && !accessLost) return loadingFallback;
+	if (accessLost || (resource.error && !resource.hasData))
 		return (
 			<Feedback
 				inset
 				tone="error"
-				title="Не удалось загрузить раздел"
+				title={
+					accessLost ? "Доступ к разделу закрыт" : "Не удалось загрузить раздел"
+				}
 				action={
 					<RetryButton variant="secondary" size="sm" onRetry={resource.retry} />
 				}
@@ -45,6 +51,7 @@ export function WorkspaceResources({
 		);
 	return (
 		<>
+			<ConnectionStatus warehouseId={warehouse.id} />
 			{resource.error && (
 				<Feedback
 					inset

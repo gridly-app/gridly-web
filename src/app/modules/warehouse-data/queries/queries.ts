@@ -4,6 +4,7 @@ import type { Warehouse } from "@/domain/warehouse";
 import { selectWarehouseMotion } from "@/domain/warehouse";
 import type { WarehouseResource } from "@/ports/warehouse";
 import { useWarehouseScope } from "@/ports/warehouse";
+import { ApiError } from "@/shared/http";
 import { usePageVisible } from "@/shared/lib";
 import { useWarehouseRepository } from "../WarehouseRepositoryProvider";
 import { warehouseResourceData } from "./resources";
@@ -136,11 +137,15 @@ export function useWarehouseResources<Snapshot extends Pick<Warehouse, "id">>(
 		if (query.data && resource)
 			Object.assign(merged, warehouseResourceData(resource, query.data));
 	});
+	const denied = queries
+		.map((query) => query.error ?? query.failureReason)
+		.find((error) => error instanceof ApiError && error.status === 403);
+
 	return {
 		warehouse: merged,
 		hasData: queries.every((query) => query.data !== undefined),
 		loading: queries.some((query) => query.isPending),
-		error: queries.find((query) => query.isError)?.error,
+		error: denied ?? queries.find((query) => query.isError)?.error,
 		fetching: queries.some((query) => query.isFetching),
 		retry: () => Promise.all(queries.map((query) => query.refetch())),
 	};
