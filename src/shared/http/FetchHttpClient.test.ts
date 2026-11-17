@@ -75,6 +75,57 @@ describe("HTTP session lifecycle", () => {
 		await expect(request).rejects.toHaveProperty("name", "AbortError");
 	});
 
+	test("refreshing authentication never resends a layout write", async () => {
+		const paths: string[] = [];
+		const client = clientWith(async (url, options) => {
+			paths.push(url);
+
+			if (url.endsWith("/auth/refresh"))
+				return Response.json({ access_token: "fresh" });
+			if (
+				new Headers(options.headers).get("Authorization") === "Bearer fresh"
+			) {
+				return new Response(null, { status: 204 });
+			}
+
+			return Response.json({}, { status: 401 });
+		});
+
+		await expect(
+			client.request("/warehouse/layout/commit", { method: "POST" }),
+		).rejects.toMatchObject({ status: 401 });
+		await client.request("/warehouse");
+		expect(paths).toEqual([
+			"/api/warehouse/layout/commit",
+			"/api/auth/refresh",
+			"/api/warehouse",
+		]);
+	});
+
+	test("a read and a refetch with other query parameters respect Retry-After", async () => {
+		let reads = 0;
+		const client = clientWith(async () => {
+			reads++;
+			return Response.json(
+				{},
+				{ status: 429, headers: { "Retry-After": "60" } },
+			);
+		});
+
+		await expect(client.request("/warehouse?after=1")).rejects.toMatchObject({
+			status: 429,
+			retryAfterMs: 60000,
+		});
+		const controller = new AbortController();
+		const refetch = client.request("/warehouse?after=2", {
+			signal: controller.signal,
+		});
+		controller.abort();
+
+		await expect(refetch).rejects.toMatchObject({ name: "AbortError" });
+		expect(reads).toBe(1);
+	});
+
 	test("refresh rejects missing access tokens without retrying indefinitely", async () => {
 		const client = clientWith(async (url) =>
 			url.endsWith("/auth/refresh")

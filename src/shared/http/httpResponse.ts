@@ -18,18 +18,29 @@ export async function readHttpBody(
 	});
 }
 
-export function parseHttpError(status: number, data: unknown): ApiError {
+export function parseHttpError(response: Response, data: unknown): ApiError {
 	const envelope = isRecord(data) ? data : {};
 	const error = isRecord(envelope.error) ? envelope.error : envelope;
 	return new ApiError(
 		textField(error.message) ||
 			textField(envelope.message) ||
 			"Не удалось выполнить запрос",
-		status,
+		response.status,
 		textField(error.code) || textField(envelope.code),
 		error.details ?? envelope.details,
 		textField(envelope.request_id) || textField(error.request_id),
+		retryAfterMs(response.headers.get("Retry-After")),
 	);
+}
+
+function retryAfterMs(value: string | null) {
+	if (!value) return undefined;
+
+	const delay = /^\d+$/.test(value)
+		? Number(value) * 1000
+		: Date.parse(value) - Date.now();
+
+	return Number.isFinite(delay) ? Math.max(0, delay) : undefined;
 }
 
 export function readSessionToken(status: number, data: unknown): string {

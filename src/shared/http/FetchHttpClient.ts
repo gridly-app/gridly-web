@@ -2,6 +2,8 @@ import { readEventStream } from "@/shared/realtime";
 import { ApiError } from "./ApiError";
 import { parseHttpError, readHttpBody, readSessionToken } from "./httpResponse";
 
+const maxTimerDelay = 2 ** 31 - 1;
+
 export type RequestOptions = {
 	detached?: boolean | undefined;
 	credentials?: RequestCredentials | undefined;
@@ -11,6 +13,7 @@ export type RequestOptions = {
 	headers?: Record<string, string> | undefined;
 	privacy?: boolean | undefined;
 	idempotencyKey?: string | undefined;
+	readOnly?: boolean | undefined;
 };
 
 export interface HttpClient {
@@ -36,6 +39,7 @@ export interface HttpSessionPolicy {
 export class FetchHttpClient implements HttpClient {
 	private token = "";
 	private streamSession = new AbortController();
+	private readonly readRetryAt = new Map<string, number>();
 
 	private sessionGeneration = 0;
 
@@ -56,6 +60,23 @@ export class FetchHttpClient implements HttpClient {
 		this.sessionGeneration++;
 		this.token = "";
 		this.refreshRequest = null;
+		this.readRetryAt.clear();
+	}
+
+	private async waitToRead(path: string, signal?: AbortSignal) {
+		let retryAt = this.readRetryAt.get(path);
+
+		while (retryAt !== undefined) {
+			const delay = retryAt - Date.now();
+
+			if (delay <= 0) {
+				this.readRetryAt.delete(path);
+				return;
+			}
+
+			await waitForReadDelay(Math.min(delay, maxTimerDelay), signal);
+			retryAt = this.readRetryAt.get(path);
+		}
 	}
 
 	private refresh() {
@@ -130,6 +151,8 @@ export class FetchHttpClient implements HttpClient {
 		const generation = this.sessionGeneration;
 		const { method = "GET", body, signal } = options;
 		const auth = path.startsWith("/auth/");
+		const readOnly = method === "GET" || options.readOnly === true;
+		const [readPath = path] = path.split("?", 1);
 		const issuesToken = path === "/auth/login" || path === "/auth/refresh";
 		const headers: Record<string, string> = { ...options.headers };
 
@@ -148,7 +171,15 @@ export class FetchHttpClient implements HttpClient {
 				throw new DOMException("Сессия завершена", "AbortError");
 			}
 		};
-		const send = () => {
+		const send = async () => {
+			if (readOnly && this.readRetryAt.has(readPath)) {
+				const readSignal = signal
+					? AbortSignal.any([signal, this.streamSession.signal])
+					: this.streamSession.signal;
+
+				await this.waitToRead(readPath, readSignal);
+			}
+
 			assertActive();
 
 			return this.transport(`${this.baseUrl}${path}`, {
@@ -177,6 +208,13 @@ export class FetchHttpClient implements HttpClient {
 		if (response.status === 401 && !auth && this.policy.refresh !== false) {
 			await waitForRefresh(this.refresh(), signal);
 			assertActive();
+
+			if (!readOnly) {
+				const data = await readHttpBody(response, assertActive);
+				assertActive();
+				throw parseHttpError(response, data);
+			}
+
 			headers.Authorization = `Bearer ${this.token}`;
 			response = await send();
 			assertActive();
@@ -188,9 +226,24 @@ export class FetchHttpClient implements HttpClient {
 
 		assertActive();
 		if (!response.ok) {
+			const error = parseHttpError(response, data);
+
+			if (
+				readOnly &&
+				(error.status === 429 || error.status === 503) &&
+				error.retryAfterMs !== undefined
+			) {
+				const retryAt = Date.now() + error.retryAfterMs;
+
+				this.readRetryAt.set(
+					readPath,
+					Math.max(this.readRetryAt.get(readPath) ?? 0, retryAt),
+				);
+			}
+
 			if (response.status === 401 && (!auth || path === "/auth/refresh"))
 				this.policy.onUnauthorized?.();
-			throw parseHttpError(response.status, data);
+			throw error;
 		}
 		if (issuesToken && !options.detached) {
 			const accessToken = readSessionToken(response.status, data);
@@ -205,6 +258,24 @@ export class FetchHttpClient implements HttpClient {
 
 		return data;
 	}
+}
+
+async function waitForReadDelay(delay: number, signal?: AbortSignal) {
+	signal?.throwIfAborted();
+
+	await new Promise<void>((resolve, reject) => {
+		const timer = setTimeout(() => {
+			signal?.removeEventListener("abort", abort);
+			resolve();
+		}, delay);
+
+		function abort() {
+			clearTimeout(timer);
+			reject(signal?.reason);
+		}
+
+		signal?.addEventListener("abort", abort, { once: true });
+	});
 }
 
 async function waitForRefresh(refresh: Promise<unknown>, signal?: AbortSignal) {
