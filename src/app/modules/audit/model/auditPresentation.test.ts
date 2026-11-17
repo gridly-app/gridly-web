@@ -1,9 +1,10 @@
 import { expect, test } from "bun:test";
 
-import { textSearch } from "@/shared/lib";
 import { auditEventSchema } from "@/domain/shipment";
 import { auditCsv } from "./auditCsv";
-import { auditRow, auditSearchFields, changeValue } from "./auditPresentation";
+import { changeValue, permissionChanges } from "./auditChanges";
+import { defaultAuditFilters, filterAuditRows } from "./auditFilters";
+import { auditRow } from "./auditPresentation";
 
 const event = auditEventSchema.parse({
 	id: "event-1",
@@ -21,7 +22,12 @@ const event = auditEventSchema.parse({
 test("unknown API labels remain strings when searching and exporting audit events", () => {
 	const row = auditRow(event);
 
-	expect(textSearch("другой источник")(auditSearchFields(row))).toBe(true);
+	expect(
+		filterAuditRows([row], {
+			...defaultAuditFilters,
+			search: "другой источник",
+		}),
+	).toEqual([row]);
 	expect(row.summary.event).toBe("Операция");
 	expect(auditCsv([row])).toContain("constructor: Не указано → high");
 });
@@ -49,9 +55,29 @@ test("finds audit rows by the subject identifiers shown in technical details", (
 		actor_id: "actor-4321",
 		order_id: "order-4321",
 	});
-	const fields = auditSearchFields(row);
 
-	expect(textSearch("actor-4321")(fields)).toBe(true);
-	expect(textSearch("warehouse-1")(fields)).toBe(true);
-	expect(textSearch("order-4321")(fields)).toBe(true);
+	for (const search of ["actor-4321", "warehouse-1", "order-4321"]) {
+		expect(filterAuditRows([row], { ...defaultAuditFilters, search })).toEqual([
+			row,
+		]);
+	}
+});
+
+test("failed commands use their action name and preserve an explicit API label", () => {
+	const failed = { ...event, event_type: "shipment.document.published" };
+
+	expect(auditRow(failed).summary.event).toBe("Публикация документа");
+	expect(auditRow({ ...failed, result: "success" }).summary.event).toBe(
+		"Документ опубликован",
+	);
+	expect(
+		auditRow({ ...failed, event_label: "Ошибка загрузки" }).summary.event,
+	).toBe("Ошибка загрузки");
+});
+
+test("only computes permission differences when both lists are known", () => {
+	const change = { field: "permissions", after: ["read"] };
+
+	expect(permissionChanges({ ...change, before: null })).toBeUndefined();
+	expect(permissionChanges({ ...change, before: [] })?.added).toEqual(["read"]);
 });

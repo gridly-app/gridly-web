@@ -9,7 +9,7 @@ import { DateRangeFields, Select } from "@/shared/ui/forms";
 
 import { managementStyles as styles } from "@/shared/ui/management";
 
-const resultOptions = [
+const resultOptions: { value: AuditFilters["result"]; label: string }[] = [
 	{ value: "all", label: "Все результаты" },
 	{ value: "success", label: "Успех" },
 	{ value: "failure", label: "Отказ" },
@@ -34,11 +34,10 @@ export function AuditToolbar({
 		onChange({ ...filters, search });
 	}
 
-	function handleResult(result: string) {
-		if (result !== "all" && result !== "success" && result !== "failure")
-			return;
+	function handleResult(value: string) {
+		const option = resultOptions.find((option) => option.value === value);
 
-		onChange({ ...filters, result });
+		if (option) onChange({ ...filters, result: option.value });
 	}
 
 	function handleFrom(from: string) {

@@ -1,15 +1,13 @@
-import {
-	auditArea,
-	auditAreaLabels,
-	auditSummary,
-	changeLabel,
-	changeValue,
-	permissionChanges,
-} from "../../model/auditPresentation";
+import type { ReactNode } from "react";
+
+import { auditArea, auditAreaLabels } from "../../model/auditArea";
+import { auditSummary } from "../../model/auditPresentation";
+import { AuditEventChanges } from "../AuditEventChanges/AuditEventChanges";
 import type { AuditEvent } from "@/domain/shipment";
 
 import { Modal } from "@/shared/ui/overlays";
 
+import factStyles from "../../shared.module.css";
 import auditEventsStyles from "./AuditEventDialog.module.css";
 import { managementStyles as styles } from "@/shared/ui/management";
 
@@ -49,103 +47,37 @@ export function AuditEventDialog({
 
 	return (
 		<Modal title="Карточка события" onClose={onClose} wide>
-			<dl className={auditEventsStyles.auditEventDetails}>
-				{facts.map(({ label, value }) => (
-					<div key={label} className={auditEventsStyles.fact}>
-						<dt className={auditEventsStyles.label}>{label}</dt>
-						<dd className={auditEventsStyles.value}>{value}</dd>
-					</div>
-				))}
-			</dl>
+			<AuditFacts facts={facts} />
 			<details>
 				<summary className={styles.detailsSummary}>Технические данные</summary>
-				<dl
-					className={`${auditEventsStyles.auditEventDetails} ${auditEventsStyles.technicalDetails}`}
-				>
-					{technicalDetails.map(({ label, value }) => (
-						<div key={label} className={auditEventsStyles.fact}>
-							<dt className={auditEventsStyles.label}>{label}</dt>
-							<dd className={auditEventsStyles.value}>
-								<code>{value}</code>
-							</dd>
-						</div>
-					))}
-				</dl>
+				<AuditFacts facts={technicalDetails} technical />
 			</details>
-			<section
-				className={auditEventsStyles.auditChanges}
-				aria-label="Изменения"
-			>
-				<h3 className={auditEventsStyles.changesTitle}>Изменения</h3>
-				{event.changes.length ? (
-					<dl className={auditEventsStyles.changesList}>
-						{event.changes.map((change, index) => (
-							<AuditChange key={index} change={change} />
-						))}
-					</dl>
-				) : (
-					<p>
-						{event.event_type === "account.permissions.updated"
-							? "Сведения о прежних и новых правах отсутствуют в записи."
-							: "В записи нет изменений полей."}
-					</p>
-				)}
-			</section>
+			<AuditEventChanges event={event} />
 		</Modal>
 	);
 }
 
-function AuditChange({ change }: { change: AuditEvent["changes"][number] }) {
-	const permissions = permissionChanges(change);
+function AuditFacts({
+	facts,
+	technical = false,
+}: {
+	facts: { label: string; value: ReactNode }[];
+	technical?: boolean;
+}) {
+	const className = technical
+		? `${auditEventsStyles.auditEventDetails} ${auditEventsStyles.technicalDetails}`
+		: auditEventsStyles.auditEventDetails;
 
 	return (
-		<div className={auditEventsStyles.change}>
-			<dt className={auditEventsStyles.label}>{changeLabel(change)}</dt>
-			{permissions ? (
-				<>
-					<PermissionList label="Было" items={permissions.before} />
-					<PermissionList label="Стало" items={permissions.after} />
-					{permissions.added.length > 0 && (
-						<PermissionList label="Добавлены права" items={permissions.added} />
-					)}
-					{permissions.removed.length > 0 && (
-						<PermissionList label="Удалены права" items={permissions.removed} />
-					)}
-					{!permissions.added.length && !permissions.removed.length && (
-						<dd className={auditEventsStyles.value}>
-							Список прав не изменился.
-						</dd>
-					)}
-				</>
-			) : (
-				<>
-					<dd className={auditEventsStyles.value}>
-						<span className={auditEventsStyles.changeLabel}>Было:</span>{" "}
-						{changeValue(change.field, change.before)}
+		<dl className={className}>
+			{facts.map(({ label, value }) => (
+				<div key={label} className={auditEventsStyles.fact}>
+					<dt className={factStyles.label}>{label}</dt>
+					<dd className={factStyles.value}>
+						{technical ? <code>{value}</code> : value}
 					</dd>
-					<dd className={auditEventsStyles.value}>
-						<span className={auditEventsStyles.changeLabel}>Стало:</span>{" "}
-						{changeValue(change.field, change.after)}
-					</dd>
-				</>
-			)}
-		</div>
-	);
-}
-
-function PermissionList({ label, items }: { label: string; items: string[] }) {
-	return (
-		<dd className={auditEventsStyles.value}>
-			<span className={auditEventsStyles.changeLabel}>{label}:</span>
-			{items.length ? (
-				<ul className={auditEventsStyles.auditPermissionList}>
-					{items.map((item) => (
-						<li key={item}>{item}</li>
-					))}
-				</ul>
-			) : (
-				" Нет прав"
-			)}
-		</dd>
+				</div>
+			))}
+		</dl>
 	);
 }

@@ -6,3 +6,5 @@ export const auditSchema = z.object({
 	items: z.array(auditEventSchema),
 	total: z.number().int().nonnegative(),
 });
+
+export type AuditPage = z.infer<typeof auditSchema>;

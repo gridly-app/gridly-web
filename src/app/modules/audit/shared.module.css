@@ -1,0 +1,13 @@
+.label {
+	font-size: var(--text-caption);
+
+	color: var(--muted-foreground);
+}
+
+.value {
+	margin: 3px 0 0;
+
+	font-size: var(--text-control);
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}

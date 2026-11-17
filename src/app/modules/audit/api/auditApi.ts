@@ -1,66 +1,16 @@
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
+import type { AuditEvent } from "@/domain/shipment";
+import { adminQueryKey } from "@/ports/administration";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 
-import { type FetchHttpClient, parseResponse } from "@/shared/http";
-import { UserError } from "@/shared/lib";
-import { adminQueryKey } from "@/ports/administration";
+import type { HttpClient } from "@/shared/http";
 
-import type { AuditEvent } from "@/domain/shipment";
-
-import { auditSchema } from "./audit.dto";
-
-const batchSize = 200;
-
-async function readAuditPage(
-	http: FetchHttpClient,
-	path: string,
-	offset: number,
-	signal?: AbortSignal,
-) {
-	const url = `${path}?limit=${batchSize}&offset=${offset}`;
-	const response = await http.request(url, { signal });
-	const page = parseResponse(auditSchema, response);
-
-	if (!page.items.length && offset < page.total) {
-		throw new UserError("Журнал изменился во время загрузки. Обновите журнал.");
-	}
-
-	return page;
-}
-
-type AuditPage = Awaited<ReturnType<typeof readAuditPage>>;
-
-export function useVerifyAuditExport(http: FetchHttpClient, path: string) {
-	return useMutation({
-		mutationFn: async (pages: AuditPage[]) => {
-			async function verifyPage(expected: AuditPage, offset: number) {
-				const current = await readAuditPage(http, path, offset);
-
-				if (JSON.stringify(current) !== JSON.stringify(expected)) {
-					throw new UserError(
-						"Журнал изменился после загрузки. Обновите журнал и повторите экспорт.",
-					);
-				}
-			}
-
-			let offset = 0;
-
-			for (const page of pages) {
-				await verifyPage(page, offset);
-				offset += page.items.length;
-			}
-
-			const firstPage = pages[0];
-
-			if (firstPage && pages.length > 1) await verifyPage(firstPage, 0);
-		},
-	});
-}
+import { readAuditPage } from "./auditPageApi";
 
 export function useAuditEvents(
-	http: FetchHttpClient,
+	http: HttpClient,
 	path: string,
 	{ enabled = true, loadAll = true } = {},
 ) {
@@ -105,5 +55,9 @@ export function useAuditEvents(
 			(!hasNextPage && events.length !== initialTotal)),
 	);
 
-	return { query, events, hasChanged };
+	const isComplete =
+		query.isSuccess && !isFetching && !hasNextPage && !hasChanged;
+	const snapshot = isComplete ? data?.pages : undefined;
+
+	return { query, events, hasChanged, isComplete, snapshot };
 }
