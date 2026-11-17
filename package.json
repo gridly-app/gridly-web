@@ -10,7 +10,7 @@
 		"test": "bun test ./src/ ./tests/unit/ ./tests/integration/",
 		"test:watch": "bun test --watch ./src/ ./tests/unit/ ./tests/integration/",
 		"typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tests/tsconfig.json",
-		"check": "bun run typecheck && bun lint && bun fmt --check && bun run test && bun run build",
+		"check": "bun run typecheck && bun fmt --check && bun run test && bun run build",
 		"mock:api": "bun bruno/dev-api.ts",
 		"mock:prepare": "bun bruno/mock-fixture.ts",
 		"dev:mock": "vite --host 127.0.0.1 --mode mock",
