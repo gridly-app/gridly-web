@@ -4,7 +4,7 @@ import { ErrorNotice } from "@/shared/ui/feedback";
 import { Form } from "@/shared/ui/forms";
 import { Modal } from "@/shared/ui/overlays";
 import styles from "./MapSizeDialog.module.css";
-import { MapSizeFields } from "./MapSizeFields";
+import { MapSizeFields } from "../MapSizeFields/MapSizeFields";
 
 export interface MapSizeDialogProps {
 	model: {

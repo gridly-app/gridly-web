@@ -9,13 +9,13 @@ import {
 	ErrorNotice,
 } from "@/shared/ui/feedback";
 import { ScrollArea } from "@/shared/ui/navigation";
-import type { MapInspection } from "./MapInspection";
-import styles from "./MapInspector.module.css";
-import type { MapLegendModel } from "./MapLegend";
-import { MapLegend } from "./MapLegend";
-import { RobotDetails } from "./RobotDetails";
-import { SelectedCellDetails } from "./SelectedCellDetails";
-import ZonePanel from "./zones/ZonePanel";
+import type { MapInspection } from "./model/MapInspection";
+import styles from "./shared.module.css";
+import type { MapLegendModel } from "./ui/MapLegend/MapLegend";
+import { MapLegend } from "./ui/MapLegend/MapLegend";
+import { RobotDetails } from "./ui/RobotDetails/RobotDetails";
+import { SelectedCellDetails } from "./ui/SelectedCellDetails/SelectedCellDetails";
+import ZonePanel from "./ui/ZonePanel/ZonePanel";
 
 export interface MapInspectorProps {
 	legend: MapLegendModel;
@@ -41,7 +41,7 @@ export function MapInspector({
 			}
 		>
 			<div className={styles.mapDetailsBody}>
-				<div className={styles.sectionCaption}>
+				<div className={styles.detailsSectionCaption}>
 					{model.robot && !model.editing
 						? "РОБОТ"
 						: model.selected

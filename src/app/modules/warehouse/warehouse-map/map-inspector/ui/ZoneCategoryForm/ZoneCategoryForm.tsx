@@ -1,8 +1,8 @@
 import { Button, Input } from "@/shared/ui/controls";
 import { Card } from "@/shared/ui/dataDisplay";
 import { Field } from "@/shared/ui/forms";
-import type { useZonePanel } from "./useZonePanel";
-import mapStyles from "./ZonePanel.module.css";
+import type { useZonePanel } from "../../model/zones/useZonePanel";
+import mapStyles from "../../shared.module.css";
 
 export interface ZoneCategoryFormProps {
 	model: Pick<

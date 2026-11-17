@@ -1,6 +1,6 @@
 import type { Cell, GridPosition, Warehouse } from "@/domain/warehouse";
 import { storageCellTypes } from "@/domain/warehouse";
-import type { MapEditor } from "../../draft/useMapEditor";
+import type { MapEditor } from "../draft/useMapEditor";
 import type { useRouteEditor } from "../editor/useRouteEditor";
 import type { useMapCamera } from "./useMapCamera";
 import type { useMapRenderer } from "./useMapRenderer";

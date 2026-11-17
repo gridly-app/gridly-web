@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { cellKey } from "@/domain/warehouse";
 import { MapGeometry } from "@/domain/warehouse/layout";
 import { useSelectionSummary } from "@/ports/warehouse";
-import type { MapEditor } from "../draft/useMapEditor";
+import type { MapEditor } from "./draft/useMapEditor";
 import type { useRouteEditor } from "./editor/useRouteEditor";
 import { getMapPresentation, inspectMapSelection } from "./mapPresentation";
 import type { MapWarehouse } from "./warehouseFields";

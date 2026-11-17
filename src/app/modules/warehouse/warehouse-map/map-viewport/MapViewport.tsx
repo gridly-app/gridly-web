@@ -2,8 +2,8 @@ import { IconFocus2, IconZoomIn, IconZoomOut } from "@tabler/icons-react";
 import type { PointerEvent } from "react";
 import { Button, Toolbar } from "@/shared/ui/controls";
 import mapStyles from "./MapViewport.module.css";
-import type { MapViewportModel } from "./MapViewportModel";
-import { pointerHit } from "./pointerHit";
+import type { MapViewportModel } from "./model/MapViewportModel";
+import { pointerHit } from "./model/pointerHit";
 
 export interface MapViewportProps {
 	model: MapViewportModel;

@@ -4,7 +4,7 @@ import {
 	type Robot,
 	type Warehouse,
 } from "@/domain/warehouse";
-import mapStyles from "./MapInspector.module.css";
+import mapStyles from "../../shared.module.css";
 
 export interface RobotDetailsProps {
 	robot: Robot;
@@ -51,7 +51,7 @@ export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
 					className={mapStyles.robotCurrentTask}
 					data-task-phase={task.phase}
 				>
-					<div className={mapStyles.sectionCaption}>ТЕКУЩАЯ ЗАДАЧА</div>
+					<div className={mapStyles.detailsSectionCaption}>ТЕКУЩАЯ ЗАДАЧА</div>
 					<p className={mapStyles.robotTaskLabel}>{task.label}</p>
 					<div className={mapStyles.detailLine}>
 						<span>
@@ -77,7 +77,7 @@ export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {
 				</div>
 			) : robot.returnRoute?.length ? (
 				<div className={mapStyles.robotCurrentTask} data-task-phase="return">
-					<div className={mapStyles.sectionCaption}>ТЕКУЩАЯ ЗАДАЧА</div>
+					<div className={mapStyles.detailsSectionCaption}>ТЕКУЩАЯ ЗАДАЧА</div>
 					<p className={mapStyles.robotTaskLabel}>Возврат на стоянку</p>
 					<p>Осталось {Math.max(0, robot.returnRoute.length - 1)} клеток</p>
 				</div>

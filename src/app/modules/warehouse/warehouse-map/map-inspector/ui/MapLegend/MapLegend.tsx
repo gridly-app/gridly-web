@@ -1,6 +1,6 @@
 import type { CellType } from "@/domain/warehouse";
 import { Badge } from "@/shared/ui/dataDisplay";
-import detailsStyles from "./MapInspector.module.css";
+import detailsStyles from "../../shared.module.css";
 import styles from "./MapLegend.module.css";
 
 export interface MapLegendProps {
@@ -18,7 +18,7 @@ export function MapLegend({ model }: MapLegendProps) {
 	return (
 		<div className={styles.legend}>
 			<div
-				className={`${detailsStyles.sectionCaption} ${styles.legendCaption}`}
+				className={`${detailsStyles.detailsSectionCaption} ${styles.legendCaption}`}
 			>
 				ОБОЗНАЧЕНИЯ
 			</div>

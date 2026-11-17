@@ -10,7 +10,7 @@ import {
 import { useWorkspaceMode } from "@/ports/session";
 import { useRouteProposal } from "@/ports/warehouse";
 import { errorMessage, requiredAt } from "@/shared/lib";
-import type { MapEditor } from "../../draft/useMapEditor";
+import type { MapEditor } from "../draft/useMapEditor";
 import { exteriorShelfRoute } from "../../lib/shelfRoute";
 import { useRouteDrag } from "./useRouteDrag";
 

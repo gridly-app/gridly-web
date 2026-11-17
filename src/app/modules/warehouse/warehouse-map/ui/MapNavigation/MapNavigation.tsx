@@ -7,7 +7,7 @@ import {
 import type { RefObject } from "react";
 import { Button, Toolbar } from "@/shared/ui/controls";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@/shared/ui/overlays";
-import type { MapEditor } from "../../draft/useMapEditor";
+import type { MapEditor } from "../../model/draft/useMapEditor";
 import type { useMapView } from "../../model/useMapView";
 
 import mapStyles from "./MapNavigation.module.css";

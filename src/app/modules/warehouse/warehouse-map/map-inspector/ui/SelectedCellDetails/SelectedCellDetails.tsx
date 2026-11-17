@@ -1,8 +1,8 @@
 import { cellLabels, storageCellTypes } from "@/domain/warehouse";
 
 import { Card } from "@/shared/ui/dataDisplay";
-import type { MapInspection } from "./MapInspection";
-import mapStyles from "./MapInspector.module.css";
+import type { MapInspection } from "../../model/MapInspection";
+import mapStyles from "../../shared.module.css";
 
 export function SelectedCellDetails({ model }: { model: MapInspection }) {
 	const { selected, inspection } = model;
@@ -23,7 +23,7 @@ export function SelectedCellDetails({ model }: { model: MapInspection }) {
 			<h3>{inspectedZone?.name || cellLabels[selected.type]}</h3>
 			{inspectedZone && (
 				<>
-					<div className={mapStyles.sectionCaption}>
+					<div className={mapStyles.detailsSectionCaption}>
 						СКЛАДСКАЯ ЗОНА · {inspectedCells.length} КЛ.
 					</div>
 					<div className={mapStyles.detailLine}>
@@ -57,7 +57,7 @@ export function SelectedCellDetails({ model }: { model: MapInspection }) {
 			))}
 			{!model.editing && storageCellTypes.includes(selected.type) && (
 				<div className={mapStyles.mapRoutesSummary}>
-					<div className={mapStyles.sectionCaption}>МАРШРУТЫ РОБОТА</div>
+					<div className={mapStyles.detailsSectionCaption}>МАРШРУТЫ РОБОТА</div>
 					<p className={mapStyles.routeInbound}>
 						Разгрузка → блок:{" "}
 						{model.routes.inbound.length

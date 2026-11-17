@@ -4,7 +4,7 @@ import { MapEditor } from "./map-editor";
 import { MapInspector } from "./map-inspector";
 import { MapViewport } from "./map-viewport";
 
-import styles from "./WarehouseMap.module.css";
+import styles from "./shared.module.css";
 
 type EditorProps = ComponentProps<typeof MapEditor>;
 type InspectorProps = ComponentProps<typeof MapInspector>;

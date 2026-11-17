@@ -11,9 +11,9 @@ import { useImmersiveRegion, useTheme } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice, Feedback, RetryButton } from "@/shared/ui/feedback";
 import { mapThemes } from "./config/mapTheme";
-import { LayoutIssueList } from "./draft/LayoutIssueList";
-import { layoutStatus } from "./draft/layoutStatus";
-import { useMapEditor } from "./draft/useMapEditor";
+import { LayoutIssueList } from "./ui/LayoutIssueList/LayoutIssueList";
+import { layoutStatus } from "./model/draft/layoutStatus";
+import { useMapEditor } from "./model/draft/useMapEditor";
 import { MapLayout } from "./map.compose";
 import { useMapSize } from "./model/editor/useMapSize";
 import { useRouteEditor } from "./model/editor/useRouteEditor";
@@ -24,9 +24,9 @@ import { useMapCamera } from "./model/viewport/useMapCamera";
 import { useMapCanvas } from "./model/viewport/useMapCanvas";
 import { useMapSimulation } from "./model/viewport/useMapSimulation";
 import { type MapWarehouse, warehouseFields } from "./model/warehouseFields";
-import { MapNavigation } from "./ui/viewport/MapNavigation";
-import { MapToolbar } from "./ui/viewport/MapToolbar";
-import mapStyles from "./WarehouseMap.module.css";
+import { MapNavigation } from "./ui/MapNavigation/MapNavigation";
+import { MapToolbar } from "./ui/MapToolbar/MapToolbar";
+import mapStyles from "./shared.module.css";
 
 interface WarehouseMapProps {
 	warehouse: MapWarehouse;

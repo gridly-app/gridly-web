@@ -3,8 +3,11 @@ import { ConfirmDialog } from "@/shared/ui/overlays";
 import {
 	EditLayoutToolbar,
 	type EditLayoutToolbarProps,
-} from "./EditLayoutToolbar";
-import { MapSizeDialog, type MapSizeDialogProps } from "./MapSizeDialog";
+} from "./ui/EditLayoutToolbar/EditLayoutToolbar";
+import {
+	MapSizeDialog,
+	type MapSizeDialogProps,
+} from "./ui/MapSizeDialog/MapSizeDialog";
 import { RouteToolbar, type RouteToolbarProps } from "./route-toolbar";
 
 interface MapEditorProps {

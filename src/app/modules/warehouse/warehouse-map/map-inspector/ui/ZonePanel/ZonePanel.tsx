@@ -1,11 +1,11 @@
 import { Button, StableLabel } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
 import { Fieldset, Form } from "@/shared/ui/forms";
-import type { ZonePanelOptions } from "./useZonePanel";
-import { useZonePanel } from "./useZonePanel";
-import { ZoneCategoryForm } from "./ZoneCategoryForm";
-import { ZoneFields } from "./ZoneFields";
-import mapStyles from "./ZonePanel.module.css";
+import type { ZonePanelOptions } from "../../model/zones/useZonePanel";
+import { useZonePanel } from "../../model/zones/useZonePanel";
+import { ZoneCategoryForm } from "../ZoneCategoryForm/ZoneCategoryForm";
+import { ZoneFields } from "../ZoneFields/ZoneFields";
+import mapStyles from "../../shared.module.css";
 
 export type ZonePanelProps = ZonePanelOptions & {
 	disabled?: boolean | undefined;
@@ -55,7 +55,7 @@ function ZoneSummary({ model }: ZoneSummaryProps) {
 
 	return (
 		<>
-			<div className={mapStyles.sectionCaption}>
+			<div className={mapStyles.zoneSectionCaption}>
 				СКЛАДСКАЯ ЗОНА · {picked.length} КЛ.
 			</div>
 			<div className={mapStyles.capacity}>

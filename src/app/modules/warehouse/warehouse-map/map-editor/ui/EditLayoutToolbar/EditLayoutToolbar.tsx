@@ -7,11 +7,11 @@ import {
 } from "@tabler/icons-react";
 import { Button, Toolbar, ToolbarGroup } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
-import styles from "./MapEditorToolbars.module.css";
+import styles from "./EditLayoutToolbar.module.css";
 import {
 	type EditLayoutToolbarOptions,
 	useEditLayoutToolbar,
-} from "./useEditLayoutToolbar";
+} from "../../model/useEditLayoutToolbar";
 
 export type EditLayoutToolbarProps = EditLayoutToolbarOptions & {
 	className?: string | undefined;

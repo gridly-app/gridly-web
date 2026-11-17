@@ -1,5 +1,5 @@
 import type { Cell, CommandExecutor, Robot } from "@/domain/warehouse";
-import type { MapEditor } from "../draft/useMapEditor";
+import type { MapEditor } from "./draft/useMapEditor";
 import type { useMapInspection } from "./useMapInspection";
 import type { MapWarehouse } from "./warehouseFields";
 

@@ -8,8 +8,8 @@ import type {
 } from "@/domain/warehouse";
 import { blocksLayoutWrite, type LayoutOperation } from "@/ports/warehouse";
 import { errorMessage } from "@/shared/lib";
-import { useCellSelection } from "../model/editor/useCellSelection";
-import type { MapWarehouse } from "../model/warehouseFields";
+import { useCellSelection } from "../editor/useCellSelection";
+import type { MapWarehouse } from "../warehouseFields";
 import { editorReducer, initialEditorState } from "./editorState";
 import {
 	createLayoutDraft,
