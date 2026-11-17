@@ -6,6 +6,7 @@ import { inventoryScenario } from "./scenarios/inventory";
 import { loadingScenario } from "./scenarios/loading";
 import { mapEditorScenario } from "./scenarios/mapEditor";
 import { mapSessionScenario } from "./scenarios/mapSession";
+import { modeSwitchScenario } from "./scenarios/modeSwitch";
 import { ordersScenario } from "./scenarios/orders";
 import { permissionsScenario } from "./scenarios/permissions";
 import { responsiveLayoutScenario } from "./scenarios/responsiveLayout";
@@ -40,6 +41,7 @@ const scenarios = [
 	["system-errors", systemErrorsScenario],
 	["map-editor", mapEditorScenario],
 	["map-session", mapSessionScenario],
+	["mode-switch", modeSwitchScenario],
 	["route-drag", routeDragScenario],
 	["warehouse-report", warehouseReportScenario],
 	["responsive-layout", responsiveLayoutScenario],

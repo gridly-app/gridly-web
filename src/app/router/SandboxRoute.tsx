@@ -1,5 +1,5 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Outlet, Link as RouterLink, useNavigate } from "react-router-dom";
 import { useNavigationConfirmation } from "@/ports/navigation";
 import { useSandboxAccess } from "@/ports/session";
@@ -57,8 +57,14 @@ function SandboxWorkspace() {
 
 export function SandboxRoute() {
 	const { status, access, error, controller } = useSandboxAccess();
+	const accountWarehouse = useWarehouseRuntime("account");
 	const navigate = useNavigate();
 	const [actionError, setActionError] = useState("");
+
+	useLayoutEffect(() => {
+		accountWarehouse.clear();
+	}, [accountWarehouse]);
+
 	useEffect(() => {
 		void controller.restore();
 	}, [controller]);
