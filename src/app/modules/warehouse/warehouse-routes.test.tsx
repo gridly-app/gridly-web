@@ -6,7 +6,7 @@ import { warehouseChildren } from "./index";
 
 test("the management route is available in the account workspace while shared sections also match in sandbox", () => {
 	const options = {
-		settings: null,
+		renderSettings: () => null,
 		settingsRoute: {
 			id: "settings",
 			path: "settings",

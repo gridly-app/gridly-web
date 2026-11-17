@@ -108,6 +108,8 @@ export async function sandboxScenario({
 	await expect(sandboxThreshold).toHaveValue(changedThreshold);
 	expect(api.sandboxStarts).toBe(1);
 
+	await page.keyboard.press("Escape");
+	await expect(page).toHaveURL(/\/map$/);
 	await page.getByRole("button", { name: "Меню профиля" }).click();
 	await page
 		.getByRole("menuitem", { name: "Администрирование", exact: true })
@@ -143,6 +145,8 @@ export async function sandboxScenario({
 	await expect(sandboxThreshold).toHaveValue(changedThreshold);
 	expect(api.sandboxStarts).toBe(1);
 
+	await page.keyboard.press("Escape");
+	await expect(page).toHaveURL(/\/map$/);
 	await page.getByRole("link", { name: "Gridly", exact: true }).click();
 	const exitDialog = page.getByRole("alertdialog", {
 		name: "Предупреждение",
@@ -153,10 +157,13 @@ export async function sandboxScenario({
 		.getByRole("button", { name: "Остаться", exact: true })
 		.click();
 	await expect(exitDialog).toHaveCount(0);
-	await expect(page).toHaveURL(sandboxSettings);
+	await expect(page).toHaveURL(/\/map$/);
+	await page.locator('a[href$="/settings"]').click();
 	await expect(sandboxThreshold).toHaveValue(changedThreshold);
 	expect(api.sandboxStores.size).toBe(1);
 
+	await page.keyboard.press("Escape");
+	await expect(page).toHaveURL(/\/map$/);
 	await page.getByRole("button", { name: "Меню профиля" }).click();
 	await page.getByRole("menuitem", { name: "Выйти из песочницы" }).click();
 	const revoked = page.waitForResponse(

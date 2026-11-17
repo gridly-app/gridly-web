@@ -95,7 +95,9 @@ function workspaceRoutes(mode: WorkspaceAccess): RouteObject[] {
 			path: mode === "standard" ? `/${route.path}` : route.path,
 			element: <WorkspaceShell />,
 			children: warehouseChildren({
-				settings: <WarehouseSettings />,
+				renderSettings: (warehouse) => (
+					<WarehouseSettings warehouse={warehouse} workspace />
+				),
 				progress: ShipmentProgress,
 				settingsRoute: warehouseSettingsRoute,
 				useHttp: useWorkspaceHttp,

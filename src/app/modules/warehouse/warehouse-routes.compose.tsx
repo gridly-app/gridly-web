@@ -1,13 +1,16 @@
 import { lazy, type ReactNode } from "react";
-import { Navigate, type RouteObject } from "react-router-dom";
+import { Navigate, type RouteObject, useNavigate } from "react-router-dom";
 import type { Warehouse } from "@/domain/warehouse";
 import type {
 	WarehouseRouteHandle,
 	WarehouseScreenRoute,
 	WorkspaceAccess,
 } from "@/ports/navigation";
+import { warehousePath } from "@/ports/navigation";
 import type { ShipmentProgressSlot } from "@/ports/shipment";
+import { useWarehouseScope } from "@/ports/warehouse";
 import type { HttpClient } from "@/shared/http";
+import { Modal } from "@/shared/ui/overlays";
 import { deliveriesRoute, shipmentRoute } from "./shipment-management";
 import { catalogRoute } from "./warehouse-catalog";
 import { historyRoute } from "./warehouse-history";
@@ -52,13 +55,13 @@ function warehouseRoute(
 }
 
 export function warehouseChildren({
-	settings,
+	renderSettings,
 	settingsRoute,
 	progress,
 	useHttp,
 	mode,
 }: {
-	settings: ReactNode;
+	renderSettings: (warehouse: Warehouse) => ReactNode;
 	settingsRoute: WarehouseScreenRoute;
 	progress: ShipmentProgressSlot;
 	useHttp: () => HttpClient;
@@ -70,6 +73,23 @@ export function warehouseChildren({
 
 	function ShipmentManagementRoute() {
 		return <Shipments http={useHttp()} />;
+	}
+
+	function SettingsRoute() {
+		const { warehouse } = useWarehouseScope();
+		const navigate = useNavigate();
+
+		return (
+			<Modal
+				title={`Настройки склада: ${warehouse.name}`}
+				wide
+				onClose={() =>
+					void navigate(warehousePath(mode, warehouse.id), { replace: true })
+				}
+			>
+				{renderSettings(warehouse)}
+			</Modal>
+		);
 	}
 
 	return [
@@ -90,7 +110,7 @@ export function warehouseChildren({
 		...warehouseRoute(shipmentRoute, <ShipmentManagementRoute />, mode),
 		...warehouseRoute(inventoryRoute, <InventoryPage />, mode),
 		...warehouseRoute(historyRoute, <HistoryPage />, mode),
-		...warehouseRoute(settingsRoute, settings, mode),
+		...warehouseRoute(settingsRoute, <SettingsRoute />, mode),
 		...warehouseRoute(informationRoute, <InformationPage />, mode),
 		...warehouseRoute(
 			{ ...informationRoute, path: "warehouses" },

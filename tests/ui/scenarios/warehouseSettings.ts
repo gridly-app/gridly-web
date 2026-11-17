@@ -11,6 +11,9 @@ export async function warehouseSettingsScenario({
 	const dialog = page.locator("[data-slot=dialog-popup]");
 	await ready("settings");
 	await expect(
+		page.getByRole("dialog", { name: "Настройки склада: Центральный склад" }),
+	).toBeVisible();
+	await expect(
 		page.getByRole("combobox", { name: "Правило размещения", exact: true }),
 	).toHaveCount(0);
 	await expect(
@@ -83,6 +86,8 @@ export async function warehouseSettingsScenario({
 			exact: true,
 		}),
 	).toBeEnabled();
+	await page.keyboard.press("Escape");
+	await expect(page).toHaveURL(/\/map$/);
 	await page
 		.getByRole("combobox", {
 			name: "Рабочее пространство — выбор склада",

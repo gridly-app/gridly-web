@@ -14,6 +14,7 @@ import {
 	useWarehouseCommand,
 	useWarehouseResources,
 } from "@/ports/warehouse";
+import { ApiError } from "@/shared/http";
 import { errorMessage, UserError } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
@@ -26,13 +27,14 @@ import styles from "./WarehouseSettings.module.css";
 
 export function WarehouseSettings({
 	warehouse: selectedWarehouse,
+	workspace = false,
 }: {
-	warehouse?: Warehouse;
-} = {}) {
-	if (selectedWarehouse) {
-		return <EmbeddedSettingsPage warehouse={selectedWarehouse} />;
-	}
-	return <RouteSettingsPage />;
+	warehouse: Warehouse;
+	workspace?: boolean;
+}) {
+	if (workspace) return <RouteSettingsPage />;
+
+	return <EmbeddedSettingsPage warehouse={selectedWarehouse} />;
 }
 
 function RouteSettingsPage() {
@@ -51,6 +53,10 @@ function RouteSettingsPage() {
 		settingsLoading,
 	} = useSettingsPage();
 	const deleteSnapshot = getSnapshot(warehouse.id);
+
+	if (settingsError instanceof ApiError && settingsError.status === 403) {
+		return <Feedback tone="error">{errorMessage(settingsError)}</Feedback>;
+	}
 
 	return (
 		<SettingsContent
@@ -110,6 +116,16 @@ function EmbeddedSettingsPage({ warehouse }: { warehouse: Warehouse }) {
 			operationId: intent?.operationId,
 		});
 	};
+
+	const error = metadata.error ?? resources.error;
+	const accessLost =
+		error instanceof ApiError &&
+		(error.status === 403 ||
+			(error.status === 404 && error === metadata.error));
+
+	if (accessLost)
+		return <Feedback tone="error">{errorMessage(error)}</Feedback>;
+
 	return (
 		<SettingsContent
 			warehouse={resources.warehouse}
@@ -150,13 +166,7 @@ function SettingsContent({
 	return (
 		<ScrollArea className={styles.pageScroll}>
 			<div className={styles.settings}>
-				<header className={styles.heading}>
-					<div>
-						<h2>Настройки склада</h2>
-						<p>{warehouse.name}</p>
-					</div>
-					{deleteAction}
-				</header>
+				{deleteAction && <div className={styles.heading}>{deleteAction}</div>}
 				{settingsLoading && (
 					<Feedback tone="loading">Загружаем настройки…</Feedback>
 				)}
