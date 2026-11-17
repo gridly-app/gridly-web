@@ -15,8 +15,8 @@ import {
 	shipmentCalendar,
 	shipmentCsv,
 	transportSummary,
-} from "../model/shipmentCalendar";
-import styles from "../ShipmentPortal.module.css";
+} from "../../model/shipmentCalendar";
+import styles from "../../shared.module.css";
 
 const columns = [
 	["date", "Дата"],
@@ -39,10 +39,14 @@ const collator = new Intl.Collator("ru", {
 export function ShipmentCalendar({
 	shipment,
 	items: availableItems,
+	detailedItems,
+	priority,
 	showPriority,
 }: {
-	shipment: Shipment;
+	shipment: Pick<Shipment, "order" | "plan" | "actual">;
 	items: Pick<Shipment["items"][number], "order_line_id" | "name" | "sku">[];
+	detailedItems: Shipment["items"];
+	priority: Shipment["warehouse"]["priority"];
 	showPriority: boolean;
 }) {
 	const captionId = useId();
@@ -76,9 +80,7 @@ export function ShipmentCalendar({
 				date: row.date,
 				number: shipment.order.number,
 				item: [...row.items].map((id) => items.get(id)?.name ?? id).join(", "),
-				priority: shipment.warehouse.priority
-					? priorities[shipment.warehouse.priority]
-					: "Не указан",
+				priority: priority ? priorities[priority] : "Не указан",
 				unit: formatUnit(row.unit),
 				plan: row.plan,
 				actual: row.actual,
@@ -355,7 +357,8 @@ export function ShipmentCalendar({
 					onClose={() => setSelection(null)}
 				>
 					<FactDetails
-						shipment={shipment}
+						items={detailedItems}
+						timeZone={shipment.order.time_zone}
 						facts={
 							selected?.facts ??
 							rows
@@ -370,10 +373,12 @@ export function ShipmentCalendar({
 }
 
 function FactDetails({
-	shipment,
+	items,
+	timeZone,
 	facts,
 }: {
-	shipment: Shipment;
+	items: Shipment["items"];
+	timeZone: Shipment["order"]["time_zone"];
 	facts: Actual[];
 }) {
 	return (
@@ -393,7 +398,7 @@ function FactDetails({
 				</thead>
 				<tbody>
 					{facts.map((fact) => {
-						const item = shipment.items.find(
+						const item = items.find(
 							(row) => row.order_line_id === fact.order_line_id,
 						);
 						return (
@@ -410,8 +415,8 @@ function FactDetails({
 								</td>
 								<td>{fact.packaging ?? "Не указана"}</td>
 								<td>
-									{formatMoment(fact.shipped_at, shipment.order.time_zone)} /{" "}
-									{formatMoment(fact.loaded_at, shipment.order.time_zone)}
+									{formatMoment(fact.shipped_at, timeZone)} /{" "}
+									{formatMoment(fact.loaded_at, timeZone)}
 								</td>
 								<td>{transports[fact.transport_type]}</td>
 								<td>{fact.vehicle_number ?? "Не указан"}</td>

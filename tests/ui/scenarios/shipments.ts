@@ -331,7 +331,7 @@ export async function shipmentsScenario({ page, base, signIn }: UiScenario) {
 	await page.getByRole("button", { name: "Фильтры", exact: true }).click();
 	await page.getByRole("combobox", { name: "Тип доступа" }).click();
 	await page
-		.getByRole("option", { name: "Гости по ссылке", exact: true })
+		.getByRole("option", { name: "Гость по ссылке", exact: true })
 		.click();
 	await expect(page.getByText("Найдено пользователей: 1")).toBeVisible();
 	await expect(users.getByText("Действует", { exact: true })).toBeVisible();

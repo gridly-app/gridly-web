@@ -1,5 +1,6 @@
 import type { Actual, Shipment } from "@/domain/shipment";
 import { transports } from "@/domain/shipment";
+import { encodeCsv } from "@/shared/lib";
 
 export function calendarDay(moment: string, timeZone: string) {
 	return new Intl.DateTimeFormat("sv-SE", {
@@ -27,7 +28,7 @@ type CalendarRow = {
 };
 
 export function shipmentCalendar(
-	shipment: Shipment,
+	shipment: Pick<Shipment, "order" | "plan" | "actual">,
 	filters: {
 		from: string;
 		to: string;
@@ -82,21 +83,7 @@ export function shipmentCsv(
 	headers: string[],
 	rows: (string | number | null)[][],
 ) {
-	return (
-		"\uFEFF" +
-		[headers, ...rows]
-			.map((row) =>
-				row
-					.map((value) => {
-						let cell = String(value ?? "");
-						if (typeof value === "string" && /^(\s*[=+@-]|[\t\r\n])/.test(cell))
-							cell = `'${cell}`;
-						return `"${cell.replaceAll('"', '""')}"`;
-					})
-					.join(";"),
-			)
-			.join("\r\n")
-	);
+	return encodeCsv([headers, ...rows], { separator: ";", includeBom: true });
 }
 
 export function transportSummary(facts: Actual[]) {
