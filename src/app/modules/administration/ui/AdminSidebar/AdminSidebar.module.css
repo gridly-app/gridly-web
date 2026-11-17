@@ -1,0 +1,122 @@
+.sidebar {
+	position: sticky;
+	inset-block-start: 0;
+
+	align-self: start;
+	min-block-size: 100dvh;
+	padding: var(--space-6) var(--space-3);
+
+	background: var(--sidebar);
+	border-inline-end: 1px solid var(--sidebar-border);
+}
+
+@media (max-width: 850px) {
+	.sidebar {
+		position: static;
+		min-block-size: 0;
+
+		border-inline-end: 0;
+		border-block-end: 1px solid var(--sidebar-border);
+	}
+}
+
+.back {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	margin: 0 var(--space-2) var(--space-6);
+
+	font-size: var(--text-control);
+}
+
+@media (max-width: 850px) {
+	.back {
+		margin-block-end: var(--space-3);
+	}
+}
+
+.adminTitle {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	margin: 0 var(--space-2) var(--space-6);
+
+	font-size: var(--text-control);
+	font-weight: 700;
+}
+
+@media (max-width: 850px) {
+	.adminTitle {
+		margin-block-end: var(--space-3);
+	}
+}
+
+.sectionIcon {
+	display: grid;
+	place-items: center;
+	flex: 0 0 var(--space-8);
+	block-size: var(--space-8);
+
+	border-radius: var(--radius);
+	background: var(--success-bg);
+	color: var(--success-foreground);
+}
+
+.navigation {
+	display: grid;
+	gap: var(--space-6);
+}
+
+@media (max-width: 850px) {
+	.navigation {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--space-2);
+	}
+}
+
+.groupLabel {
+	margin: 0 var(--space-2) var(--space-2);
+
+	font-size: var(--text-caption);
+	font-weight: 600;
+
+	color: var(--muted-foreground);
+}
+
+.navLink {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-2);
+
+	font-size: var(--text-control);
+	text-decoration: none;
+
+	border-radius: var(--radius-control);
+	color: var(--sidebar-foreground);
+}
+
+@media (max-width: 560px) {
+	.navLink {
+		align-items: flex-start;
+		gap: var(--space-1);
+		padding-inline: var(--space-1);
+		font-size: var(--text-caption);
+	}
+	.navIcon {
+		flex-shrink: 0;
+		inline-size: 14px;
+	}
+}
+
+.navLink:hover,
+.navLink[aria-current="page"] {
+	text-decoration: none;
+
+	color: var(--success-foreground);
+	background: var(--success-bg);
+}
+
+.navLink[aria-current="page"] {
+	font-weight: 650;
+}

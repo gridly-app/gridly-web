@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { z } from "zod";
-import { guestLinksSchema } from "@/app/modules/administration/model/guestLink.dto";
+import { systemSchema } from "@/app/modules/system/api/system.dto";
+import { guestLinksSchema } from "@/app/modules/guest-links/api/guestLink.dto";
 import { workingShipmentSchema } from "@/app/modules/warehouse/shipment-management/model/shipment.dto";
 import { createAdminMock, type MockStore } from "../../bruno/admin-mock";
 import {
@@ -240,4 +241,36 @@ test("generated Bruno routes carry the same incoming and outgoing tracking used 
 		)?.response.body?.data;
 	expect(JSON.parse(matchingRoute(paths[0]) ?? "null")).toEqual(incoming);
 	expect(JSON.parse(matchingRoute(paths[1]) ?? "null")).toEqual(outgoing);
+});
+
+test("system date filters compare instants when an error carries a UTC offset", async () => {
+	const { store } = await loadWorkspaceSamples(
+		Date.parse("2026-11-17T00:00:00Z"),
+	);
+	const path = "/admin/shipment-system";
+	const record = {
+		occurred_at: "2026-11-16T23:30:00-02:00",
+		component: "warehouse",
+		message: "Граница суток",
+		correlation_id: "operation-1",
+		retry_state: null,
+	};
+
+	store.set(`/api/v1${path}`, {
+		checked_at: "2026-11-17T02:00:00Z",
+		components: [],
+		error_count: 1,
+		recent_errors: [record],
+		jobs: [],
+	});
+
+	const request = new Request(`${base}${path}?from=2026-11-17T00:00:00.000Z`, {
+		headers: { Authorization: "Bearer bruno-account-token" },
+	});
+	const mock = createAdminMock({ seedLinks: true });
+	const response = await mock.handle(request, store);
+	const data = systemSchema.parse(await response?.json());
+
+	expect(data.recent_errors).toEqual([record]);
+	expect(data.error_count).toBe(1);
 });

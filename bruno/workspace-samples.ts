@@ -9,12 +9,10 @@ import { layoutDto } from "../src/app/modules/warehouse-data/layout/layout.dto";
 import { orderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
 import { robotDto } from "../src/app/modules/warehouse-data/robots/robotDto";
 import { warehouseDto } from "../src/app/modules/warehouse-data/warehouses/warehouseDto";
-import {
-	type AuditEvent,
-	auditSchema,
-	systemSchema,
-	usersSchema,
-} from "../src/app/modules/administration/model/shipmentAudit";
+import { type AuditEvent } from "../src/domain/shipment";
+import { auditSchema } from "../src/app/modules/audit/api/audit.dto";
+import { systemSchema } from "../src/app/modules/system/api/system.dto";
+import { usersSchema } from "../src/app/modules/users/api/users.dto";
 import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
 import type { MockStore } from "./admin-mock";
 import { recentOrders } from "./order-samples";

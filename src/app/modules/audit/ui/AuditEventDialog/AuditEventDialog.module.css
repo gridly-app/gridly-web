@@ -1,0 +1,70 @@
+.auditEventDetails {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--space-3) var(--space-6);
+	margin: 0;
+}
+
+@media (width <= 580px) {
+	.auditEventDetails {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.technicalDetails {
+	margin-block-start: 6px;
+}
+
+.fact {
+	min-inline-size: 0;
+}
+
+.label {
+	font-size: var(--text-caption);
+
+	color: var(--muted-foreground);
+}
+
+.value {
+	margin: 3px 0 0;
+
+	font-size: var(--text-control);
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}
+
+.auditChanges {
+	min-inline-size: 0;
+	padding-block-start: var(--space-4);
+
+	border-block-start: 1px solid var(--border);
+}
+
+.changesTitle {
+	margin: 0 0 var(--space-3);
+
+	font-size: var(--text-title-sm);
+}
+
+.changesList {
+	display: grid;
+	gap: var(--space-3);
+	margin: 0;
+}
+
+.change {
+	min-inline-size: 0;
+	padding: var(--space-3);
+
+	border-radius: var(--radius-control);
+	background: var(--muted);
+}
+
+.changeLabel {
+	font-weight: 600;
+}
+
+.auditPermissionList {
+	padding-inline-start: 1.25rem;
+	list-style: disc;
+}

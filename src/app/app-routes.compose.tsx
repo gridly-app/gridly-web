@@ -8,7 +8,6 @@ import {
 	useMatches,
 } from "react-router-dom";
 import type { RouteDescription, WorkspaceAccess } from "@/ports/navigation";
-import { useWorkspaceMode } from "@/ports/session";
 import { Skeleton } from "@/shared/ui/feedback";
 import { administrationRoute } from "./modules/administration";
 import { useWorkspaceHttp } from "./composition/workspace-providers.compose";
@@ -32,18 +31,19 @@ import { warehouseSettingsRoute } from "./modules/warehouse-settings";
 const WorkspaceShell = lazy(warehouseWorkspaceRoute.load);
 const LandingPage = lazy(landingRoute.load);
 const ShipmentPortal = lazy(shipmentPortalRoute.load);
-const ShipmentAdmin = lazy(administrationRoute.load);
+const ShipmentAdmin = lazy(() =>
+	import("./composition/administration.compose").then(
+		({ AdministrationScreen }) => ({
+			default: AdministrationScreen,
+		}),
+	),
+);
 const SignInPage = lazy(signInRoute.load);
 const WarehouseSettings = lazy(warehouseSettingsRoute.load);
 
 function AdminRoute() {
-	const http = useWorkspaceHttp();
-	const mode = useWorkspaceMode();
-
 	return (
 		<ShipmentAdmin
-			http={http}
-			mode={mode}
 			renderSettings={(warehouse) => (
 				<WarehouseSettings warehouse={warehouse} />
 			)}

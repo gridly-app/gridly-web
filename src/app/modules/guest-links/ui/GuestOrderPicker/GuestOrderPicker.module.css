@@ -1,0 +1,6 @@
+.checkList {
+	display: grid;
+	gap: var(--space-1);
+	max-block-size: 14rem;
+	overflow-y: auto;
+}

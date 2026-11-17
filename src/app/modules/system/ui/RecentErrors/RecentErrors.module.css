@@ -1,0 +1,4 @@
+.errorContext {
+	display: grid;
+	gap: var(--space-1);
+}

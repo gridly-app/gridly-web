@@ -3,17 +3,17 @@ import { z } from "zod";
 import { productDto } from "../src/app/modules/warehouse-data/catalog/catalogDto";
 import { orderDto } from "../src/app/modules/warehouse-data/orders/orderDto";
 import { warehouseDto } from "../src/app/modules/warehouse-data/warehouses/warehouseDto";
+import { type AuditEvent } from "../src/domain/shipment";
+import { auditSchema } from "../src/app/modules/audit/api/audit.dto";
+import { systemSchema } from "../src/app/modules/system/api/system.dto";
 import {
-	type AuditEvent,
 	accountUserUpdateSchema,
-	auditSchema,
-	systemSchema,
 	usersSchema,
-} from "../src/app/modules/administration/model/shipmentAudit";
+} from "../src/app/modules/users/api/users.dto";
 import {
 	type GuestLink,
 	guestLinkInputSchema,
-} from "../src/app/modules/administration/model/guestLink.dto";
+} from "../src/app/modules/guest-links/api/guestLink.dto";
 import { type GuestSection, guestSectionSchema } from "../src/domain/shipment";
 import { guestShipmentSchema } from "../src/app/modules/shipment-portal/model/guestShipment.dto";
 import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
@@ -273,10 +273,13 @@ export function createAdminMock({ seedLinks = false } = {}) {
 			const system = systemSchema.parse(store.get(pathname));
 			const from = params.get("from");
 			const to = params.get("to");
-			const recent_errors = system.recent_errors.filter(
-				({ occurred_at }) =>
-					(!from || occurred_at >= from) && (!to || occurred_at < to),
-			);
+			const start = from === null ? -Infinity : Date.parse(from);
+			const end = to === null ? Infinity : Date.parse(to);
+			const recent_errors = system.recent_errors.filter(({ occurred_at }) => {
+				const timestamp = Date.parse(occurred_at);
+
+				return timestamp >= start && timestamp < end;
+			});
 			const warehouseId = params.get("warehouse_id");
 			const orderId = params.get("order_id");
 			const shipment =
