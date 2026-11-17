@@ -1,0 +1,106 @@
+.panel {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--space-4);
+	min-inline-size: 0;
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--space-2) var(--space-3);
+}
+
+.toolbar {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+@media (max-width: 560px) {
+	.toolbar {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.subtle {
+	display: block;
+
+	font-size: var(--text-control);
+
+	color: var(--muted-foreground);
+}
+
+.detailsSummary {
+	font-weight: 600;
+
+	color: var(--accent);
+
+	cursor: pointer;
+}
+
+.form {
+	display: grid;
+	gap: var(--space-4);
+}
+
+.fieldset {
+	display: grid;
+	gap: var(--space-2);
+	min-inline-size: 0;
+	margin: 0;
+	padding: var(--space-3) var(--space-4);
+
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.legend {
+	padding-inline: var(--space-1);
+
+	font-weight: 600;
+}
+
+.checkRow {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	min-block-size: 34px;
+	padding: var(--space-1);
+
+	cursor: pointer;
+}
+
+.checkRow:has([data-checked]) {
+	color: var(--accent-foreground);
+	background: var(--accent-bg);
+	border-radius: var(--radius);
+}
+
+.editorColumns {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	align-items: start;
+	gap: var(--space-4);
+}
+
+@media (max-width: 560px) {
+	.editorColumns {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.warehouseSelect {
+	inline-size: min(100%, 22rem);
+}
+
+.link {
+	color: var(--success-foreground);
+}
+
+.link:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}

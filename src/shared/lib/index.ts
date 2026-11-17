@@ -22,3 +22,5 @@ export {
 export { useMediaQuery } from "./spaceui/use-media-query";
 export { ThemeProvider } from "./theme/theme";
 export { useTheme } from "./theme/themeContext";
+export { dateKey, dateRangeError, formatMoment } from "./dates";
+export { textSearch, createTextIndex, textSearchQuery } from "./textSearch";

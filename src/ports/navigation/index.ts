@@ -27,3 +27,4 @@ export interface WarehouseScreenRoute extends RouteDescription {
 }
 
 export const warehouseAccess = ["standard", "sandbox"] as const;
+export * from "./adminLocation";

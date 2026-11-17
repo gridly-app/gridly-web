@@ -155,3 +155,5 @@ export const guestSectionSchema = z.enum([
 	"documents",
 ] satisfies (keyof typeof guestSections)[]);
 export type GuestSection = z.infer<typeof guestSectionSchema>;
+export { type AuditEvent, auditEventSchema } from "./auditEvent";
+export { guestLinkStatuses } from "./guestLinkStatuses";
