@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CommandExecutor, Order } from "@/domain/warehouse";
 import { errorMessage, formText } from "@/shared/lib";
 import { actionLabels } from "../config/orderActions";
@@ -20,12 +20,22 @@ export function useOrderDetail({
 }: OrderDetailOptions) {
 	const [reasonAction, setReasonAction] = useState("");
 	const [error, setError] = useState("");
+	const [saving, setSaving] = useState(false);
+	const inFlight = useRef(false);
 	const executeAction: CommandExecutor = async (action, ...args) => {
+		if (pending || inFlight.current) return;
+
+		inFlight.current = true;
+		setSaving(true);
+
 		try {
 			setError("");
 			await command(action, ...args);
 		} catch (e) {
 			setError(errorMessage(e));
+		} finally {
+			inFlight.current = false;
+			setSaving(false);
 		}
 	};
 	const actions = order.allowedActions || [];
@@ -52,12 +62,18 @@ export function useOrderDetail({
 		setReasonAction("");
 	}
 
-	const visibleActions = actions
-		.filter((action) => actionLabels[action])
-		.map((action) => ({
-			id: action,
-			label: actionLabels[action],
-		}));
+	const specificConfirm =
+		order.kind === "inbound" ? "confirm-unload" : "confirm-load";
+	const visibleActions = [];
+
+	for (const action of actions) {
+		const label = actionLabels[action];
+
+		if (!label || (actions.includes("confirm") && action === specificConfirm))
+			continue;
+
+		visibleActions.push({ id: action, label });
+	}
 
 	function confirmTask(
 		task: NonNullable<Order["tasks"]>[number],
@@ -85,6 +101,10 @@ export function useOrderDetail({
 
 	return {
 		confirmOrder,
+		confirmLabel:
+			order.kind === "inbound"
+				? "Подтвердить разгрузку"
+				: "Подтвердить погрузку",
 		closeReason,
 		canConfirm: actions.includes("confirm"),
 		reasonLabel: actionLabels[reasonAction],
@@ -92,7 +112,7 @@ export function useOrderDetail({
 		confirmTask,
 		visibleActions,
 		onEdit,
-		pending,
+		pending: pending || saving,
 		runOrderAction,
 		error,
 		reasonAction,

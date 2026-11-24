@@ -9,8 +9,8 @@ export function orderValue(order: Order, products: readonly Product[]) {
 	if (!order.lines.length)
 		return {
 			value: 0,
-			unknown: order.quantity ?? 1,
-			label: "Нет данных о составе",
+			unknown: 0,
+			label: "Нет позиций",
 		};
 	const prices = new Map(
 		products.map((product) => [product.id, productPrice(product.price)]),
@@ -32,9 +32,12 @@ export function orderValue(order: Order, products: readonly Product[]) {
 	};
 }
 export function productOccupancy(product: Product, stock: readonly Stock[]) {
-	const quantity = stock
-		.filter((item) => item.product === product.id)
-		.reduce((sum, item) => sum + item.quantity, 0);
+	let quantity = 0;
+
+	for (const item of stock) {
+		if (item.product === product.id) quantity += item.quantity;
+	}
+
 	const unitVolume = product.volume.trim()
 		? Number(product.volume.replace(",", "."))
 		: NaN;

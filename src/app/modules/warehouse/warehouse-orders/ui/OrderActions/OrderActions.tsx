@@ -11,6 +11,7 @@ export interface OrderActionsProps {
 		| "pending"
 		| "visibleActions"
 		| "canConfirm"
+		| "confirmLabel"
 		| "confirmOrder"
 		| "runOrderAction"
 	>;
@@ -56,7 +57,7 @@ export function OrderActions({ model }: OrderActionsProps) {
 						void confirmOrder();
 					}}
 				>
-					Подтвердить этап
+					{model.confirmLabel}
 				</Button>
 			)}
 		</div>

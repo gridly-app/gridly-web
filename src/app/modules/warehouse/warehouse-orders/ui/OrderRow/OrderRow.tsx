@@ -103,11 +103,15 @@ export function OrderRow({
 							/>
 						) : order.canConfirm ? (
 							<IconButton
-								label="Подтвердить этап"
+								label={
+									order.kind === "inbound"
+										? "Подтвердить разгрузку"
+										: "Подтвердить погрузку"
+								}
 								icon={<IconCheck size={16} />}
 								variant="default"
 								disabled={pending}
-								onClick={() => void onConfirm(order.id)}
+								onClick={() => void onConfirm(order)}
 							/>
 						) : (
 							<IconButton

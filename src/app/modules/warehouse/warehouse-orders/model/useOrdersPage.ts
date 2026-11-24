@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
 	type CommandExecutor,
@@ -21,6 +21,7 @@ export function useOrdersPage({
 	command: CommandExecutor;
 }) {
 	const [params, setParams] = useSearchParams();
+	const confirming = useRef(false);
 	const status = params.get("status") || "all";
 	const category = params.get("category") || "all";
 	const unpriced = params.get("price") === "missing";
@@ -48,66 +49,75 @@ export function useOrdersPage({
 	const [search, setSearch] = useState("");
 	const searchQuery = search.toLowerCase();
 	const orders = warehouse.orders.filter((order) => order.kind === page);
-	const visibleOrders = orders
-		.filter((order) => {
-			const day = Number.isFinite(Date.parse(order.created))
-				? dayFormatter.format(new Date(order.created))
-				: "";
-			return (
-				(!from || (!!day && day >= from)) &&
-				(!to || (!!day && day <= to)) &&
-				(!unpriced ||
-					order.lines.some(
-						(line) =>
-							line.quantity > 0 &&
-							(category === "all" ||
-								warehouse.products.find(
-									(product) => product.id === line.product,
-								)?.category === category) &&
-							productPrice(
-								warehouse.products.find(
-									(product) => product.id === line.product,
-								)?.price,
-							) === null,
-					))
-			);
-		})
-		.filter(
-			(o) =>
-				(status === "all" || o.status === status) &&
-				(category === "all" ||
-					o.lines.some(
-						(l) =>
-							warehouse.products.find((p) => p.id === l.product)?.category ===
-							category,
-					)),
-		)
-		.filter((order) =>
-			(order.number + order.party).toLowerCase().includes(searchQuery),
-		)
-		.map((order) => ({
-			...order,
-			quantity:
-				order.quantity ??
-				order.lines.reduce((sum, line) => sum + line.quantity, 0),
-			cost: orderValue(order, warehouse.products),
-			canConfirm: !!order.allowedActions?.includes("confirm"),
-			createdLabel: new Date(order.created).toLocaleString("ru-RU", {
-				timeZone: warehouse.timezone,
-				day: "numeric",
-				month: "short",
-				hour: "2-digit",
-				minute: "2-digit",
-			}),
-			canStart: !!order.allowedActions?.includes("start"),
-		}));
+	const dateAndPriceMatches = orders.filter((order) => {
+		const day = Number.isFinite(Date.parse(order.created))
+			? dayFormatter.format(new Date(order.created))
+			: "";
+
+		if (from && (!day || day < from)) return false;
+		if (to && (!day || day > to)) return false;
+		if (!unpriced) return true;
+
+		return order.lines.some((line) => {
+			if (!(line.quantity > 0)) return false;
+
+			const product = warehouse.products.find(({ id }) => id === line.product);
+
+			if (category !== "all" && product?.category !== category) return false;
+
+			return productPrice(product?.price) === null;
+		});
+	});
+	const statusAndCategoryMatches = dateAndPriceMatches.filter((order) => {
+		if (status !== "all" && order.status !== status) return false;
+		if (category === "all") return true;
+
+		return order.lines.some((line) => {
+			const product = warehouse.products.find(({ id }) => id === line.product);
+
+			return product?.category === category;
+		});
+	});
+	const searchMatches = statusAndCategoryMatches.filter((order) => {
+		const searchableText = (order.number + order.party).toLowerCase();
+
+		return searchableText.includes(searchQuery);
+	});
+	const visibleOrders = searchMatches.map((order) => ({
+		...order,
+		quantity:
+			order.quantity ??
+			order.lines.reduce((sum, line) => sum + line.quantity, 0),
+		cost: orderValue(order, warehouse.products),
+		canConfirm: !!order.allowedActions?.includes("confirm"),
+		createdLabel: new Date(order.created).toLocaleString("ru-RU", {
+			timeZone: warehouse.timezone,
+			day: "numeric",
+			month: "short",
+			hour: "2-digit",
+			minute: "2-digit",
+		}),
+		canStart: !!order.allowedActions?.includes("start"),
+	}));
 
 	function startOrder(orderId: string) {
 		return command("start", orderId);
 	}
 
-	function confirmOrder(orderId: string) {
-		return command("orderAction", { id: orderId, action: "confirm" });
+	async function confirmOrder(order: Order) {
+		if (confirming.current) return;
+
+		confirming.current = true;
+
+		try {
+			return await command("orderAction", {
+				id: order.id,
+				action: "confirm",
+				revision: order.revision,
+			});
+		} finally {
+			confirming.current = false;
+		}
 	}
 
 	return {
