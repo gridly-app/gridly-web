@@ -10,6 +10,7 @@ export function SystemToolbar({
 	search,
 	from,
 	to,
+	timeZone,
 	isRefreshDisabled,
 	onSearchChange,
 	onFromChange,
@@ -19,6 +20,7 @@ export function SystemToolbar({
 	search: string;
 	from: string;
 	to: string;
+	timeZone: string | undefined;
 	isRefreshDisabled: boolean;
 	onSearchChange: (search: string) => void;
 	onFromChange: (from: string) => void;
@@ -43,7 +45,10 @@ export function SystemToolbar({
 				count={activeFilters}
 				onReset={handleResetDates}
 			>
-				<p className={styles.subtle}>Даты указаны в часовом поясе браузера.</p>
+				<p className={styles.subtle}>
+					Часовой пояс дат: {timeZone ?? "Пояс склада пока недоступен"}.
+					Конечная дата включена целиком.
+				</p>
 				<DateRangeFields
 					from={from}
 					to={to}

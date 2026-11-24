@@ -1,21 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { adminQueryKey } from "@/ports/administration";
+import type { OrderLocation } from "@/ports/navigation";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 
 import { type FetchHttpClient, parseResponse } from "@/shared/http";
-import { adminQueryKey } from "@/ports/administration";
+import { dateRangeError, errorMessage, zonedDayBoundary } from "@/shared/lib";
 
-import type { OrderLocation } from "@/ports/navigation";
-import { dateRangeError } from "@/shared/lib";
 import { systemSchema } from "./system.dto";
 
 type SystemFilters = {
 	orderScope: OrderLocation | null;
 	from: string;
 	to: string;
+	timeZone: string | undefined;
 };
 
-function systemQueryUrl(path: string, { orderScope, from, to }: SystemFilters) {
+export function systemQueryUrl(
+	path: string,
+	{ orderScope, from, to, timeZone }: SystemFilters,
+) {
 	const params = new URLSearchParams();
 
 	if (orderScope) {
@@ -23,12 +27,10 @@ function systemQueryUrl(path: string, { orderScope, from, to }: SystemFilters) {
 		params.set("order_id", orderScope.orderId);
 	}
 
-	if (from) params.set("from", new Date(`${from}T00:00:00`).toISOString());
-
-	if (to) {
-		const nextDay = new Date(`${to}T00:00:00`);
-		nextDay.setDate(nextDay.getDate() + 1);
-		params.set("to", nextDay.toISOString());
+	if (from || to) {
+		if (!timeZone) throw new Error("Дождитесь загрузки часового пояса склада.");
+		if (from) params.set("from", zonedDayBoundary(from, timeZone));
+		if (to) params.set("to", zonedDayBoundary(to, timeZone, true));
 	}
 
 	return `${path}?${params}`;
@@ -40,8 +42,16 @@ export function useSystemStatus(
 	filters: SystemFilters,
 ) {
 	const scopeId = useWarehouseScopeId();
-	const rangeError = dateRangeError(filters.from, filters.to);
-	const url = rangeError ? path : systemQueryUrl(path, filters);
+	let rangeError = dateRangeError(filters.from, filters.to);
+	let url = path;
+
+	if (!rangeError) {
+		try {
+			url = systemQueryUrl(path, filters);
+		} catch (error) {
+			rangeError = errorMessage(error);
+		}
+	}
 
 	const query = useQuery({
 		queryKey: adminQueryKey(scopeId, url),

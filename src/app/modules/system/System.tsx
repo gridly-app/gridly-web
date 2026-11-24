@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from "react";
 
 import { useWorkspaceMode } from "@/ports/session";
+import { useWarehouse } from "@/ports/warehouse";
 
 import { ApiError, type FetchHttpClient } from "@/shared/http";
 import { useSystemStatus } from "./api/systemApi";
@@ -39,10 +40,15 @@ export function System({
 	const [search, setSearch] = useState("");
 	const [from, setFrom] = useState("");
 	const [to, setTo] = useState("");
+	const warehouse = useWarehouse(orderScope?.warehouseId ?? "new");
+	const timeZone = orderScope
+		? warehouse.data?.timezone
+		: Intl.DateTimeFormat().resolvedOptions().timeZone;
 	const { query, rangeError } = useSystemStatus(http, path, {
 		orderScope,
 		from,
 		to,
+		timeZone,
 	});
 	const forbidden =
 		query.error instanceof ApiError && query.error.status === 403;
@@ -70,6 +76,7 @@ export function System({
 				search={search}
 				from={from}
 				to={to}
+				timeZone={timeZone}
 				isRefreshDisabled={isRefreshDisabled}
 				onSearchChange={setSearch}
 				onFromChange={setFrom}
@@ -77,6 +84,12 @@ export function System({
 				onRefresh={handleRefresh}
 			/>
 			{rangeError && <Feedback tone="error">{rangeError}</Feedback>}
+			{!from && !to && (
+				<p className={styles.subtle}>
+					История ошибок за последние 24 часа. Статус компонентов отражает
+					последнюю проверку.
+				</p>
+			)}
 			{query.isPending && !rangeError && (
 				<Feedback tone="loading">Проверяем состояние системы…</Feedback>
 			)}
@@ -109,6 +122,12 @@ export function System({
 						/>
 					)}
 					<SystemComponents components={data.components} matches={matches} />
+					{data.error_count > data.recent_errors.length && (
+						<p className={styles.subtle}>
+							Показаны последние {data.recent_errors.length} из{" "}
+							{data.error_count} ошибок за период.
+						</p>
+					)}
 					{renderRecentErrors({
 						items: data.recent_errors,
 						orderEvents: order?.recent_events,

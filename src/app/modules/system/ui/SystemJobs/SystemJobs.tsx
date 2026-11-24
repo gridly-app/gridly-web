@@ -23,7 +23,7 @@ const unknownStatus = { label: "Нет сведений", tone: "neutral" } as c
 function jobRow(job: SystemStatus["jobs"][number]) {
 	return {
 		...job,
-		label: job.name ?? "Фоновая задача",
+		label: job.name ?? job.type,
 		statusInfo: jobStatuses.get(job.status) ?? unknownStatus,
 		startedAt: formatMoment(job.started_at),
 	};

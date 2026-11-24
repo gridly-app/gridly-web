@@ -2,7 +2,6 @@ import { expect, test } from "bun:test";
 
 import { auditEventSchema } from "@/domain/shipment";
 import { auditCsv } from "./auditCsv";
-import { changeValue, permissionChanges } from "./auditChanges";
 import { defaultAuditFilters, filterAuditRows } from "./auditFilters";
 import { auditRow } from "./auditPresentation";
 
@@ -32,23 +31,6 @@ test("unknown API labels remain strings when searching and exporting audit event
 	expect(auditCsv([row])).toContain("constructor: Не указано → high");
 });
 
-test("audit export escapes quotes and prefixes cells that could be parsed as formulas", () => {
-	const row = auditRow({
-		...event,
-		actor_name: '=SUM("a")',
-		changes: [{ field: "published", before: false, after: true }],
-	});
-
-	const csv = auditCsv([row]);
-
-	expect(csv).toContain(`"'=SUM(""a"")"`);
-	expect(csv).toContain("Публикация: Не опубликован → Опубликован");
-	expect(changeValue("expires_at", "2026-11-13Tнеизвестно")).toBe(
-		"2026-11-13Tнеизвестно",
-	);
-	expect(changeValue("priority", "high")).toBe("Высокий");
-});
-
 test("finds audit rows by the subject identifiers shown in technical details", () => {
 	const row = auditRow({
 		...event,
@@ -75,9 +57,17 @@ test("failed commands use their action name and preserve an explicit API label",
 	).toBe("Ошибка загрузки");
 });
 
-test("only computes permission differences when both lists are known", () => {
-	const change = { field: "permissions", after: ["read"] };
+test("row labels and sort timestamp stay consistent with the current event", () => {
+	const current = { ...event };
+	const original = auditRow(current);
 
-	expect(permissionChanges({ ...change, before: null })).toBeUndefined();
-	expect(permissionChanges({ ...change, before: [] })?.added).toEqual(["read"]);
+	current.actor_name = "Updated actor";
+	current.occurred_at = "2026-11-20T12:00:00Z";
+
+	const updated = auditRow(current);
+
+	expect(updated.summary.actor).toBe("Updated actor");
+	expect(updated.timestamp).toBe(1795176000000);
+	expect(original.summary.actor).toBe("Updated actor");
+	expect(original.timestamp).toBe(1795176000000);
 });

@@ -12,6 +12,11 @@ const columns: { heading: string; value: (row: AuditRow) => string }[] = [
 	{ heading: "Заказ", value: ({ summary }) => summary.order },
 	{ heading: "Источник", value: ({ summary }) => summary.source },
 	{ heading: "Изменения", value: formatChanges },
+	{ heading: "ID пользователя", value: ({ event }) => event.actor_id ?? "" },
+	{ heading: "ID склада", value: ({ event }) => event.warehouse_id ?? "" },
+	{ heading: "ID заказа", value: ({ event }) => event.order_id ?? "" },
+	{ heading: "Код события", value: ({ event }) => event.event_type },
+	{ heading: "Код источника", value: ({ event }) => event.source },
 	{ heading: "ID события", value: ({ event }) => event.id },
 	{ heading: "ID операции", value: ({ event }) => event.correlation_id },
 	{
@@ -24,14 +29,16 @@ function formatChanges({ event }: AuditRow) {
 	const changes = event.changes.map((change) => {
 		const { field, before, after } = change;
 		const label = changeLabel(change);
+		const previous = changeValue(field, before, event.time_zone);
+		const next = changeValue(field, after, event.time_zone);
 
-		return `${label}: ${changeValue(field, before)} → ${changeValue(field, after)}`;
+		return `${label}: ${previous} → ${next}`;
 	});
 
 	return changes.join("; ");
 }
 
-export function auditCsv(rows: AuditRow[]) {
+export function auditCsv(rows: readonly AuditRow[]) {
 	const header = columns.map(({ heading }) => heading);
 	const data = rows.map((row) => columns.map(({ value }) => value(row)));
 

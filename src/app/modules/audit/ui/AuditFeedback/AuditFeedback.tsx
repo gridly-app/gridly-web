@@ -6,8 +6,6 @@ export function AuditFeedback({
 	exportError,
 	readError,
 	isPending,
-	hasMore,
-	hasChanged,
 	isForbidden,
 	onRetry,
 }: {
@@ -15,13 +13,10 @@ export function AuditFeedback({
 	exportError: Error | null;
 	readError: Error | null;
 	isPending: boolean;
-	hasMore: boolean;
-	hasChanged: boolean;
 	isForbidden: boolean;
 	onRetry: () => void;
 }) {
 	const retry = <RetryButton onRetry={onRetry} />;
-	const canShowReadProgress = !rangeError && !readError;
 	const canShowLoading = !rangeError && isPending;
 	const canShowReadError = !rangeError && readError;
 	const readMessage = isForbidden
@@ -31,25 +26,11 @@ export function AuditFeedback({
 	return (
 		<>
 			{rangeError && <Feedback tone="error">{rangeError}</Feedback>}
-			{exportError && (
-				<Feedback tone="error" action={retry}>
-					{errorMessage(exportError)}
-				</Feedback>
-			)}
+			{exportError && <Feedback tone="error">{exportError.message}</Feedback>}
 			{canShowLoading && <Feedback tone="loading">Загружаем журнал…</Feedback>}
 			{canShowReadError && (
 				<Feedback tone="error" action={isForbidden ? undefined : retry}>
 					{readMessage}
-				</Feedback>
-			)}
-			{canShowReadProgress && hasMore && (
-				<Feedback tone="info">
-					Загружаем остальные события. Результаты пока неполные.
-				</Feedback>
-			)}
-			{canShowReadProgress && hasChanged && (
-				<Feedback tone="warning" action={retry}>
-					Журнал изменился во время чтения. Обновите его перед экспортом.
 				</Feedback>
 			)}
 		</>

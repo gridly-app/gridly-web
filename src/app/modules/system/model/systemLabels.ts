@@ -3,5 +3,4 @@ const componentNames = new Map([
 	["warehouse", "Складской сервис"],
 ]);
 
-export const componentName = (code: string) =>
-	componentNames.get(code) ?? "Компонент системы";
+export const componentName = (code: string) => componentNames.get(code) ?? code;

@@ -1,10 +1,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import type { AuditEvent } from "@/domain/shipment";
 import { adminQueryKey } from "@/ports/administration";
 import { useWarehouseScopeId } from "@/ports/warehouse";
-
 import type { HttpClient } from "@/shared/http";
 
 import { readAuditPage } from "./auditPageApi";
@@ -12,52 +11,44 @@ import { readAuditPage } from "./auditPageApi";
 export function useAuditEvents(
 	http: HttpClient,
 	path: string,
-	{ enabled = true, loadAll = true } = {},
+	{ enabled = true, filters = "" } = {},
 ) {
 	const scopeId = useWarehouseScopeId();
 	const query = useInfiniteQuery({
-		queryKey: adminQueryKey(scopeId, path),
-		initialPageParam: 0,
+		queryKey: [...adminQueryKey(scopeId, path), filters],
+		initialPageParam: null as string | null,
 		queryFn: ({ pageParam, signal }) =>
-			readAuditPage(http, path, pageParam, signal),
-		getNextPageParam: (page, _pages, offset) => {
-			const nextOffset = offset + page.items.length;
+			readAuditPage(http, path, filters, pageParam, signal),
+		getNextPageParam: (page, _pages, _cursor, cursors) => {
+			const next = page.next_cursor;
 
-			return nextOffset < page.total ? nextOffset : undefined;
+			return next && !cursors.includes(next) ? next : undefined;
 		},
 		enabled,
 		retry: false,
+		refetchOnWindowFocus: false,
+		staleTime: Infinity,
+		gcTime: 0,
 	});
-	const { data, fetchNextPage, hasNextPage, isFetching, isError } = query;
+	const { data } = query;
 	const events = useMemo(() => {
 		if (!data) return;
 
 		const byId = new Map<string, AuditEvent>();
 
 		for (const page of data.pages) {
-			for (const event of page.items) byId.set(event.id, event);
+			for (const event of page.items) {
+				if (!byId.has(event.id)) byId.set(event.id, event);
+			}
 		}
 
 		return [...byId.values()];
 	}, [data]);
 
-	useEffect(() => {
-		if (enabled && loadAll && hasNextPage && !isFetching && !isError) {
-			void fetchNextPage({ cancelRefetch: false });
-		}
-	}, [enabled, loadAll, hasNextPage, isFetching, isError, fetchNextPage]);
-
-	const initialTotal = data?.pages[0]?.total;
-	const hasChanged = Boolean(
-		data &&
-		events &&
-		(data.pages.some(({ total }) => total !== initialTotal) ||
-			(!hasNextPage && events.length !== initialTotal)),
-	);
-
-	const isComplete =
-		query.isSuccess && !isFetching && !hasNextPage && !hasChanged;
-	const snapshot = isComplete ? data?.pages : undefined;
-
-	return { query, events, hasChanged, isComplete, snapshot };
+	return {
+		query,
+		events,
+		total: data?.pages.at(-1)?.total,
+		isComplete: query.isSuccess && !query.hasNextPage,
+	};
 }

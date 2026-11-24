@@ -1,23 +1,22 @@
 import { type HttpClient, parseResponse } from "@/shared/http";
-import { UserError } from "@/shared/lib";
 
 import { auditSchema } from "./audit.dto";
 
-const batchSize = 200;
+const batchSize = 50;
 
 export async function readAuditPage(
 	http: HttpClient,
 	path: string,
-	offset: number,
+	filters: string,
+	cursor: string | null,
 	signal?: AbortSignal,
 ) {
-	const url = `${path}?limit=${batchSize}&offset=${offset}`;
-	const response = await http.request(url, { signal });
-	const page = parseResponse(auditSchema, response);
+	const params = new URLSearchParams(filters);
 
-	if (!page.items.length && offset < page.total) {
-		throw new UserError("Журнал изменился во время загрузки. Обновите журнал.");
-	}
+	params.set("limit", String(batchSize));
+	if (cursor !== null) params.set("cursor", cursor);
 
-	return page;
+	const response = await http.request(`${path}?${params}`, { signal });
+
+	return parseResponse(auditSchema, response);
 }

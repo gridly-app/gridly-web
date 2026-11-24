@@ -3,6 +3,7 @@ import type { AuditEvent } from "@/domain/shipment";
 
 import { auditEventLabel } from "../config/auditEventLabels";
 import { auditArea, auditAreaLabels } from "./auditArea";
+import { changeLabel, changeValue } from "./auditChanges";
 
 const sourceLabels: Record<string, string> = {
 	account: "Аккаунт",
@@ -30,41 +31,67 @@ export function auditSummary(event: AuditEvent) {
 	};
 }
 
-export type AuditRow = {
+export type AuditRow = Readonly<{
 	event: AuditEvent;
-	summary: ReturnType<typeof auditSummary>;
+	summary: Readonly<ReturnType<typeof auditSummary>>;
 	timestamp: number;
-};
-
-const rowByEvent = new WeakMap<AuditEvent, AuditRow>();
+}>;
 
 export function auditRow(event: AuditEvent): AuditRow {
-	const cached = rowByEvent.get(event);
-
-	if (cached) return cached;
-
-	const row = {
+	return {
 		event,
-		summary: auditSummary(event),
-		timestamp: Date.parse(event.occurred_at),
+
+		get summary() {
+			return auditSummary(event);
+		},
+
+		get timestamp() {
+			return Date.parse(event.occurred_at);
+		},
 	};
+}
 
-	rowByEvent.set(event, row);
+export function auditSearchFields(event: AuditEvent) {
+	const summary = auditSummary(event);
+	const areaLabel = auditAreaLabels[auditArea(event)];
 
-	return row;
+	return [
+		areaLabel,
+		summary.date,
+		summary.event,
+		summary.result,
+		summary.actor,
+		summary.warehouse,
+		summary.order,
+		summary.source,
+		event.id,
+		event.correlation_id,
+		event.event_type,
+		event.source,
+		event.actor_id ?? "",
+		event.warehouse_id ?? "",
+		event.order_id ?? "",
+		...event.changes.flatMap((change) => [
+			changeLabel(change),
+			changeValue(change.field, change.before, event.time_zone),
+			changeValue(change.field, change.after, event.time_zone),
+		]),
+	];
 }
 
 export function describeAuditEvent(event: AuditEvent) {
 	const area = auditArea(event);
 	const areaLabel = auditAreaLabels[area];
 	const summary = auditSummary(event);
-	const context = [summary.actor, summary.warehouse, summary.order];
+	const context = [summary.actor, summary.warehouse, summary.order].filter(
+		Boolean,
+	);
 
 	return {
 		area,
 		areaLabel,
 		event: summary.event,
-		description: context.filter(Boolean).join(" · "),
-		searchFields: [areaLabel, ...Object.values(summary)],
+		description: context.join(" · "),
+		searchFields: auditSearchFields(event),
 	};
 }

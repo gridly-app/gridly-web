@@ -92,6 +92,7 @@ test("diagnostic error keeps its key when the server ID stays the same", () => {
 	expect(before?.key).toBe(after?.key);
 });
 
-test("unknown component codes use a readable fallback", () => {
-	expect(componentName("constructor")).toBe("Компонент системы");
+test("unknown component codes remain distinguishable", () => {
+	expect(componentName("constructor")).toBe("constructor");
+	expect(componentName("worker-export")).toBe("worker-export");
 });

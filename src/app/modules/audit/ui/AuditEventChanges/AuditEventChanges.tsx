@@ -12,7 +12,7 @@ import styles from "./AuditEventChanges.module.css";
 export function AuditEventChanges({
 	event,
 }: {
-	event: Pick<AuditEvent, "changes" | "event_type">;
+	event: Pick<AuditEvent, "changes" | "event_type" | "time_zone">;
 }) {
 	return (
 		<section className={styles.auditChanges} aria-label="Изменения">
@@ -20,7 +20,11 @@ export function AuditEventChanges({
 			{event.changes.length ? (
 				<dl className={styles.changesList}>
 					{event.changes.map((change, index) => (
-						<AuditChange key={index} change={change} />
+						<AuditChange
+							key={index}
+							change={change}
+							timeZone={event.time_zone}
+						/>
 					))}
 				</dl>
 			) : (
@@ -34,8 +38,16 @@ export function AuditEventChanges({
 	);
 }
 
-function AuditChange({ change }: { change: AuditEvent["changes"][number] }) {
+function AuditChange({
+	change,
+	timeZone,
+}: {
+	change: AuditEvent["changes"][number];
+	timeZone: string | undefined;
+}) {
 	const permissions = permissionChanges(change);
+	const before = changeValue(change.field, change.before, timeZone);
+	const after = changeValue(change.field, change.after, timeZone);
 
 	return (
 		<div className={styles.change}>
@@ -57,12 +69,10 @@ function AuditChange({ change }: { change: AuditEvent["changes"][number] }) {
 			) : (
 				<>
 					<dd className={factStyles.value}>
-						<span className={styles.changeLabel}>Было:</span>{" "}
-						{changeValue(change.field, change.before)}
+						<span className={styles.changeLabel}>Было:</span> {before}
 					</dd>
 					<dd className={factStyles.value}>
-						<span className={styles.changeLabel}>Стало:</span>{" "}
-						{changeValue(change.field, change.after)}
+						<span className={styles.changeLabel}>Стало:</span> {after}
 					</dd>
 				</>
 			)}

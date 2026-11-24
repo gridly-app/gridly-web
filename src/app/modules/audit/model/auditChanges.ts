@@ -57,7 +57,11 @@ export function permissionChanges(change: AuditEvent["changes"][number]) {
 
 const instant = z.iso.datetime({ offset: true });
 
-export function changeValue(field: string, value: unknown): string {
+export function changeValue(
+	field: string,
+	value: unknown,
+	timeZone?: string,
+): string {
 	if (value == null) return "Не указано";
 
 	if (typeof value === "boolean") {
@@ -69,7 +73,7 @@ export function changeValue(field: string, value: unknown): string {
 	if (typeof value === "string") {
 		if (field === "priority") return priorities.get(value) ?? value;
 		if (field === "expires_at" && instant.safeParse(value).success)
-			return formatMoment(value);
+			return formatMoment(value, timeZone);
 
 		return value;
 	}

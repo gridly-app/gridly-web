@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { lazy, type ReactNode, useState } from "react";
+import { lazy, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import type { AuditEvent } from "@/domain/shipment";
@@ -200,16 +200,14 @@ function RecentErrorsWithAudit({
 	http: FetchHttpClient;
 	auditPath: string;
 }) {
-	const [loadAll, setLoadAll] = useState(false);
 	const { query, events, isComplete } = useAuditEvents(http, auditPath, {
 		enabled: input.items.length > 0,
-		loadAll,
 	});
 	const isDenied =
 		query.error instanceof ApiError && [401, 403].includes(query.error.status);
 
 	function handleLoadAll() {
-		setLoadAll(true);
+		void query.fetchNextPage({ cancelRefetch: false });
 	}
 
 	const audit = {
@@ -217,7 +215,7 @@ function RecentErrorsWithAudit({
 		error: query.error,
 		isFetching: query.isFetching,
 		isComplete,
-		canLoadAll: query.hasNextPage && !loadAll && !isDenied,
+		canLoadAll: query.hasNextPage && !query.isFetching && !isDenied,
 		canSearchContext: !isDenied,
 		onLoadAll: handleLoadAll,
 		onRetry: query.refetch,
