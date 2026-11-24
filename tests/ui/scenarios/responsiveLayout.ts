@@ -39,15 +39,25 @@ export async function responsiveLayoutScenario({
 				["Отгрузка", "outbound"],
 			] as const) {
 				await page.getByRole("radio", { name: label, exact: true }).click();
-				await expect(
-					scenarioPanel.locator(`[data-scenario-map=${id}]`),
-				).toBeVisible();
+				const map = scenarioPanel.locator(`[data-scenario-map=${id}]`);
+
+				await expect(map).toBeVisible();
 				await expect(
 					page.getByRole("radio", { name: label, exact: true }),
 				).toHaveAttribute("aria-checked", "true");
-				await expect(scenarioPanel.locator('[data-active="true"]')).toHaveCount(
-					8,
-				);
+				const cells = map.locator("[data-raised]");
+
+				await expect
+					.poll(() =>
+						cells.evaluateAll((elements) => {
+							const raised = elements.filter(
+								(element) => getComputedStyle(element).transform !== "none",
+							);
+
+							return raised.length;
+						}),
+					)
+					.toBe(id === "storage" ? 8 : 0);
 				expect(
 					Math.abs(
 						(await scenarioPanel.evaluate(

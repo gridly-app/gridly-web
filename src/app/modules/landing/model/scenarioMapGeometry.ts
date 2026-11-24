@@ -46,7 +46,7 @@ function pathThrough(points: Point[]) {
 
 export function routeGeometry(
 	route: LandingScenario["route"],
-	activeCells: LandingScenario["activeCells"],
+	raisedCells: readonly number[],
 ) {
 	if (!route) return null;
 
@@ -57,20 +57,19 @@ export function routeGeometry(
 	if (!approach) return null;
 
 	const shelf = centerOf(route.shelfCell);
-	const lift = activeCells.includes(route.shelfCell) ? shelfLift : 0;
+	const lift = raisedCells.includes(route.shelfCell) ? shelfLift : 0;
 	const edge = {
 		x: shelf.x + Math.sign(approach.x - shelf.x) * shelfEdgeOffset,
 		y: shelf.y - lift + Math.sign(approach.y - shelf.y) * shelfEdgeOffset,
 	};
 	const routePoints = endsAtShelf ? [...points, edge] : [edge, ...points];
 	const bounds = `M 0 0 H ${width} V ${height} H 0 Z`;
-	const shelfCutouts = cells
-		.filter(({ isShelf }) => isShelf)
-		.map(({ id, x, y }) => {
-			const top = activeCells.includes(id) ? y - shelfLift : y;
+	const shelves = cells.filter(({ isShelf }) => isShelf);
+	const shelfCutouts = shelves.map(({ id, x, y }) => {
+		const top = raisedCells.includes(id) ? y - shelfLift : y;
 
-			return `M ${x} ${top} h ${cellSize} v ${cellSize} h ${-cellSize} Z`;
-		});
+		return `M ${x} ${top} h ${cellSize} v ${cellSize} h ${-cellSize} Z`;
+	});
 
 	return {
 		path: pathThrough(routePoints),

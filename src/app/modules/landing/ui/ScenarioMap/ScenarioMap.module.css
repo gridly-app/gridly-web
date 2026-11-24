@@ -46,7 +46,7 @@
 	background: var(--tile-shelf-bg);
 }
 
-.scenarioGrid[data-revealed="true"] .scenarioCell[data-active="true"] {
+.scenarioGrid[data-revealed="true"] .scenarioCell[data-raised="true"] {
 	box-shadow: 0 3px 0 var(--tile-shadow);
 	transform: translateY(var(--map-shelf-lift));
 }

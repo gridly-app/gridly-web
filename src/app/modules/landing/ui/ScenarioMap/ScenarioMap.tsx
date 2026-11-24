@@ -19,14 +19,14 @@ const arrowOffsets = [0, -1, -2, -3];
 
 export function ScenarioMap({ scenarioId }: { scenarioId: LandingScenarioId }) {
 	const scenario: LandingScenario = landingScenarios[scenarioId];
-	const { activeCells } = scenario;
+	const { raisedCells = [] } = scenario;
 	const shouldReduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
 	const grid = useRef<HTMLDivElement>(null);
 	const isInView = useInView(grid, { once: true, amount: revealThreshold });
 	const isRevealed = isInView || shouldReduceMotion;
 	const flowClipId = useId();
 	const clipPath = `url(#${flowClipId})`;
-	const route = routeGeometry(scenario.route, activeCells);
+	const route = routeGeometry(scenario.route, raisedCells);
 	const visibleArrowOffsets = shouldReduceMotion ? [] : arrowOffsets;
 
 	return (
@@ -44,7 +44,7 @@ export function ScenarioMap({ scenarioId }: { scenarioId: LandingScenarioId }) {
 				{cells.map(({ id, isShelf }) => (
 					<span
 						key={id}
-						data-active={activeCells.includes(id)}
+						data-raised={raisedCells.includes(id)}
 						className={clsx(
 							styles.scenarioCell,
 							isShelf && styles.scenarioShelf,
