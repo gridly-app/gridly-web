@@ -76,10 +76,43 @@ async function expectIndicatorAligned(track: Locator, thumb: Locator) {
 
 			return (
 				Math.abs(selectedBounds.x - thumbBounds.x) < 1 &&
-				Math.abs(selectedBounds.width - thumbBounds.width) < 1
+				Math.abs(selectedBounds.y - thumbBounds.y) < 1 &&
+				Math.abs(selectedBounds.width - thumbBounds.width) < 1 &&
+				Math.abs(selectedBounds.height - thumbBounds.height) < 1
 			);
 		})
 		.toBe(true);
+}
+
+async function expectHorizontalSegments(track: Locator) {
+	await expect(track).toBeVisible();
+
+	const hasSingleRow = await track.evaluate((element) => {
+		const bounds = element.getBoundingClientRect();
+		const radios = element.querySelectorAll('[role="radio"]');
+		const first = radios[0]?.getBoundingClientRect();
+
+		if (!first || radios.length < 2) return false;
+
+		let previousRight = bounds.left;
+
+		for (const radio of radios) {
+			const rect = radio.getBoundingClientRect();
+
+			if (Math.abs(rect.top - first.top) >= 1) return false;
+			if (rect.left < previousRight || rect.right > bounds.right) return false;
+
+			previousRight = rect.right;
+		}
+
+		return true;
+	});
+
+	expect(hasSingleRow).toBe(true);
+	await expectIndicatorAligned(
+		track,
+		track.locator('[data-slot="rubber-segment-thumb"]'),
+	);
 }
 
 export async function controlAppearanceScenario({
@@ -98,6 +131,14 @@ export async function controlAppearanceScenario({
 	);
 	await expect(sandbox).toHaveCSS("background-color", primaryBackground);
 
+	const landingScenarios = page.getByRole("radiogroup", {
+		name: "Складские сценарии",
+	});
+
+	await expectHorizontalSegments(landingScenarios);
+	await page.setViewportSize({ width: 320, height: 900 });
+	await expectHorizontalSegments(landingScenarios);
+	await page.setViewportSize({ width: 1440, height: 1000 });
 	await signIn();
 
 	for (const dark of [false, true]) {
@@ -138,7 +179,7 @@ export async function controlAppearanceScenario({
 		expect(thumbBounds.y + thumbBounds.height).toBeLessThan(
 			bounds.y + bounds.height,
 		);
-		await expectIndicatorAligned(track, thumb);
+		await expectHorizontalSegments(track);
 		await selected.focus();
 		await selected.press("ArrowRight");
 		await expect(
@@ -147,6 +188,8 @@ export async function controlAppearanceScenario({
 		await expectIndicatorAligned(track, thumb);
 		await page.setViewportSize({ width: 700, height: 900 });
 		await expectIndicatorAligned(track, thumb);
+		await page.setViewportSize({ width: 320, height: 900 });
+		await expectHorizontalSegments(track);
 		await page.setViewportSize({ width: 1440, height: 1000 });
 		await expectIndicatorAligned(track, thumb);
 		await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -154,5 +197,30 @@ export async function controlAppearanceScenario({
 		await expect(selected).toBeChecked();
 		await expectIndicatorAligned(track, thumb);
 		await page.emulateMedia({ reducedMotion: "reduce" });
+	}
+
+	for (const width of [320, 1440]) {
+		await page.setViewportSize({ width, height: 900 });
+		await ready("catalog");
+		await expectHorizontalSegments(
+			page.getByRole("radiogroup", { name: "Раздел каталога" }),
+		);
+		await page
+			.getByRole("link", { name: "Кофе в зёрнах", exact: true })
+			.click();
+		await expectHorizontalSegments(
+			page.getByRole("radiogroup", { name: "Данные о товаре" }),
+		);
+
+		await ready("information");
+
+		for (const name of [
+			"Быстрый выбор периода",
+			"Направление отчёта",
+			"Единицы графика",
+			"Группировка графика",
+		]) {
+			await expectHorizontalSegments(page.getByRole("radiogroup", { name }));
+		}
 	}
 }
