@@ -67,6 +67,7 @@ function serverWorkspace(empty = false) {
 				counterparty_text: "Server customer",
 				status: "created",
 				created_at: "2026-10-29T08:00:00Z",
+				allowed_actions: [],
 				lines: [{ product_id: "p", quantity: 2 }],
 			},
 		],
@@ -157,6 +158,7 @@ function serverWorkspace(empty = false) {
 					version: 1,
 					width: 2,
 					height: 2,
+					routes: [],
 					cells: empty
 						? []
 						: [{ x: 0, y: 0, kind: "storage_general", capacity_volume: "10" }],
@@ -169,7 +171,8 @@ function serverWorkspace(empty = false) {
 					tick: "8",
 					robots: empty ? [] : [{ id: "r", x: 1, y: 0, status: "moving" }],
 				});
-			const resource = resources[path.split("/").at(-1) ?? ""];
+			const resourceName = path.slice(path.lastIndexOf("/") + 1);
+			const resource = resources[resourceName];
 			if (resource)
 				return Response.json({
 					items: empty ? [] : resource,
@@ -287,6 +290,37 @@ describe("server sandbox workspace", () => {
 			}),
 		).rejects.toHaveProperty("status", 409);
 		expect(snapshot.name).toBe("Server warehouse");
+	});
+
+	test("sandbox denial preserves the session and explicit expiry from SSE closes it", async () => {
+		const { session, repository, fail } = serverWorkspace();
+		const adminPath = "/sandbox/admin/shipment-users";
+		const streamPath = "/warehouses/server-warehouse/stream";
+
+		await session.start();
+
+		const release = repository.getSessionSignal();
+
+		fail(adminPath, () =>
+			Response.json({ error: { code: "FORBIDDEN" } }, { status: 403 }),
+		);
+		await expect(session.http.request(adminPath)).rejects.toMatchObject({
+			code: "FORBIDDEN",
+		});
+		expect(session.getSnapshot().status).toBe("active");
+		expect(release.aborted).toBe(false);
+
+		fail(streamPath, () =>
+			Response.json({ error: { code: "SESSION_EXPIRED" } }, { status: 401 }),
+		);
+		await expect(session.http.openStream(streamPath)).rejects.toMatchObject({
+			code: "SESSION_EXPIRED",
+		});
+		expect(session.getSnapshot()).toMatchObject({
+			status: "expired",
+			access: null,
+		});
+		expect(release.aborted).toBe(true);
 	});
 
 	test("an empty live response preserves the last server state", async () => {

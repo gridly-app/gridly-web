@@ -6,7 +6,7 @@ import {
 import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 import { environment } from "@/shared/config";
 import { ApiError, FetchHttpClient } from "@/shared/http";
-import { availableStorage, browserStorage } from "@/shared/lib";
+import { availableStorage, browserStorage, runtimeNotices } from "@/shared/lib";
 
 export type AppDependencies = ReturnType<typeof createDependencies>;
 
@@ -57,7 +57,11 @@ function createSandboxRuntime() {
 	const access = new AnonymousSandboxAccess(
 		availableStorage("sessionStorage").storage,
 		environment.apiBaseUrl,
-		() => warehouse.clear(),
+		(accessId) => {
+			warehouse.clear();
+
+			if (accessId) clearSandboxAttempts(accessId);
+		},
 	);
 	const warehouse = createWarehouseRuntime(access.http);
 	return { warehouse, access };
@@ -69,4 +73,27 @@ export function createDependencies() {
 		sandbox: createSandboxRuntime(),
 		localStorage: availableStorage("localStorage").storage,
 	};
+}
+
+function clearSandboxAttempts(accessId: string) {
+	const quotedId = JSON.stringify(accessId);
+	const prefixes = [
+		`gridly.guest-link-attempt:["sandbox",${quotedId},`,
+		`gridly.shipment-attempt:["sandbox",${quotedId},`,
+	];
+
+	try {
+		const storage = window.sessionStorage;
+		const keys = Object.keys(storage);
+
+		for (const key of keys) {
+			if (prefixes.some((prefix) => key.startsWith(prefix)))
+				storage.removeItem(key);
+		}
+	} catch {
+		runtimeNotices.report(
+			"sandbox.attempts",
+			"Не удалось удалить данные незавершённых операций песочницы.",
+		);
+	}
 }

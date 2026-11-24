@@ -37,7 +37,7 @@ export class AnonymousSandboxAccess {
 	constructor(
 		storage: KeyValueStorage,
 		private readonly baseUrl: string,
-		private readonly clearData: () => void,
+		private readonly clearData: (accessId: string | undefined) => void,
 		private readonly transport: (
 			input: RequestInfo | URL,
 			init?: RequestInit | undefined,
@@ -48,17 +48,20 @@ export class AnonymousSandboxAccess {
 		this.anonymous = this.client(() => "");
 		this.http = this.client(
 			() => this.snapshot.access?.access_token ?? "",
-			() => this.expire(),
+			(error) => {
+				if (error.code === "SESSION_EXPIRED" || !error.code) this.expire();
+			},
 		);
 	}
 
 	private client(
 		accessToken: () => string,
-		onUnauthorized?: (() => void) | undefined,
+		onUnauthorized?: ((error: ApiError) => void) | undefined,
 	) {
 		return new FetchHttpClient(this.baseUrl, this.transport, {
 			credentials: "omit",
 			refresh: false,
+			abortOnSessionChange: true,
 			accessToken,
 			onUnauthorized,
 		});
@@ -88,7 +91,7 @@ export class AnonymousSandboxAccess {
 	}
 	private resetData() {
 		this.http.clearSession();
-		this.clearData();
+		this.clearData(this.snapshot.access?.access_id);
 	}
 	restore = () => {
 		if (this.snapshot.status === "active") return Promise.resolve();
