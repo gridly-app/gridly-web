@@ -17,6 +17,12 @@ http:
       - name: name
         type: text
         value: Накладная
+      - name: upload_request_id
+        type: text
+        value: 94172712-7cbc-4d89-a3a0-d9f809108292
+      - name: published
+        type: text
+        value: "false"
       - name: category
         type: text
         value: transport
@@ -43,6 +49,12 @@ examples:
           - name: name
             type: text
             value: Накладная
+          - name: upload_request_id
+            type: text
+            value: 94172712-7cbc-4d89-a3a0-d9f809108292
+          - name: published
+            type: text
+            value: "false"
           - name: category
             type: text
             value: transport

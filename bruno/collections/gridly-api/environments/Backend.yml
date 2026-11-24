@@ -34,3 +34,7 @@ variables:
     secret: true
   - name: operatorToken
     secret: true
+  - name: managedUserId
+    value: user-sandbox-operator
+  - name: userRevision
+    value: '1'

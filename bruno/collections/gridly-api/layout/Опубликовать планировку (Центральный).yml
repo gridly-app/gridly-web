@@ -5,6 +5,11 @@ info:
 http:
   method: POST
   url: '{{baseUrl}}/warehouses/warehouse-demo/layout/commit'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+    - name: Idempotency-Key
+      value: '{{idempotencyKey}}-layout'
   body:
     type: json
     data: |-
@@ -29,6 +34,11 @@ examples:
     request:
       method: POST
       url: http://127.0.0.1:4000/api/v1/warehouses/warehouse-demo/layout/commit
+      headers:
+        - name: Authorization
+          value: Bearer bruno-account-token
+        - name: Idempotency-Key
+          value: gridly-layout-commit-example
       body:
         type: json
         data: |-

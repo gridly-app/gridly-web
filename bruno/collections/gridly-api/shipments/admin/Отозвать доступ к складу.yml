@@ -1,0 +1,14 @@
+info:
+  name: Отозвать доступ к складу
+  type: http
+  seq: 13
+http:
+  method: DELETE
+  url: '{{baseUrl}}/admin/shipment-users/{{managedUserId}}/warehouses/{{warehouseId}}'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+    - name: If-Match
+      value: '"{{userRevision}}"'
+settings:
+  followRedirects: false

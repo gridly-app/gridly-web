@@ -28,5 +28,6 @@ examples:
         data: |-
           {
             "access_id": "bruno-sandbox-access",
-            "initial_warehouse_id": "warehouse-demo"
+            "initial_warehouse_id": "warehouse-demo",
+            "expires_at": "2099-01-01T00:00:00Z"
           }

@@ -34,3 +34,7 @@ variables:
     value: bruno-sandbox-token
   - name: operatorToken
     value: bruno-shipment-operator-token
+  - name: managedUserId
+    value: user-sandbox-operator
+  - name: userRevision
+    value: '1'

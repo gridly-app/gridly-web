@@ -68,12 +68,11 @@ test("guest responses exclude orders and fields outside the link scope", async (
 	expect(data.orders.map((order: { id: string }) => order.id)).toEqual([
 		"order-out-2087",
 	]);
-	expect(Object.keys(data.orders[0]).sort()).toEqual([
-		"id",
-		"milestones",
-		"order",
-		"sections",
-	]);
+	const orderFields = Object.keys(data.orders[0]);
+
+	orderFields.sort();
+
+	expect(orderFields).toEqual(["id", "milestones", "order", "sections"]);
 	expect(guest?.headers.get("Cache-Control")).toBe("no-store");
 	const download = await request(
 		"/public/shipments/documents/document-shipment-1/download",
@@ -134,9 +133,10 @@ test("workspace samples populate warehouse resources and private link lists", as
 			Array.from({ length: 30 }, (_, offset) => shiftDay(today, -offset)),
 		);
 		for (const kind of ["inbound", "outbound"] as const) {
-			const days = orders
-				.filter((order) => order.kind === kind)
-				.map((order) => warehouseDay(order.created_at, warehouse.time_zone));
+			const ordersByKind = orders.filter((order) => order.kind === kind);
+			const days = ordersByKind.map((order) =>
+				warehouseDay(order.created_at, warehouse.time_zone),
+			);
 			expect(new Set(days.filter((day) => expectedDays.has(day)))).toEqual(
 				expectedDays,
 			);
@@ -191,7 +191,7 @@ test("workspace samples populate warehouse resources and private link lists", as
 	expect(new Set(seeded.map(({ status }) => status))).toEqual(
 		new Set(["active", "expired", "revoked"]),
 	);
-	expect(seeded[0]?.url).toMatch(/^http:\/\/gridly\.test\/shipments#token=/);
+	expect(data.items[0]).not.toHaveProperty("url");
 	expect(data.items[0]).not.toHaveProperty("token");
 });
 
@@ -273,4 +273,129 @@ test("system date filters compare instants when an error carries a UTC offset", 
 
 	expect(data.recent_errors).toEqual([record]);
 	expect(data.error_count).toBe(1);
+});
+
+test("warehouse membership changes preserve the account and its other assignments", async () => {
+	const request = await fixture();
+	const path = "/admin/shipment-users";
+	const headers = {
+		Authorization: "Bearer bruno-account-token",
+		"Content-Type": "application/json",
+	};
+	const assignment = {
+		login: "operator@gridly.local",
+		warehouse_id: "warehouse-north",
+		permissions: ["shipment.audit"],
+	};
+	const add = (permissions: string[]) =>
+		request(`${path}/assignments`, {
+			method: "POST",
+			headers,
+			body: JSON.stringify({ ...assignment, permissions }),
+		});
+
+	const invalid = await add(assignment.permissions);
+	expect(invalid?.status).toBe(422);
+	expect(await invalid?.json()).toMatchObject({
+		error: { code: "INVALID_PERMISSION_SET" },
+	});
+
+	const added = await add(["warehouse.view", "shipment.audit"]);
+	expect(added?.status).toBe(201);
+
+	const member = await added?.json();
+	const duplicate = await add(["warehouse.view"]);
+	expect(duplicate?.status).toBe(409);
+	const target = `${path}/${member.id}/warehouses/warehouse-north`;
+	const revoked = await request(target, {
+		method: "DELETE",
+		headers: { ...headers, "If-Match": `"${member.revision}"` },
+	});
+
+	expect(revoked?.status).toBe(204);
+	const users = await (await request(path, { headers }))?.json();
+	const account = users.items.find(
+		({ id }: { id: string }) => id === member.id,
+	);
+
+	expect(account).toMatchObject({
+		login: assignment.login,
+		warehouses: [{ warehouse_id: "warehouse-demo" }],
+	});
+});
+
+test("document upload replays by request ID and publishes one version per chain", async () => {
+	const { store } = await loadWorkspaceSamples();
+	const mock = createAdminMock({ seedLinks: true });
+	const path = "/warehouses/warehouse-demo/orders/order-out-2087/shipment";
+	const headers = { Authorization: "Bearer bruno-account-token" };
+	const request = (target: string, init: RequestInit = {}) =>
+		mock.handle(new Request(base + target, { headers, ...init }), store);
+
+	function uploadForm(requestId: string, previousId?: string) {
+		const form = new FormData();
+
+		form.set("name", "Накладная");
+		form.set("category", "transport");
+		form.set(
+			"file",
+			new File(["%PDF-1.7"], "Накладная.pdf", { type: "application/pdf" }),
+		);
+		form.set("upload_request_id", requestId);
+		if (previousId) form.set("previous_document_id", previousId);
+
+		return form;
+	}
+
+	const send = (body: FormData) =>
+		request(`${path}/documents`, { method: "POST", body });
+	const key = crypto.randomUUID();
+	const first = await send(uploadForm(key));
+	const original = await first?.json();
+	const replay = await send(uploadForm(key));
+
+	expect(first?.status).toBe(201);
+	expect(replay?.status).toBe(200);
+	expect(await replay?.json()).toEqual(original);
+
+	const second = await send(uploadForm(crypto.randomUUID(), original.id));
+	const replacement = await second?.json();
+	expect(replacement).toMatchObject({
+		chain_id: original.chain_id,
+		is_latest: true,
+		version: 2,
+		published: false,
+	});
+	const fork = await send(uploadForm(crypto.randomUUID(), original.id));
+	expect(fork?.status).toBe(409);
+	expect(await fork?.json()).toMatchObject({
+		error: { code: "STALE_DOCUMENT_VERSION" },
+	});
+
+	const publish = (id: string) =>
+		request(`${path}/documents/${id}`, {
+			method: "PATCH",
+			headers: { ...headers, "Content-Type": "application/json" },
+			body: JSON.stringify({ published: true }),
+		});
+	await publish(original.id);
+	await publish(replacement.id);
+
+	const shipment = workingShipmentSchema.parse(
+		await (await request(path))?.json(),
+	);
+	const history = shipment.documents.filter(
+		({ chain_id }) => chain_id === original.chain_id,
+	);
+	expect(
+		history.map(({ published, is_latest }) => [published, is_latest]),
+	).toEqual([
+		[false, false],
+		[true, true],
+	]);
+	const file = await request(`${path}/documents/${original.id}/download`);
+	expect(file?.status).toBe(200);
+	expect(file?.headers.get("Content-Disposition")).toContain(
+		encodeURIComponent("Накладная.pdf"),
+	);
 });

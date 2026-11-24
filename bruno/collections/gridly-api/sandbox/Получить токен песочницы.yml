@@ -29,5 +29,6 @@ examples:
           {
             "access_id": "bruno-sandbox-access",
             "access_token": "bruno-sandbox-token",
-            "initial_warehouse_id": "warehouse-demo"
+            "initial_warehouse_id": "warehouse-demo",
+            "expires_at": "2099-01-01T00:00:00Z"
           }

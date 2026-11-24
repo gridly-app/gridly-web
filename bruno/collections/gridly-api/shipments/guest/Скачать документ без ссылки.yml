@@ -24,7 +24,7 @@ examples:
         data: |-
           {
             "error": {
-              "code": "SHIPMENT_NOT_FOUND",
+              "code": "GUEST_LINK_UNAVAILABLE",
               "message": "Данные по ссылке недоступны."
             }
           }

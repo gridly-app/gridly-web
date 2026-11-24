@@ -39,12 +39,9 @@ export function sampleShipment(
 	order: OrderDto,
 	products: ProductDto[],
 ): WorkingShipment {
-	const warehouseAddress = [
-		warehouse.name,
-		warehouse.cabinet_settings?.location,
-	]
-		.filter(Boolean)
-		.join(", ");
+	const location = warehouse.cabinet_settings?.location;
+	const addressParts = [warehouse.name, location].filter(Boolean);
+	const warehouseAddress = addressParts.join(", ");
 	const counterpartyAddress = counterpartyAddresses.get(
 		order.counterparty_text,
 	);
@@ -76,8 +73,11 @@ export function sampleShipment(
 		{
 			completed: "delivered",
 			received: "delivered",
+			received_with_losses: "delivered",
 			cancelled: "cancelled",
 			draft: "on_hold",
+			blocked: "on_hold",
+			aborting: "on_hold",
 		}[order.status] ?? "active";
 	const stages = [
 		["accepted", 0],
@@ -92,10 +92,12 @@ export function sampleShipment(
 		{
 			completed: stages.length,
 			received: stages.length,
+			received_with_losses: stages.length,
 			shipped: 5,
 			awaiting_load: 3,
 			waiting_confirmation: 2,
 			active: 1,
+			in_progress: 1,
 		}[order.status] ?? 0;
 	const hasDeparted = current > 4;
 	const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -167,6 +169,7 @@ export function sampleShipment(
 			note: null,
 		})),
 		documents: [],
+		allowed_actions: isInbound ? [] : ["manage-all-links"],
 		revision: 0,
 		share_link: null,
 	});

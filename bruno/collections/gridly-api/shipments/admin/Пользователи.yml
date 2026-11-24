@@ -39,6 +39,7 @@ examples:
                     "warehouse_id": "warehouse-demo",
                     "warehouse_name": "Центральный склад",
                     "permissions": [
+                      "warehouse.view",
                       "warehouse.manage",
                       "shipment.manage",
                       "shipment.audit"
@@ -51,6 +52,12 @@ examples:
                       "warehouse.view"
                     ]
                   }
+                ],
+                "allowed_actions": [
+                  "edit-memberships",
+                  "revoke-warehouse-access",
+                  "edit-profile",
+                  "deactivate-account"
                 ]
               },
               {
@@ -68,6 +75,12 @@ examples:
                       "shipment.manage"
                     ]
                   }
+                ],
+                "allowed_actions": [
+                  "edit-memberships",
+                  "revoke-warehouse-access",
+                  "edit-profile",
+                  "deactivate-account"
                 ]
               },
               {
@@ -82,5 +95,49 @@ examples:
                 "status": "active",
                 "expires_at": "2099-01-01T00:00:00Z"
               }
+            ],
+            "allowed_actions": [
+              "add-warehouse-member"
+            ],
+            "permission_catalog": [
+              {
+                "code": "warehouse.view",
+                "label": "Просмотр склада",
+                "group": "Просмотр"
+              },
+              {
+                "code": "warehouse.manage",
+                "label": "Управление складом",
+                "group": "Управление"
+              },
+              {
+                "code": "shipment.manage",
+                "label": "Управление отгрузками",
+                "group": "Управление"
+              },
+              {
+                "code": "shipment.audit",
+                "label": "Просмотр аудита",
+                "group": "Мониторинг"
+              },
+              {
+                "code": "shipment.links.manage",
+                "label": "Гостевые ссылки",
+                "group": "Управление"
+              },
+              {
+                "code": "shipment.users.manage",
+                "label": "Управление участниками",
+                "group": "Управление"
+              },
+              {
+                "code": "shipment.system.view",
+                "label": "Диагностика",
+                "group": "Мониторинг"
+              }
+            ],
+            "manageable_warehouse_ids": [
+              "warehouse-demo",
+              "warehouse-north"
             ]
           }

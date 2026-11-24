@@ -1,0 +1,20 @@
+info:
+  name: Добавить участника на склад
+  type: http
+  seq: 12
+http:
+  method: POST
+  url: '{{baseUrl}}/sandbox/admin/shipment-users/assignments'
+  headers:
+    - name: Authorization
+      value: Bearer {{sandboxToken}}
+  body:
+    type: json
+    data: |-
+      {
+        "login": "operator@gridly.local",
+        "warehouse_id": "warehouse-north",
+        "permissions": ["warehouse.view"]
+      }
+settings:
+  followRedirects: false

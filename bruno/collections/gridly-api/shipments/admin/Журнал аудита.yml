@@ -4,7 +4,7 @@ info:
   seq: 1
 http:
   method: GET
-  url: '{{baseUrl}}/admin/shipment-audit?warehouse_id={{warehouseId}}&order_id={{orderId}}&limit=50&offset=0'
+  url: '{{baseUrl}}/admin/shipment-audit?warehouse_id={{warehouseId}}&order_id={{orderId}}&limit=50'
   headers:
     - name: Authorization
       value: Bearer {{accountToken}}
@@ -67,5 +67,6 @@ examples:
                 "actor_name": "Анна Смирнова"
               }
             ],
-            "total": 2
+            "total": 2,
+            "next_cursor": null
           }

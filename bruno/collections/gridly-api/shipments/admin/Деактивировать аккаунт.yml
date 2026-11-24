@@ -1,0 +1,14 @@
+info:
+  name: Деактивировать аккаунт
+  type: http
+  seq: 14
+http:
+  method: DELETE
+  url: '{{baseUrl}}/admin/shipment-users/{{managedUserId}}'
+  headers:
+    - name: Authorization
+      value: Bearer {{accountToken}}
+    - name: If-Match
+      value: '"{{userRevision}}"'
+settings:
+  followRedirects: false

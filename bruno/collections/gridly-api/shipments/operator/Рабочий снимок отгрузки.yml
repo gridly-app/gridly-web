@@ -174,7 +174,9 @@ examples:
                 "category": "transport",
                 "uploaded_at": "2026-11-12T12:15:00Z",
                 "version": 1,
-                "published": true
+                "published": true,
+                "chain_id": "document-shipment-1",
+                "is_latest": true
               },
               {
                 "id": "document-shipment-2",
@@ -182,11 +184,18 @@ examples:
                 "category": "transport",
                 "uploaded_at": "2026-11-13T08:00:00Z",
                 "version": 2,
-                "published": false
+                "published": false,
+                "chain_id": "document-shipment-2",
+                "is_latest": true
               }
             ],
             "revision": 1,
             "share_link": {
-              "expires_at": "2027-01-01T00:00:00Z"
-            }
+              "expires_at": "2027-01-01T00:00:00Z",
+              "id": "operator-link-2087",
+              "origin": "operator"
+            },
+            "allowed_actions": [
+              "manage-all-links"
+            ]
           }
