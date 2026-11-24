@@ -12,7 +12,6 @@ import {
 
 type UnconfirmedCreation = StoredCreationAttempt & {
 	status: "unknown";
-	hasRefreshedList: boolean;
 	message?: string;
 };
 
@@ -49,12 +48,22 @@ export function createGuestLinkCreationAttempt(
 
 		const saved = readCreationAttempt(storageKey);
 
-		if (saved) set({ ...saved, status: "unknown", hasRefreshedList: false });
+		if (saved) set({ ...saved, status: "unknown" });
 	}
 
 	function begin(attempt: StoredCreationAttempt) {
 		storeCreationAttempt(storageKey, attempt);
 		set({ ...attempt, status: "pending" });
+	}
+
+	function resolve(
+		submission: StoredCreationAttempt,
+		resolution: StoredCreationAttempt["resolution"],
+	) {
+		const retained = { ...submission, resolution };
+
+		storeCreationAttempt(storageKey, retained);
+		set({ ...retained, status: "unknown" });
 	}
 
 	function finish(state: RejectedCreation | IssuedCreation | null) {
@@ -72,6 +81,12 @@ export function createGuestLinkCreationAttempt(
 		const state = read();
 
 		if (state?.status === "issued" && state.link.id === id) set(null);
+		if (
+			state?.status === "unknown" &&
+			state.resolution?.status === "secret-expired" &&
+			state.resolution.linkId === id
+		)
+			finish(null);
 	}
 
 	function resetError() {
@@ -85,6 +100,7 @@ export function createGuestLinkCreationAttempt(
 		restore,
 		begin,
 		finish,
+		resolve,
 		isPending,
 		forgetIssuedLink,
 		resetError,

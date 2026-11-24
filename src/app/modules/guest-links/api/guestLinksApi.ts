@@ -2,7 +2,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 
 import { adminQueryKey } from "@/ports/administration";
 import { useWarehouseScopeId } from "@/ports/warehouse";
-import { type HttpClient, parseResponse } from "@/shared/http";
+import { ApiError, type HttpClient, parseResponse } from "@/shared/http";
 
 import {
 	createdGuestLinkSchema,
@@ -76,5 +76,16 @@ export async function revokeGuestLink(
 ) {
 	const target = `${path}/${encodeURIComponent(id)}`;
 
-	await http.request(target, { method: "DELETE" });
+	try {
+		await http.request(target, { method: "DELETE" });
+	} catch (error) {
+		if (
+			error instanceof ApiError &&
+			error.status === 409 &&
+			error.code === "LINK_ALREADY_REVOKED"
+		)
+			return;
+
+		throw error;
+	}
 }

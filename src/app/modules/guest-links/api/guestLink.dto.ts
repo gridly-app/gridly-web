@@ -24,13 +24,14 @@ export const guestLinkSchema = z.object({
 	order_ids: z.array(text.min(1)),
 	sections: z.array(guestSectionSchema),
 	id: text.min(1),
+	origin: z.enum(["operator", "admin"]).optional(),
 	revision: z.number().int().nonnegative(),
 	status: z.enum(["active", "expired", "revoked"]),
 	created_at: instant.optional(),
 	url: z.url({ protocol: /^https?$/ }).optional(),
 });
 export const guestLinksSchema = z.object({
-	items: z.array(guestLinkSchema).refine((items) => {
+	items: z.array(guestLinkSchema.omit({ url: true })).refine((items) => {
 		const ids = new Set(items.map(({ id }) => id));
 
 		return ids.size === items.length;

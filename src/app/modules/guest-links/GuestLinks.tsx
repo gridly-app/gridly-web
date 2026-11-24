@@ -10,16 +10,18 @@ export function GuestLinks({
 	mode,
 	warehouse,
 	initialOrder,
+	linkedOrder,
 }: {
 	http: HttpClient;
 	mode: WorkspaceMode;
 	warehouse: Warehouse;
 	initialOrder: string | null;
+	linkedOrder: string | null;
 }) {
 	const prefix = mode === "sandbox" ? "/sandbox" : "";
 	const warehouseId = encodeURIComponent(warehouse.id);
 	const path = `${prefix}/admin/warehouses/${warehouseId}/shipment-links`;
-	const key = JSON.stringify([warehouse.id, initialOrder]);
+	const key = JSON.stringify([warehouse.id, initialOrder, linkedOrder]);
 
 	return (
 		<WarehouseGuestLinks
@@ -28,6 +30,7 @@ export function GuestLinks({
 			http={http}
 			warehouse={warehouse}
 			initialOrder={initialOrder}
+			linkedOrder={linkedOrder}
 		/>
 	);
 }

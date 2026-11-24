@@ -54,14 +54,19 @@ test("retries an unconfirmed issue with the original key and updates the list af
 	expect(attempt.read()?.status).toBe("unknown");
 	expect(await creation.retry()).toBe(true);
 	expect(keys).toEqual([expect.any(String), keys[0]]);
-	expect(client.getQueryData(listKey)).toEqual({ items: [issuedLink] });
+	expect(client.getQueryData(listKey)).toEqual({
+		items: [expect.objectContaining({ id: issuedLink.id })],
+	});
+	expect(
+		client.getQueryData<{ items: object[] }>(listKey)?.items[0],
+	).not.toHaveProperty("url");
 	expect(attempt.read()).toEqual({
 		status: "issued",
 		link: { id: "link-1", url: "https://example.test/shipments" },
 	});
 });
 
-test("keeps the issue unresolved until the user acknowledges a successful list refresh", async () => {
+test("a refreshed list cannot resolve an unknown issue or allow another creation", async () => {
 	let canRead = false;
 	const { attempt, creation, recovery } = setup(async (_path, options) => {
 		if (options?.method === "POST") throw new TypeError("Connection lost");
@@ -72,11 +77,9 @@ test("keeps the issue unresolved until the user acknowledges a successful list r
 
 	await creation.start(input);
 	await recovery.refreshList();
-	recovery.acknowledge();
 
 	expect(attempt.read()).toMatchObject({
 		status: "unknown",
-		hasRefreshedList: false,
 	});
 
 	canRead = true;
@@ -85,10 +88,40 @@ test("keeps the issue unresolved until the user acknowledges a successful list r
 
 	expect(attempt.read()).toMatchObject({
 		status: "unknown",
-		hasRefreshedList: true,
 	});
 
-	recovery.acknowledge();
+	expect(attempt.read()?.status).toBe("unknown");
+	expect(await creation.start({ ...input, name: "Другая ссылка" })).toBe(false);
+});
 
+test("an expired secret identifies the one link to revoke before issuing again", async () => {
+	let sends = 0;
+	const { attempt, creation } = setup(async (_path, options) => {
+		if (options?.method !== "POST") return { items: [] };
+
+		sends++;
+		if (sends === 1) throw new TypeError("Connection lost");
+
+		throw new ApiError("Secret expired", 410, "IDEMPOTENCY_SECRET_EXPIRED", {
+			link_id: "link-from-receipt",
+			status: "active",
+		});
+	});
+
+	await creation.start(input);
+	await creation.retry();
+
+	expect(attempt.read()).toMatchObject({
+		status: "unknown",
+		resolution: { status: "secret-expired", linkId: "link-from-receipt" },
+	});
+	expect(await creation.retry()).toBe(false);
+	expect(await creation.start(input)).toBe(false);
+	expect(sends).toBe(2);
+
+	attempt.forgetIssuedLink("another-link");
+	expect(attempt.read()?.status).toBe("unknown");
+
+	attempt.forgetIssuedLink("link-from-receipt");
 	expect(attempt.read()).toBeNull();
 });

@@ -85,6 +85,7 @@ export function AdministrationScreen({
 								mode={mode}
 								warehouse={warehouse}
 								initialOrder={section.initialOrder}
+								linkedOrder={section.linkedOrder}
 							/>
 						)}
 					</AdminWarehouseSelection>

@@ -11,6 +11,16 @@ import { guestLinkInputSchema } from "./guestLink.dto";
 
 const attemptSchema = z.object({
 	key: z.uuid(),
+	startedAt: z.number().optional(),
+	resolution: z
+		.discriminatedUnion("status", [
+			z.object({
+				status: z.literal("secret-expired"),
+				linkId: z.string().min(1),
+			}),
+			z.object({ status: z.literal("mismatch") }),
+		])
+		.optional(),
 	input: guestLinkInputSchema,
 });
 

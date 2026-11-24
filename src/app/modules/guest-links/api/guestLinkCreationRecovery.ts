@@ -1,3 +1,4 @@
+import { errorMessage } from "@/shared/lib";
 import type { createGuestLinkCreationAttempt } from "./guestLinkCreationAttempt";
 import type { createGuestLinksCache } from "./guestLinksCache";
 
@@ -14,23 +15,25 @@ export function createGuestLinkCreationRecovery(
 
 		if (attempt.read() !== unconfirmed) return;
 
-		const hasRefreshedList = await list.refresh().then(
-			() => true,
-			() => false,
-		);
+		try {
+			const refreshed = await list.refresh();
+			const resolution = unconfirmed.resolution;
 
-		if (attempt.read() === unconfirmed) {
-			attempt.set({ ...unconfirmed, hasRefreshedList });
+			if (
+				attempt.read() === unconfirmed &&
+				resolution?.status === "secret-expired" &&
+				refreshed.items.some(
+					({ id, status }) => id === resolution.linkId && status === "revoked",
+				)
+			) {
+				attempt.finish(null);
+			}
+		} catch (error) {
+			if (attempt.read() === unconfirmed) {
+				attempt.set({ ...unconfirmed, message: errorMessage(error) });
+			}
 		}
 	}
 
-	function acknowledge() {
-		const state = attempt.read();
-
-		if (state?.status === "unknown" && state.hasRefreshedList) {
-			attempt.finish(null);
-		}
-	}
-
-	return { refreshList, acknowledge };
+	return { refreshList };
 }

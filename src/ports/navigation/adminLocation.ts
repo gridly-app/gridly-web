@@ -17,7 +17,13 @@ type UserSelection = { user: string; user_kind?: UserKind };
 type AdminDestination =
 	| [tab: AdminTab]
 	| [tab: "orders" | "links", params: { warehouse_id: string; order?: string }]
-	| [tab: "links", params: OrderScope | OrderCardParams]
+	| [
+			tab: "links",
+			params:
+				| OrderScope
+				| OrderCardParams
+				| { warehouse_id: string; linked_order_id: string },
+	  ]
 	| [tab: "system", params: OrderScope & { order?: string }]
 	| [tab: "users", params: UserSelection];
 
@@ -26,7 +32,12 @@ export type OrderLocation = { warehouseId: string; orderId: string };
 export type AdminSectionLocation =
 	| { tab: "audit" | "warehouses" }
 	| { tab: "orders"; warehouseId: string | null }
-	| { tab: "links"; warehouseId: string | null; initialOrder: string | null }
+	| {
+			tab: "links";
+			warehouseId: string | null;
+			initialOrder: string | null;
+			linkedOrder: string | null;
+	  }
 	| { tab: "system"; orderScope: OrderLocation | null }
 	| { tab: "users"; userId: string | null; userKind: UserKind | undefined };
 
@@ -50,7 +61,12 @@ function readSection(params: URLSearchParams): AdminSectionLocation {
 		case "orders":
 			return { tab, warehouseId };
 		case "links":
-			return { tab, warehouseId, initialOrder: orderScope?.orderId ?? null };
+			return {
+				tab,
+				warehouseId,
+				initialOrder: orderScope?.orderId ?? null,
+				linkedOrder: warehouseId ? params.get("linked_order_id") || null : null,
+			};
 		case "system":
 			return { tab, orderScope };
 		case "users": {

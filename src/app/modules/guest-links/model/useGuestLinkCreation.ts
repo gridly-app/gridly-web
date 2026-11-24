@@ -1,6 +1,7 @@
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
+import { isReplayAvailable } from "@/domain/shipment";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 import { environment } from "@/shared/config";
 import type { HttpClient } from "@/shared/http";
@@ -38,11 +39,10 @@ export function useGuestLinkCreation(http: HttpClient, path: string) {
 
 	return {
 		...view,
-		canRetry,
+		canRetry: canRetry && isReplayAvailable(view.attempt?.startedAt),
 		startCreation: creation.start,
 		retryCreation: creation.retry,
 		refreshList: recovery.refreshList,
-		acknowledgeCreation: recovery.acknowledge,
 		forgetIssuedLink: store.forgetIssuedLink,
 		resetError: store.resetError,
 	};

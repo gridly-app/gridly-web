@@ -3,7 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { adminQueryKey } from "@/ports/administration";
 import type { HttpClient } from "@/shared/http";
 
-import type { CreatedGuestLink, GuestLinkList } from "./guestLink.dto";
+import type { GuestLink, GuestLinkList } from "./guestLink.dto";
 import { guestLinksQueryOptions } from "./guestLinksApi";
 
 export function createGuestLinksCache(
@@ -23,7 +23,7 @@ export function createGuestLinksCache(
 		return client.fetchQuery({ ...options, staleTime: 0 });
 	}
 
-	function addIssued(link: CreatedGuestLink) {
+	function addIssued(link: Omit<GuestLink, "url">) {
 		client.setQueryData<GuestLinkList>(queryKey, (current) => {
 			const otherLinks =
 				current?.items.filter(({ id }) => id !== link.id) ?? [];

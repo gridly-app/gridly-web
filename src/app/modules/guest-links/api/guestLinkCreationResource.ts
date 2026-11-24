@@ -1,5 +1,6 @@
+import { guestLinkReplayOutcome, isReplayAvailable } from "@/domain/shipment";
 import { ApiError, type HttpClient } from "@/shared/http";
-import { errorMessage } from "@/shared/lib";
+import { errorMessage, UserError } from "@/shared/lib";
 
 import type { CreatedGuestLink, GuestLinkInput } from "./guestLink.dto";
 import type { createGuestLinkCreationAttempt } from "./guestLinkCreationAttempt";
@@ -25,6 +26,28 @@ export function createGuestLinkCreationResource(
 	) {
 		if (!attempt.isPending(submission.key)) return;
 
+		const outcome = guestLinkReplayOutcome(error);
+
+		if (
+			outcome?.status === "secret-expired" ||
+			outcome?.status === "mismatch"
+		) {
+			attempt.resolve(submission, outcome);
+			void list.invalidate();
+
+			return;
+		}
+
+		if (outcome?.status === "revoked") {
+			attempt.finish({
+				status: "rejected",
+				error: new UserError("Ссылка уже отозвана."),
+			});
+			void list.invalidate();
+
+			return;
+		}
+
 		const isRejected =
 			error instanceof ApiError && rejectedStatuses.has(error.status);
 
@@ -37,7 +60,6 @@ export function createGuestLinkCreationResource(
 		attempt.set({
 			...submission,
 			status: "unknown",
-			hasRefreshedList: false,
 			message: errorMessage(error),
 		});
 	}
@@ -69,8 +91,10 @@ export function createGuestLinkCreationResource(
 
 		if (!attempt.isPending(submission.key)) return false;
 
-		list.addIssued(link);
-		attempt.finish({ status: "issued", link: { id: link.id, url: link.url } });
+		const { url, ...metadata } = link;
+
+		list.addIssued(metadata);
+		attempt.finish({ status: "issued", link: { id: link.id, url } });
 		void list.invalidate();
 
 		return true;
@@ -85,15 +109,27 @@ export function createGuestLinkCreationResource(
 			return false;
 		}
 
-		return submit({ key: crypto.randomUUID(), input }, "new");
+		return submit(
+			{ key: crypto.randomUUID(), input, startedAt: Date.now() },
+			"new",
+		);
 	}
 
 	async function retry() {
 		const state = attempt.read();
 
-		if (!canRetry || state?.status !== "unknown") return false;
+		if (!canRetry || state?.status !== "unknown" || state.resolution)
+			return false;
+		if (!isReplayAvailable(state.startedAt)) {
+			attempt.set({ ...state, message: "Срок безопасного повтора истёк." });
 
-		return submit({ key: state.key, input: state.input }, "retry");
+			return false;
+		}
+
+		return submit(
+			{ key: state.key, input: state.input, startedAt: state.startedAt },
+			"retry",
+		);
 	}
 
 	return { start, retry };

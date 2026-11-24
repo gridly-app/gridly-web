@@ -1,5 +1,6 @@
 export { type AuditEvent, auditEventSchema } from "./auditEvent";
 export { guestLinkStatuses } from "./guestLinkStatuses";
+export { guestLinkReplayOutcome, isReplayAvailable } from "./guestLinkReplay";
 export {
 	guestSections,
 	guestSectionSchema,
