@@ -63,6 +63,7 @@ function RouteSettingsPage() {
 			warehouse={warehouse}
 			execute={execute}
 			pending={pending}
+			title="Настройки склада"
 			settingsError={settingsError}
 			retrySettings={retrySettings}
 			settingsLoading={settingsLoading}
@@ -146,6 +147,7 @@ function SettingsContent({
 	retrySettings,
 	settingsLoading,
 	deleteAction,
+	title,
 }: {
 	warehouse: SettingsWarehouse;
 	execute: CommandExecutor;
@@ -154,6 +156,7 @@ function SettingsContent({
 	retrySettings: () => Promise<unknown>;
 	settingsLoading: boolean;
 	deleteAction?: React.ReactNode;
+	title?: string;
 }) {
 	const props = {
 		w: warehouse,
@@ -166,7 +169,12 @@ function SettingsContent({
 	return (
 		<ScrollArea className={styles.pageScroll}>
 			<div className={styles.settings}>
-				{deleteAction && <div className={styles.heading}>{deleteAction}</div>}
+				{title && (
+					<header className={styles.heading}>
+						<h1>{title}</h1>
+						{deleteAction}
+					</header>
+				)}
 				{settingsLoading && (
 					<Feedback tone="loading">Загружаем настройки…</Feedback>
 				)}

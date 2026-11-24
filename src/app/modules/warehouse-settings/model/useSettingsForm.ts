@@ -12,6 +12,7 @@ export interface SettingsFormOptions {
 	w: SettingsWarehouse;
 	execute: CommandExecutor;
 	pending: boolean;
+	retrySettings: () => Promise<unknown>;
 }
 
 export function useSettingsForm({ w, execute, pending }: SettingsFormOptions) {

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
 import type { CommandExecutor } from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
 import { Button, Input } from "@/shared/ui/controls";
@@ -12,10 +12,12 @@ export function CabinetSettings({
 	w,
 	execute,
 	pending,
+	retrySettings,
 }: {
 	w: SettingsWarehouse;
 	execute: CommandExecutor;
 	pending: boolean;
+	retrySettings: () => Promise<unknown>;
 }) {
 	const [saving, setSaving] = useState(false);
 	const [message, setMessage] = useState<{
@@ -26,20 +28,30 @@ export function CabinetSettings({
 	const inFlight = useRef(false);
 	const canEdit = !!w.allowedActions?.includes("edit-settings");
 	const draft = useSettingsDraft(
-		String(settings?.lowStockThreshold ?? 10),
+		settings ? String(settings.lowStockThreshold) : "",
 		settings?.revision,
 	);
-	const threshold = draft.value;
-	async function save() {
-		if (pending || inFlight.current || draft.revision === undefined || !canEdit)
-			return;
+	const { value: threshold, revision } = draft;
+	const lowStockThreshold = Number(threshold);
+	const hasConflict = draft.dirty && revision !== settings?.revision;
+	const isBusy = saving || pending;
+	const canEditThreshold = canEdit && !!settings && !isBusy;
+	const canSave =
+		canEditThreshold && lowStockThreshold !== settings.lowStockThreshold;
+
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!canSave || inFlight.current || revision === undefined) return;
+
 		inFlight.current = true;
 		setSaving(true);
 		setMessage(null);
+
 		try {
 			await execute("warehouseSettings", {
-				revision: draft.revision,
-				lowStockThreshold: Number(threshold),
+				revision,
+				lowStockThreshold,
 			});
 			draft.reset();
 			setMessage({ text: "Настройки сохранены", tone: "success" });
@@ -50,18 +62,26 @@ export function CabinetSettings({
 			setSaving(false);
 		}
 	}
+	function handleThresholdChange(event: ChangeEvent<HTMLInputElement>) {
+		draft.setValue(event.currentTarget.value);
+	}
+
+	function handleRefresh() {
+		void retrySettings();
+	}
+
+	function handleReset() {
+		draft.reset();
+		setMessage(null);
+	}
+
 	return (
 		<section className={styles.card}>
 			<h3>Учёт товаров</h3>
 			<Field label="Порядок отбора партий">
 				<Input value="FEFO — ближайший срок годности" readOnly />
 			</Field>
-			<Form
-				onSubmit={(e) => {
-					e.preventDefault();
-					void save();
-				}}
-			>
+			<Form onSubmit={handleSubmit}>
 				<Field label="Порог низкого остатка, шт.">
 					<Input
 						type="number"
@@ -69,32 +89,34 @@ export function CabinetSettings({
 						step={1}
 						required
 						value={threshold}
-						disabled={!canEdit || !settings || saving || pending}
-						onChange={(event) => draft.setValue(event.target.value)}
+						disabled={!canEditThreshold}
+						onChange={handleThresholdChange}
 					/>
 				</Field>
 				{message && <Feedback tone={message.tone}>{message.text}</Feedback>}
+				{hasConflict && (
+					<Feedback tone="warning">
+						Настройки изменились. На сервере сохранён порог{" "}
+						{settings?.lowStockThreshold}. Ваш ввод сохранён.
+					</Feedback>
+				)}
 				<FormActions>
 					<Button
-						type="submit"
-						disabled={
-							!canEdit ||
-							!settings ||
-							pending ||
-							saving ||
-							Number(threshold) === settings.lowStockThreshold
-						}
+						type="button"
+						variant="secondary"
+						disabled={isBusy}
+						onClick={handleRefresh}
 					>
+						Загрузить актуальные настройки
+					</Button>
+					<Button type="submit" disabled={!canSave}>
 						Сохранить порог
 					</Button>
 					<Button
 						type="button"
 						variant="secondary"
-						disabled={saving || pending || !draft.dirty}
-						onClick={() => {
-							draft.reset();
-							setMessage(null);
-						}}
+						disabled={isBusy || !draft.dirty}
+						onClick={handleReset}
 					>
 						Вернуть сохранённое значение
 					</Button>

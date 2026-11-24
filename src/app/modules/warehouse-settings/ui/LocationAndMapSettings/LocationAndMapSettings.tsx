@@ -11,10 +11,12 @@ export function LocationAndMapSettings({
 	w,
 	execute,
 	pending,
+	retrySettings,
 }: {
 	w: SettingsWarehouse;
 	execute: CommandExecutor;
 	pending: boolean;
+	retrySettings: () => Promise<unknown>;
 }) {
 	const [saving, setSaving] = useState<"city" | "map" | null>(null);
 	const inFlight = useRef(false);
@@ -43,6 +45,7 @@ export function LocationAndMapSettings({
 		<div className={styles.locationAndMap}>
 			<WarehouseCityForm
 				settings={w.settings}
+				retrySettings={retrySettings}
 				canEdit={!!w.settings && !!w.allowedActions?.includes("edit-settings")}
 				busy={busy}
 				saving={saving === "city"}

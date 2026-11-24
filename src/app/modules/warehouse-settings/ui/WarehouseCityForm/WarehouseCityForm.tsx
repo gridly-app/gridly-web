@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import type { Warehouse, WarehouseSettingsChange } from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
@@ -13,54 +13,61 @@ export function WarehouseCityForm({
 	busy,
 	saving,
 	saveCity,
+	retrySettings,
 }: {
 	settings: Warehouse["settings"];
 	canEdit: boolean;
 	busy: boolean;
 	saving: boolean;
 	saveCity: (value: WarehouseSettingsChange) => Promise<boolean>;
+	retrySettings: () => Promise<unknown>;
 }) {
-	const rawCity = (settings?.location || "").trim();
-	const savedCity = cities.some((option) => option.value === rawCity)
-		? rawCity
-		: rawCity.split(",")[0]?.trim() || "";
+	const savedCity = settings?.location.trim() ?? "";
 	const cityDraft = useSettingsDraft(savedCity, settings?.revision);
-	const city = cityDraft.value;
+	const { value: city, revision } = cityDraft;
+	const canSave = canEdit && !busy && city !== savedCity;
 	const [error, setError] = useState("");
 	const [message, setMessage] = useState("");
-	const options =
+	const cityOptions =
 		city && !cities.some((option) => option.value === city)
 			? [{ value: city, label: city }, ...cities]
 			: cities;
+	const options = [{ value: "", label: "Не указано" }, ...cityOptions];
+	const hasConflict =
+		cityDraft.dirty && cityDraft.revision !== settings?.revision;
 
-	async function save() {
-		if (
-			!canEdit ||
-			busy ||
-			cityDraft.revision === undefined ||
-			!city ||
-			city === savedCity
-		)
-			return;
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		if (!canSave || revision === undefined) return;
+
 		setError("");
 		setMessage("");
+
 		try {
-			if (await saveCity({ revision: cityDraft.revision, location: city })) {
-				cityDraft.reset();
-				setMessage("Сохранено");
-			}
+			const saved = await saveCity({ revision, location: city });
+
+			if (!saved) return;
+
+			cityDraft.reset();
+			setMessage("Сохранено");
 		} catch (error) {
 			setError(errorMessage(error));
 		}
 	}
 
+	function handleRefresh() {
+		void retrySettings();
+	}
+
+	function handleReset() {
+		cityDraft.reset();
+		setError("");
+		setMessage("");
+	}
+
 	return (
-		<Form
-			onSubmit={(event) => {
-				event.preventDefault();
-				void save();
-			}}
-		>
+		<Form onSubmit={handleSubmit}>
 			<h4>Расположение</h4>
 			<Field label="Город">
 				<Select
@@ -75,11 +82,25 @@ export function WarehouseCityForm({
 			</Field>
 			<ErrorNotice message={error} />
 			{message && <Feedback tone="success">{message}</Feedback>}
+			{hasConflict && (
+				<Feedback tone="warning">
+					Расположение изменилось. На сервере сохранено «
+					{savedCity || "Не указано"}». Ваш ввод сохранён.
+				</Feedback>
+			)}
 			<FormActions>
+				<Button
+					type="button"
+					variant="secondary"
+					disabled={busy}
+					onClick={handleRefresh}
+				>
+					Загрузить актуальные настройки
+				</Button>
 				<Button
 					type="submit"
 					loading={saving}
-					disabled={!canEdit || busy || !city || city === savedCity}
+					disabled={!canSave}
 					tooltip={!canEdit ? "Изменение расположения недоступно" : undefined}
 				>
 					Сохранить город
@@ -89,11 +110,7 @@ export function WarehouseCityForm({
 						type="button"
 						variant="secondary"
 						disabled={busy}
-						onClick={() => {
-							cityDraft.reset();
-							setError("");
-							setMessage("");
-						}}
+						onClick={handleReset}
 					>
 						Вернуть сохранённый город
 					</Button>

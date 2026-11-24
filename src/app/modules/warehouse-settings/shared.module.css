@@ -14,9 +14,13 @@
 .heading {
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: space-between;
 	flex-wrap: wrap;
 	gap: 16px;
+}
+.heading h1 {
+	font-size: var(--text-page-title);
+	font-weight: 600;
 }
 .heading,
 .settingsGrid {
