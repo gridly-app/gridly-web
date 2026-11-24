@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { CommandExecutor } from "@/domain/warehouse";
 import { cellKey, cellLabels } from "@/domain/warehouse";
-import { useNavigationConfirmation } from "@/ports/navigation";
 import {
 	type LayoutOperation,
 	useLayoutOperation,
@@ -9,10 +8,11 @@ import {
 } from "@/ports/warehouse";
 import { useImmersiveRegion, useTheme } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
-import { ErrorNotice, Feedback, RetryButton } from "@/shared/ui/feedback";
+import { ErrorNotice, Feedback } from "@/shared/ui/feedback";
 import { mapThemes } from "./config/mapTheme";
 import { LayoutIssueList } from "./ui/LayoutIssueList/LayoutIssueList";
-import { layoutStatus } from "./model/draft/layoutStatus";
+import { useUnsavedLayoutWarning } from "./model/draft/useUnsavedLayoutWarning";
+import { LayoutOperationFeedback } from "./ui/LayoutOperationFeedback/LayoutOperationFeedback";
 import { useMapEditor } from "./model/draft/useMapEditor";
 import { MapLayout } from "./map.compose";
 import { useMapSize } from "./model/editor/useMapSize";
@@ -74,33 +74,8 @@ export function WarehouseMap({
 	const routeEditor = useRouteEditor(editor, warehouse.id);
 	const hasUnsubmittedChanges =
 		editor.dirty && !editor.saving && !editor.resetting && !editor.writeBlocked;
-	useNavigationConfirmation((currentPath, nextPath) => {
-		if (!hasUnsubmittedChanges || currentPath === nextPath) return;
-		if (
-			currentPath.startsWith("/sandbox/") &&
-			!nextPath.startsWith("/sandbox/")
-		)
-			return;
+	useUnsavedLayoutWarning(hasUnsubmittedChanges);
 
-		return {
-			title: "Покинуть карту?",
-			description: "Несохранённые изменения планировки будут потеряны.",
-			cancelLabel: "Остаться",
-			confirmLabel: "Покинуть карту",
-		};
-	});
-	useEffect(() => {
-		if (!hasUnsubmittedChanges) return;
-
-		function preventUnload(event: BeforeUnloadEvent) {
-			event.preventDefault();
-			event.returnValue = "";
-		}
-
-		window.addEventListener("beforeunload", preventUnload);
-
-		return () => window.removeEventListener("beforeunload", preventUnload);
-	}, [hasUnsubmittedChanges]);
 	const sizeEditor = useMapSize({
 		w: warehouse,
 		command,
@@ -140,14 +115,11 @@ export function WarehouseMap({
 		editing,
 		inspection: { presentation, selectedRobotId, selectRobot },
 	});
-	const status = layoutStatus(layout.operation);
-	const canRetryRead =
-		layout.operation?.status === "refresh-failed" ||
-		layout.operation?.status === "conflict";
 	const [menuOpen, setMenuOpen] = useState(false);
 	const configuringRoutes = editing && editor.mode === "routes";
+	const cellEntries = Object.entries(cellLabels);
 	const legend = {
-		entries: Object.entries(cellLabels).filter(([type]) => type !== "cold"),
+		entries: cellEntries.filter(([type]) => type !== "cold"),
 		palette: mapThemes[dark ? "dark" : "light"].cells,
 	};
 
@@ -179,9 +151,10 @@ export function WarehouseMap({
 	)?.message;
 	const selectedCell = editor.selection.selected;
 	const selectedKey = selectedCell && cellKey(selectedCell);
-	const cellErrors = saveIssues
-		?.filter((issue) => issue.kind === "cell" && issue.key === selectedKey)
-		.map((issue) => issue.message);
+	const selectedIssues = saveIssues?.filter(
+		(issue) => issue.kind === "cell" && issue.key === selectedKey,
+	);
+	const cellErrors = selectedIssues?.map((issue) => issue.message);
 
 	const inspector = getMapInspectionModel({
 		warehouse,
@@ -194,13 +167,12 @@ export function WarehouseMap({
 		editing,
 	});
 	const sizeControls = { ...sizeEditor, widthError, heightError };
-	const className = [
+	const classes = [
 		mapStyles.mapWorkspace,
 		view.viewing && mapStyles.mapFullscreen,
 		(selectedCell || robot || editing) && mapStyles.mapShowDetails,
-	]
-		.filter(Boolean)
-		.join(" ");
+	].filter(Boolean);
+	const className = classes.join(" ");
 
 	function handleOpenView() {
 		view.setViewing(true);
@@ -248,18 +220,10 @@ export function WarehouseMap({
 				/>
 			)}
 			<ErrorNotice message={simulation.error} />
-			{status && (
-				<Feedback
-					tone="warning"
-					action={
-						canRetryRead ? (
-							<RetryButton onRetry={layout.retryRead} />
-						) : undefined
-					}
-				>
-					{status}
-				</Feedback>
-			)}
+			<LayoutOperationFeedback
+				operation={layout.operation}
+				retryRead={layout.retryRead}
+			/>
 			{needsComparison && (
 				<Feedback
 					tone="warning"
