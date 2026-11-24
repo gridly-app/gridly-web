@@ -83,6 +83,9 @@ export async function applyOrderAction(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "orderAction" }>,
 ): Promise<void> {
+	if (command.value.action === "confirm")
+		requireRevision(command.value.revision);
+
 	await runOrderAction(
 		context,
 		command.value.id,

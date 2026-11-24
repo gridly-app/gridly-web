@@ -10,12 +10,7 @@ import {
 } from "@/domain/warehouse";
 import type { WarehouseResource } from "@/ports/warehouse";
 import { isLayoutCommand } from "@/ports/warehouse";
-import {
-	type HttpClient,
-	parseResponse,
-	type RequestOptions,
-} from "@/shared/http";
-import { RestWarehouseCommands } from "../commands/restCommands";
+import { type HttpClient, parseResponse } from "@/shared/http";
 import { serializeLayoutCells } from "../layout/layoutCells";
 import { LayoutResource } from "../../model/layout/layoutResource";
 import { WarehouseLiveSubscriptions } from "../live/warehouseLiveSubscriptions";
@@ -23,6 +18,8 @@ import { orderDto } from "../orders/orderDto";
 import { createWarehouseKeys } from "../../model/queries/queryKeys";
 import { commandResources } from "../../model/queries/resources";
 import { createdWarehouseDto, warehouseDto } from "../warehouses/warehouseDto";
+import { executeWarehouseCommand } from "./executeWarehouseCommand";
+import { warehouseSessionHttp } from "./warehouseSessionHttp";
 import { readWarehouseCollection } from "./readWarehouseCollection";
 import type { MutationOptions, WarehouseRepository } from "./repository";
 import { orderFromDto, warehouseFromDto } from "./restMappers";
@@ -48,35 +45,8 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		private readonly cache = new QueryClient(),
 		readTimeoutMs = 15_000,
 	) {
-		this.http = {
-			...(http.openStream
-				? {
-						openStream: async (path: string, options: RequestOptions = {}) => {
-							const signal = options.signal
-								? AbortSignal.any([options.signal, this.session.signal])
-								: this.session.signal;
-							if (!http.openStream)
-								throw new Error("Потоковый транспорт недоступен");
-							const stream = await http.openStream(path, {
-								...options,
-								signal,
-							});
-							signal.throwIfAborted();
-							return stream;
-						},
-					}
-				: {}),
-			request: async (path, options = {}) => {
-				const controller = this.session;
-				const signal = options.signal
-					? AbortSignal.any([options.signal, controller.signal])
-					: controller.signal;
-				const result = await http.request(path, { ...options, signal });
-				signal.throwIfAborted();
-				return result;
-			},
-		};
 		const sessionSignal = () => this.session.signal;
+		this.http = warehouseSessionHttp(http, sessionSignal);
 		this.snapshots = new RestWarehouseSnapshots(
 			this.http,
 			this.cache,
@@ -119,8 +89,14 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		return this.session.signal;
 	}
 
-	retryLayoutRead(id: string) {
-		return this.layout.retryRead(id);
+	async retryLayoutRead(id: string) {
+		const { signal } = this.session;
+		const keys = this.keys;
+		const command = await this.layout.retryRead(id);
+
+		signal.throwIfAborted();
+
+		if (command) await this.invalidateLayoutRelated(keys, id, command.action);
 	}
 
 	discardRejectedLayout(id: string) {
@@ -137,6 +113,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		this.cache.removeQueries({ queryKey: previous.all });
 		this.cache.removeQueries({ queryKey: previous.layoutOperations });
 		this.mutations.clear();
+		this.layout.clear();
 	}
 
 	subscribeLive(id: string) {
@@ -247,6 +224,8 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		command: WarehouseCommand,
 		options?: MutationOptions | undefined,
 	) {
+		const session = this.session.signal;
+		const keys = this.keys;
 		const warehouse =
 			options?.warehouse ??
 			this.cache.getQueryData<Warehouse>(this.keys.detail(id));
@@ -254,58 +233,62 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		if (!warehouse) {
 			throw new Error("Сначала синхронизируйте склад");
 		}
-		const execute = (input: WarehouseCommand, markSent?: () => void) => {
-			const commands = new RestWarehouseCommands(
-				this.http,
-				(path, request, keyed) => {
-					markSent?.();
-
-					return this.mutations.send(
-						path,
-						{
-							...request,
-							idempotencyKey: options
-								? `${options.operationId}:${request.method ?? "POST"}:${path}`
-								: undefined,
-						},
-						keyed,
-					);
-				},
-			);
-
-			return commands.execute(id, input, warehouse);
-		};
+		const execute = (
+			input: WarehouseCommand,
+			markSent?: (retry?: () => Promise<unknown>) => void,
+		) =>
+			executeWarehouseCommand({
+				http: this.http,
+				mutations: this.mutations,
+				cache: this.cache,
+				keys,
+				id,
+				input,
+				warehouse,
+				operationId: options?.operationId,
+				session,
+				markSent,
+			});
 
 		if (isLayoutCommand(command)) {
-			const signal = this.session.signal;
-			const keys = this.keys;
-
 			await this.layout.execute(id, command, execute);
-			signal.throwIfAborted();
+			session.throwIfAborted();
 
-			const related = commandResources(command.action)
-				.filter((resource) => resource !== "map" && resource !== "metadata")
-				.map((resource) => keys.resource(id, resource));
-
-			await Promise.all(
-				[
-					...related,
-					keys.live(id),
-					keys.orders(id),
-					keys.selectionSummaries(id),
-					keys.all,
-				].map((queryKey) =>
-					this.cache.invalidateQueries({
-						queryKey,
-						exact: queryKey === keys.all,
-					}),
-				),
-			);
-			signal.throwIfAborted();
+			await this.invalidateLayoutRelated(keys, id, command.action);
+			session.throwIfAborted();
 		} else {
 			await execute(command);
 		}
 
 		return { id, applied: true as const };
+	}
+
+	private async invalidateLayoutRelated(
+		keys: typeof this.keys,
+		id: string,
+		action: WarehouseCommand["action"],
+	) {
+		const resources = commandResources(action);
+		const relatedResources = resources.filter(
+			(resource) => resource !== "map" && resource !== "metadata",
+		);
+		const related = relatedResources.map((resource) =>
+			keys.resource(id, resource),
+		);
+
+		await Promise.all(
+			[
+				...related,
+				keys.live(id),
+				keys.orders(id),
+				keys.selectionSummaries(id),
+				keys.all,
+			].map((queryKey) =>
+				this.cache.invalidateQueries({
+					queryKey,
+					exact: queryKey === keys.all,
+				}),
+			),
+		);
 	}
 }

@@ -104,7 +104,7 @@ test("archive commands use POST and direct stock commands are rejected before se
 		},
 	});
 });
-test("confirm derives action from freshly read kind; 201/202 receipts succeed", async () => {
+test("confirm derives direction from a fresh read and retains the displayed revision; 201/202 receipts succeed", async () => {
 	for (const kind of ["inbound", "outbound"]) {
 		const bodies: unknown[] = [];
 		const client = new FetchHttpClient("/api", async (_url, init) => {
@@ -127,13 +127,28 @@ test("confirm derives action from freshly read kind; 201/202 receipts succeed", 
 		const commands = new RestWarehouseCommands(client, (path, options) =>
 			client.request(path, options),
 		);
-		await commands.execute("w", { action: "confirm", value: "o" }, warehouse());
+		await commands.execute(
+			"w",
+			{
+				action: "orderAction",
+				value: { id: "o", action: "confirm", revision: 3 },
+			},
+			warehouse(),
+		);
 		expect(bodies[0]).toEqual({
-			revision: 7,
+			revision: 3,
 			action: kind === "inbound" ? "unload" : "load",
 		});
 		await commands.execute("w", { action: "start", value: "o" }, warehouse());
 		expect(bodies[1]).toEqual({ revision: 7 });
+		await expect(
+			commands.execute(
+				"w",
+				{ action: "orderAction", value: { id: "o", action: "confirm" } },
+				warehouse(),
+			),
+		).rejects.toThrow("Обновите данные");
+		expect(bodies).toHaveLength(2);
 	}
 	for (const status of [201, 202]) {
 		const client = new FetchHttpClient("/api", async () =>
@@ -260,5 +275,79 @@ test("editing an item outside the current snapshot never sends a create request"
 	expect(calls).toEqual([
 		{ path: "/warehouses/w/categories/category", method: "PATCH" },
 		{ path: "/warehouses/w/orders/order", method: "PATCH" },
+	]);
+});
+
+test("a confirmed zero threshold survives a failed refresh without another PATCH", async () => {
+	const cache = new QueryClient();
+	let writes = 0;
+	const repository = new RestWarehouseRepository(
+		{
+			request: async (_path, options) => {
+				if (options?.method !== "PATCH") throw new ApiError("Read failed", 503);
+
+				writes++;
+
+				return {
+					revision: 8,
+					location: "",
+					low_stock_threshold: 0,
+					allocation_policy: "fefo",
+				};
+			},
+		},
+		cache,
+	);
+	cache.setQueryData(repository.keys.detail("w"), warehouse());
+
+	try {
+		await repository.execute("w", {
+			action: "warehouseSettings",
+			value: { revision: 7, lowStockThreshold: 0 },
+		});
+		await expect(repository.get("w", undefined, "settings")).rejects.toThrow(
+			"Read failed",
+		);
+		expect(
+			cache.getQueryData<Warehouse>(repository.keys.detail("w"))?.settings,
+		).toEqual({
+			revision: 8,
+			location: "",
+			lowStockThreshold: 0,
+			allocationPolicy: "fefo",
+		});
+		expect(writes).toBe(1);
+		expect(
+			cache.getQueryData<Warehouse>(repository.keys.resource("w", "settings"))
+				?.settings?.lowStockThreshold,
+		).toBe(0);
+	} finally {
+		repository.clear();
+		cache.clear();
+	}
+});
+
+test("catalog writes preserve the difference between a missing price and zero", async () => {
+	const snapshot = warehouse();
+	const bodies: unknown[] = [];
+	const commands = new RestWarehouseCommands(
+		{ request: async () => undefined },
+		async (_path, options) => {
+			bodies.push(options.body);
+		},
+	);
+
+	for (const price of ["", "0", "12.50"]) {
+		await commands.execute(
+			"w",
+			{ action: "product", value: { ...snapshot.products[0]!, price } },
+			snapshot,
+		);
+	}
+
+	expect(bodies).toMatchObject([
+		{ price: null },
+		{ price: 0 },
+		{ price: 12.5 },
 	]);
 });

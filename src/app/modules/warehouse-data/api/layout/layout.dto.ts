@@ -20,7 +20,7 @@ export const layoutDto = z
 		width: z.number().int().positive(),
 		height: z.number().int().positive(),
 		cells: z.array(cellDto),
-		routes: z.array(blockRoutePlanSchema).optional(),
+		routes: z.array(blockRoutePlanSchema),
 	})
 	.refine(
 		(l) =>

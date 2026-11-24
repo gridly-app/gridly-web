@@ -10,6 +10,96 @@ import {
 } from "./warehouseRepositoryFixture";
 
 describe("REST warehouse layout commands", () => {
+	test("missing routes after a confirmed commit require another read rather than another commit", async () => {
+		const base = warehouseRepositoryFixture();
+		const cache = new QueryClient();
+		let writes = 0;
+		const repository = new RestWarehouseRepository(
+			{
+				request: async (path, options) => {
+					if (path === "/warehouses/w1")
+						return { ...warehouseDto, allowed_actions: ["save-map"] };
+					if (path.endsWith("/layout/commit")) {
+						writes++;
+						return { version: 1 };
+					}
+
+					if (writes && path.endsWith("/layout"))
+						return { version: 1, width: 3, height: 3, cells: [] };
+
+					return base.http.request(path, options);
+				},
+			},
+			cache,
+		);
+
+		try {
+			await repository.get("w1");
+			await repository.execute("w1", {
+				action: "saveMap",
+				value: {
+					baseVersion: 1,
+					cells: [],
+					routes: [{ id: "route", keys: ["0,0"], inbound: [], outbound: [] }],
+				},
+			});
+
+			expect(
+				cache.getQueryData(repository.keys.layoutOperation("w1")),
+			).toMatchObject({ status: "refresh-failed" });
+
+			await repository.retryLayoutRead("w1");
+
+			expect(writes).toBe(1);
+			expect(
+				cache.getQueryData(repository.keys.layoutOperation("w1")),
+			).toMatchObject({ status: "refresh-failed" });
+		} finally {
+			repository.clear();
+			cache.clear();
+		}
+	});
+
+	test("an interrupted commit replays the exact captured request, then only rereads", async () => {
+		const base = warehouseRepositoryFixture();
+		const writes: RequestOptions[] = [];
+		const repository = new RestWarehouseRepository({
+			request: async (path, options) => {
+				if (path === "/warehouses/w1")
+					return { ...warehouseDto, allowed_actions: ["save-map"] };
+				if (path.endsWith("/layout/commit") && options) {
+					writes.push(options);
+
+					if (writes.length === 1) throw new TypeError("Lost response");
+
+					return {};
+				}
+
+				return base.http.request(path, options);
+			},
+		});
+		const command = {
+			action: "saveMap" as const,
+			value: { baseVersion: 1, cells: [], routes: [] },
+		};
+
+		try {
+			await repository.get("w1");
+			await expect(repository.execute("w1", command)).rejects.toThrow(
+				"Lost response",
+			);
+
+			await repository.retryLayoutRead("w1");
+
+			expect(writes).toHaveLength(2);
+			expect(writes[0]?.idempotencyKey).toBeTruthy();
+			expect(writes[1]?.idempotencyKey).toBe(writes[0]?.idempotencyKey);
+			expect(writes[1]?.body).toEqual(writes[0]?.body);
+		} finally {
+			repository.clear();
+		}
+	});
+
 	test("publication sends the version and the draft revision of the submitted snapshot", async () => {
 		const base = warehouseRepositoryFixture();
 		const cache = new QueryClient();
@@ -84,7 +174,7 @@ describe("REST warehouse layout commands", () => {
 						};
 					}
 					if (path.endsWith("/layout"))
-						return { version, width: 3, height: 3, cells: [] };
+						return { version, width: 3, height: 3, cells: [], routes: [] };
 					if (path.endsWith("/map/state")) {
 						return {
 							warehouse_id: "w1",
@@ -102,7 +192,14 @@ describe("REST warehouse layout commands", () => {
 						holdOldDraft = false;
 						started.resolve();
 						await release.promise;
-						return { version: 1, revision: 3, width: 3, height: 3, cells: [] };
+						return {
+							version: 1,
+							revision: 3,
+							width: 3,
+							height: 3,
+							cells: [],
+							routes: [],
+						};
 					}
 					return base.http.request(path, options);
 				},
@@ -185,6 +282,7 @@ describe("REST warehouse layout commands", () => {
 							width: 3,
 							height: 3,
 							cells: [{ x: 0, y: 0, kind: "charging", capacity_volume: 0 }],
+							routes: [],
 						};
 					}
 
@@ -194,6 +292,7 @@ describe("REST warehouse layout commands", () => {
 							width: 3,
 							height: 3,
 							cells: [],
+							routes: [],
 						};
 					}
 
@@ -202,7 +301,14 @@ describe("REST warehouse layout commands", () => {
 						reading.resolve();
 						await releaseRead.promise;
 
-						return { version: 1, revision: 3, width: 3, height: 3, cells: [] };
+						return {
+							version: 1,
+							revision: 3,
+							width: 3,
+							height: 3,
+							cells: [],
+							routes: [],
+						};
 					}
 
 					if (path === "/warehouses/w1/layout/commit") {
@@ -297,7 +403,14 @@ describe("REST warehouse layout commands", () => {
 						deleted = options;
 						throw new ApiError("Draft has changed", 409);
 					}
-					return { version: 1, revision: 5, width: 3, height: 3, cells: [] };
+					return {
+						version: 1,
+						revision: 5,
+						width: 3,
+						height: 3,
+						cells: [],
+						routes: [],
+					};
 				}
 				return base.http.request(path, options);
 			},

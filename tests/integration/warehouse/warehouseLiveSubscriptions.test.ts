@@ -44,7 +44,7 @@ test("repository shares a stream, skips healthy map polling and resyncs on resub
 				if (url.pathname.endsWith("/layout/draft"))
 					throw new ApiError("No draft", 404);
 				if (url.pathname.endsWith("/layout"))
-					return { version: 1, width: 3, height: 3, cells: [] };
+					return { version: 1, width: 3, height: 3, cells: [], routes: [] };
 				if (url.pathname.endsWith("/map/state")) {
 					reads++;
 					return {

@@ -1,6 +1,7 @@
 import type { Warehouse, WarehouseCommand } from "@/domain/warehouse";
 import { warehouseCommandSchema } from "@/domain/warehouse";
 import {
+	ApiError,
 	type HttpClient,
 	parseResponse,
 	type RequestOptions,
@@ -34,7 +35,7 @@ export class RestWarehouseCommands {
 		id: string,
 		command: WarehouseCommand,
 		warehouse: Warehouse,
-	): Promise<void> {
+	): Promise<Warehouse["settings"] | void> {
 		command = warehouseCommandSchema.parse(command);
 		const base = `/warehouses/${encodeURIComponent(id)}`;
 		const send = (
@@ -66,10 +67,28 @@ export class RestWarehouseCommands {
 				const item = (product ? warehouse.products : warehouse.categories).find(
 					(i) => i.id === command.value,
 				);
-				await send(
-					`/${product ? "products" : "categories"}/${encodeURIComponent(command.value)}/archive`,
-					{ revision: requireRevision(item?.revision) },
-				);
+				try {
+					await send(
+						`/${product ? "products" : "categories"}/${encodeURIComponent(command.value)}/archive`,
+						{ revision: requireRevision(item?.revision) },
+					);
+				} catch (error) {
+					if (product || !(error instanceof ApiError) || error.status !== 409)
+						throw error;
+
+					switch (error.code) {
+						case "CATEGORY_IN_USE_BY_ZONES":
+							throw new UserError(
+								"Измените зоны этой категории на опубликованной карте и в сохранённом черновике.",
+							);
+						case "CATEGORY_HAS_PRODUCTS":
+							throw new UserError(
+								"Перенесите товары в другую категорию перед архивацией.",
+							);
+						default:
+							throw error;
+					}
+				}
 				return;
 			}
 			case "deleteOrder":
@@ -80,7 +99,7 @@ export class RestWarehouseCommands {
 				return;
 			case "warehouseSettings": {
 				const { revision, location, lowStockThreshold } = command.value;
-				parseResponse(
+				return parseResponse(
 					warehouseSettingsDto,
 					await send(
 						"/settings",
@@ -94,7 +113,6 @@ export class RestWarehouseCommands {
 						"PATCH",
 					),
 				);
-				return;
 			}
 			case "saveMap":
 				return saveMap(context, command);
@@ -125,7 +143,13 @@ export class RestWarehouseCommands {
 			case "confirm":
 				return applyOrderAction(context, {
 					action: "orderAction",
-					value: { id: command.value, action: "confirm" },
+					value: {
+						id: command.value,
+						action: "confirm",
+						revision: warehouse.orders.find(
+							(order) => order.id === command.value,
+						)?.revision,
+					},
 				});
 			case "product":
 				return saveProduct(context, command);

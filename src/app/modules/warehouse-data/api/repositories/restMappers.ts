@@ -96,7 +96,7 @@ export function orderFromDto(o: OrderDto): Order {
 	return {
 		id: o.id,
 		revision: o.revision,
-		number: o.number ?? "—",
+		number: o.number,
 		quantity: o.quantity,
 		kind: o.kind,
 		party: o.counterparty_text,
@@ -107,7 +107,7 @@ export function orderFromDto(o: OrderDto): Order {
 		blockedReason: o.blocked_reason,
 		tasks: o.tasks,
 		stage: o.stage,
-		lines: (o.lines || []).map((l) => ({
+		lines: o.lines.map((l) => ({
 			id: l.id,
 			product: l.product_id,
 			quantity: l.quantity,

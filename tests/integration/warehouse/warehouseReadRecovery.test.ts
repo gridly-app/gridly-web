@@ -149,6 +149,7 @@ describe("REST warehouse recovery", () => {
 							width: 3,
 							height: 3,
 							cells: [],
+							routes: [],
 						};
 					if (path.includes("/map/state"))
 						return {
@@ -160,6 +161,7 @@ describe("REST warehouse recovery", () => {
 						};
 					if (path.endsWith("/w1"))
 						return { ...warehouseDto, published_version: publishedVersion };
+					if (path.endsWith("/orders")) return { items: [], total: 0 };
 					return [];
 				},
 				async openStream() {

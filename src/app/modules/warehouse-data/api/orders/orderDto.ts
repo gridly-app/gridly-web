@@ -13,7 +13,7 @@ export const orderDto = z.object({
 	quantity: z.number().optional(),
 	stage: z.number().optional(),
 	...identity,
-	number: z.string().optional(),
+	number: z.string().min(1),
 	kind: z.enum(["inbound", "outbound"]),
 	counterparty_text: z.string(),
 	status: z.string(),
@@ -23,23 +23,21 @@ export const orderDto = z.object({
 	confirm_pick: z.boolean().optional(),
 	confirm_putaway: z.boolean().optional(),
 	confirm_load: z.boolean().optional(),
-	allowed_actions: z.array(z.string()).optional(),
+	allowed_actions: z.array(z.string()),
 	blocked_reason: z.string().optional(),
 	tasks: z.array(taskDto).optional(),
-	lines: z
-		.array(
-			z.object({
-				id: z.string().optional(),
-				product_id: z.string(),
-				quantity: z.number(),
-				expires_on: z.string().nullable().optional(),
-				putaway_quantity: z.number().optional(),
-				placed_quantity: z.number().optional(),
-				written_off_quantity: z.number().optional(),
-				lost_quantity: z.number().optional(),
-			}),
-		)
-		.optional(),
+	lines: z.array(
+		z.object({
+			id: z.string().optional(),
+			product_id: z.string(),
+			quantity: z.number(),
+			expires_on: z.string().nullable().optional(),
+			putaway_quantity: z.number().optional(),
+			placed_quantity: z.number().optional(),
+			written_off_quantity: z.number().optional(),
+			lost_quantity: z.number().optional(),
+		}),
+	),
 });
 
 export type OrderDto = z.infer<typeof orderDto>;

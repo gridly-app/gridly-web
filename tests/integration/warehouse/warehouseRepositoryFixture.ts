@@ -34,7 +34,7 @@ export function warehouseRepositoryFixture() {
 			if (url.pathname.endsWith("/layout/draft"))
 				throw new ApiError("No draft", 404);
 			if (url.pathname.endsWith("/layout"))
-				return { version: 1, width: 3, height: 3, cells: [] };
+				return { version: 1, width: 3, height: 3, cells: [], routes: [] };
 			if (url.pathname.endsWith("/map/state"))
 				return legacy
 					? {
@@ -61,6 +61,7 @@ export function warehouseRepositoryFixture() {
 					total: 101,
 				};
 			}
+			if (url.pathname.endsWith("/orders")) return { items: [], total: 0 };
 			return [];
 		},
 	};

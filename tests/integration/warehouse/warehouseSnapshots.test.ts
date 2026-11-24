@@ -6,8 +6,8 @@ import { warehouseRepositoryFixture } from "./warehouseRepositoryFixture";
 describe("REST warehouse snapshots", () => {
 	test("rejects mixed metadata and layout versions or dimensions", async () => {
 		for (const layout of [
-			{ version: 2, width: 3, height: 3, cells: [] },
-			{ version: 1, width: 4, height: 4, cells: [] },
+			{ version: 2, width: 3, height: 3, cells: [], routes: [] },
+			{ version: 1, width: 4, height: 4, cells: [], routes: [] },
 		]) {
 			const base = warehouseRepositoryFixture();
 			const repository = new RestWarehouseRepository({
