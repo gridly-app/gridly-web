@@ -10,7 +10,7 @@
 	--text-tertiary: #a1a1aa;
 	--accent: #197344;
 	--accent-hover: #258751;
-	--accent-bg: #e7f3eb;
+	--accent-bg: #d8ebdf;
 	--success: #16a34a;
 	--warning: #d97706;
 	--error: #dc2626;
@@ -120,7 +120,7 @@
 	--text-tertiary: #71717a;
 	--accent: #fafafa;
 	--accent-hover: #e4e4e7;
-	--accent-bg: #3f3f46;
+	--accent-bg: #38383f;
 	--success: #22c55e;
 	--warning: #f59e0b;
 	--error: #ef4444;
@@ -183,6 +183,7 @@
 }
 
 .public-page[data-fixed-theme="light"] {
+	--primary: color-mix(in srgb, var(--accent) 88%, white);
 	--tile-cell-bg: #e8ebe2;
 	--tile-shelf-bg: #cbdac5;
 	--tile-active-bg: #a9c39c;

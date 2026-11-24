@@ -5,6 +5,10 @@ export {
 	type TableColumns,
 	SortedTable,
 } from "./SortableTable/SortableTable";
-export { sortTableRows, useTableSort } from "./SortableTable/useTableSort";
+export {
+	sortTableRows,
+	useTableSort,
+	type SortColumn,
+} from "./SortableTable/useTableSort";
 export { RevisionConflict } from "./RevisionConflict/RevisionConflict";
 export { default as managementStyles } from "./ManagementLayout.module.css";

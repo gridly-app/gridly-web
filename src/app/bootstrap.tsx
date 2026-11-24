@@ -1,10 +1,10 @@
+import "./styles/app.css";
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { createDependencies } from "./composition/dependencies.compose";
 import { StartupFailure } from "./StartupFailure";
-
-import "./styles/app.css";
 
 async function renderApp() {
 	const dependencies = createDependencies();

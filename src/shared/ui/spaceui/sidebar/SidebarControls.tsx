@@ -14,22 +14,24 @@ export function SidebarTrigger({
 }: React.ComponentProps<typeof Button>): React.ReactElement {
 	const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
 
+	function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
+		onClick?.(event);
+		toggleSidebar();
+	}
+
 	return (
 		<Button
 			className={clsx(styles.trigger, className)}
 			data-sidebar="trigger"
 			data-slot="sidebar-trigger"
 			aria-expanded={isMobile ? openMobile : open}
-			onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-				onClick?.(event);
-				toggleSidebar();
-			}}
+			onClick={handleClick}
 			size="icon"
 			variant="ghost"
 			{...props}
 		>
-			<PanelLeftIcon />
-			<span className={styles.triggerLabel}>Toggle Sidebar</span>
+			<PanelLeftIcon aria-hidden="true" />
+			<span className={styles.triggerLabel}>Переключить меню</span>
 		</Button>
 	);
 }
