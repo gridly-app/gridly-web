@@ -2,7 +2,8 @@ import { readEventStream } from "@/shared/realtime";
 import { ApiError } from "./ApiError";
 import { parseHttpError, readHttpBody, readSessionToken } from "./httpResponse";
 
-const maxTimerDelay = 2 ** 31 - 1;
+import { HttpReadBackoff } from "./HttpReadBackoff";
+import { prepareHttpRequest } from "./prepareHttpRequest";
 
 export type RequestOptions = {
 	detached?: boolean | undefined;
@@ -17,6 +18,7 @@ export type RequestOptions = {
 };
 
 export interface HttpClient {
+	requestFile?(path: string, options?: RequestOptions): Promise<Response>;
 	openStream?(
 		path: string,
 		options?: RequestOptions,
@@ -29,7 +31,8 @@ export interface HttpSessionPolicy {
 	credentials?: RequestCredentials | undefined;
 	accessToken?: (() => string) | undefined;
 	refresh?: boolean | undefined;
-	onUnauthorized?: (() => void) | undefined;
+	abortOnSessionChange?: boolean | undefined;
+	onUnauthorized?: ((error: ApiError) => void) | undefined;
 	withRefresh?(
 		refresh: (validate: (data: unknown) => void) => Promise<unknown>,
 		signal: AbortSignal,
@@ -39,7 +42,7 @@ export interface HttpSessionPolicy {
 export class FetchHttpClient implements HttpClient {
 	private token = "";
 	private streamSession = new AbortController();
-	private readonly readRetryAt = new Map<string, number>();
+	private readonly readBackoff = new HttpReadBackoff();
 
 	private sessionGeneration = 0;
 
@@ -60,23 +63,7 @@ export class FetchHttpClient implements HttpClient {
 		this.sessionGeneration++;
 		this.token = "";
 		this.refreshRequest = null;
-		this.readRetryAt.clear();
-	}
-
-	private async waitToRead(path: string, signal?: AbortSignal) {
-		let retryAt = this.readRetryAt.get(path);
-
-		while (retryAt !== undefined) {
-			const delay = retryAt - Date.now();
-
-			if (delay <= 0) {
-				this.readRetryAt.delete(path);
-				return;
-			}
-
-			await waitForReadDelay(Math.min(delay, maxTimerDelay), signal);
-			retryAt = this.readRetryAt.get(path);
-		}
+		this.readBackoff.clear();
 	}
 
 	private refresh() {
@@ -141,6 +128,16 @@ export class FetchHttpClient implements HttpClient {
 			throw new ApiError("Поток состояния недоступен", 502, "INVALID_RESPONSE");
 		return result;
 	}
+	private requestSignal(options: RequestOptions) {
+		const signal = options.signal;
+
+		if (!this.policy.abortOnSessionChange || options.detached) return signal;
+
+		const sessionSignal = this.streamSession.signal;
+
+		return signal ? AbortSignal.any([signal, sessionSignal]) : sessionSignal;
+	}
+
 	private async perform(
 		path: string,
 		options: RequestOptions,
@@ -149,22 +146,24 @@ export class FetchHttpClient implements HttpClient {
 		file = false,
 	): Promise<unknown> {
 		const generation = this.sessionGeneration;
-		const { method = "GET", body, signal } = options;
+		const { method = "GET" } = options;
+		const signal = this.requestSignal(options);
 		const auth = path.startsWith("/auth/");
 		const readOnly = method === "GET" || options.readOnly === true;
 		const [readPath = path] = path.split("?", 1);
 		const issuesToken = path === "/auth/login" || path === "/auth/refresh";
-		const headers: Record<string, string> = { ...options.headers };
-
-		const form = body instanceof FormData;
-		if (body !== undefined && !form) {
-			headers["Content-Type"] = "application/json";
-		}
 		const token = this.policy.accessToken?.() ?? this.token;
-		if (!auth && token) headers.Authorization = `Bearer ${token}`;
-		if (options.idempotencyKey) {
-			headers["Idempotency-Key"] = options.idempotencyKey;
-		}
+		const credentials =
+			options.credentials ??
+			this.policy.credentials ??
+			(auth ? "include" : "omit");
+		const request = prepareHttpRequest(options, {
+			method,
+			credentials,
+			token: auth ? "" : token,
+			isPrivate: file || !!options.privacy,
+			signal,
+		});
 		const assertActive = () => {
 			signal?.throwIfAborted();
 			if (!options.detached && generation !== this.sessionGeneration) {
@@ -172,35 +171,17 @@ export class FetchHttpClient implements HttpClient {
 			}
 		};
 		const send = async () => {
-			if (readOnly && this.readRetryAt.has(readPath)) {
+			if (readOnly && this.readBackoff.has(readPath)) {
 				const readSignal = signal
 					? AbortSignal.any([signal, this.streamSession.signal])
 					: this.streamSession.signal;
 
-				await this.waitToRead(readPath, readSignal);
+				await this.readBackoff.wait(readPath, readSignal);
 			}
 
 			assertActive();
 
-			return this.transport(`${this.baseUrl}${path}`, {
-				method,
-				headers,
-				credentials:
-					options.credentials ??
-					this.policy.credentials ??
-					(auth ? "include" : "omit"),
-				...(signal ? { signal } : {}),
-				...(file || options.privacy
-					? {
-							redirect: "error",
-							cache: "no-store",
-							referrerPolicy: "no-referrer",
-						}
-					: {}),
-				...(body === undefined
-					? {}
-					: { body: form ? body : JSON.stringify(body) }),
-			});
+			return this.transport(`${this.baseUrl}${path}`, request.build());
 		};
 		let response = await send();
 
@@ -215,7 +196,7 @@ export class FetchHttpClient implements HttpClient {
 				throw parseHttpError(response, data);
 			}
 
-			headers.Authorization = `Bearer ${this.token}`;
+			request.headers.Authorization = `Bearer ${this.token}`;
 			response = await send();
 			assertActive();
 		}
@@ -233,16 +214,11 @@ export class FetchHttpClient implements HttpClient {
 				(error.status === 429 || error.status === 503) &&
 				error.retryAfterMs !== undefined
 			) {
-				const retryAt = Date.now() + error.retryAfterMs;
-
-				this.readRetryAt.set(
-					readPath,
-					Math.max(this.readRetryAt.get(readPath) ?? 0, retryAt),
-				);
+				this.readBackoff.defer(readPath, error.retryAfterMs);
 			}
 
 			if (response.status === 401 && (!auth || path === "/auth/refresh"))
-				this.policy.onUnauthorized?.();
+				this.policy.onUnauthorized?.(error);
 			throw error;
 		}
 		if (issuesToken && !options.detached) {
@@ -258,24 +234,6 @@ export class FetchHttpClient implements HttpClient {
 
 		return data;
 	}
-}
-
-async function waitForReadDelay(delay: number, signal?: AbortSignal) {
-	signal?.throwIfAborted();
-
-	await new Promise<void>((resolve, reject) => {
-		const timer = setTimeout(() => {
-			signal?.removeEventListener("abort", abort);
-			resolve();
-		}, delay);
-
-		function abort() {
-			clearTimeout(timer);
-			reject(signal?.reason);
-		}
-
-		signal?.addEventListener("abort", abort, { once: true });
-	});
 }
 
 async function waitForRefresh(refresh: Promise<unknown>, signal?: AbortSignal) {
