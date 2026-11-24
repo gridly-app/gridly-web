@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { formatMoment } from "@/domain/shipment";
 import { warehousePath } from "@/ports/navigation";
+import { useOrder, useWarehouseScopeId } from "@/ports/warehouse";
 import { ApiError, type HttpClient } from "@/shared/http";
 import { errorMessage } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
@@ -12,7 +13,8 @@ import {
 	type ShipmentResource,
 	useShipmentResource,
 } from "./api/useShipmentResource";
-import type { WorkingShipment } from "./model/shipment.dto.ts";
+import type { WorkingShipment } from "./model/shipment.dto";
+import { useShipmentActions } from "./model/useShipmentActions";
 import { ShipmentDocumentsEditor } from "./ui/ShipmentDocumentsEditor/ShipmentDocumentsEditor";
 import { ShipmentEditor } from "./ui/ShipmentEditor/ShipmentEditor";
 import { ShipmentSharing } from "./ui/ShipmentSharing/ShipmentSharing";
@@ -21,13 +23,51 @@ import styles from "./shared.module.css";
 
 export function ShipmentManagement({ http }: { http: HttpClient }) {
 	const { warehouseId = "", orderId = "" } = useParams();
+	const order = useOrder(warehouseId, orderId);
+
+	if (order.isPending)
+		return <Feedback tone="loading">Загружаем заказ…</Feedback>;
+	if (order.error) {
+		return (
+			<Feedback tone="error" action={<RetryButton onRetry={order.refetch} />}>
+				{errorMessage(order.error)}
+			</Feedback>
+		);
+	}
+	if (!order.data || order.data.kind !== "outbound") {
+		return (
+			<Feedback tone="info">
+				Редактор отгрузки доступен только для исходящих заказов.
+			</Feedback>
+		);
+	}
+
+	return (
+		<OutboundManagement
+			http={http}
+			warehouseId={warehouseId}
+			orderId={orderId}
+		/>
+	);
+}
+
+function OutboundManagement({
+	http,
+	warehouseId,
+	orderId,
+}: {
+	http: HttpClient;
+	warehouseId: string;
+	orderId: string;
+}) {
+	const scopeId = useWarehouseScopeId();
 	const resource = useShipmentResource(http, warehouseId, orderId);
 	const { query } = resource;
 	const accessLost =
 		query.error instanceof ApiError &&
 		[401, 403, 404].includes(query.error.status);
 	const shipment = accessLost ? undefined : query.data;
-	const contentKey = JSON.stringify([warehouseId, orderId]);
+	const contentKey = JSON.stringify([scopeId, warehouseId, orderId]);
 
 	return (
 		<div className={styles.page}>
@@ -47,6 +87,8 @@ export function ShipmentManagement({ http }: { http: HttpClient }) {
 				<ManagementContent
 					key={contentKey}
 					shipment={shipment}
+					warehouseId={warehouseId}
+					orderId={orderId}
 					resource={resource}
 				/>
 			)}
@@ -54,90 +96,34 @@ export function ShipmentManagement({ http }: { http: HttpClient }) {
 	);
 }
 
-export type RunShipmentAction = (
-	action: (signal: AbortSignal) => Promise<void>,
-	options?: { refreshAfterWrite: boolean },
-) => Promise<void>;
-
 function ManagementContent({
 	shipment,
+	warehouseId,
+	orderId,
 	resource,
 }: {
 	shipment: WorkingShipment;
+	warehouseId: string;
+	orderId: string;
 	resource: ShipmentResource;
 }) {
-	const [busy, setBusy] = useState(false);
-	const [notice, setNotice] = useState("");
-	const [writeError, setWriteError] = useState("");
-	const [refreshError, setRefreshError] = useState("");
-	const request = useRef<AbortController | null>(null);
-	const canWrite = !busy && !refreshError;
-
-	useEffect(() => () => request.current?.abort(), []);
-
-	async function refresh(signal: AbortSignal) {
-		setRefreshError("");
-
-		try {
-			await resource.refresh();
-		} catch (error) {
-			if (!signal.aborted) setRefreshError(errorMessage(error));
-		}
-	}
-
-	const run: RunShipmentAction = async (
-		action,
-		{ refreshAfterWrite } = { refreshAfterWrite: false },
-	) => {
-		if (request.current || !canWrite) return;
-
-		const controller = new AbortController();
-		const signal = AbortSignal.any([
-			controller.signal,
-			AbortSignal.timeout(60000),
-		]);
-
-		request.current = controller;
-		setBusy(true);
-		setWriteError("");
-		setNotice("");
-
-		try {
-			await action(signal);
-
-			if (controller.signal.aborted) return;
-
-			setNotice("Изменения сохранены.");
-
-			if (refreshAfterWrite) await refresh(controller.signal);
-		} catch (error) {
-			if (!controller.signal.aborted) setWriteError(errorMessage(error));
-		} finally {
-			request.current = null;
-
-			if (!controller.signal.aborted) setBusy(false);
-		}
-	};
-
-	async function handleRefresh() {
-		if (request.current) return;
-
-		const controller = new AbortController();
-
-		request.current = controller;
-		setBusy(true);
-
-		try {
-			await refresh(controller.signal);
-		} finally {
-			request.current = null;
-
-			if (!controller.signal.aborted) setBusy(false);
-		}
-	}
+	const [editorVersion, setEditorVersion] = useState(0);
+	const {
+		busy,
+		canWrite,
+		notice,
+		writeError,
+		refreshError,
+		run,
+		handleRefresh,
+	} = useShipmentActions(resource.refresh);
 
 	function handleSave(body: Parameters<ShipmentResource["save"]>[0]) {
-		return run((signal) => resource.save(body, signal));
+		return run(async (signal) => {
+			await resource.save(body, signal);
+
+			setEditorVersion((version) => version + 1);
+		});
 	}
 
 	return (
@@ -148,23 +134,35 @@ function ManagementContent({
 			</p>
 			{notice && <Feedback tone="success">{notice}</Feedback>}
 			{writeError && <Feedback tone="error">{writeError}</Feedback>}
+			{resource.creation?.status === "unknown" && (
+				<Feedback tone="warning">
+					Сервер мог сохранить{" "}
+					{resource.creation.kind === "link" ? "ссылку" : "документ"}. Исход
+					неизвестен. Новая выдача ссылки и загрузка документа заблокированы до
+					сверки операции с сервером.
+				</Feedback>
+			)}
 			{refreshError && (
 				<Feedback tone="warning">
 					Не удалось обновить данные отгрузки. {refreshError}
 				</Feedback>
 			)}
 			<ShipmentEditor
-				key={shipment.revision}
+				key={editorVersion}
 				shipment={shipment}
 				busy={!canWrite}
 				save={handleSave}
 			/>
 			<ShipmentSharing
+				warehouseId={warehouseId}
+				orderId={orderId}
 				shipment={shipment}
 				issueLink={resource.issueLink}
 				revokeLink={resource.revokeLink}
 				run={run}
 				busy={!canWrite}
+				attempt={resource.creation}
+				retryLink={resource.retryLink}
 			/>
 			<ShipmentDocumentsEditor
 				documents={shipment.documents}
@@ -173,6 +171,14 @@ function ManagementContent({
 				publishDocument={resource.publishDocument}
 				run={run}
 				busy={!canWrite}
+				creationBlocked={!!resource.creation}
+				canRetryUpload={
+					resource.creation?.kind === "document" &&
+					resource.creation.status === "unknown"
+				}
+				hasUploadFile={resource.hasUploadFile}
+				retryUpload={resource.retryUpload}
+				downloadDocument={resource.downloadDocument}
 			/>
 			<Button variant="default" disabled={busy} onClick={handleRefresh}>
 				Обновить данные

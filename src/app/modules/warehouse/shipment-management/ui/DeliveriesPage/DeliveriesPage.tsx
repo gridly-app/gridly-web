@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { formatUnit } from "@/domain/shipment";
+import { formatUnit, shipmentTrackingSchema } from "@/domain/shipment";
 import { orderValue } from "@/domain/warehouse";
 import { shipmentManagementPath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
@@ -21,15 +21,9 @@ import {
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { Select } from "@/shared/ui/forms";
 import { Link } from "@/shared/ui/navigation";
-import {
-	type WorkingShipment,
-	workingShipmentSchema,
-} from "../../model/shipment.dto.ts";
+import { type WorkingShipment } from "../../model/shipment.dto.ts";
 import styles from "../../shared.module.css";
 
-const trackingSchema = workingShipmentSchema
-	.pick({ order: true, milestones: true, items: true, route: true })
-	.partial({ items: true });
 const quantity = new Intl.NumberFormat("ru-RU");
 type DeliveryItem = Pick<
 	WorkingShipment["items"][number],
@@ -63,7 +57,7 @@ export function DeliveriesPage({
 		queryKey: [scopeId, "delivery", warehouse.id, selected?.id],
 		queryFn: async ({ signal }) =>
 			parseResponse(
-				trackingSchema,
+				shipmentTrackingSchema,
 				await http.request(
 					`/warehouses/${encodeURIComponent(warehouse.id)}/orders/${encodeURIComponent(selected?.id ?? "")}/shipment`,
 					{ signal },
@@ -88,16 +82,8 @@ export function DeliveriesPage({
 					unit: "pcs",
 				};
 			}) ?? []);
-	const warehouseAddress =
-		warehouse.cabinet?.location.trim() ||
-		warehouse.settings?.location.trim() ||
-		warehouse.location.trim();
-	const origin =
-		query.data?.route?.origin_address?.trim() ||
-		(selected?.kind === "outbound" ? warehouseAddress : "");
-	const destination =
-		query.data?.route?.destination_address?.trim() ||
-		(selected?.kind === "inbound" ? warehouseAddress : "");
+	const origin = query.data?.route?.origin_address?.trim();
+	const destination = query.data?.route?.destination_address?.trim();
 	return (
 		<section className={styles.page} aria-labelledby="deliveries-heading">
 			<h1 id="deliveries-heading">Доставки</h1>
@@ -143,10 +129,10 @@ export function DeliveriesPage({
 						<h2 id="delivery-route-heading">Маршрут</h2>
 						<DetailFacts className={styles.deliveryAddresses}>
 							<DetailFact label="Адрес погрузки">
-								{origin || "Не указан"}
+								{origin || "Адрес не указан"}
 							</DetailFact>
 							<DetailFact label="Адрес выгрузки">
-								{destination || "Не указан"}
+								{destination || "Адрес не указан"}
 							</DetailFact>
 						</DetailFacts>
 					</section>

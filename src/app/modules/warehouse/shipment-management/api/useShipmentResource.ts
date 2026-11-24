@@ -1,7 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
 
-import { issuedLinkSchema } from "@/domain/shipment";
+import {
+	useSandboxAccess,
+	useSession,
+	useWorkspaceMode,
+} from "@/ports/session";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 import { type HttpClient, parseResponse } from "@/shared/http";
 
@@ -10,6 +13,9 @@ import {
 	workingShipmentSchema,
 } from "../model/shipment.dto";
 import type { shipmentDraft } from "../model/shipmentEditor";
+import { shipmentDocuments } from "./shipmentDocuments";
+import { shipmentSharing } from "./shipmentSharing";
+import { useShipmentCreation } from "./useShipmentCreation";
 
 export function useShipmentResource(
 	http: HttpClient,
@@ -18,21 +24,27 @@ export function useShipmentResource(
 ) {
 	const path = `/warehouses/${encodeURIComponent(warehouseId)}/orders/${encodeURIComponent(orderId)}/shipment`;
 	const scopeId = useWarehouseScopeId();
+	const session = useSession();
+	const mode = useWorkspaceMode();
+	const { access } = useSandboxAccess();
+	const accountSessionId =
+		session.status === "active" ? session.sessionId : null;
+	const sessionId = mode === "sandbox" ? access?.access_id : accountSessionId;
+	const storageScope = mode === "sandbox" ? [mode, sessionId] : [sessionId];
+	const storageKey = sessionId
+		? `gridly.shipment-attempt:${JSON.stringify([...storageScope, warehouseId, orderId])}`
+		: null;
 	const queryKey = [scopeId, "shipment-management", warehouseId, orderId];
-	const issueAttempt = useRef<{
-		scopeId: string;
-		path: string;
-		expiresAt: string;
-		key: string;
-	} | null>(null);
 	const client = useQueryClient();
+	async function readShipment(signal: AbortSignal) {
+		const response = await http.request(path, { signal });
+
+		return parseResponse(workingShipmentSchema, response);
+	}
+
 	const query = useQuery({
 		queryKey,
-		queryFn: async ({ signal }) =>
-			parseResponse(
-				workingShipmentSchema,
-				await http.request(path, { signal }),
-			),
+		queryFn: ({ signal }) => readShipment(signal),
 		retry: false,
 		refetchOnWindowFocus: false,
 	});
@@ -63,89 +75,33 @@ export function useShipmentResource(
 		await applyConfirmedUpdate(signal, () => shipment);
 	}
 
-	async function issueLink(expiresAt: string, signal: AbortSignal) {
-		const previous = issueAttempt.current;
-		const key =
-			previous?.scopeId === scopeId &&
-			previous.path === path &&
-			previous.expiresAt === expiresAt
-				? previous.key
-				: crypto.randomUUID();
-		const attempt = { scopeId, path, expiresAt, key };
-
-		issueAttempt.current = attempt;
-
-		const response = await http.request(`${path}/share-link`, {
-			method: "POST",
-			body: { expires_at: expiresAt },
-			idempotencyKey: key,
-			privacy: true,
-			signal,
-		});
-		const link = parseResponse(issuedLinkSchema, response);
-
-		if (issueAttempt.current === attempt) issueAttempt.current = null;
-
-		await applyConfirmedUpdate(
-			signal,
-			(current) =>
-				current && { ...current, share_link: { expires_at: link.expires_at } },
-		);
-
-		return link;
-	}
-
-	async function revokeLink(signal: AbortSignal) {
-		await http.request(`${path}/share-link`, { method: "DELETE", signal });
-
-		if (
-			issueAttempt.current?.scopeId === scopeId &&
-			issueAttempt.current.path === path
-		) {
-			issueAttempt.current = null;
-		}
-
-		await applyConfirmedUpdate(
-			signal,
-			(current) => current && { ...current, share_link: null },
-		);
-	}
-
-	async function uploadDocument(body: FormData, signal: AbortSignal) {
-		await http.request(`${path}/documents`, { method: "POST", body, signal });
-	}
-
-	async function publishDocument(
-		id: string,
-		published: boolean,
-		signal: AbortSignal,
-	) {
-		await http.request(`${path}/documents/${encodeURIComponent(id)}`, {
-			method: "PATCH",
-			body: { published },
-			signal,
-		});
-
-		await applyConfirmedUpdate(
-			signal,
-			(current) =>
-				current && {
-					...current,
-					documents: current.documents.map((document) =>
-						document.id === id ? { ...document, published } : document,
-					),
-				},
-		);
-	}
+	const creation = useShipmentCreation(queryKey, storageKey, query.refetch);
+	const documents = shipmentDocuments({
+		http,
+		path,
+		creation,
+		getDocumentCount: () => query.data?.documents.length,
+		readShipment,
+		replaceShipment: (signal, shipment) =>
+			applyConfirmedUpdate(signal, () => shipment),
+	});
+	const sharing = shipmentSharing({
+		http,
+		path,
+		creation,
+		rereadShipment: async () =>
+			(await query.refetch({ throwOnError: true })).data,
+		applyConfirmedUpdate,
+	});
 
 	return {
+		creation: creation.attempt,
+		hasUploadFile: creation.hasUploadFile,
 		query,
 		refresh,
 		save,
-		issueLink,
-		revokeLink,
-		uploadDocument,
-		publishDocument,
+		...documents,
+		...sharing,
 	};
 }
 
