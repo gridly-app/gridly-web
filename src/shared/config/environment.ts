@@ -1,5 +1,7 @@
 export const environment = {
-	adminGuestLinkReplay: import.meta.env?.VITE_ADMIN_GUEST_LINK_REPLAY === "true",
+	extendedLogin: import.meta.env?.VITE_EXTENDED_LOGIN === "true",
+	adminGuestLinkReplay:
+		import.meta.env?.VITE_ADMIN_GUEST_LINK_REPLAY === "true",
 	apiBaseUrl:
 		typeof import.meta.env?.VITE_API_BASE_URL === "string" &&
 		import.meta.env?.VITE_API_BASE_URL
