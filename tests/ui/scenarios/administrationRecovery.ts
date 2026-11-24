@@ -7,7 +7,8 @@ import type { UiScenario } from "../uiBrowserFixture";
 export async function administrationRecoveryScenario(scenario: UiScenario) {
 	await scenario.signIn();
 	await checkUserConflict(scenario);
-	await checkLinkCreationRecovery(scenario);
+	await checkLinkCreationRecovery(scenario, false);
+	await checkLinkCreationRecovery(scenario, true);
 }
 
 async function checkUserConflict({ page, base, api }: UiScenario) {
@@ -71,7 +72,10 @@ async function checkUserConflict({ page, base, api }: UiScenario) {
 	expect(saves).toBe(2);
 }
 
-async function checkLinkCreationRecovery({ page, base, api }: UiScenario) {
+async function checkLinkCreationRecovery(
+	{ page, base, api }: UiScenario,
+	loseResponse: boolean,
+) {
 	const mock = createAdminMock();
 	const name = "Ссылка с потерянным ответом";
 	const firstResponse = Promise.withResolvers<void>();
@@ -82,7 +86,7 @@ async function checkLinkCreationRecovery({ page, base, api }: UiScenario) {
 		const request = route.request();
 		const method = request.method();
 
-		if (method === "GET" && issues === 2) {
+		if (method === "GET" && issues === 1 && !loseResponse) {
 			return route.fulfill({
 				status: 503,
 				json: { code: "UPSTREAM_UNAVAILABLE" },
@@ -101,13 +105,13 @@ async function checkLinkCreationRecovery({ page, base, api }: UiScenario) {
 		if (!response) return route.fallback();
 
 		if (method === "POST") {
-			expect(response.status).toBe(201);
+			expect(response.status).toBe(issues ? 200 : 201);
 			issues++;
 
 			if (issues === 1) {
 				await firstResponse.promise;
 
-				return route.abort("connectionreset");
+				if (loseResponse) return route.abort("connectionreset");
 			}
 		}
 
@@ -140,6 +144,22 @@ async function checkLinkCreationRecovery({ page, base, api }: UiScenario) {
 		firstResponse.resolve();
 	}
 
+	if (!loseResponse) {
+		await expect(
+			page.getByText("Доступ сохранён.", { exact: true }),
+		).toBeVisible();
+		await expect(page.getByRole("alert")).toContainText(
+			"Сервис временно недоступен",
+		);
+		await expect(
+			page.getByRole("button", { name: "Копировать ссылку", exact: true }),
+		).toBeVisible();
+		expect(issues).toBe(1);
+		await page.unroute(routePattern);
+
+		return;
+	}
+
 	const acknowledge = page.getByRole("button", {
 		name: "Я проверил список, разрешить новый выпуск",
 	});
@@ -163,25 +183,8 @@ async function checkLinkCreationRecovery({ page, base, api }: UiScenario) {
 	await notice.getByRole("button", { name: "Обновить список" }).click();
 	await expect(page.getByRole("cell", { name, exact: true })).toHaveCount(1);
 	await expect(create).toBeDisabled();
-	await expect(acknowledge).toBeVisible();
+	await expect(acknowledge).toHaveCount(0);
 	expect(issues).toBe(1);
-
-	await acknowledge.click();
-	await create.click();
-	await editor.getByLabel("Название").fill("Подтверждённый выпуск");
-	await editor.getByRole("checkbox", { name: /ЗК-2087/ }).check();
-	await issue.click();
-
-	await expect(
-		page.getByText("Доступ сохранён.", { exact: true }),
-	).toBeVisible();
-	await expect(page.getByRole("alert")).toContainText(
-		"Сервис временно недоступен",
-	);
-	await expect(
-		page.getByRole("button", { name: "Копировать ссылку", exact: true }),
-	).toBeVisible();
-	expect(issues).toBe(2);
 
 	await page.unroute(routePattern);
 }

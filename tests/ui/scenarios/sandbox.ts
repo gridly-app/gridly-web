@@ -118,7 +118,7 @@ export async function sandboxScenario({
 	await expect(sandboxThreshold).toHaveValue(changedThreshold);
 	expect(api.sandboxStarts).toBe(1);
 
-	await page.keyboard.press("Escape");
+	await page.getByRole("link", { name: "Карта склада", exact: true }).click();
 	await expect(page).toHaveURL(/\/map$/);
 	await page.getByRole("button", { name: "Меню профиля" }).click();
 	await page
@@ -155,7 +155,7 @@ export async function sandboxScenario({
 	await expect(sandboxThreshold).toHaveValue(changedThreshold);
 	expect(api.sandboxStarts).toBe(1);
 
-	await page.keyboard.press("Escape");
+	await page.getByRole("link", { name: "Карта склада", exact: true }).click();
 	await expect(page).toHaveURL(/\/map$/);
 	await page.getByRole("link", { name: "Gridly", exact: true }).click();
 	const exitDialog = page.getByRole("alertdialog", {
@@ -172,7 +172,7 @@ export async function sandboxScenario({
 	await expect(sandboxThreshold).toHaveValue(changedThreshold);
 	expect(api.sandboxStores.size).toBe(1);
 
-	await page.keyboard.press("Escape");
+	await page.getByRole("link", { name: "Карта склада", exact: true }).click();
 	await expect(page).toHaveURL(/\/map$/);
 	await page.getByRole("button", { name: "Меню профиля" }).click();
 	await page.getByRole("menuitem", { name: "Выйти из песочницы" }).click();

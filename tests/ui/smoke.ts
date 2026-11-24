@@ -1,4 +1,7 @@
+import { controlAppearanceScenario } from "./scenarios/controlAppearance";
 import { accountScenario } from "./scenarios/account";
+import { signInHistoryScenario } from "./scenarios/signInHistory";
+import { shipmentAccessScenario } from "./scenarios/shipmentAccess";
 import { administrationScenario } from "./scenarios/administration";
 import { administrationRecoveryScenario } from "./scenarios/administrationRecovery";
 import { catalogScenario } from "./scenarios/catalog";
@@ -25,8 +28,11 @@ import { warehouseSettingsScenario } from "./scenarios/warehouseSettings";
 import { output, runScenarios } from "./uiBrowserFixture";
 
 const scenarios = [
+	["control-appearance", controlAppearanceScenario],
 	["loading", loadingScenario],
 	["account", accountScenario],
+	["sign-in-history", signInHistoryScenario],
+	["shipment-access", shipmentAccessScenario],
 	["warehouse-navigation", warehouseNavigationScenario],
 	["warehouse-deletion", warehouseDeletionScenario],
 	["catalog", catalogScenario],

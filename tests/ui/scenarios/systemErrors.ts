@@ -46,34 +46,40 @@ export async function systemErrorsScenario({ page, base, signIn }: UiScenario) {
 		changes: [],
 		correlation_id: operationId,
 	};
-	const olderPage = Promise.withResolvers<void>();
-	let firstPageChanged = false;
+	const older = {
+		...mapEvent,
+		id: "older-event",
+		event_label: "Предыдущая ошибка",
+		occurred_at: "2026-11-12T12:00:00Z",
+	};
 	await page.route(auditRoute, async (route) => {
-		const offset = new URL(route.request().url()).searchParams.get("offset");
+		const params = new URL(route.request().url()).searchParams;
+		expect(params.has("offset")).toBe(false);
+		const cursor = params.get("cursor");
 
-		if (offset === "0") {
-			const event = firstPageChanged
-				? { ...mapEvent, id: "replacement-event" }
-				: mapEvent;
-
-			await route.fulfill({ json: { total: 2, items: [event] } });
-
-			return;
+		if (params.has("q")) {
+			expect(params.get("q")).toBe("Предыдущая");
+			return route.fulfill({
+				json: { total: 1, items: [older], next_cursor: null },
+			});
 		}
 
-		await olderPage.promise;
-		await route.fulfill({
+		return route.fulfill({
 			json: {
 				total: 2,
-				items: [
-					{
-						...mapEvent,
-						id: "older-event",
-						event_label: "Предыдущая ошибка",
-						occurred_at: "2026-11-12T12:00:00Z",
-					},
-				],
+				items: [cursor ? older : mapEvent],
+				next_cursor: cursor ? null : "opaque-cursor",
 			},
+		});
+	});
+	await page.route("**/api/v1/admin/shipment-audit/export?*", async (route) => {
+		expect(new URL(route.request().url()).searchParams.get("q")).toBe(
+			"Предыдущая",
+		);
+		await route.fulfill({
+			contentType: "text/csv",
+			headers: { "Content-Disposition": "attachment; filename=audit.csv" },
+			body: "event\nПредыдущая ошибка",
 		});
 	});
 	await page.goto(`${base}/admin/shipments?tab=system`);
@@ -87,7 +93,7 @@ export async function systemErrorsScenario({ page, base, signIn }: UiScenario) {
 	await expect(
 		page.getByRole("row").filter({ hasText: unrelatedError.message }),
 	).toContainText("Контекст операции недоступен");
-	await expect(errors).toContainText("Компонент системы");
+	await expect(errors).toContainText("constructor");
 	await errorRow.getByRole("button", { name: "Связанные события" }).click();
 	const errorDialog = page.getByRole("dialog", { name: "Подробности ошибки" });
 	await expect(
@@ -111,29 +117,18 @@ export async function systemErrorsScenario({ page, base, signIn }: UiScenario) {
 		name: "Скачать аудит в CSV",
 	});
 
-	try {
-		await expect(auditTable).toContainText("Сохранение карты склада");
-		await expect(exportButton).toBeDisabled();
-	} finally {
-		olderPage.resolve();
-	}
-
-	await expect(auditTable).toContainText("Предыдущая ошибка");
+	await expect(auditTable).toContainText("Сохранение карты склада");
 	await expect(exportButton).toBeEnabled();
-	firstPageChanged = true;
-	await exportButton.click();
-	await expect(
-		page.getByText("Журнал изменился после загрузки.", { exact: false }),
-	).toBeVisible();
-	await expect(exportButton).toBeDisabled();
-
+	await expect(auditTable).not.toContainText("Предыдущая ошибка");
+	await page.getByRole("button", { name: "Загрузить ещё" }).click();
+	await expect(auditTable).toContainText("Предыдущая ошибка");
 	await page
-		.getByRole("link", { name: "Состояние системы", exact: true })
-		.click();
-	await errorRow.getByRole("button", { name: "Связанные события" }).click();
-	await expect(
-		errorDialog.getByRole("link", { name: "Открыть раздел «Карта склада»" }),
-	).toHaveAttribute("href", "/warehouses/warehouse-demo/map");
+		.getByRole("textbox", { name: "Поиск по аудиту" })
+		.fill("Предыдущая");
+	await expect(auditTable).not.toContainText("Сохранение карты склада");
+	const downloadEvent = page.waitForEvent("download");
+	await exportButton.click();
+	expect((await downloadEvent).suggestedFilename()).toBe("audit.csv");
 
 	const missingOrder = "warehouse_id=warehouse-demo&order_id=missing-order";
 	await page.goto(`${base}/admin/shipments?tab=system&${missingOrder}`);

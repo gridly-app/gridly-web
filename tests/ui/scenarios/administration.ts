@@ -25,7 +25,11 @@ export async function administrationScenario({
 		.getByRole("link", { name: "Северный склад", exact: true })
 		.click();
 	await page.getByRole("link", { name: "Настройки", exact: true }).click();
-	await expect(settings).toBeVisible();
+	await expect(page).toHaveURL(/\/warehouses\/warehouse-north\/settings$/);
+	await expect(
+		page.getByRole("heading", { name: "Настройки склада", exact: true }),
+	).toBeVisible();
+	await expect(settings).toHaveCount(0);
 	await expect(
 		page.getByRole("textbox", { name: "Название склада", exact: true }),
 	).toHaveValue("Северный склад");
@@ -199,10 +203,12 @@ export async function administrationScenario({
 		});
 	});
 	await updatedOperator
-		.getByRole("button", { name: /^Удалить пользователя:/ })
+		.getByRole("button", { name: /^Деактивировать аккаунт:/ })
 		.click();
-	const removal = page.getByRole("dialog", { name: "Удалить пользователя?" });
-	const confirm = removal.getByRole("button", { name: "Удалить пользователя" });
+	const removal = page.getByRole("dialog", { name: "Деактивировать аккаунт?" });
+	const confirm = removal.getByRole("button", {
+		name: "Деактивировать аккаунт",
+	});
 	await confirm.click();
 	await expect(confirm).toHaveCount(0);
 	await removal

@@ -11,7 +11,7 @@ export async function warehouseReportScenario({
 	const { store } = await loadWorkspaceSamples(now.getTime());
 	const ordersPath = "/api/v1/warehouses/warehouse-demo/orders";
 	await page.clock.setFixedTime(now);
-	await page.route(`**${ordersPath}?*`, (route) =>
+	await page.route(`**${ordersPath}`, (route) =>
 		route.fulfill({ json: store.get(ordersPath) }),
 	);
 
@@ -46,15 +46,19 @@ export async function warehouseReportScenario({
 		const bounds = element.getBoundingClientRect();
 		const range = document.createRange();
 		range.selectNodeContents(element);
-		return Array.from(range.getClientRects())
-			.filter(
-				(rect) =>
-					rect.left < bounds.left ||
-					rect.right > bounds.right ||
-					rect.top < bounds.top ||
-					rect.bottom > bounds.bottom,
-			)
-			.map((rect) => ({ text: rect.toJSON(), badge: bounds.toJSON() }));
+		const rects = Array.from(range.getClientRects());
+		const overflowing = rects.filter(
+			(rect) =>
+				rect.left < bounds.left ||
+				rect.right > bounds.right ||
+				rect.top < bounds.top ||
+				rect.bottom > bounds.bottom,
+		);
+
+		return overflowing.map((rect) => ({
+			text: rect.toJSON(),
+			badge: bounds.toJSON(),
+		}));
 	});
 	expect(overflow).toEqual([]);
 

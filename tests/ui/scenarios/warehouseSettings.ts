@@ -6,13 +6,19 @@ export async function warehouseSettingsScenario({
 	page,
 	ready,
 	signIn,
+	screenshot,
 }: UiScenario) {
 	await signIn();
 	const dialog = page.locator("[data-slot=dialog-popup]");
 	await ready("settings");
 	await expect(
-		page.getByRole("dialog", { name: "Настройки склада: Центральный склад" }),
+		page.getByRole("heading", { name: "Настройки склада", exact: true }),
 	).toBeVisible();
+	await expect(page.getByRole("dialog")).toHaveCount(0);
+	await expect(
+		page.getByRole("link", { name: "Карта склада", exact: true }),
+	).toBeVisible();
+	await screenshot("warehouse-settings");
 	await expect(
 		page.getByRole("combobox", { name: "Правило размещения", exact: true }),
 	).toHaveCount(0);
@@ -29,7 +35,9 @@ export async function warehouseSettingsScenario({
 	await page
 		.getByRole("button", { name: "Сохранить порог", exact: true })
 		.click();
-	await expect(page.getByRole("alert")).toContainText("Объект изменился");
+	await expect(
+		page.getByRole("alert").filter({ hasText: "Объект изменился" }),
+	).toBeVisible();
 	await expect(threshold).toHaveValue("17");
 	api.settingsFailure = 0;
 	await page
@@ -55,7 +63,10 @@ export async function warehouseSettingsScenario({
 	settings.revision++;
 	api.settingsFailure = 409;
 	await saveCity.click();
-	await expect(page.getByRole("alert")).toContainText("Объект изменился");
+	await expect(
+		page.getByRole("alert").filter({ hasText: "Объект изменился" }),
+	).toBeVisible();
+	await expect(city).toHaveText("Казань");
 	api.settingsFailure = 0;
 	await page.getByRole("button", { name: "Вернуть сохранённый город" }).click();
 	await chooseKazan();
@@ -87,6 +98,9 @@ export async function warehouseSettingsScenario({
 		}),
 	).toBeEnabled();
 	await page.keyboard.press("Escape");
+	await expect(page).toHaveURL(/\/settings$/);
+	await expect(setting).toBeChecked({ checked: !previousChecked });
+	await page.getByRole("link", { name: "Карта склада", exact: true }).click();
 	await expect(page).toHaveURL(/\/map$/);
 	await page
 		.getByRole("combobox", {
