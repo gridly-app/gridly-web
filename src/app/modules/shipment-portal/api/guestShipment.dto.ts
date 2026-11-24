@@ -37,3 +37,5 @@ export const guestShipmentsSchema = z.union([
 		],
 	})),
 ]);
+
+export type GuestShipments = z.infer<typeof guestShipmentsSchema>;

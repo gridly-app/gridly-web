@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-
 import { categories, formatMoment, type Shipment } from "@/domain/shipment";
-import { saveResponseFile } from "@/shared/http";
 import { Button } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 
-import { accessDenied, guestDownload } from "../../model/useGuestShipment";
+import type { DownloadGuestDocument } from "../../api/guestShipmentApi";
+import { useGuestDocumentDownload } from "../../model/useGuestDocumentDownload";
 
 import styles from "../../shared.module.css";
 
@@ -14,49 +12,21 @@ export function ShipmentDocuments({
 	timeZone,
 	token,
 	refresh,
+	downloadFile,
 }: {
 	documents: Shipment["documents"];
 	timeZone: Shipment["order"]["time_zone"];
 	token: string;
 	refresh: () => void;
+	downloadFile: DownloadGuestDocument;
 }) {
-	const [pending, setPending] = useState("");
-	const [error, setError] = useState("");
-	const request = useRef<AbortController | null>(null);
-	useEffect(() => () => request.current?.abort(), []);
-	async function download(id: string, name: string) {
-		if (request.current) return;
-		const controller = new AbortController();
-		request.current = controller;
-		setPending(id);
-		setError("");
-		try {
-			const signal = AbortSignal.any([
-				controller.signal,
-				AbortSignal.timeout(60000),
-			]);
-			await saveResponseFile(
-				await guestDownload(token, id, signal),
-				name,
-				signal,
-			);
-		} catch (reason) {
-			if (controller.signal.aborted) return;
-			setError(
-				accessDenied(reason)
-					? "Документ недоступен."
-					: "Не удалось скачать документ. Попробуйте ещё раз.",
-			);
-			if (accessDenied(reason)) refresh();
-		} finally {
-			request.current = null;
-			if (!controller.signal.aborted) setPending("");
-		}
-	}
+	const model = useGuestDocumentDownload(token, downloadFile, refresh);
+	const isPending = model.pendingDocumentId !== null;
+
 	return (
 		<section className={styles.panel}>
 			<h2>Документы</h2>
-			{error && <Feedback tone="warning">{error}</Feedback>}
+			{model.error && <Feedback tone="warning">{model.error}</Feedback>}
 			{documents.length ? (
 				<div className={styles.scroll}>
 					<table className={styles.table}>
@@ -71,23 +41,14 @@ export function ShipmentDocuments({
 						</thead>
 						<tbody>
 							{documents.map((document) => (
-								<tr key={document.id}>
-									<th scope="row">{document.name}</th>
-									<td>{categories[document.category]}</td>
-									<td>{formatMoment(document.uploaded_at, timeZone)}</td>
-									<td>{document.version}</td>
-									<td>
-										<Button
-											variant="default"
-											size="sm"
-											disabled={!!pending}
-											aria-label={`Скачать ${document.name}`}
-											onClick={() => void download(document.id, document.name)}
-										>
-											{pending === document.id ? "Скачиваем…" : "Скачать"}
-										</Button>
-									</td>
-								</tr>
+								<DocumentRow
+									key={document.id}
+									document={document}
+									timeZone={timeZone}
+									isPending={isPending}
+									isDownloading={model.pendingDocumentId === document.id}
+									onDownload={model.download}
+								/>
 							))}
 						</tbody>
 					</table>
@@ -96,5 +57,46 @@ export function ShipmentDocuments({
 				<p>Опубликованных документов пока нет.</p>
 			)}
 		</section>
+	);
+}
+
+function DocumentRow({
+	document,
+	timeZone,
+	isPending,
+	isDownloading,
+	onDownload,
+}: {
+	document: Shipment["documents"][number];
+	timeZone: string;
+	isPending: boolean;
+	isDownloading: boolean;
+	onDownload: (id: string, name: string) => Promise<void>;
+}) {
+	const downloadLabel = `Скачать ${document.name}`;
+	const buttonLabel = isDownloading ? "Скачиваем…" : "Скачать";
+
+	function handleDownload() {
+		void onDownload(document.id, document.name);
+	}
+
+	return (
+		<tr>
+			<th scope="row">{document.name}</th>
+			<td>{categories[document.category]}</td>
+			<td>{formatMoment(document.uploaded_at, timeZone)}</td>
+			<td>{document.version}</td>
+			<td>
+				<Button
+					variant="default"
+					size="sm"
+					disabled={isPending}
+					aria-label={downloadLabel}
+					onClick={handleDownload}
+				>
+					{buttonLabel}
+				</Button>
+			</td>
+		</tr>
 	);
 }

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import {
 	formatMoment,
 	formatUnit,
@@ -8,14 +9,9 @@ import { Button } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Feedback } from "@/shared/ui/feedback";
 
-import styles from "../../shared.module.css";
+import { orderStates } from "../../model/shipmentLabels";
 
-const states = {
-	active: "В исполнении",
-	on_hold: "Приостановлен",
-	cancelled: "Отменён",
-	delivered: "Доставлен",
-};
+import styles from "../../shared.module.css";
 
 export function ShipmentSummary({
 	order,
@@ -23,29 +19,33 @@ export function ShipmentSummary({
 	plan,
 	checkedAt,
 	retry,
-	loading,
+	isLoading,
 }: {
 	order: Shipment["order"];
 	warehouse: Shipment["warehouse"] | null;
 	plan: Shipment["plan"] | null;
 	checkedAt: number;
 	retry: () => void;
-	loading: boolean;
+	isLoading: boolean;
 }) {
-	const plannedDates = plan?.map(({ date }) => date).sort();
+	const headingId = useId();
+	const planPeriod = plan === null ? null : plannedPeriod(plan);
+	const statusTone = order.state === "delivered" ? "success" : "neutral";
+	const priorityLabel = warehouse?.priority
+		? priorities[warehouse.priority]
+		: "Не указан";
+
 	return (
-		<section className={styles.hero} aria-labelledby="shipment-heading">
+		<section className={styles.hero} aria-labelledby={headingId}>
 			<div className={styles.heading}>
 				<div>
-					<Badge tone={order.state === "delivered" ? "success" : "neutral"}>
-						{states[order.state]}
-					</Badge>
-					<h1 id="shipment-heading">Заказ {order.number}</h1>
+					<Badge tone={statusTone}>{orderStates[order.state]}</Badge>
+					<h1 id={headingId}>Заказ {order.number}</h1>
 					<p>
 						{order.recipient} · {order.warehouse_name}
 					</p>
 				</div>
-				<Button variant="secondary" onClick={retry} disabled={loading}>
+				<Button variant="secondary" onClick={retry} disabled={isLoading}>
 					Обновить
 				</Button>
 			</div>
@@ -57,16 +57,10 @@ export function ShipmentSummary({
 					<dt>Дата заказа</dt>
 					<dd>{formatMoment(order.created_at, order.time_zone)}</dd>
 				</div>
-				{plannedDates && (
+				{planPeriod !== null && (
 					<div>
 						<dt>План отгрузки</dt>
-						<dd>
-							{plannedDates.length
-								? [...new Set([plannedDates[0], plannedDates.at(-1)])].join(
-										" — ",
-									)
-								: "Не запланировано"}
-						</dd>
+						<dd>{planPeriod}</dd>
 					</div>
 				)}
 				<div>
@@ -81,10 +75,7 @@ export function ShipmentSummary({
 			{warehouse && (
 				<>
 					<h2>Готовность на складе</h2>
-					<p>
-						Приоритет ·{" "}
-						{warehouse.priority ? priorities[warehouse.priority] : "Не указан"}
-					</p>
+					<p>Приоритет · {priorityLabel}</p>
 					{warehouse.quantities.length ? (
 						<div className={styles.scroll}>
 							<table className={styles.table}>
@@ -93,7 +84,7 @@ export function ShipmentSummary({
 										<th>Единица</th>
 										<th>Готово</th>
 										<th>В обработке</th>
-										<th>Осталось отгрузить</th>
+										<th>Ещё не взято в подготовку</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -115,4 +106,18 @@ export function ShipmentSummary({
 			)}
 		</section>
 	);
+}
+
+function plannedPeriod(plan: Shipment["plan"]) {
+	const dates = plan.map(({ date }) => date);
+
+	dates.sort();
+
+	const firstDate = dates[0];
+	const lastDate = dates.at(-1);
+
+	if (!firstDate) return "Не запланировано";
+	if (firstDate === lastDate) return firstDate;
+
+	return `${firstDate} — ${lastDate}`;
 }

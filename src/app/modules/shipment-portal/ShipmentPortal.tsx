@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 
+import { environment } from "@/shared/config";
+import { FetchHttpClient } from "@/shared/http";
 import type { ShipmentProgressSlot } from "@/ports/shipment";
 import { Button } from "@/shared/ui/controls";
 import { Feedback, Skeleton } from "@/shared/ui/feedback";
 import { Select } from "@/shared/ui/forms";
 
+import { GuestShipmentApi } from "./api/guestShipmentApi";
 import { guestShipmentView } from "./model/guestShipmentView";
 import { useGuestShipment } from "./model/useGuestShipment";
 import { ShipmentCalendar } from "./ui/ShipmentCalendar/ShipmentCalendar";
@@ -15,6 +18,10 @@ import { ShipmentSummary } from "./ui/ShipmentSummary/ShipmentSummary";
 
 import styles from "./shared.module.css";
 
+const guestApi = new GuestShipmentApi(
+	new FetchHttpClient(environment.apiBaseUrl, undefined, { refresh: false }),
+);
+
 export function ShipmentPortal({
 	progress,
 }: {
@@ -22,7 +29,16 @@ export function ShipmentPortal({
 }) {
 	const { hash } = useLocation();
 	const token = new URLSearchParams(hash.slice(1)).get("token") ?? "";
-	return <GuestOrder key={token} token={token} progress={progress} />;
+
+	return (
+		<main className={styles.page}>
+			<header className={styles.top}>
+				<strong>Gridly</strong>
+				<span>Кабинет отгрузок</span>
+			</header>
+			<GuestOrder key={token} token={token} progress={progress} />
+		</main>
+	);
 }
 
 function GuestOrder({
@@ -32,73 +48,85 @@ function GuestOrder({
 	token: string;
 	progress: ShipmentProgressSlot;
 }) {
-	const { data, checkedAt, error, loading, retry } = useGuestShipment(token);
+	const { snapshot, error, isLoading, retry } = useGuestShipment(
+		token,
+		guestApi.read,
+	);
 	const [selectedId, setSelectedId] = useState("");
-	const selected =
-		data?.orders.find((order) => order.id === selectedId) ?? data?.orders[0];
-	const view = selected ? guestShipmentView(selected) : null;
+
+	if (!token || error === "denied") {
+		return (
+			<Feedback tone="warning" title="Заказ недоступен">
+				Проверьте ссылку или запросите новую у отправителя.
+			</Feedback>
+		);
+	}
+
+	const failureTitle = snapshot
+		? "Данные могли устареть"
+		: "Не удалось загрузить заказ";
+	const failureMessage = snapshot
+		? "Показываем последнее успешное обновление."
+		: "Попробуйте загрузить заказ ещё раз.";
+	const failure = error && (
+		<Feedback
+			tone="warning"
+			title={failureTitle}
+			action={<Button onClick={retry}>Повторить</Button>}
+		>
+			{failureMessage}
+		</Feedback>
+	);
+
+	if (!snapshot) {
+		if (isLoading) return <Skeleton layout="page" label="Загружаем заказ…" />;
+
+		return failure;
+	}
+
+	const orders = snapshot.data.orders;
+	const selected = orders.find((order) => order.id === selectedId) ?? orders[0];
+	const orderOptions = orders.map(({ id, order }) => ({
+		value: id,
+		label: order.number,
+	}));
+
+	if (!selected) {
+		return (
+			<>
+				{failure}
+				<Feedback tone="empty">По этой ссылке нет доступных заказов.</Feedback>
+			</>
+		);
+	}
+
+	const view = guestShipmentView(selected);
+	const canSelectOrder = orders.length > 1;
 
 	return (
-		<main className={styles.page}>
-			<header className={styles.top}>
-				<strong>Gridly</strong>
-				<span>Кабинет отгрузок</span>
-			</header>
-			{!token || error === "denied" ? (
-				<Feedback tone="warning" title="Заказ недоступен">
-					Проверьте ссылку или запросите новую у отправителя.
-				</Feedback>
-			) : (
-				<>
-					{error && (
-						<Feedback
-							tone="warning"
-							title={
-								data ? "Данные могли устареть" : "Не удалось загрузить заказ"
-							}
-							action={<Button onClick={retry}>Повторить</Button>}
-						>
-							{data
-								? "Показываем последнее успешное обновление."
-								: "Попробуйте загрузить заказ ещё раз."}
-						</Feedback>
-					)}
-					{loading && !data && !error && (
-						<Skeleton layout="page" label="Загружаем заказ…" />
-					)}
-					{data && data.orders.length > 1 && (
-						<div className={styles.panel}>
-							<span>Заказ</span>
-							<Select
-								aria-label="Заказ"
-								value={selected?.id ?? ""}
-								onValueChange={setSelectedId}
-								options={data.orders.map(({ id, order }) => ({
-									value: id,
-									label: order.number,
-								}))}
-							/>
-						</div>
-					)}
-					{data && !selected && (
-						<Feedback tone="empty">
-							По этой ссылке нет доступных заказов.
-						</Feedback>
-					)}
-					{view && selected && (
-						<GuestShipmentSections
-							key={selected.id}
-							view={view}
-							checkedAt={checkedAt ?? 0}
-							retry={retry}
-							loading={loading}
-							token={token}
-							progress={progress}
-						/>
-					)}
-				</>
+		<>
+			{failure}
+			{canSelectOrder && (
+				<div className={styles.panel}>
+					<span>Заказ</span>
+					<Select
+						aria-label="Заказ"
+						value={selected.id}
+						onValueChange={setSelectedId}
+						options={orderOptions}
+					/>
+				</div>
 			)}
-		</main>
+			<GuestShipmentSections
+				key={selected.id}
+				view={view}
+				checkedAt={snapshot.checkedAt}
+				retry={retry}
+				isLoading={isLoading}
+				token={token}
+				progress={progress}
+			/>
+		</>
 	);
 }
 
@@ -106,14 +134,14 @@ function GuestShipmentSections({
 	view,
 	checkedAt,
 	retry,
-	loading,
+	isLoading,
 	token,
 	progress: ShipmentProgress,
 }: {
 	view: ReturnType<typeof guestShipmentView>;
 	checkedAt: number;
 	retry: () => void;
-	loading: boolean;
+	isLoading: boolean;
 	token: string;
 	progress: ShipmentProgressSlot;
 }) {
@@ -127,7 +155,7 @@ function GuestShipmentSections({
 				plan={calendar?.plan ?? null}
 				checkedAt={checkedAt}
 				retry={retry}
-				loading={loading}
+				isLoading={isLoading}
 			/>
 			{milestones && (
 				<ShipmentProgress
@@ -139,7 +167,6 @@ function GuestShipmentSections({
 				<ShipmentCalendar
 					shipment={{ order, plan: calendar.plan, actual: calendar.actual }}
 					items={calendar.items}
-					detailedItems={items ?? []}
 					priority={warehouse?.priority ?? null}
 					showPriority={warehouse !== null}
 				/>
@@ -151,6 +178,7 @@ function GuestShipmentSections({
 					timeZone={order.time_zone}
 					token={token}
 					refresh={retry}
+					downloadFile={guestApi.download}
 				/>
 			)}
 		</>
