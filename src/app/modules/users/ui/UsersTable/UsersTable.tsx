@@ -8,6 +8,7 @@ import {
 	type AuditUser,
 	type EditableAccount,
 	isEditableAccount,
+	userRowKey,
 } from "../../api/users.dto";
 
 import { Badge } from "@/shared/ui/dataDisplay";
@@ -35,7 +36,7 @@ export function UsersTable({
 }: {
 	users: AuditUser[];
 	onEdit: (user: EditableAccount) => void;
-	onDelete: (user: EditableAccount) => void;
+	onDelete: (user: EditableAccount, warehouseId?: string) => void;
 }) {
 	const columns: TableColumns<AuditUser> = [
 		{
@@ -60,14 +61,16 @@ export function UsersTable({
 		{
 			id: "warehouses",
 			label: "Склады и разрешения",
-			value: (user) =>
-				user.kind === "account"
-					? user.warehouses
-							.map((entry) => entry.warehouse_name)
-							.sort(compareWarehouseNames)
-							.join(", ")
-					: user.warehouse_name,
-			cell: (user) => <WarehouseAccessCell user={user} />,
+			value: (user) => {
+				if (user.kind !== "account") return user.warehouse_name;
+
+				const warehouses = user.warehouses.map((entry) => entry.warehouse_name);
+
+				warehouses.sort(compareWarehouseNames);
+
+				return warehouses.join(", ");
+			},
+			cell: (user) => <WarehouseAccessCell user={user} onRevoke={onDelete} />,
 		},
 		{
 			id: "link",
@@ -107,14 +110,20 @@ export function UsersTable({
 
 				return (
 					<div className={styles.actions}>
-						<EditRowAction
-							label={`Изменить доступ: ${identity}`}
-							onClick={handleEdit}
-						/>
-						<DeleteRowAction
-							label={`Удалить пользователя: ${identity}`}
-							onClick={handleDelete}
-						/>
+						{account.allowed_actions.some((permission) =>
+							["edit-profile", "edit-memberships"].includes(permission),
+						) && (
+							<EditRowAction
+								label={`Изменить доступ: ${identity}`}
+								onClick={handleEdit}
+							/>
+						)}
+						{account.allowed_actions.includes("deactivate-account") && (
+							<DeleteRowAction
+								label={`Деактивировать аккаунт: ${identity}`}
+								onClick={handleDelete}
+							/>
+						)}
 					</div>
 				);
 			},
@@ -126,12 +135,18 @@ export function UsersTable({
 			label="Доступ пользователей"
 			columns={columns}
 			rows={users}
-			rowKey={(user) => JSON.stringify([user.kind, user.id])}
+			rowKey={userRowKey}
 		/>
 	);
 }
 
-function WarehouseAccessCell({ user }: { user: AuditUser }) {
+function WarehouseAccessCell({
+	user,
+	onRevoke,
+}: {
+	user: AuditUser;
+	onRevoke: (user: EditableAccount, warehouseId: string) => void;
+}) {
 	const mode = useWorkspaceMode();
 
 	return user.kind === "account" ? (
@@ -149,6 +164,13 @@ function WarehouseAccessCell({ user }: { user: AuditUser }) {
 							? `Разрешений: ${entry.permissions.length}`
 							: "Нет разрешений"}
 					</small>
+					{isEditableAccount(user) &&
+						user.allowed_actions.includes("revoke-warehouse-access") && (
+							<DeleteRowAction
+								label={`Отозвать доступ к складу «${entry.warehouse_name}»: ${user.name}`}
+								onClick={() => onRevoke(user, entry.warehouse_id)}
+							/>
+						)}
 				</li>
 			))}
 			{!user.warehouses.length && <li>Нет доступа к складам</li>}

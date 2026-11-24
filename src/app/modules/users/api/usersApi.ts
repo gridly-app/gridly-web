@@ -3,18 +3,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { WorkspaceMode } from "@/ports/session";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 
-import { type FetchHttpClient, parseResponse } from "@/shared/http";
+import { ApiError, type HttpClient, parseResponse } from "@/shared/http";
 import { adminApiPath, adminQueryKey } from "@/ports/administration";
 
 import {
 	accountUserSchema,
 	type AccountUserUpdate,
 	accountUserUpdateSchema,
+	assignmentSchema,
 	type EditableAccount,
 	usersSchema,
 } from "./users.dto";
 
-export function useAdminUsers(http: FetchHttpClient, mode: WorkspaceMode) {
+export function useAdminUsers(http: HttpClient, mode: WorkspaceMode) {
 	const scopeId = useWarehouseScopeId();
 	const path = adminApiPath(mode, "users");
 
@@ -30,7 +31,7 @@ export function useAdminUsers(http: FetchHttpClient, mode: WorkspaceMode) {
 }
 
 export function useRemoveAdminUser(
-	http: FetchHttpClient,
+	http: HttpClient,
 	mode: WorkspaceMode,
 	onRemoved: () => void,
 ) {
@@ -42,26 +43,32 @@ export function useRemoveAdminUser(
 		mutationFn: ({
 			id,
 			revision,
-		}: Pick<EditableAccount, "id" | "revision">) => {
-			const target = `${path}/${encodeURIComponent(id)}`;
+			warehouseId,
+		}: Pick<EditableAccount, "id" | "revision"> & { warehouseId?: string }) => {
+			const scope = warehouseId
+				? `/warehouses/${encodeURIComponent(warehouseId)}`
+				: "";
+			const target = `${path}/${encodeURIComponent(id)}${scope}`;
 
 			return http.request(target, {
 				method: "DELETE",
 				headers: { "If-Match": `"${revision}"` },
 			});
 		},
-		onSuccess: async () => {
+		onSettled: async (_result, error) => {
+			if (error && !isForbidden(error)) return;
+
 			await client.invalidateQueries({
 				queryKey: adminQueryKey(scopeId, path),
 			});
 
-			onRemoved();
+			if (!error) onRemoved();
 		},
 	});
 }
 
 export function useUpdateAdminUser(
-	http: FetchHttpClient,
+	http: HttpClient,
 	mode: WorkspaceMode,
 	userId: string,
 	onSaved: () => void,
@@ -83,6 +90,12 @@ export function useUpdateAdminUser(
 
 			return parseResponse(accountUserSchema, response);
 		},
+		onError: async (error) => {
+			if (isForbidden(error))
+				await client.invalidateQueries({
+					queryKey: adminQueryKey(scopeId, path),
+				});
+		},
 		onSuccess: async () => {
 			const auditEndpoint = adminApiPath(mode, "audit");
 
@@ -97,4 +110,39 @@ export function useUpdateAdminUser(
 			onSaved();
 		},
 	});
+}
+
+export function useAddWarehouseMember(
+	http: HttpClient,
+	mode: WorkspaceMode,
+	onAdded: () => void,
+) {
+	const client = useQueryClient();
+	const scopeId = useWarehouseScopeId();
+	const path = adminApiPath(mode, "users");
+
+	return useMutation({
+		mutationFn: (input: Parameters<typeof assignmentSchema.parse>[0]) =>
+			http.request(`${path}/assignments`, {
+				method: "POST",
+				body: assignmentSchema.parse(input),
+			}),
+		onSettled: async (_result, error) => {
+			if (error && !isForbidden(error)) return;
+
+			await client.invalidateQueries({
+				queryKey: adminQueryKey(scopeId, path),
+			});
+
+			if (!error) onAdded();
+		},
+	});
+}
+
+export function isForbidden(error: unknown) {
+	return (
+		error instanceof ApiError &&
+		error.status === 403 &&
+		error.code === "FORBIDDEN"
+	);
 }

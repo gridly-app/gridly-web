@@ -2,9 +2,13 @@ import { useId, useMemo, useState } from "react";
 
 import type { Warehouse } from "@/domain/warehouse";
 
-import type { EditableAccount, Permission } from "../../api/users.dto";
+import {
+	type EditableAccount,
+	type Permission,
+	warehouseView,
+} from "../../api/users.dto";
 
-import { Button, Checkbox } from "@/shared/ui/controls";
+import { Checkbox } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Combobox } from "@/shared/ui/forms";
 
@@ -16,11 +20,13 @@ export function WarehousePermissions({
 	permissions,
 	disabled,
 	onChange,
+	onWarehouseChange,
 }: {
 	warehouses: Warehouse[];
 	assigned: ReadonlyMap<string, EditableAccount["warehouses"][number]>;
 	permissions: Permission[];
 	disabled: boolean;
+	onWarehouseChange?: () => void;
 	onChange: (id: string, name: string, codes: string[]) => void;
 }) {
 	const fieldId = useId();
@@ -50,17 +56,20 @@ export function WarehousePermissions({
 	const count = codes.length;
 	const hasExtraPermissions = codes.some((code) => !catalogCodes.has(code));
 	const selectedCodes = new Set(codes);
+	const viewRequired = codes.some((code) => code !== warehouseView);
 
-	function handlePermissionCheck(code: string, checked: boolean) {
-		const updated = checked
-			? [...selectedCodes, code]
-			: codes.filter((value) => value !== code);
-
-		onChange(activeWarehouseId, warehouseName, [...new Set(updated)]);
+	function handleWarehouseChange(id: string) {
+		setWarehouseId(id);
+		onWarehouseChange?.();
 	}
 
-	function handleRemoveAccess() {
-		onChange(activeWarehouseId, warehouseName, []);
+	function handlePermissionCheck(code: string, checked: boolean) {
+		if (checked) selectedCodes.add(code);
+		else selectedCodes.delete(code);
+
+		if (checked && code !== warehouseView) selectedCodes.add(warehouseView);
+
+		onChange(activeWarehouseId, warehouseName, [...selectedCodes]);
 	}
 
 	return (
@@ -69,7 +78,7 @@ export function WarehousePermissions({
 				className={styles.warehouseSelect}
 				aria-label="Склад для настройки доступа"
 				value={warehouse.id}
-				onValueChange={setWarehouseId}
+				onValueChange={handleWarehouseChange}
 				options={options}
 				disabled={disabled}
 			/>
@@ -79,16 +88,6 @@ export function WarehousePermissions({
 					<Badge tone={count ? "success" : "neutral"}>
 						{count ? `Разрешений: ${count}` : "Нет разрешений"}
 					</Badge>
-					{access && (
-						<Button
-							variant="text"
-							size="sm"
-							disabled={disabled}
-							onClick={handleRemoveAccess}
-						>
-							Снять доступ
-						</Button>
-					)}
 				</div>
 				<div className={styles.editorColumns}>
 					{[...groups].map(([group, permissions]) => (
@@ -104,7 +103,10 @@ export function WarehousePermissions({
 										<Checkbox
 											id={id}
 											checked={selectedCodes.has(code)}
-											disabled={disabled}
+											disabled={
+												disabled ||
+												(code === warehouseView && (viewRequired || !!access))
+											}
 											onCheckedChange={handleCheck}
 										/>
 										{label}
@@ -114,10 +116,12 @@ export function WarehousePermissions({
 						</div>
 					))}
 				</div>
+				<p className={styles.subtle}>
+					Дополнительные разрешения требуют права просмотра склада.
+				</p>
 				{hasExtraPermissions && (
 					<p className={styles.subtle}>
-						У склада есть дополнительные разрешения, выданные сервером. Действие
-						«Снять доступ» удалит и их.
+						У склада есть дополнительные разрешения вне текущего каталога.
 					</p>
 				)}
 			</fieldset>
