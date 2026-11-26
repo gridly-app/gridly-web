@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useReducer, useRef, useState } from "react";
 import type { CommandExecutor, OrderInput } from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
 import {
@@ -9,70 +9,83 @@ import {
 } from "./orderFormDrafts";
 import type { OrderScreenWarehouse } from "./warehouseFields";
 
+type Creation = { id: string; values: OrderFormValues; baseline: string };
+
 type CreationFlow =
 	| { kind: "closed" | "choosing" }
 	| { kind: "editing" | "confirming" | "submitting"; creation: Creation };
 
-type Creation = { id: string; values: OrderFormValues; baseline: string };
+type CreationEvent =
+	| { type: "choose" }
+	| { type: "closeChooser" }
+	| { type: "start"; creation: Creation }
+	| { type: "change"; values: OrderFormValues }
+	| { type: "askToClose" }
+	| { type: "continue" }
+	| { type: "submit" }
+	| { type: "submitted"; formId: string }
+	| { type: "submitEnded" }
+	| { type: "close" };
+
+const closedFlow: CreationFlow = { kind: "closed" };
+
+export function creationFlowReducer(
+	flow: CreationFlow,
+	event: CreationEvent,
+): CreationFlow {
+	switch (event.type) {
+		case "choose":
+			return { kind: "choosing" };
+		case "closeChooser":
+			return flow.kind === "choosing" ? closedFlow : flow;
+		case "start":
+			return { kind: "editing", creation: event.creation };
+		case "close":
+			return closedFlow;
+	}
+
+	if (!("creation" in flow)) return flow;
+
+	switch (event.type) {
+		case "change":
+			return { ...flow, creation: { ...flow.creation, values: event.values } };
+		case "askToClose":
+			return { ...flow, kind: "confirming" };
+		case "continue":
+			return { ...flow, kind: "editing" };
+		case "submit":
+			return { ...flow, kind: "submitting" };
+		case "submitted":
+			return flow.creation.id === event.formId ? closedFlow : flow;
+		case "submitEnded":
+			return { ...flow, kind: "editing" };
+	}
+}
+
+function startCreation(id: string, values: OrderFormValues): Creation {
+	return { id, values, baseline: JSON.stringify(values) };
+}
+
+const formsReadError =
+	"Не удалось прочитать сохранённые формы. Проверьте доступность хранилища браузера и повторите открытие формы.";
 
 export function useOrderCreation(
 	warehouse: OrderScreenWarehouse,
 	execute: CommandExecutor,
 	drafts: OrderFormDrafts,
 ) {
-	const [flow, setFlow] = useState<CreationFlow>({ kind: "closed" });
+	const [flow, dispatch] = useReducer(creationFlowReducer, closedFlow);
 	const creation = "creation" in flow ? flow.creation : null;
 	const choosing = flow.kind === "choosing";
 	const confirmClose = flow.kind === "confirming";
 	const submitting = flow.kind === "submitting";
-	function setCreation(
-		value: Creation | null | ((current: Creation | null) => Creation | null),
-	) {
-		setFlow((current) => {
-			const previous = "creation" in current ? current.creation : null;
-			const next = typeof value === "function" ? value(previous) : value;
-			return next
-				? {
-						kind: "creation" in current ? current.kind : "editing",
-						creation: next,
-					}
-				: { kind: "closed" };
-		});
-	}
-	function setChoosing(open: boolean) {
-		setFlow((current) =>
-			open
-				? { kind: "choosing" }
-				: current.kind === "choosing"
-					? { kind: "closed" }
-					: current,
-		);
-	}
-	function setConfirmClose(open: boolean) {
-		setFlow((current) =>
-			"creation" in current
-				? { ...current, kind: open ? "confirming" : "editing" }
-				: current,
-		);
-	}
-	function setSubmitting(active: boolean) {
-		setFlow((current) =>
-			"creation" in current
-				? { ...current, kind: active ? "submitting" : "editing" }
-				: current,
-		);
-	}
 
 	const [initialForms] = useState<{ forms: SavedOrderForm[]; error: string }>(
 		() => {
 			try {
 				return { forms: drafts.read(), error: "" };
 			} catch {
-				return {
-					forms: [],
-					error:
-						"Не удалось прочитать сохранённые формы. Проверьте доступность хранилища браузера и повторите открытие формы.",
-				};
+				return { forms: [], error: formsReadError };
 			}
 		},
 	);
@@ -84,13 +97,10 @@ export function useOrderCreation(
 
 	function newForm() {
 		if (inFlight.current) return;
-		const values = initialOrderForm(warehouse);
-		setCreation({
-			id: crypto.randomUUID(),
-			values,
-			baseline: JSON.stringify(values),
+		dispatch({
+			type: "start",
+			creation: startCreation(crypto.randomUUID(), initialOrderForm(warehouse)),
 		});
-		setChoosing(false);
 		setFormError("");
 	}
 	function openCreation() {
@@ -99,32 +109,26 @@ export function useOrderCreation(
 			const forms = drafts.read();
 			setSavedForms(forms);
 			setFormError("");
-			if (forms.length) setChoosing(true);
+			if (forms.length) dispatch({ type: "choose" });
 			else newForm();
 		} catch {
-			setFormError(
-				"Не удалось прочитать сохранённые формы. Проверьте доступность хранилища браузера и повторите открытие формы.",
-			);
+			setFormError(formsReadError);
 		}
 	}
 	function restoreForm(form: SavedOrderForm) {
-		setCreation({
-			id: form.id,
-			values: form.values,
-			baseline: JSON.stringify(form.values),
-		});
-		setChoosing(false);
+		dispatch({ type: "start", creation: startCreation(form.id, form.values) });
 		setFormError("");
 	}
 	function changeValues(values: OrderFormValues) {
 		if (inFlight.current) return;
-		setCreation((current) => (current ? { ...current, values } : current));
+		dispatch({ type: "change", values });
 	}
 	function closeCreation() {
 		if (inFlight.current) return;
-		if (creation && JSON.stringify(creation.values) !== creation.baseline)
-			setConfirmClose(true);
-		else setCreation(null);
+		const isChanged =
+			!!creation && JSON.stringify(creation.values) !== creation.baseline;
+
+		dispatch({ type: isChanged ? "askToClose" : "close" });
 	}
 	function saveForm() {
 		if (!creation || inFlight.current) return;
@@ -136,8 +140,7 @@ export function useOrderCreation(
 					updatedAt: new Date().toISOString(),
 				}),
 			);
-			setCreation(null);
-			setConfirmClose(false);
+			dispatch({ type: "close" });
 			setFormError("");
 		} catch (error) {
 			setFormError(`Не удалось сохранить форму: ${errorMessage(error)}`);
@@ -156,14 +159,14 @@ export function useOrderCreation(
 	}
 	function discardForm() {
 		if (!creation || !deleteForm(creation.id)) return;
-		setCreation(null);
-		setConfirmClose(false);
+
+		dispatch({ type: "close" });
 	}
 	async function createDraft(order: OrderInput) {
 		if (!creation || inFlight.current) return;
 		const formId = creation.id;
 		inFlight.current = true;
-		setSubmitting(true);
+		dispatch({ type: "submit" });
 		try {
 			await execute("order", order, { operationId: formId });
 			try {
@@ -173,10 +176,10 @@ export function useOrderCreation(
 					"Заказ создан, но сохранённую форму не удалось удалить. Удалите её перед повторным использованием.",
 				);
 			}
-			setCreation((current) => (current?.id === formId ? null : current));
+			dispatch({ type: "submitted", formId });
 		} finally {
 			inFlight.current = false;
-			setSubmitting(false);
+			dispatch({ type: "submitEnded" });
 		}
 	}
 
@@ -195,9 +198,9 @@ export function useOrderCreation(
 		saveForm,
 		discardForm,
 		deleteForm,
-		closeChooser: () => setChoosing(false),
+		closeChooser: () => dispatch({ type: "closeChooser" }),
 		continueForm: () => {
-			setConfirmClose(false);
+			dispatch({ type: "continue" });
 			setFormError("");
 		},
 		createDraft,
