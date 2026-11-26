@@ -8,6 +8,7 @@ bruno/
 docs/
 tests/
 **/*.test.*
+**/*.test-support.*
 **/*.spec.*
 coverage/
 playwright-report/
