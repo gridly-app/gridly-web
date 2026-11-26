@@ -1,9 +1,9 @@
-import { categories, formatMoment, type Shipment } from "@/domain/shipment";
-import { Button } from "@/shared/ui/controls";
+import type { Shipment } from "@/domain/shipment";
 import { Feedback } from "@/shared/ui/feedback";
 
 import type { DownloadGuestDocument } from "../../../api/guestShipmentApi";
 import { useGuestDocumentDownload } from "../../../model/documents/useGuestDocumentDownload";
+import { DocumentRow } from "../DocumentRow/DocumentRow";
 
 import styles from "../../../shared.module.css";
 
@@ -11,16 +11,16 @@ export function ShipmentDocuments({
 	documents,
 	timeZone,
 	token,
-	refresh,
+	onAccessDenied,
 	downloadFile,
 }: {
 	documents: Shipment["documents"];
 	timeZone: Shipment["order"]["time_zone"];
 	token: string;
-	refresh: () => void;
+	onAccessDenied: () => void;
 	downloadFile: DownloadGuestDocument;
 }) {
-	const model = useGuestDocumentDownload(token, downloadFile, refresh);
+	const model = useGuestDocumentDownload(token, downloadFile, onAccessDenied);
 	const isPending = model.pendingDocumentId !== null;
 
 	return (
@@ -28,7 +28,11 @@ export function ShipmentDocuments({
 			<h2>Документы</h2>
 			{model.error && <Feedback tone="warning">{model.error}</Feedback>}
 			{documents.length ? (
-				<div className={styles.scroll}>
+				<section
+					className={styles.scroll}
+					aria-label="Таблица документов"
+					tabIndex={0}
+				>
 					<table className={styles.table}>
 						<thead>
 							<tr>
@@ -36,7 +40,7 @@ export function ShipmentDocuments({
 								<th>Категория</th>
 								<th>Загружен</th>
 								<th>Версия</th>
-								<th>Действие</th>
+								<th data-column="actions">Действие</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -52,51 +56,10 @@ export function ShipmentDocuments({
 							))}
 						</tbody>
 					</table>
-				</div>
+				</section>
 			) : (
 				<p>Опубликованных документов пока нет.</p>
 			)}
 		</section>
-	);
-}
-
-function DocumentRow({
-	document,
-	timeZone,
-	isPending,
-	isDownloading,
-	onDownload,
-}: {
-	document: Shipment["documents"][number];
-	timeZone: string;
-	isPending: boolean;
-	isDownloading: boolean;
-	onDownload: (id: string, name: string) => Promise<void>;
-}) {
-	const downloadLabel = `Скачать ${document.name}`;
-	const buttonLabel = isDownloading ? "Скачиваем…" : "Скачать";
-
-	function handleDownload() {
-		void onDownload(document.id, document.name);
-	}
-
-	return (
-		<tr>
-			<th scope="row">{document.name}</th>
-			<td>{categories[document.category]}</td>
-			<td>{formatMoment(document.uploaded_at, timeZone)}</td>
-			<td>{document.version}</td>
-			<td>
-				<Button
-					variant="default"
-					size="sm"
-					disabled={isPending}
-					aria-label={downloadLabel}
-					onClick={handleDownload}
-				>
-					{buttonLabel}
-				</Button>
-			</td>
-		</tr>
 	);
 }

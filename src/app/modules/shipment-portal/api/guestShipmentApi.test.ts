@@ -1,6 +1,9 @@
 import { expect, test } from "bun:test";
+
 import { FetchHttpClient } from "@/shared/http";
+
 import { shipment } from "../../../../../tests/support/shipment";
+
 import { GuestShipmentApi } from "./guestShipmentApi";
 
 test("guest reads validate the response and exclude account credentials", async () => {
@@ -19,6 +22,7 @@ test("guest reads validate the response and exclude account credentials", async 
 	const api = new GuestShipmentApi(http);
 	const controller = new AbortController();
 	const read = api.read;
+
 	const result = await read("guest-token", controller.signal);
 
 	expect(result.orders[0]?.id).toBe("guest-1");
@@ -32,7 +36,9 @@ test("guest reads validate the response and exclude account credentials", async 
 	expect(new Headers(requests[0]?.options?.headers).get("Authorization")).toBe(
 		"Bearer guest-token",
 	);
+
 	controller.abort();
+
 	expect(requests[0]?.options?.signal?.aborted).toBe(true);
 });
 
@@ -67,6 +73,7 @@ test("guest document downloads encode the document id and use private response h
 		),
 	);
 	const download = api.download;
+
 	const response = await download(
 		"guest-token",
 		"document/1?",

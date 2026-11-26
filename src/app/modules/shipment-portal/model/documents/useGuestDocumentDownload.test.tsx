@@ -1,7 +1,10 @@
 import { expect, spyOn, test } from "bun:test";
 import { act } from "react";
+
 import { ApiError } from "@/shared/http";
+
 import { mountDom } from "../../../../../../tests/support/dom";
+
 import type { DownloadGuestDocument } from "../../api/guestShipmentApi";
 import { useGuestDocumentDownload } from "./useGuestDocumentDownload";
 
@@ -36,6 +39,7 @@ test("document download prevents duplicate requests and saves the response filen
 	let requests = 0;
 	const model = mountDownload(async () => {
 		requests++;
+
 		return response.promise;
 	});
 	const filenames: string[] = [];
@@ -54,7 +58,9 @@ test("document download prevents duplicate requests and saves the response filen
 			completion = model.read().download("", "fallback.txt");
 		});
 		expect(model.read().pendingDocumentId).toBe("");
+
 		await model.read().download("second", "second.txt");
+
 		expect(requests).toBe(1);
 
 		await act(async () => {
@@ -88,7 +94,9 @@ test("denied document access refreshes permissions and releases the download", a
 			await model.read().download("document-1", "invoice.txt");
 		});
 
-		expect(model.read().error).toBe("Документ недоступен.");
+		expect(model.read().error).toBe(
+			"Документ больше недоступен по этой ссылке.",
+		);
 		expect(model.read().pendingDocumentId).toBeNull();
 		expect(model.refreshes()).toBe(1);
 	} finally {
@@ -101,6 +109,7 @@ test("unmount cancels a document request and prevents a late response from being
 	const signals: AbortSignal[] = [];
 	const model = mountDownload((_token, _id, signal) => {
 		signals.push(signal);
+
 		return response.promise;
 	});
 	const createUrl = spyOn(URL, "createObjectURL").mockReturnValue(

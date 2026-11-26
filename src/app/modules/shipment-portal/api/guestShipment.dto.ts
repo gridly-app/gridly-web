@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { guestSectionSchema, shipmentSchema } from "@/domain/shipment";
 
 export const guestShipmentSchema = shipmentSchema
@@ -23,6 +24,7 @@ export const guestShipmentSchema = shipmentSchema
 			)
 			.optional(),
 	});
+
 export type GuestShipment = z.infer<typeof guestShipmentSchema>;
 
 export const guestShipmentsSchema = z.union([

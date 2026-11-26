@@ -1,8 +1,6 @@
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
-import {
-	isGuestAccessDenied,
-	type ReadGuestShipments,
-} from "../../api/guestShipmentApi";
+import { isGuestAccessDenied } from "../../api/guestAccessDenied";
+import type { ReadGuestShipments } from "../../api/guestShipmentApi";
 import type { GuestShipments } from "../../api/guestShipment.dto";
 
 type State = {

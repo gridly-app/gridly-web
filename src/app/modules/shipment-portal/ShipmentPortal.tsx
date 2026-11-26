@@ -177,7 +177,7 @@ function GuestShipmentSections({
 					documents={documents}
 					timeZone={order.time_zone}
 					token={token}
-					refresh={retry}
+					onAccessDenied={retry}
 					downloadFile={guestApi.download}
 				/>
 			)}

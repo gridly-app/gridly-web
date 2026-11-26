@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+
 import { saveResponseFile } from "@/shared/http";
-import {
-	isGuestAccessDenied,
-	type DownloadGuestDocument,
-} from "../../api/guestShipmentApi";
+
+import { isGuestAccessDenied } from "../../api/guestAccessDenied";
+import type { DownloadGuestDocument } from "../../api/guestShipmentApi";
 
 const downloadTimeoutMs = 60_000;
 
 export function useGuestDocumentDownload(
 	token: string,
 	downloadFile: DownloadGuestDocument,
-	refresh: () => void,
+	onAccessDenied: () => void,
 ) {
 	const [pendingDocumentId, setPendingDocumentId] = useState<string | null>(
 		null,
@@ -28,8 +28,8 @@ export function useGuestDocumentDownload(
 			controller.signal,
 			AbortSignal.timeout(downloadTimeoutMs),
 		]);
-		request.current = controller;
 
+		request.current = controller;
 		setPendingDocumentId(id);
 		setError("");
 
@@ -41,12 +41,14 @@ export function useGuestDocumentDownload(
 			if (controller.signal.aborted) return;
 
 			const isDenied = isGuestAccessDenied(reason);
-			const message = isDenied
-				? "Документ недоступен."
-				: "Не удалось скачать документ. Попробуйте ещё раз.";
-			setError(message);
 
-			if (isDenied) refresh();
+			setError(
+				isDenied
+					? "Документ больше недоступен по этой ссылке."
+					: "Не удалось скачать документ. Попробуйте ещё раз.",
+			);
+
+			if (isDenied) onAccessDenied();
 		} finally {
 			request.current = null;
 
