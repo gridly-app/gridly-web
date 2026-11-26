@@ -136,7 +136,7 @@ export class RestWarehouseSnapshots {
 		const base = `/warehouses/${encodeURIComponent(id)}`;
 		const d = parseResponse(
 			warehouseDto,
-			await this.http.request(base, { signal }),
+			await this.http.request(`${base}?include_summary=true`, { signal }),
 		);
 
 		signal.throwIfAborted();

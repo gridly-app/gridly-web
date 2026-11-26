@@ -6,7 +6,7 @@ import mapStyles from "./MapToolbar.module.css";
 
 interface MapToolbarProps {
 	running: boolean;
-	robotCount: number | undefined;
+	robotCount: number;
 	pending: boolean;
 	simulation: Pick<
 		ReturnType<typeof useMapSimulation>,
@@ -29,10 +29,10 @@ export function MapToolbar({
 			<StatusBadge
 				compactOnMobile
 				status={running ? "online" : "offline"}
-				primaryText={`${simulation.activeRobots ?? "—"} в работе`}
+				primaryText={`${simulation.activeRobots} в работе`}
 				animated={running}
 			>
-				/ {robotCount ?? "—"} роботов
+				/ {robotCount} роботов
 			</StatusBadge>
 			<div className={mapStyles.actions}>
 				{simulation.supported && (

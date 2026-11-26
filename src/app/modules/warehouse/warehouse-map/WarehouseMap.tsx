@@ -212,7 +212,7 @@ export function WarehouseMap({
 			) : (
 				<MapToolbar
 					running={warehouse.running}
-					robotCount={warehouse.summary?.robotCount}
+					robotCount={simulation.robotCount}
 					pending={pending}
 					simulation={simulation}
 					viewTrigger={viewTrigger}
