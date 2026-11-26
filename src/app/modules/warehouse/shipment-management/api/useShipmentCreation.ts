@@ -1,7 +1,6 @@
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { guestLinkReplayOutcome } from "@/domain/shipment";
-import { ApiError } from "@/shared/http";
+import { guestLinkReplayOutcome, isRefusedCreation } from "@/domain/shipment";
 import { availableStorage, UserError } from "@/shared/lib";
 
 import {
@@ -9,8 +8,6 @@ import {
 	storeShipmentCreation,
 	type ShipmentCreation,
 } from "./shipmentCreationStorage";
-
-const terminalCreationStatuses = new Set([400, 401, 403, 404, 409, 413, 422]);
 
 export function useShipmentCreation(
 	queryKey: readonly string[],
@@ -101,13 +98,10 @@ export function useShipmentCreation(
 				throw new UserError(message);
 			}
 
-			const rejected =
-				error instanceof ApiError &&
-				(terminalCreationStatuses.has(error.status) ||
-					error.code === "STALE_DOCUMENT_VERSION");
+			const isRefused = isRefusedCreation(error);
 
 			setCreation(
-				rejected && !retry ? null : { ...attempt, status: "unknown" },
+				isRefused && !retry ? null : { ...attempt, status: "unknown" },
 			);
 			throw error;
 		}

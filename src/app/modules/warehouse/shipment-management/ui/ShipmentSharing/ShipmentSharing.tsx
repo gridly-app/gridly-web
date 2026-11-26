@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
-import { formatMoment, isReplayAvailable } from "@/domain/shipment";
+import { isReplayAvailable } from "@/domain/shipment";
+import { formatMoment } from "@/shared/lib";
 import { adminLocation, shipmentAdminPath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { environment } from "@/shared/config";
