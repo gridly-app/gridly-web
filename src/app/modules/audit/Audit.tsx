@@ -7,7 +7,8 @@ import { ApiError, type FetchHttpClient } from "@/shared/http";
 import { useAuditEvents } from "./api/auditApi";
 
 import { useAuditExport } from "./model/export/useAuditExport";
-import { auditQueryParams, defaultAuditFilters } from "./model/filters/auditFilters";
+import { defaultAuditFilters } from "./model/filters/auditFilters";
+import { auditQueryParams } from "./model/filters/auditQueryParams";
 import { auditRow } from "./model/auditPresentation";
 import { dateRangeError } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";

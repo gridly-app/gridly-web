@@ -1,16 +1,15 @@
 import type { ChangeEvent } from "react";
 
+import { Button, Input } from "@/shared/ui/controls";
+import { ListFilters } from "@/shared/ui/dataDisplay";
+import { DateRangeFields, Field, Select } from "@/shared/ui/forms";
+import { managementStyles as styles } from "@/shared/ui/management";
+
 import { auditAreaLabels } from "../../../model/events/auditArea";
 import {
 	type AuditFilters,
 	defaultAuditFilters,
 } from "../../../model/filters/auditFilters";
-
-import { Button, Input } from "@/shared/ui/controls";
-import { ListFilters } from "@/shared/ui/dataDisplay";
-import { DateRangeFields, Field, Select } from "@/shared/ui/forms";
-
-import { managementStyles as styles } from "@/shared/ui/management";
 
 const resultOptions: { value: AuditFilters["result"]; label: string }[] = [
 	{ value: "all", label: "Все результаты" },
@@ -48,12 +47,14 @@ export function AuditToolbar({
 	onExport: () => void;
 }) {
 	const { search, result, from, to } = filters;
-	const activeFilters =
-		Number(result !== "all") +
-		Number(Boolean(from)) +
-		Number(Boolean(to)) +
-		Number(Boolean(filters.area)) +
-		contextFields.filter(([key]) => Boolean(filters[key]?.trim())).length;
+	const contextValues = contextFields.map(([key]) => filters[key]?.trim());
+	const activeFilterCount = [
+		result !== "all",
+		from,
+		to,
+		filters.area,
+		...contextValues,
+	].filter(Boolean).length;
 
 	function handleSearch(search: string) {
 		onChange({ ...filters, search });
@@ -95,7 +96,7 @@ export function AuditToolbar({
 					value: search,
 					onChange: handleSearch,
 				}}
-				count={activeFilters}
+				count={activeFilterCount}
 				onReset={handleReset}
 			>
 				<Select

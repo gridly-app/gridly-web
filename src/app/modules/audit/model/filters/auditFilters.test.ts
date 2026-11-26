@@ -1,9 +1,12 @@
 import { expect, test } from "bun:test";
 
-import { auditEvent } from "../../../../../../tests/support/audit";
-import { defaultAuditFilters, filterAuditRows } from "./auditFilters";
-import { auditRow, describeAuditEvent } from "../auditPresentation";
 import { textSearch } from "@/shared/lib";
+
+import { auditEvent } from "../../../../../../tests/support/audit";
+
+import { describeAuditEvent } from "../events/auditDescription";
+import { defaultAuditFilters, filterAuditRows } from "./auditFilters";
+import { auditRow } from "../events/auditRow";
 
 test("date filters include both boundaries in the event time zone", () => {
 	const rows = [
