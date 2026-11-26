@@ -1,7 +1,6 @@
 import { lazy, type ReactNode, Suspense } from "react";
 import {
 	createBrowserRouter,
-	Navigate,
 	Outlet,
 	type RouteObject,
 	RouterProvider,
@@ -9,7 +8,7 @@ import {
 } from "react-router-dom";
 import type { RouteDescription, WorkspaceAccess } from "@/ports/navigation";
 import { environment } from "@/shared/config";
-import { Skeleton } from "@/shared/ui/feedback";
+import { PageNotFound, Skeleton } from "@/shared/ui/feedback";
 import { administrationRoute } from "./modules/administration";
 import { useWorkspaceHttp } from "./composition/workspace-providers.compose";
 import { landingRoute } from "./modules/landing";
@@ -144,10 +143,10 @@ const router = createBrowserRouter([
 					{ index: true, element: <SandboxEntry /> },
 					...administrationRoutes("sandbox"),
 					...workspaceRoutes("sandbox"),
-					{ path: "*", element: <Navigate replace to="/" /> },
+					{ path: "*", element: <PageNotFound /> },
 				],
 			},
-			{ path: "*", element: <Navigate replace to="/" /> },
+			{ path: "*", element: <PageNotFound /> },
 		],
 	},
 ]);

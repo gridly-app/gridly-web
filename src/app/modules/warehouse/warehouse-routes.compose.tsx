@@ -9,6 +9,7 @@ import type {
 import type { ShipmentProgressSlot } from "@/ports/shipment";
 import { useWarehouseScope } from "@/ports/warehouse";
 import type { HttpClient } from "@/shared/http";
+import { PageNotFound } from "@/shared/ui/feedback";
 import { deliveriesRoute, shipmentRoute } from "./shipment-management";
 import { catalogRoute } from "./warehouse-catalog";
 import { historyRoute } from "./warehouse-history";
@@ -105,6 +106,6 @@ export function warehouseChildren({
 			mode,
 		),
 		{ index: true, element: <Navigate replace to={mapRoute.path} /> },
-		{ path: "*", element: <Navigate replace to={`../${mapRoute.path}`} /> },
+		{ path: "*", element: <PageNotFound /> },
 	];
 }
