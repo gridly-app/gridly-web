@@ -1,28 +1,25 @@
 import { QueryClient } from "@tanstack/react-query";
-import type {
-	Warehouse,
-	WarehouseCommand,
-	WarehouseInput,
-} from "@/domain/warehouse";
 import {
-	blockRoutePlanSchema,
-	selectionSummarySchema,
+	isLayoutCommand,
+	type Warehouse,
+	type WarehouseCommand,
+	type WarehouseInput,
 } from "@/domain/warehouse";
 import type { WarehouseResource } from "@/ports/warehouse";
-import { isLayoutCommand } from "@/domain/warehouse";
-import { type HttpClient, parseResponse } from "@/shared/http";
-import { serializeLayoutCells } from "../layout/layoutCells";
+import type { HttpClient } from "@/shared/http";
+import { proposeRoutes, readSelectionSummary } from "../layout/layoutRequests";
 import { LayoutResource } from "../../model/layout/layoutResource";
 import { WarehouseLiveSubscriptions } from "../live/warehouseLiveSubscriptions";
-import { orderDto } from "../orders/orderDto";
+import { readOrder } from "../orders/orderRequests";
 import { createWarehouseKeys } from "../../model/queries/queryKeys";
 import { commandResources } from "../../model/queries/resources";
-import { createdWarehouseDto, warehouseDto } from "../warehouses/warehouseDto";
+import {
+	createWarehouse,
+	readWarehouses,
+} from "../warehouses/warehouseRequests";
 import { executeWarehouseCommand } from "./executeWarehouseCommand";
 import { warehouseSessionHttp } from "./warehouseSessionHttp";
-import { readWarehouseCollection } from "./readWarehouseCollection";
 import type { MutationOptions, WarehouseRepository } from "./repository";
-import { orderFromDto, warehouseFromDto } from "./restMappers";
 import { RestWarehouseSnapshots } from "./restWarehouseSnapshots";
 import { WarehouseMutationRequests } from "./warehouseMutationRequests";
 
@@ -70,19 +67,21 @@ export class RestWarehouseRepository implements WarehouseRepository {
 			this.cache,
 			sessionSignal,
 			() => this.keys,
-			async (id, signal) => {
-				this.snapshots.invalidateLayout(id);
-				this.live.invalidate(id);
-				await this.cache.cancelQueries({
-					queryKey: this.keys.resources(id),
-				});
-				signal.throwIfAborted();
-				const snapshot = await this.snapshots.readWarehouse(id, signal, "map");
-				signal.throwIfAborted();
-				this.cache.setQueryData(this.keys.resource(id, "map"), snapshot);
-				this.cache.setQueryData(this.keys.resource(id, "metadata"), snapshot);
-			},
+			(id, signal) => this.rereadLayout(id, signal),
 		);
+	}
+
+	private async rereadLayout(id: string, signal: AbortSignal) {
+		this.snapshots.invalidateLayout(id);
+		this.live.invalidate(id);
+		await this.cache.cancelQueries({ queryKey: this.keys.resources(id) });
+		signal.throwIfAborted();
+
+		const snapshot = await this.snapshots.readWarehouse(id, signal, "map");
+
+		signal.throwIfAborted();
+		this.cache.setQueryData(this.keys.resource(id, "map"), snapshot);
+		this.cache.setQueryData(this.keys.resource(id, "metadata"), snapshot);
 	}
 
 	getSessionSignal() {
@@ -124,31 +123,12 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		return this.snapshots.getLive(id, signal);
 	}
 
-	async getOrder(
-		id: string,
-		orderId: string,
-		signal?: AbortSignal | undefined,
-	) {
-		return orderFromDto(
-			parseResponse(
-				orderDto,
-				await this.http.request(
-					`/warehouses/${encodeURIComponent(id)}/orders/${encodeURIComponent(orderId)}`,
-					{ signal },
-				),
-			),
-		);
+	getOrder(id: string, orderId: string, signal?: AbortSignal | undefined) {
+		return readOrder(this.http, id, orderId, signal);
 	}
 
-	async list(signal?: AbortSignal | undefined) {
-		return (
-			await readWarehouseCollection(
-				this.http,
-				"/warehouses?include_summary=true",
-				warehouseDto,
-				signal,
-			)
-		).map(warehouseFromDto);
+	list(signal?: AbortSignal | undefined) {
+		return readWarehouses(this.http, signal);
 	}
 
 	async get(
@@ -159,61 +139,36 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		return this.snapshots.readWarehouse(id, signal, resource, this.live);
 	}
 
-	async proposeRoutes(
+	proposeRoutes(
 		id: string,
 		cells: Warehouse["cells"],
 		signal?: AbortSignal | undefined,
 	) {
+		const savedCells =
+			this.cache.getQueryData<Warehouse>(this.keys.detail(id))?.cells ?? [];
 		const zoneIds = new Set(
-			this.cache
-				.getQueryData<Warehouse>(this.keys.detail(id))
-				?.cells.flatMap((c) => (c.zone ? [c.zone.id] : [])) ?? [],
+			savedCells.flatMap((cell) => (cell.zone ? [cell.zone.id] : [])),
 		);
-		return parseResponse(
-			blockRoutePlanSchema.array(),
-			await this.http.request(
-				`/warehouses/${encodeURIComponent(id)}/layout/routes/propose`,
-				{
-					method: "POST",
-					readOnly: true,
-					body: {
-						cells: serializeLayoutCells(cells, zoneIds),
-					},
-					signal,
-				},
-			),
-		);
+
+		return proposeRoutes(this.http, id, cells, zoneIds, signal);
 	}
-	async selectionSummary(
+
+	selectionSummary(
 		id: string,
 		keys: string[],
 		signal?: AbortSignal | undefined,
 	) {
-		return parseResponse(
-			selectionSummarySchema,
-			await this.http.request(
-				`/warehouses/${encodeURIComponent(id)}/map/selection-summary`,
-				{ method: "POST", readOnly: true, body: { cell_keys: keys }, signal },
-			),
-		);
+		return readSelectionSummary(this.http, id, keys, signal);
 	}
 
 	async create(
 		warehouse: WarehouseInput,
 		options?: MutationOptions | undefined,
 	) {
-		const result = parseResponse(
-			createdWarehouseDto,
-			await this.mutations.send("/warehouses", {
-				method: "POST",
-				idempotencyKey: options?.operationId,
-				body: {
-					name: warehouse.name,
-					width: warehouse.width,
-					height: warehouse.height,
-					time_zone: warehouse.timezone,
-				},
-			}),
+		const result = await createWarehouse(
+			this.mutations,
+			warehouse,
+			options?.operationId,
 		);
 
 		return { id: result.id, applied: true as const };
