@@ -18,12 +18,6 @@ export type RequestOptions = {
 };
 
 export interface HttpClient {
-	requestFile?(path: string, options?: RequestOptions): Promise<Response>;
-	openStream?(
-		path: string,
-		options?: RequestOptions,
-	): Promise<ReadableStream<Uint8Array>>;
-	clearSession?(): void;
 	request(path: string, options?: RequestOptions | undefined): Promise<unknown>;
 }
 
@@ -47,8 +41,6 @@ export interface AuthEndpoints {
 	login: string;
 	refresh: string;
 }
-
-const legacyAuth = { prefix: "/auth/", login: "/auth/login", refresh: "/auth/refresh" };
 
 type ResponseMode = "data" | "stream" | "file";
 
@@ -133,7 +125,7 @@ export class FetchHttpClient
 	}
 
 	async request(path: string, options: RequestOptions = {}): Promise<unknown> {
-		if (path === (this.policy.auth ?? legacyAuth)?.refresh) {
+		if (path === this.policy.auth?.refresh) {
 			options.signal?.throwIfAborted();
 			return waitForRefresh(this.refresh(path), options.signal);
 		}
@@ -187,7 +179,7 @@ export class FetchHttpClient
 		const { method = "GET" } = options;
 		const signal = this.requestSignal(options);
 		const auth = this.isAuthPath(path);
-		const refreshPath = (this.policy.auth ?? legacyAuth)?.refresh;
+		const refreshPath = this.policy.auth?.refresh;
 		const readOnly = method === "GET" || options.readOnly === true;
 		const [readPath = path] = path.split("?", 1);
 		const token = this.policy.accessToken?.() ?? this.token;
@@ -266,7 +258,7 @@ export class FetchHttpClient
 			const accessToken = readSessionToken(response.status, data);
 			validate?.(data);
 			assertActive();
-			if (path === (this.policy.auth ?? legacyAuth)?.login) {
+			if (path === this.policy.auth?.login) {
 				this.sessionGeneration++;
 				this.refreshRequest = null;
 			}
