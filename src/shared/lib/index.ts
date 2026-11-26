@@ -7,6 +7,10 @@ export {
 	writePreference,
 } from "../browser/browserStorage";
 export { runtimeNotices } from "../browser/runtimeNotices";
+export {
+	createSnapshotStore,
+	type SnapshotStore,
+} from "../browser/snapshotStore";
 export type { KeyValueStorage } from "../browser/storage";
 export { useOnlineStatus } from "../browser/useOnlineStatus";
 export { usePageVisible } from "../browser/usePageVisible";
