@@ -5,10 +5,10 @@ import { useWorkspaceMode } from "@/ports/session";
 
 import { SortedTable } from "@/shared/ui/management";
 
-import { defaultAuditFilters, filterAuditRows } from "../../model/auditFilters";
-import { auditRow } from "../../model/auditPresentation";
-import { AuditEventDialog } from "../AuditEventDialog/AuditEventDialog";
-import { auditColumns } from "../../config/auditColumns";
+import { defaultAuditFilters, filterAuditRows } from "../../../model/filters/auditFilters";
+import { auditRow } from "../../../model/auditPresentation";
+import { AuditEventDialog } from "../../details/AuditEventDialog/AuditEventDialog";
+import { auditColumns } from "../../../config/auditColumns";
 
 export function AuditEvents({
 	items,

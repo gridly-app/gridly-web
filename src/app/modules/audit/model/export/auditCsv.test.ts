@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { auditEvent } from "../../../../../tests/support/audit";
+import { auditEvent } from "../../../../../../tests/support/audit";
 import { auditCsv } from "./auditCsv";
-import { auditRow } from "./auditPresentation";
+import { auditRow } from "../auditPresentation";
 
 test("CSV preserves subject identifiers and original event and source codes without display names", () => {
 	const row = auditRow(

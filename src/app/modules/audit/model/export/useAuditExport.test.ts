@@ -1,7 +1,7 @@
 import { expect, spyOn, test } from "bun:test";
 import { act, createElement } from "react";
 
-import { mountDom } from "../../../../../tests/support/dom";
+import { mountDom } from "../../../../../../tests/support/dom";
 import { WarehouseDataProvider, type WarehouseData } from "@/ports/warehouse";
 import { ApiError, type FetchHttpClient } from "@/shared/http";
 

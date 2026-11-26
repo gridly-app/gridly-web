@@ -2,7 +2,7 @@ import { formatMoment } from "@/shared/lib";
 import type { AuditEvent } from "@/domain/shipment";
 
 import { auditEventLabel } from "../config/auditEventLabels";
-import { auditArea, auditAreaLabels } from "./auditArea";
+import { auditArea, auditAreaLabels } from "./events/auditArea";
 import { changeLabel, changeValue } from "./auditChanges";
 
 const sourceLabels: Record<string, string> = {

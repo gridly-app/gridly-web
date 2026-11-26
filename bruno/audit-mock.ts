@@ -1,7 +1,7 @@
 import type { AuditEvent } from "../src/domain/shipment";
 
-import { auditArea } from "../src/app/modules/audit/model/auditArea";
-import { auditCsv } from "../src/app/modules/audit/model/auditCsv";
+import { auditArea } from "../src/app/modules/audit/model/events/auditArea";
+import { auditCsv } from "../src/app/modules/audit/model/export/auditCsv";
 import {
 	auditRow,
 	auditSearchFields,

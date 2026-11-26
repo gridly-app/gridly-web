@@ -6,7 +6,7 @@ import {
 	zonedDayBoundary,
 } from "@/shared/lib";
 
-import { auditSearchFields, type AuditRow } from "./auditPresentation";
+import { auditSearchFields, type AuditRow } from "../auditPresentation";
 
 export type AuditFilters = Readonly<{
 	search: string;

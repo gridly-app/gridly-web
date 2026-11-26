@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 
 import { auditEventSchema } from "@/domain/shipment";
-import { auditCsv } from "./auditCsv";
-import { defaultAuditFilters, filterAuditRows } from "./auditFilters";
+import { auditCsv } from "./export/auditCsv";
+import { defaultAuditFilters, filterAuditRows } from "./filters/auditFilters";
 import { auditRow } from "./auditPresentation";
 
 const event = auditEventSchema.parse({

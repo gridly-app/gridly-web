@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { auditEvent } from "../../../../../tests/support/audit";
+import { auditEvent } from "../../../../../../tests/support/audit";
 import { auditArea } from "./auditArea";
 
 test("explicit API area overrides the event prefix and system source", () => {

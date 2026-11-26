@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { auditEvent } from "../../../../../../tests/support/audit";
+import { auditEvent } from "../../../../../../../tests/support/audit";
 import { AuditEventChanges } from "./AuditEventChanges";
 
 test("event details display expiration changes in the event time zone", () => {

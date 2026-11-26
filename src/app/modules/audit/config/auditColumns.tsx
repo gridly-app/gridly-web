@@ -5,7 +5,7 @@ import type { TableColumns } from "@/shared/ui/management";
 
 import type { AuditRow } from "../model/auditPresentation";
 
-import { AuditEventButton } from "../ui/AuditEventButton/AuditEventButton";
+import { AuditEventButton } from "../ui/list/AuditEventButton/AuditEventButton";
 import { auditContextColumns } from "./auditContextColumns";
 
 export function auditColumns(

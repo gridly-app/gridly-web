@@ -1,10 +1,10 @@
 import type { ChangeEvent } from "react";
 
-import { auditAreaLabels } from "../../model/auditArea";
+import { auditAreaLabels } from "../../../model/events/auditArea";
 import {
 	type AuditFilters,
 	defaultAuditFilters,
-} from "../../model/auditFilters";
+} from "../../../model/filters/auditFilters";
 
 import { Button, Input } from "@/shared/ui/controls";
 import { ListFilters } from "@/shared/ui/dataDisplay";

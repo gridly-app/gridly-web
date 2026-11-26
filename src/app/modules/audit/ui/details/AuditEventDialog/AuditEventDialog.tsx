@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 
-import { auditArea, auditAreaLabels } from "../../model/auditArea";
-import { auditSummary } from "../../model/auditPresentation";
+import { auditArea, auditAreaLabels } from "../../../model/events/auditArea";
+import { auditSummary } from "../../../model/auditPresentation";
 import { AuditEventChanges } from "../AuditEventChanges/AuditEventChanges";
 import type { AuditEvent } from "@/domain/shipment";
 
 import { Modal } from "@/shared/ui/overlays";
 
-import factStyles from "../../shared.module.css";
-import auditEventsStyles from "./AuditEventDialog.module.css";
+import factStyles from "../../../shared.module.css";
+import auditEventsStyles from "../../AuditEventDialog/AuditEventDialog.module.css";
 import { managementStyles as styles } from "@/shared/ui/management";
 
 export function AuditEventDialog({

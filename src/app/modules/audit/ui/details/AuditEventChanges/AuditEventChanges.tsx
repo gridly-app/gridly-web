@@ -4,9 +4,9 @@ import {
 	changeLabel,
 	changeValue,
 	permissionChanges,
-} from "../../model/auditChanges";
+} from "../../../model/auditChanges";
 
-import factStyles from "../../shared.module.css";
+import factStyles from "../../../shared.module.css";
 import styles from "./AuditEventChanges.module.css";
 
 export function AuditEventChanges({
