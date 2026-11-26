@@ -15,6 +15,7 @@ import { assembleSnapshot, readSnapshotParts } from "./warehouseSnapshot";
 
 export class RestWarehouseSnapshots {
 	private readonly mapStateReady = new Map<string, number>();
+	private readonly draftAbsent = new Map<string, number>();
 	private readonly reads = new Map<string, AbortController>();
 
 	constructor(
@@ -38,6 +39,7 @@ export class RestWarehouseSnapshots {
 
 	clear() {
 		this.mapStateReady.clear();
+		this.draftAbsent.clear();
 		this.reads.clear();
 	}
 
@@ -45,6 +47,7 @@ export class RestWarehouseSnapshots {
 		this.reads.get(id)?.abort();
 		this.reads.delete(id);
 		this.mapStateReady.delete(id);
+		this.draftAbsent.delete(id);
 		this.cache.removeQueries({
 			queryKey: this.getKeys().publishedLayout(id),
 			exact: true,
@@ -155,17 +158,27 @@ export class RestWarehouseSnapshots {
 			retainedLayout?.version === warehouse.version
 				? retainedLayout
 				: undefined;
+		const skipDraft =
+			resource !== "all" && this.draftAbsent.get(id) === warehouse.version;
 		const parts = await readSnapshotParts(
 			this.http,
 			base,
 			warehouse,
 			resource,
-			skipLive,
-			cachedLayout,
-			signal,
+			{
+				skipLive,
+				skipDraft,
+				cachedLayout,
+				signal,
+			},
 		);
 		const { layout, state } = parts;
 		signal.throwIfAborted();
+
+		if (withMap && !skipDraft) {
+			if (parts.draft) this.draftAbsent.delete(id);
+			else this.draftAbsent.set(id, warehouse.version);
+		}
 		if (withMap && !skipLive && (!state || state.warehouse_id !== id)) {
 			throw new Error("Получен снимок другого склада");
 		}

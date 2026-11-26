@@ -24,9 +24,17 @@ export async function readSnapshotParts(
 	base: string,
 	warehouse: Warehouse,
 	resource: WarehouseResource,
-	skipLive: boolean,
-	cachedLayout: LayoutDto | undefined,
-	signal: AbortSignal,
+	{
+		skipLive,
+		skipDraft,
+		cachedLayout,
+		signal,
+	}: {
+		skipLive: boolean;
+		skipDraft: boolean;
+		cachedLayout: LayoutDto | undefined;
+		signal: AbortSignal;
+	},
 ) {
 	const needs = (name: WarehouseResource) =>
 		resource === "all" || resource === name;
@@ -39,17 +47,18 @@ export async function readSnapshotParts(
 						.request(`${base}/layout`, { signal })
 						.then((data) => parseResponse(layoutDto, data))
 			: Promise.resolve(null);
-	const draftPromise = !withMap
-		? Promise.resolve(null)
-		: http
-				.request(`${base}/layout/draft`, { signal })
-				.then((data) => parseResponse(layoutDto, data))
-				.catch((e) => {
-					if (e instanceof ApiError && e.status === 404) {
-						return null;
-					}
-					throw e;
-				});
+	const draftPromise =
+		!withMap || skipDraft
+			? Promise.resolve(null)
+			: http
+					.request(`${base}/layout/draft`, { signal })
+					.then((data) => parseResponse(layoutDto, data))
+					.catch((e) => {
+						if (e instanceof ApiError && e.status === 404) {
+							return null;
+						}
+						throw e;
+					});
 	const [
 		layout,
 		draft,
