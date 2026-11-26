@@ -1,11 +1,14 @@
 import { expect, test } from "bun:test";
-import { RestWarehouseCommands } from "@/app/modules/warehouse-data/api/commands/restCommands";
-import { warehouseFromDto } from "@/app/modules/warehouse-data/api/repositories/restMappers";
-import { warehouseDto } from "@/app/modules/warehouse-data/api/warehouses/warehouseDto";
+import { RestWarehouseCommands } from "./restCommands";
+import { warehouseFromDto } from "../repositories/restMappers";
+import { warehouseDto } from "../warehouses/warehouseDto";
 import type { RequestOptions } from "@/shared/http";
 import { requiredAt } from "@/shared/invariants";
 
-import { reportWarehouse as base, payload } from "../../../../../../tests/integration/warehouse/reportWarehouse";
+import {
+	reportWarehouse as base,
+	payload,
+} from "../../../../../../tests/support/reportWarehouse";
 
 test("archive and settings mutations preserve scoped paths and revision preconditions", async () => {
 	const calls: { path: string; options: RequestOptions }[] = [];

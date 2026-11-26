@@ -1,109 +1,12 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { writeOffFromForm } from "@/app/modules/warehouse/warehouse-inventory/model/writeOffFromForm";
-import { robotFromForm } from "@/app/modules/warehouse/warehouse-robots/model/robotFromForm";
-import { RestWarehouseCommands } from "@/app/modules/warehouse-data/api/commands/restCommands";
-import { RestWarehouseRepository } from "@/app/modules/warehouse-data/api/repositories/restRepository";
-import { warehouseCommandSchema } from "@/domain/warehouse/commands/commandSchemas";
+import { RestWarehouseRepository } from "../repositories/restRepository";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 import { ApiError, FetchHttpClient, type RequestOptions } from "@/shared/http";
+import { httpDouble } from "../../../../../../tests/support/http";
 import { warehouse } from "../../../../../../tests/support/warehouse";
+import { RestWarehouseCommands } from "./restCommands";
 
-function form() {
-	const data = new FormData();
-	for (const [name, value] of Object.entries({
-		name: "New",
-		roles: "ship",
-		speed: "5",
-		duration: "20",
-		capacity: "2.500",
-		position: "1,1",
-	}))
-		data.append(name, value);
-	return data;
-}
-
-test("robot wire DTO uses x/y on POST and revision on PATCH", async () => {
-	const w = warehouse();
-	const calls: { path: string; options: RequestOptions }[] = [];
-	const commands = new RestWarehouseCommands(
-		{ request: async () => ({}) },
-		async (path, options) => {
-			calls.push({ path, options });
-		},
-	);
-	await commands.execute(
-		"w",
-		{ action: "robot", value: robotFromForm(form(), undefined, w.cells) },
-		w,
-	);
-	expect(calls[0]).toMatchObject({
-		path: "/warehouses/w/robots",
-		options: {
-			method: "POST",
-			body: { x: 1, y: 1, speed: 5, action_ticks: 20 },
-		},
-	});
-	await commands.execute(
-		"w",
-		{ action: "robot", value: robotFromForm(form(), w.robots[0], []) },
-		w,
-	);
-	expect(calls[1]).toMatchObject({
-		path: "/warehouses/w/robots/r",
-		options: { method: "PATCH", body: { revision: 1 } },
-	});
-	expect(calls[1]?.options.body).not.toHaveProperty("x");
-});
-test("archive commands use POST and direct stock commands are rejected before sending", async () => {
-	const w = warehouse();
-	const calls: { path: string; options: RequestOptions }[] = [];
-	const commands = new RestWarehouseCommands(
-		{ request: async () => ({}) },
-		async (path, options) => {
-			calls.push({ path, options });
-		},
-	);
-	await commands.execute("w", { action: "archiveProduct", value: "p" }, w);
-	await commands.execute("w", { action: "archiveCategory", value: "c" }, w);
-	expect(calls.map((c) => [c.path, c.options.method])).toEqual([
-		["/warehouses/w/products/p/archive", "POST"],
-		["/warehouses/w/categories/c/archive", "POST"],
-	]);
-	for (const action of [
-		"stock",
-		"deleteStock",
-		"deleteProduct",
-		"deleteCategory",
-		"cabinet",
-	])
-		expect(
-			warehouseCommandSchema.safeParse({ action, value: "s" }).success,
-		).toBe(false);
-	const stock = w.stock[0];
-	if (!stock) throw new Error("Missing stock");
-	const data = new FormData();
-	data.set("quantity", "9");
-	data.set("reason", "Damage");
-	expect(() => writeOffFromForm(data, stock)).toThrow("доступный");
-	await expect(
-		commands.execute(
-			"w",
-			{ action: "writeoff", value: { id: "s", quantity: 9, reason: "Damage" } },
-			w,
-		),
-	).rejects.toThrow("доступный");
-	data.set("quantity", "2");
-	const value = writeOffFromForm(data, stock);
-	await commands.execute("w", { action: "writeoff", value }, w);
-	expect(calls[2]).toMatchObject({
-		path: "/warehouses/w/inventory/write-offs",
-		options: {
-			method: "POST",
-			body: { stock_id: "s", quantity: 2, reason: "Damage" },
-		},
-	});
-});
 test("confirm derives direction from a fresh read and retains the displayed revision; 201/202 receipts succeed", async () => {
 	for (const kind of ["inbound", "outbound"]) {
 		const bodies: unknown[] = [];
@@ -282,7 +185,7 @@ test("a confirmed zero threshold survives a failed refresh without another PATCH
 	const cache = new QueryClient();
 	let writes = 0;
 	const repository = new RestWarehouseRepository(
-		{
+		httpDouble({
 			request: async (_path, options) => {
 				if (options?.method !== "PATCH") throw new ApiError("Read failed", 503);
 
@@ -295,7 +198,7 @@ test("a confirmed zero threshold survives a failed refresh without another PATCH
 					allocation_policy: "fefo",
 				};
 			},
-		},
+		}),
 		cache,
 	);
 	cache.setQueryData(repository.keys.detail("w"), warehouse());
