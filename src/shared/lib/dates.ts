@@ -44,18 +44,22 @@ function getFormatters(timeZone: string | undefined) {
 	return formatter;
 }
 
-export function formatMoment(value: string | null, timeZone?: string) {
+function toTimestamp(value: string | number) {
+	return typeof value === "number" ? value : Date.parse(value);
+}
+
+export function formatMoment(value: string | number | null, timeZone?: string) {
 	if (value === null) return "Не указано";
 
-	const timestamp = Date.parse(value);
+	const timestamp = toTimestamp(value);
 
 	return Number.isFinite(timestamp)
 		? getFormatters(timeZone).moment.format(timestamp)
-		: value;
+		: String(value);
 }
 
-export function dateKey(value: string, timeZone?: string) {
-	const timestamp = Date.parse(value);
+export function dateKey(value: string | number, timeZone?: string) {
+	const timestamp = toTimestamp(value);
 
 	return Number.isFinite(timestamp)
 		? getFormatters(timeZone).day.format(timestamp)
