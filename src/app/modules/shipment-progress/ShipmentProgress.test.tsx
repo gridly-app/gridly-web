@@ -31,5 +31,6 @@ test("a delivered inbound shipment does not invent previous milestones", () => {
 
 	expect(html.match(/data-state="completed"/g)).toHaveLength(1);
 	expect(html.match(/data-state="pending"/g)).toHaveLength(6);
+	expect(html).toContain("Принята");
 	expect(html).toContain("Дата неизвестна");
 });

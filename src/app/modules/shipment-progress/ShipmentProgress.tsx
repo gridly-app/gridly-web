@@ -1,8 +1,11 @@
-import { IconCheck } from "@tabler/icons-react";
-import { useId } from "react";
-import type { Shipment } from "@/domain/shipment";
+import { type ComponentProps, useId } from "react";
+
+import type { ShipmentProgressSlot } from "@/ports/shipment";
 import { Badge } from "@/shared/ui/dataDisplay";
-import { shipmentProgress } from "./model/shipmentProgress";
+
+import { shipmentStatus } from "./model/shipmentStatus";
+import { shipmentSteps } from "./model/shipmentSteps";
+import { ShipmentTimeline } from "./ui/ShipmentTimeline/ShipmentTimeline";
 
 import styles from "./ShipmentProgress.module.css";
 
@@ -10,52 +13,22 @@ export function ShipmentProgress({
 	shipment,
 	kind = "outbound",
 	title = "Этапы доставки",
-}: {
-	shipment: Pick<Shipment, "order" | "milestones">;
-	kind?: "inbound" | "outbound";
-	title?: string;
-}) {
+}: ComponentProps<ShipmentProgressSlot>) {
 	const headingId = useId();
-	const model = shipmentProgress(shipment, kind);
+	const { order, milestones } = shipment;
+	const { label, tone, reason } = shipmentStatus(order, kind);
+	const steps = shipmentSteps(milestones, kind, order.time_zone);
+	const hasMilestones = milestones.length > 0;
 
 	return (
 		<section className={styles.panel} aria-labelledby={headingId}>
 			<header className={styles.heading}>
 				<h2 id={headingId}>{title}</h2>
-				<Badge tone={model.tone}>{model.statusLabel}</Badge>
+				<Badge tone={tone}>{label}</Badge>
 			</header>
-			{model.reason && <p>{model.reason}</p>}
-			{!model.hasMilestones && <p>Данные об этапах ещё не поступили.</p>}
-			<ol className={styles.steps}>
-				{model.steps.map((step) => (
-					<ShipmentStep key={step.code} step={step} />
-				))}
-			</ol>
+			{reason && <p>{reason}</p>}
+			{!hasMilestones && <p>Данные об этапах ещё не поступили.</p>}
+			<ShipmentTimeline steps={steps} />
 		</section>
-	);
-}
-
-function ShipmentStep({
-	step,
-}: {
-	step: ReturnType<typeof shipmentProgress>["steps"][number];
-}) {
-	const ariaCurrent = step.isCurrent ? "step" : undefined;
-
-	return (
-		<li
-			data-state={step.state}
-			data-connected={step.isConnected}
-			aria-current={ariaCurrent}
-		>
-			<span className={styles.marker} aria-hidden="true">
-				{step.isComplete && <IconCheck size={14} stroke={3} />}
-			</span>
-			<strong>{step.label}</strong>
-			<small>{step.statusLabel}</small>
-			{step.isDateUnknown && <small>Дата неизвестна</small>}
-			{step.date && <time dateTime={step.date}>{step.dateLabel}</time>}
-			{step.note && <small>{step.note}</small>}
-		</li>
 	);
 }
