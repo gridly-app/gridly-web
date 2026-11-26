@@ -3,10 +3,10 @@ import { type ReactNode, useState } from "react";
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouse } from "@/ports/warehouse";
 
-import { ApiError, type FetchHttpClient } from "@/shared/http";
+import { ApiError, type HttpClient, isAccessDenied } from "@/shared/http";
 import { useSystemStatus } from "./api/systemApi";
 
-import type { OrderLocation } from "@/ports/navigation";
+import { newWarehouseId, type OrderLocation } from "@/ports/navigation";
 import { textSearch, errorMessage } from "@/shared/lib";
 
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
@@ -29,7 +29,7 @@ export function System({
 	renderAuditEvents,
 	renderRecentErrors,
 }: {
-	http: FetchHttpClient;
+	http: HttpClient;
 	path: string;
 	orderScope: OrderLocation | null;
 	onRefreshAudit: () => void;
@@ -40,7 +40,7 @@ export function System({
 	const [search, setSearch] = useState("");
 	const [from, setFrom] = useState("");
 	const [to, setTo] = useState("");
-	const warehouse = useWarehouse(orderScope?.warehouseId ?? "new");
+	const warehouse = useWarehouse(orderScope?.warehouseId ?? newWarehouseId);
 	const timeZone = orderScope
 		? warehouse.data?.timezone
 		: Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -52,7 +52,9 @@ export function System({
 	});
 	const forbidden =
 		query.error instanceof ApiError && query.error.status === 403;
-	const data = query.error || rangeError ? undefined : query.data;
+	const isDenied = isAccessDenied(query.error);
+	const data = isDenied || rangeError ? undefined : query.data;
+	const hasRefreshError = !!data && !!query.error;
 	const matches = textSearch(search);
 	const diagnostics = data?.order_diagnostics;
 	const order =
@@ -93,7 +95,7 @@ export function System({
 			{query.isPending && !rangeError && (
 				<Feedback tone="loading">Проверяем состояние системы…</Feedback>
 			)}
-			{!rangeError && query.error && (
+			{!rangeError && query.error && !hasRefreshError && (
 				<Feedback
 					tone="error"
 					action={
@@ -103,6 +105,14 @@ export function System({
 					{forbidden
 						? "У аккаунта нет доступа к диагностике."
 						: errorMessage(query.error)}
+				</Feedback>
+			)}
+			{hasRefreshError && (
+				<Feedback
+					tone="warning"
+					action={<RetryButton onRetry={query.refetch} />}
+				>
+					Не удалось обновить данные. Показаны последние загруженные данные.
 				</Feedback>
 			)}
 			{data && (

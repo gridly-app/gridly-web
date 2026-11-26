@@ -4,8 +4,13 @@ import { adminQueryKey } from "@/ports/administration";
 import type { OrderLocation } from "@/ports/navigation";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 
-import { type FetchHttpClient, parseResponse } from "@/shared/http";
-import { dateRangeError, errorMessage, zonedDayBoundary } from "@/shared/lib";
+import { type HttpClient, parseResponse } from "@/shared/http";
+import {
+	dateRangeError,
+	errorMessage,
+	UserError,
+	zonedDayBoundary,
+} from "@/shared/lib";
 
 import { systemSchema } from "./system.dto";
 
@@ -28,7 +33,8 @@ export function systemQueryUrl(
 	}
 
 	if (from || to) {
-		if (!timeZone) throw new Error("Дождитесь загрузки часового пояса склада.");
+		if (!timeZone)
+			throw new UserError("Дождитесь загрузки часового пояса склада.");
 		if (from) params.set("from", zonedDayBoundary(from, timeZone));
 		if (to) params.set("to", zonedDayBoundary(to, timeZone, true));
 	}
@@ -37,7 +43,7 @@ export function systemQueryUrl(
 }
 
 export function useSystemStatus(
-	http: FetchHttpClient,
+	http: HttpClient,
 	path: string,
 	filters: SystemFilters,
 ) {

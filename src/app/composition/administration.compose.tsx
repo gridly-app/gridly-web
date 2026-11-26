@@ -13,7 +13,7 @@ import {
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 
-import { ApiError, type FetchHttpClient } from "@/shared/http";
+import { type HttpClient, isAccessDenied } from "@/shared/http";
 
 import { administrationRoute } from "../modules/administration";
 import {
@@ -151,7 +151,7 @@ function SystemWithAudit({
 	auditPath,
 	orderScope,
 }: {
-	http: FetchHttpClient;
+	http: HttpClient;
 	path: string;
 	auditPath: string;
 	orderScope: OrderLocation | null;
@@ -197,14 +197,13 @@ function RecentErrorsWithAudit({
 	auditPath,
 	...input
 }: RecentErrorsInput & {
-	http: FetchHttpClient;
+	http: HttpClient;
 	auditPath: string;
 }) {
 	const { query, events, isComplete } = useAuditEvents(http, auditPath, {
 		enabled: input.items.length > 0,
 	});
-	const isDenied =
-		query.error instanceof ApiError && [401, 403].includes(query.error.status);
+	const isDenied = isAccessDenied(query.error);
 
 	function handleLoadAll() {
 		void query.fetchNextPage({ cancelRefetch: false });
