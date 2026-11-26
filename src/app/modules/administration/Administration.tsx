@@ -1,18 +1,17 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import type { Warehouse } from "@/domain/warehouse";
-import type { WorkspaceMode } from "@/ports/session";
-
 import {
 	type AdminSectionLocation,
 	readAdminLocation,
+	workspaceEntryPath,
 } from "@/ports/navigation";
+import type { WorkspaceMode } from "@/ports/session";
 
-import { defaultAdminSection, sections } from "./config/adminSections";
-
-import { AdminSidebar } from "./ui/AdminSidebar/AdminSidebar";
+import { adminSections, defaultAdminSection } from "./config/adminSections";
 import { AdminOrderDialog } from "./ui/AdminOrderDialog/AdminOrderDialog";
+import { AdminSidebar } from "./ui/AdminSidebar/AdminSidebar";
 
 import styles from "./Administration.module.css";
 
@@ -31,8 +30,8 @@ export function Administration({
 	const { section, orderCard } = readAdminLocation(params);
 	const orderCardKey = orderCard ? JSON.stringify(orderCard) : undefined;
 	const activeSection =
-		sections.find(({ id }) => id === section.tab) ?? defaultAdminSection;
-	const backPath = mode === "sandbox" ? "/sandbox" : "/app";
+		adminSections.find(({ id }) => id === section.tab) ?? defaultAdminSection;
+	const backPath = workspaceEntryPath(mode);
 
 	return (
 		<div className={styles.page}>

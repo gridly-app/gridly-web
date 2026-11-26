@@ -1,11 +1,11 @@
 import { IconArrowLeft, IconShieldCog } from "@tabler/icons-react";
 
 import { type AdminTab, adminLocation } from "@/ports/navigation";
-import { groups } from "../../config/adminSections";
-
 import { Link } from "@/shared/ui/navigation";
 
-import { managementStyles as sharedStyles } from "@/shared/ui/management";
+import { adminSectionGroups } from "../../config/adminSections";
+
+import { managementStyles } from "@/shared/ui/management";
 import styles from "./AdminSidebar.module.css";
 
 export function AdminSidebar({
@@ -17,7 +17,7 @@ export function AdminSidebar({
 }) {
 	return (
 		<aside className={styles.sidebar}>
-			<Link className={`${styles.back} ${sharedStyles.link}`} to={backPath}>
+			<Link className={`${styles.back} ${managementStyles.link}`} to={backPath}>
 				<IconArrowLeft size={16} aria-hidden="true" /> Рабочее пространство
 			</Link>
 			<div className={styles.adminTitle}>
@@ -27,8 +27,8 @@ export function AdminSidebar({
 				Администрирование
 			</div>
 			<nav className={styles.navigation} aria-label="Разделы администрирования">
-				{groups.map((group) => (
-					<div key={group.id}>
+				{adminSectionGroups.map((group) => (
+					<div key={group.id} className={styles.group}>
 						<p className={styles.groupLabel}>{group.label}</p>
 						{group.items.map(({ id, label, icon: Icon }) => (
 							<Link

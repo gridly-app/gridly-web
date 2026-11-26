@@ -74,8 +74,14 @@
 	}
 }
 
+.group {
+	display: grid;
+	align-content: start;
+	gap: var(--space-1);
+}
+
 .groupLabel {
-	margin: 0 var(--space-2) var(--space-2);
+	margin: 0 var(--space-2) var(--space-1);
 
 	font-size: var(--text-caption);
 	font-weight: 600;
@@ -103,20 +109,23 @@
 		padding-inline: var(--space-1);
 		font-size: var(--text-caption);
 	}
+
 	.navIcon {
 		flex-shrink: 0;
 		inline-size: 14px;
 	}
 }
 
-.navLink:hover,
-.navLink[aria-current="page"] {
+.navLink:hover {
 	text-decoration: none;
 
-	color: var(--success-foreground);
-	background: var(--success-bg);
+	color: var(--sidebar-accent-foreground);
+	background: var(--sidebar-accent);
 }
 
 .navLink[aria-current="page"] {
-	font-weight: 650;
+	font-weight: 500;
+	color: var(--primary);
+	background: var(--accent-bg);
+	box-shadow: var(--shadow-control);
 }

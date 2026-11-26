@@ -13,7 +13,7 @@ export const defaultAdminSection = {
 	icon: IconHistory,
 } as const;
 
-export const groups = [
+export const adminSectionGroups = [
 	{
 		id: "operations",
 		label: "Операции",
@@ -40,8 +40,7 @@ export const groups = [
 	},
 ] as const;
 
-type AdminSection = (typeof groups)[number]["items"][number];
+type AdminSection = (typeof adminSectionGroups)[number]["items"][number];
 
-export const sections: readonly AdminSection[] = groups.flatMap<AdminSection>(
-	(group) => group.items,
-);
+export const adminSections: readonly AdminSection[] =
+	adminSectionGroups.flatMap<AdminSection>((group) => group.items);
