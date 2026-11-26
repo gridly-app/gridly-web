@@ -29,11 +29,14 @@ export function LocationAndMapSettings({
 	const layout = useLayoutOperation(warehouse.id);
 	const layoutResource = useWarehouseResources(warehouse, ["map"]);
 	const hasNoDraft =
-		layoutResource.data !== undefined &&
+		!layoutResource.error &&
+		layoutResource.data?.version === warehouse.version &&
 		layoutResource.data.draftRevision === undefined;
 	const layoutBlocked = blocksLayoutWrite(layout.operation);
 	const layoutRefreshFailed = layout.operation?.status === "refresh-failed";
 	const mayResize = !!warehouse.allowedActions?.includes("resize");
+	const layoutReadFailed =
+		mayResize && !layoutRefreshFailed && Boolean(layoutResource.error);
 	const canResize = mayResize && hasNoDraft && !layoutBlocked;
 
 	async function save(
@@ -80,6 +83,15 @@ export function LocationAndMapSettings({
 				saving={saving === "map"}
 				saveDimensions={(value) => save("map", () => execute("resize", value))}
 			/>
+			{layoutReadFailed && (
+				<Feedback
+					tone="warning"
+					action={<RetryButton onRetry={layoutResource.retry} />}
+				>
+					Не удалось загрузить актуальную планировку. Изменение размеров пока
+					недоступно.
+				</Feedback>
+			)}
 			{layout.operation?.status === "unknown" && (
 				<Feedback tone="warning">
 					Исход записи планировки неизвестен. Отправленный снимок сохранён для
