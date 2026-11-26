@@ -4,6 +4,21 @@ import type { UiScenario } from "../uiBrowserFixture";
 export async function robotScenario({ api, page, ready, signIn }: UiScenario) {
 	await signIn();
 	await ready("robots");
+	const calls = api.mutations;
+
+	await page
+		.getByRole("button", { name: "Удалить", exact: true })
+		.first()
+		.click();
+	const confirmation = page.getByRole("alertdialog");
+	await expect(confirmation).toBeVisible();
+
+	await confirmation
+		.getByRole("button", { name: "Отмена", exact: true })
+		.click();
+	await expect(confirmation).toHaveCount(0);
+	expect(api.mutations).toBe(calls);
+
 	const dialog = page.locator("[data-slot=dialog-popup]");
 	await page
 		.getByRole("button", { name: "Добавить робота", exact: true })

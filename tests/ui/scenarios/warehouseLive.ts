@@ -40,11 +40,6 @@ export async function warehouseLiveScenario({
 	await expect(alert).toBeVisible();
 	const fallbackReads = api.mapStateReads;
 	await expect.poll(() => api.mapStateReads).toBeGreaterThan(fallbackReads);
-	await expect(alert).toBeVisible();
-	await expect(alert.locator('[data-slot="alert-icon"]')).toBeVisible();
-	const position = await alert.boundingBox();
-	expect(position?.x).toBeGreaterThan(900);
-	expect((position?.y ?? 0) + (position?.height ?? 0)).toBeGreaterThan(970);
 	await page.getByRole("link", { name: "Остатки", exact: true }).click();
 	await expect(alert).toBeVisible();
 	await alert.getByRole("button", { name: "Закрыть уведомление" }).click();

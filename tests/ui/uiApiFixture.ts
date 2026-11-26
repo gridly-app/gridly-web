@@ -46,6 +46,8 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 		failSandbox: false,
 		settingsFailure: 0,
 		failRobot: true,
+		allowWarehouseCreation: false,
+		allowOrderCreation: false,
 		sandboxStarts: 0,
 		sandboxStores: new Map<string, typeof seed>(),
 		accountStore: structuredClone(seed),
@@ -64,7 +66,16 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 
 		return Object.fromEntries(prepared);
 	}
-	await page.context().route("**/api/v1/**", async (route) => {
+	function isMockedPath(url: URL) {
+		const path = url.pathname;
+
+		return (
+			path.includes("/api/v1/") &&
+			(!hasLocalStream || !path.endsWith("/stream"))
+		);
+	}
+
+	await page.context().route(isMockedPath, async (route) => {
 		const request = route.request(),
 			path = new URL(request.url()).pathname,
 			method = request.method();
@@ -91,12 +102,10 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 
 		if (path.endsWith("/map/state")) api.mapStateReads++;
 		if (path.endsWith("/stream")) {
-			if (hasLocalStream) await route.continue();
-			else
-				await route.fulfill({
-					status: 503,
-					json: { error: { message: "Stream unavailable" } },
-				});
+			await route.fulfill({
+				status: 503,
+				json: { error: { message: "Stream unavailable" } },
+			});
 			return;
 		}
 		if (
@@ -173,6 +182,17 @@ export async function installUiApi(page: Page, hasLocalStream: boolean) {
 		}
 		if (method === "GET" && store.has(path)) {
 			await route.fulfill({ status: 200, json: prepare(store.get(path)) });
+			return;
+		}
+		if (
+			method === "GET" &&
+			path.endsWith("/layout/draft") &&
+			store.has(path.slice(0, -"/layout/draft".length))
+		) {
+			await route.fulfill({
+				status: 404,
+				json: { error: { code: "NOT_FOUND" } },
+			});
 			return;
 		}
 		const found = fixture.routes.find(

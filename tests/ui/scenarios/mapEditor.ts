@@ -68,7 +68,6 @@ export async function mapEditorScenario({
 		.click();
 	await screenshot("editor-routes");
 	await page.keyboard.press("Escape");
-	const send = Promise.withResolvers<void>();
 	const release = Promise.withResolvers<void>();
 	const commit = "**/warehouses/warehouse-demo/layout/commit";
 	await page.route(
@@ -104,7 +103,6 @@ export async function mapEditorScenario({
 	await page.route(
 		commit,
 		async (route) => {
-			send.resolve();
 			await release.promise;
 			await route.abort("failed");
 		},
@@ -112,10 +110,14 @@ export async function mapEditorScenario({
 	);
 
 	try {
-		await page
-			.getByRole("button", { name: "Сохранить изменения", exact: true })
-			.click();
-		await send.promise;
+		await Promise.all([
+			page.waitForRequest(
+				(request) =>
+					request.method() === "POST" &&
+					request.url().endsWith("/layout/commit"),
+			),
+			save.click(),
+		]);
 		await page
 			.getByRole("button", { name: "Выйти из просмотра", exact: true })
 			.click();
@@ -132,4 +134,50 @@ export async function mapEditorScenario({
 	await expect(
 		page.getByRole("button", { name: "Сохранить изменения", exact: true }),
 	).toBeDisabled();
+}
+
+export async function mapBackScenario({ page, ready, signIn }: UiScenario) {
+	await signIn();
+	await ready("history");
+	await page.getByRole("link", { name: "Карта склада", exact: true }).click();
+	await page
+		.getByRole("button", { name: "Режим просмотра", exact: true })
+		.click();
+	await page
+		.getByRole("button", { name: "Редактирование", exact: true })
+		.click();
+	await page
+		.getByRole("menuitem", { name: "Строительство", exact: true })
+		.click();
+
+	const canvas = page.getByLabel(/^Карта склада\. Стрелки/);
+	const undo = page.getByRole("button", { name: "Отменить", exact: true });
+	const dialog = page.getByRole("alertdialog", { name: "Покинуть карту?" });
+
+	await canvas.press("ArrowRight");
+	await canvas.press("Enter");
+	await page.getByRole("button", { name: "Стена", exact: true }).click();
+	await expect(undo).toBeEnabled();
+
+	await page
+		.getByRole("button", { name: "Выйти из просмотра", exact: true })
+		.click();
+	await page.evaluate(() => history.back());
+	await dialog.getByRole("button", { name: "Остаться", exact: true }).click();
+	await expect(page).toHaveURL(/\/map$/);
+
+	await page
+		.getByRole("button", { name: "Режим просмотра", exact: true })
+		.click();
+	await expect(undo).toBeEnabled();
+	await page
+		.getByRole("button", { name: "Выйти из просмотра", exact: true })
+		.click();
+
+	await page.evaluate(() => history.back());
+	await dialog
+		.getByRole("button", { name: "Покинуть карту", exact: true })
+		.click();
+	await expect(page).toHaveURL(/\/history$/);
+	await expect(undo).toHaveCount(0);
 }

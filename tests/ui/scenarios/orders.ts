@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import type { UiScenario } from "../uiBrowserFixture";
 
-export async function ordersScenario({ page, ready, signIn }: UiScenario) {
+export async function ordersScenario({ api, page, ready, signIn }: UiScenario) {
 	await signIn();
 	const dialog = page.locator("[data-slot=dialog-popup]");
 	await ready("inbound");
@@ -56,4 +56,17 @@ export async function ordersScenario({ page, ready, signIn }: UiScenario) {
 	await page
 		.getByRole("button", { name: "Сохранить форму", exact: true })
 		.click();
+	api.allowOrderCreation = true;
+	await page.getByRole("button", { name: "Поставка", exact: true }).click();
+	await page
+		.getByRole("button", { name: /^Продолжить форму: UI поставщик/ })
+		.click();
+	await expect(dialog.getByLabel("Поставщик *", { exact: true })).toHaveValue(
+		"UI поставщик",
+	);
+	await dialog.getByRole("button", { name: "Создать черновик" }).click();
+	await expect(dialog).toHaveCount(0);
+	const created = page.getByRole("row").filter({ hasText: "UI-NEW-ORDER" });
+	await expect(created).toHaveCount(1);
+	await expect(created).toContainText("UI поставщик");
 }

@@ -54,8 +54,35 @@ export async function warehouseDeletionScenario({
 		.getByRole("button", { name: "Удалить склад «Северный склад»" })
 		.click();
 	await expect(confirmation).toContainText("Северный склад");
-	await confirm.click();
+	const pendingDeletion = Promise.withResolvers<void>();
+	let northDeletes = 0;
+
+	await page.route("**/api/v1/warehouses/warehouse-north", async (route) => {
+		if (route.request().method() !== "DELETE") return route.fallback();
+
+		northDeletes++;
+		await pendingDeletion.promise;
+
+		return route.fallback();
+	});
+
+	try {
+		await confirm.evaluate((button) => {
+			if (!(button instanceof HTMLButtonElement))
+				throw new Error("Expected a confirmation button");
+
+			button.click();
+			button.click();
+		});
+		await expect(
+			confirmation.getByRole("button", { name: "Выполняем…" }),
+		).toBeDisabled();
+	} finally {
+		pendingDeletion.resolve();
+	}
+
 	await expect(confirmation).toHaveCount(0);
+	expect(northDeletes).toBe(1);
 	await expect(page.getByText("Ничего не найдено")).toBeVisible();
 	await page.goto(`${base}/app`);
 	await expect(page).toHaveURL(`${base}/warehouses/new/map`);

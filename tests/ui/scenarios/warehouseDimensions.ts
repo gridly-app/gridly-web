@@ -35,4 +35,11 @@ export async function warehouseDimensionsScenario({
 	await expect(width).toHaveValue("19");
 	await expect(height).toHaveValue("13");
 	await expect(save).toBeDisabled();
+	await width.fill("20");
+	await save.click();
+	await expect(page.getByText("Сохранено", { exact: true })).toBeVisible();
+	await page.reload();
+	await expect(width).toHaveValue("20");
+	await expect(height).toHaveValue("13");
+	await expect(save).toBeDisabled();
 }

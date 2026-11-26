@@ -101,4 +101,75 @@ export async function routeDragScenario({
 	).toBeVisible();
 	await expect.poll(previewPixel).toEqual(basePixel);
 	await page.mouse.up();
+	const dock = await cell(6, 5);
+
+	await page.mouse.move(dock.x, dock.y);
+	await page.mouse.down();
+	await expect(
+		page.getByText("Между выбранными точками нет прохода"),
+	).toHaveCount(0);
+
+	const wrongDock = await cell(6, 6);
+
+	await page.mouse.move(wrongDock.x, wrongDock.y);
+	await page.mouse.up();
+	const dockError = page.getByText(/Конец пути должен находиться на доке/);
+
+	await expect(dockError).toBeVisible();
+
+	const currentStart = await cell(7, 5);
+
+	await page.mouse.move(currentStart.x, currentStart.y);
+	await page.mouse.down();
+	await expect(dockError).toHaveCount(0);
+
+	const currentPreview = await cell(7, 6);
+
+	await page.mouse.move(currentPreview.x, currentPreview.y);
+	await expect.poll(previewPixel).not.toEqual(basePixel);
+	await page.mouse.up();
+
+	const [commit] = await Promise.all([
+		page.waitForResponse(
+			(response) =>
+				response.request().method() === "POST" &&
+				response.url().endsWith("/layout/commit"),
+		),
+		page
+			.getByRole("button", { name: "Сохранить изменения", exact: true })
+			.click(),
+	]);
+
+	expect(commit.status()).toBe(204);
+
+	await page.reload();
+	await expect(canvas).toBeVisible();
+	const published = await page.evaluate(async () => {
+		const response = await fetch("/api/v1/warehouses/warehouse-demo/layout", {
+			cache: "no-store",
+		});
+		if (!response.ok)
+			throw new Error(`Published layout returned ${response.status}`);
+
+		return response.json();
+	});
+
+	expect(published).toMatchObject({
+		version: 2,
+		cells: expect.arrayContaining([
+			{ x: 9, y: 5, kind: "storage_general", capacity_volume: 0 },
+		]),
+		routes: [
+			expect.objectContaining({
+				inbound: [
+					{ x: 6, y: 5 },
+					{ x: 6, y: 6 },
+					{ x: 7, y: 6 },
+					{ x: 8, y: 6 },
+					{ x: 8, y: 5 },
+				],
+				outbound: [],
+			}),
+		],
+	});
 }

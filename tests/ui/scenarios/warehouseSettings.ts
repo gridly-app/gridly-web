@@ -117,5 +117,10 @@ export async function warehouseSettingsScenario({
 	await expect(dialog.getByRole("alert")).toContainText(
 		"Проверьте введённые данные",
 	);
-	await page.keyboard.press("Escape");
+	api.allowWarehouseCreation = true;
+	await dialog.getByRole("button", { name: "Сохранить", exact: true }).click();
+	await expect(page).toHaveURL(/\/warehouses\/warehouse-ui-created\/map$/);
+	await expect(
+		page.getByRole("combobox", { name: "Рабочее пространство — выбор склада" }),
+	).toContainText("UI склад");
 }
