@@ -2,6 +2,7 @@ import type { CommandPayloads, Stock } from "@/domain/warehouse";
 import { Input, Textarea } from "@/shared/ui/controls";
 import { Field, FormShell } from "@/shared/ui/forms";
 import { writeOffFromForm } from "../../model/writeOffFromForm";
+import { writeOffLimit } from "@/domain/warehouse";
 
 export interface WriteOffFormProps {
 	stock: Stock;
@@ -24,7 +25,7 @@ export function WriteOffForm({ stock, pending, onSave }: WriteOffFormProps) {
 					name="quantity"
 					type="number"
 					min={1}
-					max={stock.availableQuantity ?? 0}
+					max={writeOffLimit(stock)}
 					step={1}
 					defaultValue={1}
 					required

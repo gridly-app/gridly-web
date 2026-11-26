@@ -1,5 +1,6 @@
 import type { CommandPayloads, Stock } from "@/domain/warehouse";
 import { formNumber, formText, UserError } from "@/shared/lib";
+import { writeOffLimit } from "@/domain/warehouse";
 
 export function writeOffFromForm(
 	data: FormData,
@@ -10,7 +11,7 @@ export function writeOffFromForm(
 	if (!Number.isInteger(quantity) || quantity < 1) {
 		throw new UserError("Укажите целое положительное количество");
 	}
-	if (quantity > (stock.availableQuantity ?? 0))
+	if (quantity > writeOffLimit(stock))
 		throw new UserError("Количество превышает доступный остаток");
 	if (!formText(data, "reason")) {
 		throw new UserError("Укажите причину списания");

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { type Stock, stockZoneCells, stockZoneNames } from "@/domain/warehouse";
 import { useLiveWarehouseScreen } from "@/ports/warehouse";
+import { useUpdateSearchParams } from "@/shared/lib";
 import { expectedDeliveries, stockRows, writeOffRows } from "./inventoryRows";
 import { warehouseFields } from "./warehouseFields";
 
@@ -14,28 +15,14 @@ export function useInventoryPage() {
 		useLiveWarehouseScreen(warehouseFields);
 	const cadence = useSimulationCadence(warehouse);
 	const [params, setParams] = useSearchParams();
+	const updateSearchParams = useUpdateSearchParams();
 	const category = params.get("category") || "all";
 	const setCategory = (value: string) =>
-		setParams(
-			(current) => {
-				const next = new URLSearchParams(current);
-				next.set("category", value);
-				return next;
-			},
-			{ replace: true },
-		);
+		updateSearchParams({ category: value });
 	const [search, setSearch] = useState("");
 	const productFilter = params.get("product");
 	function setProduct(value: string) {
-		setParams(
-			(current) => {
-				const next = new URLSearchParams(current);
-				if (value === "all") next.delete("product");
-				else next.set("product", value);
-				return next;
-			},
-			{ replace: true },
-		);
+		updateSearchParams({ product: value === "all" ? null : value });
 	}
 	const viewParam = params.get("view");
 	const view: InventoryView =
@@ -86,17 +73,13 @@ export function useInventoryPage() {
 	);
 
 	function changeFilter(value: string) {
-		setParams(
-			(current) => {
-				const next = new URLSearchParams(current);
-				next.delete("price");
-				next.delete("filter");
-				if (value === "unpriced") next.set("price", "missing");
-				else if (value && value !== "all") next.set("filter", value);
-				return next;
-			},
-			{ replace: true },
-		);
+		const isUnpriced = value === "unpriced";
+		const isOtherFilter = !!value && value !== "all" && !isUnpriced;
+
+		updateSearchParams({
+			price: isUnpriced ? "missing" : null,
+			filter: isOtherFilter ? value : null,
+		});
 	}
 	function changeView(value: InventoryView) {
 		setParams(
@@ -112,15 +95,7 @@ export function useInventoryPage() {
 		setSearch("");
 	}
 	function setDate(key: "from" | "to", value: string) {
-		setParams(
-			(current) => {
-				const next = new URLSearchParams(current);
-				if (value) next.set(key, value);
-				else next.delete(key);
-				return next;
-			},
-			{ replace: true },
-		);
+		updateSearchParams({ [key]: value || null });
 	}
 	function resetFilters() {
 		setParams(view === "stock" ? {} : { view }, { replace: true });

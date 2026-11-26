@@ -8,6 +8,7 @@ import {
 	stockZoneId,
 	type stockZoneNames,
 } from "@/domain/warehouse";
+import { dateKey } from "@/shared/lib";
 import type { InventoryStock } from "./inventoryStock";
 import type { InventoryWarehouse } from "./warehouseFields";
 
@@ -90,18 +91,10 @@ export function writeOffRows(
 	{ category, productFilter, searchQuery }: InventorySearch,
 	{ filter, from, to }: { filter: string; from: string; to: string },
 ) {
-	const dayFormatter = new Intl.DateTimeFormat("en-CA", {
-		timeZone: warehouse.timezone,
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-	});
 	return (warehouse.writeOffs ?? [])
 		.filter((item) => {
 			const product = products.get(item.product);
-			const day = Number.isFinite(Date.parse(item.time))
-				? dayFormatter.format(new Date(item.time))
-				: "";
+			const day = dateKey(item.time, warehouse.timezone);
 			return (
 				(filter !== "unpriced" || item.price === null) &&
 				(!productFilter || item.product === productFilter) &&

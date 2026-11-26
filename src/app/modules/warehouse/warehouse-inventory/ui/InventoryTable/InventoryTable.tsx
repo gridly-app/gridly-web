@@ -18,9 +18,10 @@ import {
 } from "@/shared/ui/dataDisplay";
 import type { InventoryStock } from "../../model/inventoryStock";
 import type { InventoryWarehouse } from "../../model/warehouseFields";
-import styles from "./InventoryTable.module.css";
 import { StockLinks } from "../StockLinks/StockLinks";
+import { StockSource } from "../StockSource/StockSource";
 import stockTableStyles from "../../shared.module.css";
+import { totalReserved } from "@/domain/warehouse";
 
 export function InventoryTable({
 	items,
@@ -38,6 +39,11 @@ export function InventoryTable({
 	onWriteOff: (stock: InventoryStock) => void;
 }) {
 	const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+	const deliveries = new Map(
+		warehouse.orders
+			.filter((order) => order.kind === "inbound")
+			.map((order) => [order.id, order]),
+	);
 	const groups = new Map<string, InventoryStock[]>();
 	for (const item of items) {
 		const key = JSON.stringify([item.product, item.zoneKey]);
@@ -50,12 +56,12 @@ export function InventoryTable({
 		<Table hiddenColumns={hiddenColumns}>
 			<TableHeader>
 				<TableRow>
-					<TableHead>Товар / партия</TableHead>
+					<TableHead>Товар / поставка</TableHead>
 					<TableHead>Зона</TableHead>
 					<TableHead>Количество</TableHead>
 					<TableHead>Резерв</TableHead>
 					<TableHead>Годность</TableHead>
-					<TableHead>Действия</TableHead>
+					<TableHead data-column="actions">Действия</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -64,10 +70,21 @@ export function InventoryTable({
 					if (!first) return null;
 					const isOpen = expanded.has(key);
 					const quantity = rows.reduce((sum, row) => sum + row.quantity, 0);
-					const reserved = rows.reduce(
-						(sum, row) => sum + (row.reserved ?? 0),
-						0,
-					);
+					const reserved = totalReserved(rows);
+					const sourceTotals = new Map<string, number>();
+
+					if (isOpen) {
+						for (const stock of rows) {
+							const orderId = stock.sourceOrderId;
+							if (!orderId) continue;
+
+							sourceTotals.set(
+								orderId,
+								(sourceTotals.get(orderId) ?? 0) + stock.quantity,
+							);
+						}
+					}
+
 					return (
 						<Fragment key={key}>
 							<TableRow
@@ -94,7 +111,7 @@ export function InventoryTable({
 										) : (
 											<IconChevronRight size={16} />
 										)}
-										{first.productName ?? "Товар"}
+										<span>{first.productName ?? "Товар"}</span>
 									</Button>
 								</TableCell>
 								<TableCell>{first.zoneName}</TableCell>
@@ -116,46 +133,61 @@ export function InventoryTable({
 								</TableCell>
 							</TableRow>
 							{isOpen &&
-								rows.map((stock) => (
-									<TableRow
-										key={stock.id}
-										className={stockTableStyles.unpriced}
-										data-unpriced-highlight={highlightUnpriced}
-									>
-										<TableCell>
-											<span className={styles.batchLabel}>
-												Партия {(stock.batchId || stock.id).slice(0, 8)}
-											</span>
-										</TableCell>
-										<TableCell>{stock.zoneName}</TableCell>
-										<TableCell>
-											{stock.quantity.toLocaleString("ru-RU")} шт.
-										</TableCell>
-										<TableCell>
-											{stock.reserved === undefined
-												? "—"
-												: `${stock.reserved} шт.`}
-										</TableCell>
-										<TableCell>
-											{stock.isExpired && <Badge value="expired" />}
-											<TableNote as="span">
-												{stock.expires || "Без срока"}
-											</TableNote>
-										</TableCell>
-										<TableCell>
-											<TableActions>
-												<IconButton
-													label="Списать"
-													icon={<IconTrash size={16} />}
-													variant="destructive-outline"
-													title={stock.writeOffBlockedReason}
-													disabled={pending || !stock.canWriteOff}
-													onClick={() => onWriteOff(stock)}
+								rows.map((stock) => {
+									const orderId = stock.sourceOrderId;
+									const delivery = orderId
+										? deliveries.get(orderId)
+										: undefined;
+									const sourceTotal = orderId
+										? sourceTotals.get(orderId)
+										: undefined;
+
+									if (orderId) sourceTotals.delete(orderId);
+
+									return (
+										<TableRow
+											key={stock.id}
+											className={stockTableStyles.unpriced}
+											data-unpriced-highlight={highlightUnpriced}
+										>
+											<TableCell>
+												<StockSource
+													stock={stock}
+													warehouseId={warehouse.id}
+													order={delivery}
+													total={sourceTotal}
 												/>
-											</TableActions>
-										</TableCell>
-									</TableRow>
-								))}
+											</TableCell>
+											<TableCell>{stock.zoneName}</TableCell>
+											<TableCell>
+												{stock.quantity.toLocaleString("ru-RU")} шт.
+											</TableCell>
+											<TableCell>
+												{stock.reserved === undefined
+													? "—"
+													: `${stock.reserved} шт.`}
+											</TableCell>
+											<TableCell>
+												{stock.isExpired && <Badge value="expired" />}
+												<TableNote as="span">
+													{stock.expires || "Без срока"}
+												</TableNote>
+											</TableCell>
+											<TableCell>
+												<TableActions>
+													<IconButton
+														label="Списать"
+														icon={<IconTrash size={16} />}
+														variant="destructive-outline"
+														title={stock.writeOffBlockedReason}
+														disabled={pending || !stock.canWriteOff}
+														onClick={() => onWriteOff(stock)}
+													/>
+												</TableActions>
+											</TableCell>
+										</TableRow>
+									);
+								})}
 						</Fragment>
 					);
 				})}
