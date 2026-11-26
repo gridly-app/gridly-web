@@ -1,4 +1,9 @@
-import { type Cell, type Stock, stockZoneNames } from "@/domain/warehouse";
+import {
+	type Cell,
+	type Stock,
+	stockZoneNames,
+	reservedQuantity,
+} from "@/domain/warehouse";
 import {
 	ListFilters,
 	Table,
@@ -39,7 +44,7 @@ export function ProductStockPanel({
 			(zone === "all" || zoneName(item) === zone) &&
 			(stockFilter === "all" ||
 				(stockFilter === "reserved"
-					? (item.reserved ?? 0) > 0
+					? reservedQuantity(item) > 0
 					: item.isExpired === true)) &&
 			`${zoneName(item)} ${item.batchId ?? item.id} ${item.expires}`
 				.toLowerCase()
@@ -93,7 +98,9 @@ export function ProductStockPanel({
 							<TableRow key={item.id}>
 								<TableCell>{zoneName(item)}</TableCell>
 								<TableCell>{number.format(item.quantity)} шт.</TableCell>
-								<TableCell>{number.format(item.reserved ?? 0)} шт.</TableCell>
+								<TableCell>
+									{number.format(reservedQuantity(item))} шт.
+								</TableCell>
 								<TableCell>{item.expires || "Без срока"}</TableCell>
 							</TableRow>
 						))}

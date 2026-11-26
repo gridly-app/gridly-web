@@ -3,6 +3,7 @@ import {
 	productOccupancy,
 	productPrice,
 	type Stock,
+	totalReserved,
 } from "@/domain/warehouse";
 import { DetailFact, DetailFacts } from "@/shared/ui/dataDisplay";
 import styles from "./ProductFacts.module.css";
@@ -21,7 +22,7 @@ export function ProductFacts({
 	stock: Stock[];
 }) {
 	const occupancy = productOccupancy(product, stock);
-	const reserved = stock.reduce((sum, item) => sum + (item.reserved ?? 0), 0);
+	const reserved = totalReserved(stock);
 	const price = productPrice(product.price);
 
 	return (

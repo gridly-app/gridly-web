@@ -1,5 +1,7 @@
 import { useSearchParams } from "react-router-dom";
+import type { ProductInput } from "@/domain/warehouse";
 import { useWarehouseScreen } from "@/ports/warehouse";
+import { useUpdateSearchParams } from "@/shared/lib";
 import {
 	DataPanel,
 	useTableColumns,
@@ -51,40 +53,46 @@ export function WarehouseCatalog() {
 
 	const selectedCategory =
 		dialog?.type === "category" ? dialog.item : undefined;
-	const [params, setParams] = useSearchParams();
+	const [params] = useSearchParams();
+	const updateSearchParams = useUpdateSearchParams();
 	const productId = params.get("product");
 	const product = warehouse.products.find((item) => item.id === productId);
+	const isProductMissing = !!productId && !product;
+	const createAction =
+		tab === "products" ? "create-product" : "create-category";
+	const canCreate = !!warehouse.allowedActions?.includes(createAction);
+	const emptyMessage = empty
+		? "В этом разделе каталога пока нет записей."
+		: "Ничего не найдено. Измените поиск.";
+	const currentCategory =
+		selectedCategory &&
+		(warehouse.categories.find((item) => item.id === selectedCategory.id) ??
+			selectedCategory);
+
 	function closeProduct() {
-		setParams(
-			(current) => {
-				const next = new URLSearchParams(current);
-				next.delete("product");
-				return next;
-			},
-			{ replace: true },
-		);
+		updateSearchParams({ product: null });
+	}
+
+	function handleCreate() {
+		openNewItem(tab);
+	}
+
+	async function handleSaveProduct(input: ProductInput) {
+		await execute("product", input);
 	}
 
 	return (
 		<>
 			<DataPanel
 				empty={noResults}
-				emptyMessage={
-					empty
-						? "В этом разделе каталога пока нет записей."
-						: "Ничего не найдено. Измените поиск."
-				}
+				emptyMessage={emptyMessage}
 				toolbar={
 					<>
 						<CatalogToolbar
 							tab={tab}
-							canCreate={
-								!!warehouse.allowedActions?.includes(
-									tab === "products" ? "create-product" : "create-category",
-								)
-							}
+							canCreate={canCreate}
 							onTabChange={setTab}
-							onCreate={() => openNewItem(tab)}
+							onCreate={handleCreate}
 						/>
 						{tab === "categories" ? categoryColumns.button : products.button}
 						<CatalogFilters model={catalog} categories={warehouse.categories} />
@@ -107,32 +115,25 @@ export function WarehouseCatalog() {
 					/>
 				)}
 			</DataPanel>
-			{product ? (
+			{product && (
 				<ProductDetail
 					key={product.id}
 					product={product}
 					warehouse={warehouse}
 					pending={pending}
 					onClose={closeProduct}
-					onSave={async (input) => {
-						await execute("product", input);
-					}}
+					onSave={handleSaveProduct}
 				/>
-			) : (
-				productId && (
-					<Modal title="Карточка товара" onClose={closeProduct}>
-						<Feedback tone="error">Товар не найден в каталоге склада.</Feedback>
-					</Modal>
-				)
 			)}
-			{selectedCategory ? (
+			{isProductMissing && (
+				<Modal title="Карточка товара" onClose={closeProduct}>
+					<Feedback tone="error">Товар не найден в каталоге склада.</Feedback>
+				</Modal>
+			)}
+			{currentCategory ? (
 				<CategoryDetail
-					key={selectedCategory.id}
-					category={
-						warehouse.categories.find(
-							(item) => item.id === selectedCategory.id,
-						) ?? selectedCategory
-					}
+					key={currentCategory.id}
+					category={currentCategory}
 					warehouse={warehouse}
 					execute={execute}
 					pending={pending}

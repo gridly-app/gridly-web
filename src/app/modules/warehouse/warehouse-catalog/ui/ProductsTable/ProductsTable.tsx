@@ -99,7 +99,7 @@ export function ProductsTable({
 				<TableRow>
 					{header("name", "Товар")}
 					{visible.map((column) => header(column.key, column.label))}
-					<TableHead>Действия</TableHead>
+					<TableHead data-column="actions">Действия</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
