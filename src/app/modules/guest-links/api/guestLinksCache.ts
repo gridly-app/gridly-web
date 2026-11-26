@@ -4,7 +4,7 @@ import type { adminQueryKey } from "@/ports/administration";
 import type { HttpClient } from "@/shared/http";
 
 import type { GuestLink, GuestLinkList } from "./guestLink.dto";
-import { guestLinksQueryOptions } from "./guestLinksApi";
+import { guestLinksQueryOptions } from "./guestLinksQuery";
 
 export function createGuestLinksCache(
 	client: QueryClient,

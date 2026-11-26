@@ -4,6 +4,7 @@ import { guestSectionSchema, issuedLinkSchema } from "@/domain/shipment";
 
 const text = z.string();
 const instant = z.iso.datetime({ offset: true });
+
 export const guestLinkNameMaxLength = 120;
 
 export const guestLinkInputSchema = z.object({
@@ -30,6 +31,7 @@ export const guestLinkSchema = z.object({
 	created_at: instant.optional(),
 	url: z.url({ protocol: /^https?$/ }).optional(),
 });
+
 export const guestLinksSchema = z.object({
 	items: z.array(guestLinkSchema.omit({ url: true })).refine((items) => {
 		const ids = new Set(items.map(({ id }) => id));
@@ -37,6 +39,7 @@ export const guestLinksSchema = z.object({
 		return ids.size === items.length;
 	}, "Идентификаторы гостевых ссылок должны быть уникальны."),
 });
+
 export const createdGuestLinkSchema = guestLinkSchema.extend({
 	url: issuedLinkSchema.shape.url,
 });

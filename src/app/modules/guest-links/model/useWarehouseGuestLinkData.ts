@@ -1,8 +1,8 @@
 import type { Warehouse } from "@/domain/warehouse";
 import { useWarehouseResources } from "@/ports/warehouse";
-import { ApiError, type HttpClient } from "@/shared/http";
+import { ApiError, type HttpClient, isAccessDenied } from "@/shared/http";
 
-import { useGuestLinks } from "../api/guestLinksApi";
+import { useGuestLinks } from "../api/guestLinksQuery";
 
 export function useWarehouseGuestLinkData(
 	http: HttpClient,
@@ -17,7 +17,7 @@ export function useWarehouseGuestLinkData(
 	const orderById = new Map(orders.map((order) => [order.id, order]));
 	const errorStatus =
 		query.error instanceof ApiError ? query.error.status : undefined;
-	const isAccessDenied = errorStatus === 401 || errorStatus === 403;
+	const isDenied = isAccessDenied(query.error);
 
 	return {
 		query,
@@ -26,11 +26,10 @@ export function useWarehouseGuestLinkData(
 		orderById,
 		timezone: warehouse.timezone,
 		links: query.isSuccess ? query.data.items : undefined,
-		canOpenEditor:
-			!isAccessDenied && Boolean(query.data) && orderResource.hasData,
+		canOpenEditor: !isDenied && Boolean(query.data) && orderResource.hasData,
 		canWrite: query.isSuccess && !orderResource.error,
-		isAccessDenied,
-		isListUnavailable: isAccessDenied || errorStatus === 404,
+		isAccessDenied: isDenied,
+		isListUnavailable: isDenied || errorStatus === 404,
 	};
 }
 

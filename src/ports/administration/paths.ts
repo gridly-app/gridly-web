@@ -6,12 +6,19 @@ const paths = {
 	users: "/admin/shipment-users",
 };
 
-const apiPrefix = (mode: WorkspaceMode) =>
-	mode === "sandbox" ? "/sandbox" : "";
+function apiPrefix(mode: WorkspaceMode) {
+	return mode === "sandbox" ? "/sandbox" : "";
+}
 
 export function adminApiPath(
 	mode: WorkspaceMode,
 	resource: keyof typeof paths,
 ) {
 	return `${apiPrefix(mode)}${paths[resource]}`;
+}
+
+export function guestLinksApiPath(mode: WorkspaceMode, warehouseId: string) {
+	const warehouse = encodeURIComponent(warehouseId);
+
+	return `${apiPrefix(mode)}/admin/warehouses/${warehouse}/shipment-links`;
 }
