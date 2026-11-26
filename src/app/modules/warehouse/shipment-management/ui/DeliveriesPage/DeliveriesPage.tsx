@@ -6,7 +6,7 @@ import { shipmentManagementPath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import type { ShipmentProgressSlot } from "@/ports/shipment";
 import { useWarehouseScopeId, useWarehouseScreen } from "@/ports/warehouse";
-import { type HttpClient, parseResponse } from "@/shared/http";
+import { type HttpClient, isAccessDenied, parseResponse } from "@/shared/http";
 import { errorMessage } from "@/shared/lib";
 import {
 	DetailFact,
@@ -67,9 +67,11 @@ export function DeliveriesPage({
 		retry: false,
 		refetchInterval: 15000,
 	});
+	const tracking = isAccessDenied(query.error) ? undefined : query.data;
+	const hasRefreshError = !!tracking && !!query.error;
 	const cost = selected && orderValue(selected, warehouse.products);
-	const items = query.data?.items?.length
-		? query.data.items
+	const items = tracking?.items?.length
+		? tracking.items
 		: (selected?.lines.map((line, index): DeliveryItem => {
 				const product = warehouse.products.find(
 					(item) => item.id === line.product,
@@ -82,8 +84,8 @@ export function DeliveriesPage({
 					unit: "pcs",
 				};
 			}) ?? []);
-	const origin = query.data?.route?.origin_address?.trim();
-	const destination = query.data?.route?.destination_address?.trim();
+	const origin = tracking?.route?.origin_address?.trim();
+	const destination = tracking?.route?.destination_address?.trim();
 	return (
 		<section className={styles.page} aria-labelledby="deliveries-heading">
 			<h1 id="deliveries-heading">Доставки</h1>
@@ -111,7 +113,7 @@ export function DeliveriesPage({
 			{selected && query.isPending && (
 				<Feedback tone="loading">Загружаем этапы доставки…</Feedback>
 			)}
-			{query.error && (
+			{query.error && !hasRefreshError && (
 				<Feedback
 					tone="error"
 					title="Не удалось загрузить этапы доставки"
@@ -120,7 +122,15 @@ export function DeliveriesPage({
 					{errorMessage(query.error)}
 				</Feedback>
 			)}
-			{selected && cost && query.data && !query.error && (
+			{hasRefreshError && (
+				<Feedback
+					tone="warning"
+					action={<RetryButton onRetry={query.refetch} />}
+				>
+					Не удалось обновить данные. Показаны последние загруженные данные.
+				</Feedback>
+			)}
+			{selected && cost && tracking && (
 				<>
 					<section
 						className={styles.deliveryCard}
@@ -136,15 +146,17 @@ export function DeliveriesPage({
 							</DetailFact>
 						</DetailFacts>
 					</section>
-					<ShipmentProgress shipment={query.data} kind={selected.kind} />
+					<ShipmentProgress shipment={tracking} kind={selected.kind} />
 					<section
 						className={styles.deliveryOrder}
 						aria-labelledby="delivery-cost-heading"
 					>
 						<h2 id="delivery-cost-heading">Стоимость: {cost.label}</h2>
 						<DeliveryOrderItems items={items} />
-						{mode === "standard" && selected.kind === "outbound" && (
-							<Link to={shipmentManagementPath(warehouse.id, selected.id)}>
+						{selected.kind === "outbound" && (
+							<Link
+								to={shipmentManagementPath(mode, warehouse.id, selected.id)}
+							>
 								Управление отгрузкой
 							</Link>
 						)}

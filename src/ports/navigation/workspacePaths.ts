@@ -47,9 +47,13 @@ export function shipmentAdminPath(mode: PathMode) {
 	return `${workspacePathPrefix(mode)}${shipmentAdministrationPath}`;
 }
 
-export function shipmentManagementPath(warehouseId: string, orderId: string) {
+export function shipmentManagementPath(
+	mode: PathMode,
+	warehouseId: string,
+	orderId: string,
+) {
 	return warehousePath(
-		"standard",
+		mode,
 		warehouseId,
 		shipmentManagementRoute.replace(":orderId", encodeURIComponent(orderId)),
 	);

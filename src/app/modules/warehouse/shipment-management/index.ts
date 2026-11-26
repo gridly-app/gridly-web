@@ -18,7 +18,7 @@ export const deliveriesRoute = {
 export const shipmentRoute = {
 	id: "outbound",
 	path: shipmentManagementRoute,
-	access: ["standard"],
+	access: warehouseAccess,
 	resources: [],
 	load: () =>
 		import("./ShipmentManagement").then(({ ShipmentManagement }) => ({

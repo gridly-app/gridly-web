@@ -59,8 +59,8 @@ export function OrderDetail(props: OrderDetailProps) {
 			>
 				Отследить доставку
 			</Link>
-			{props.o.kind === "outbound" && mode === "standard" && (
-				<Link to={shipmentManagementPath(props.w.id, props.o.id)}>
+			{props.o.kind === "outbound" && (
+				<Link to={shipmentManagementPath(mode, props.w.id, props.o.id)}>
 					Управление отгрузкой
 				</Link>
 			)}

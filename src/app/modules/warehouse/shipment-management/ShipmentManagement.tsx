@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { warehousePath } from "@/ports/navigation";
+import { useWorkspaceMode } from "@/ports/session";
 import { useOrder, useWarehouseScopeId } from "@/ports/warehouse";
 import { ApiError, type FileHttpClient } from "@/shared/http";
 import { errorMessage, formatMoment } from "@/shared/lib";
@@ -14,6 +15,7 @@ import {
 } from "./api/useShipmentResource";
 import type { WorkingShipment } from "./model/shipment.dto";
 import { useShipmentActions } from "./model/useShipmentActions";
+import { SandboxShipment } from "./ui/SandboxShipment/SandboxShipment";
 import { ShipmentDocumentsEditor } from "./ui/ShipmentDocumentsEditor/ShipmentDocumentsEditor";
 import { ShipmentEditor } from "./ui/ShipmentEditor/ShipmentEditor";
 import { ShipmentReconciliation } from "./ui/ShipmentReconciliation/ShipmentReconciliation";
@@ -23,6 +25,7 @@ import styles from "./shared.module.css";
 
 export function ShipmentManagement({ http }: { http: FileHttpClient }) {
 	const { warehouseId = "", orderId = "" } = useParams();
+	const mode = useWorkspaceMode();
 	const order = useOrder(warehouseId, orderId);
 
 	if (order.isPending)
@@ -39,6 +42,17 @@ export function ShipmentManagement({ http }: { http: FileHttpClient }) {
 			<Feedback tone="info">
 				Редактор отгрузки доступен только для исходящих заказов.
 			</Feedback>
+		);
+	}
+
+	if (mode === "sandbox") {
+		return (
+			<SandboxShipment
+				key={orderId}
+				http={http}
+				warehouseId={warehouseId}
+				orderId={orderId}
+			/>
 		);
 	}
 

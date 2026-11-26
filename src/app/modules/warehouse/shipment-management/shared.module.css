@@ -50,6 +50,7 @@ fieldset.row {
 }
 .scroll {
 	overflow: auto;
+	min-inline-size: 0;
 	max-height: 28rem;
 }
 .table {
@@ -58,14 +59,10 @@ fieldset.row {
 	text-align: left;
 	font-size: 0.875rem;
 }
-.table td,
-.table th {
-	border-bottom: 1px solid var(--border);
-}
 .table thead th {
 	position: sticky;
 	top: 0;
-	background: var(--bg-elevated);
+	background: var(--muted);
 }
 
 .deliveryCard {

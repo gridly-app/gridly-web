@@ -4,10 +4,13 @@ import {
 	IconChevronRight,
 	IconEye,
 	IconPlayerPlay,
+	IconTruckDelivery,
 } from "@tabler/icons-react";
 import type { Order } from "@/domain/warehouse";
+import { shipmentManagementPath } from "@/ports/navigation";
+import { useWorkspaceMode } from "@/ports/session";
 import { StatusBadge as Badge, useOrder } from "@/ports/warehouse";
-import { Button, IconButton } from "@/shared/ui/controls";
+import { Button, IconButton, IconLink } from "@/shared/ui/controls";
 import { TableActions, TableCell, TableRow } from "@/shared/ui/dataDisplay";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { getOrderPresentation } from "../../model/getOrderPresentation";
@@ -38,6 +41,9 @@ export function OrderRow({
 	onStart,
 	onConfirm,
 }: OrderRowProps) {
+	const mode = useWorkspaceMode();
+	const canManageShipment = order.kind === "outbound";
+
 	return (
 		<>
 			<TableRow>
@@ -93,6 +99,13 @@ export function OrderRow({
 				</TableCell>
 				<TableCell>
 					<TableActions>
+						{canManageShipment && (
+							<IconLink
+								label="Управление отгрузкой"
+								icon={<IconTruckDelivery aria-hidden="true" />}
+								to={shipmentManagementPath(mode, warehouse.id, order.id)}
+							/>
+						)}
 						{order.canStart ? (
 							<IconButton
 								label="Запустить"

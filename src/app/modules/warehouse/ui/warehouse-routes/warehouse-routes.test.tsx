@@ -4,7 +4,7 @@ import type { WarehouseRouteHandle } from "@/ports/navigation";
 import { warehouseAccess } from "@/ports/navigation";
 import { warehouseChildren } from "../..";
 
-test("the management route is available in the account workspace while shared sections also match in sandbox", () => {
+test("the shipment route is available in both workspaces", () => {
 	const options = {
 		renderSettings: () => null,
 		settingsRoute: {
@@ -26,7 +26,9 @@ test("the management route is available in the account workspace while shared se
 	expect(matchRoutes(standard, shipmentPath)?.at(-1)?.params.orderId).toBe(
 		"order-1",
 	);
-	expect(matchRoutes(sandbox, shipmentPath)?.at(-1)?.route.path).toBe("*");
+	expect(matchRoutes(sandbox, shipmentPath)?.at(-1)?.params.orderId).toBe(
+		"order-1",
+	);
 	const map = matchRoutes(sandbox, "/map")?.at(-1)?.route.handle as
 		WarehouseRouteHandle | undefined;
 	expect(map).toEqual({

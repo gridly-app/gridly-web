@@ -29,7 +29,7 @@ export function OrderDiagnostics({
 	const linkPath = adminLocation("links", scope);
 	const shipmentPath =
 		mode === "standard"
-			? shipmentManagementPath(warehouse_id, order_id)
+			? shipmentManagementPath(mode, warehouse_id, order_id)
 			: undefined;
 	const title = order.order_number
 		? `Заказ ${order.order_number}`
