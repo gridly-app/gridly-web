@@ -43,6 +43,24 @@
 	gap: 12px;
 	flex-shrink: 0;
 }
+.tableControls {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	align-items: stretch;
+	gap: var(--space-3);
+}
+.tableControls [data-slot="badge"] {
+	block-size: auto;
+	justify-content: center;
+	padding-inline: var(--space-3);
+	font-size: var(--text-control);
+	border-radius: var(--radius-control);
+}
+
+.tableControls:has([data-slot="badge"]:only-child) [data-slot="badge"] {
+	min-block-size: 36px;
+}
 .chartGrid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -135,7 +153,17 @@
 	gap: 8px;
 }
 .legendButton {
+	--button-background: var(--secondary);
+	--button-foreground: var(--secondary-foreground);
+	--button-hover: var(--secondary);
+
 	gap: 8px;
+}
+
+.legendButton[aria-pressed="true"] {
+	--button-background: var(--sidebar-accent);
+	--button-foreground: var(--sidebar-accent-foreground);
+	--button-hover: var(--sidebar-accent);
 }
 .trafficPlot {
 	margin-top: 16px;

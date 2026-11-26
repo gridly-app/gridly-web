@@ -1,3 +1,5 @@
+import { dateKey } from "@/shared/lib";
+
 export interface ReportFilters {
 	from: string;
 	to: string;
@@ -7,19 +9,8 @@ export interface ReportFilters {
 	compare: boolean;
 }
 
-const formatters = new Map<string, Intl.DateTimeFormat>();
 export function warehouseDay(time: string | number, timezone: string) {
-	let formatter = formatters.get(timezone);
-	if (!formatter) {
-		formatter = new Intl.DateTimeFormat("en-CA", {
-			timeZone: timezone,
-			year: "numeric",
-			month: "2-digit",
-			day: "2-digit",
-		});
-		formatters.set(timezone, formatter);
-	}
-	return formatter.format(new Date(time));
+	return dateKey(time, timezone) ?? "";
 }
 export function shiftDay(day: string, days: number) {
 	return new Date(Date.parse(`${day}T00:00:00Z`) + days * 86400000)

@@ -16,9 +16,6 @@
 .summaryMetric + .summaryMetric {
 	border-left: 1px solid var(--border);
 }
-.summaryMetric[data-metric="stock"] {
-	background: color-mix(in srgb, var(--accent-bg) 35%, var(--card));
-}
 .metricTop {
 	display: flex;
 	align-items: center;

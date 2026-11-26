@@ -68,8 +68,10 @@ export function ReportOrders({
 					</p>
 				</div>
 				<div className={layoutStyles.headerActions}>
-					<Badge tone="neutral">{orders.length} операций</Badge>
-					{orders.length > 0 && columns.button}
+					<div className={layoutStyles.tableControls}>
+						<Badge tone="neutral">{orders.length} операций</Badge>
+						{orders.length > 0 && columns.button}
+					</div>
 					{selectedRange && (
 						<Button variant="text" size="sm" onClick={onClearRange}>
 							Весь период

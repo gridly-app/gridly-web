@@ -3,10 +3,10 @@ import { encodeCsv } from "@/shared/lib";
 import { buildReport, previousPeriod, type ReportFilters } from "./report";
 import type { ReportWarehouse } from "./warehouseFields";
 
-export function reportCsv(w: ReportWarehouse, filters: ReportFilters) {
-	const report = buildReport(w, filters);
+export function reportCsv(warehouse: ReportWarehouse, filters: ReportFilters) {
+	const report = buildReport(warehouse, filters);
 	const rows: (string | number | null)[][] = [
-		["Склад", w.name],
+		["Склад", warehouse.name],
 		["Период", filters.from, filters.to],
 		["Тип", filters.kind],
 		["Статус", filters.status],
@@ -23,7 +23,9 @@ export function reportCsv(w: ReportWarehouse, filters: ReportFilters) {
 		],
 	];
 
-	const prices = new Map(w.products.map((p) => [p.id, productPrice(p.price)]));
+	const prices = new Map(
+		warehouse.products.map((p) => [p.id, productPrice(p.price)]),
+	);
 	for (const o of report.orders) {
 		const money = o.lines.reduce(
 			(sum, line) => {
@@ -53,7 +55,7 @@ export function reportCsv(w: ReportWarehouse, filters: ReportFilters) {
 	);
 	if (filters.compare) {
 		const previous = previousPeriod(filters);
-		const result = buildReport(w, previous);
+		const result = buildReport(warehouse, previous);
 		rows.push(
 			["Предыдущий период", previous.from, previous.to],
 			["Заказов в предыдущем периоде", result.orders.length],

@@ -1,4 +1,9 @@
-import { type Order, productPrice, type Warehouse } from "@/domain/warehouse";
+import {
+	type Order,
+	productPrice,
+	type Warehouse,
+	totalReserved,
+} from "@/domain/warehouse";
 import { type ReportFilters, warehouseDay } from "./reportPeriod";
 import { reportUnpricedDetails } from "./reportUnpricedDetails";
 import type { ReportWarehouse } from "./warehouseFields";
@@ -19,14 +24,17 @@ export const defaultCabinet: NonNullable<Warehouse["cabinet"]> = {
 	reserveOnStart: true,
 	lowStockThreshold: 10,
 };
-export function buildReport(w: ReportWarehouse, filters: ReportFilters) {
-	const products = new Map(w.products.map((p) => [p.id, p]));
+export function buildReport(
+	warehouse: ReportWarehouse,
+	filters: ReportFilters,
+) {
+	const products = new Map(warehouse.products.map((p) => [p.id, p]));
 	const inPeriod = (date: string) => {
 		if (!Number.isFinite(Date.parse(date))) return false;
-		const day = warehouseDay(date, w.timezone);
+		const day = warehouseDay(date, warehouse.timezone);
 		return day >= filters.from && day <= filters.to;
 	};
-	const orders = w.orders
+	const orders = warehouse.orders
 		.filter(
 			(o) =>
 				inPeriod(o.created) &&
@@ -62,12 +70,12 @@ export function buildReport(w: ReportWarehouse, filters: ReportFilters) {
 		{ day: string; inbound: number; outbound: number }
 	>();
 	for (const o of orders) {
-		const day = warehouseDay(o.created, w.timezone);
+		const day = warehouseDay(o.created, warehouse.timezone);
 		const bucket = series.get(day) ?? { day, inbound: 0, outbound: 0 };
 		bucket[o.kind] += o.lines.reduce((n, l) => n + l.quantity, 0);
 		series.set(day, bucket);
 	}
-	const stock = w.stock.filter(
+	const stock = warehouse.stock.filter(
 		(s) =>
 			filters.category === "all" ||
 			products.get(s.product)?.category === filters.category,
@@ -79,7 +87,7 @@ export function buildReport(w: ReportWarehouse, filters: ReportFilters) {
 		if (price === null) unpricedStock += s.quantity;
 		else stockValue += price * s.quantity;
 	}
-	const writeOffs = w.writeOffs?.filter(
+	const writeOffs = warehouse.writeOffs?.filter(
 		(s) =>
 			inPeriod(s.time) &&
 			(filters.category === "all" ||
@@ -88,7 +96,7 @@ export function buildReport(w: ReportWarehouse, filters: ReportFilters) {
 
 	return {
 		unpricedDetails: reportUnpricedDetails(
-			w,
+			warehouse,
 			products,
 			orders,
 			stock,
@@ -118,7 +126,7 @@ export function buildReport(w: ReportWarehouse, filters: ReportFilters) {
 			["cancelled", "canceled"].includes(o.status),
 		).length,
 		stockQuantity: stock.reduce((n, s) => n + s.quantity, 0),
-		reserved: stock.reduce((n, s) => n + (s.reserved ?? 0), 0),
+		reserved: totalReserved(stock),
 		stockValue,
 		unpricedStock,
 		writeOffQuantity: writeOffs?.reduce((n, s) => n + s.quantity, 0),

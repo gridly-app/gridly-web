@@ -8,7 +8,7 @@ import { reportCsv } from "@/app/modules/warehouse/warehouse-information/model/r
 import type { Warehouse } from "@/domain/warehouse";
 import { requiredAt } from "@/shared/invariants";
 
-import { reportWarehouse as base } from "../../../../../../tests/integration/warehouse/reportWarehouse";
+import { reportWarehouse as base } from "../../../../../../tests/support/reportWarehouse";
 
 const filters: ReportFilters = {
 	from: "2026-11-01",
