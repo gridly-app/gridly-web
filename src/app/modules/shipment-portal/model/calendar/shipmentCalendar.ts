@@ -1,23 +1,9 @@
-import { transports, type Actual, type Shipment } from "@/domain/shipment";
-import { encodeCsv } from "@/shared/lib";
+import type { Actual, Shipment } from "@/domain/shipment";
 
-export function calendarDay(moment: string, timeZone: string) {
-	return new Intl.DateTimeFormat("sv-SE", {
-		timeZone,
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-	}).format(new Date(moment));
-}
+import { calendarDay, weekStart } from "../../lib/calendarDates";
+import type { CalendarFilters } from "./calendarFilters";
 
-function monday(date: string) {
-	const day = new Date(`${date}T00:00:00Z`);
-	day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 6) % 7));
-
-	return day.toISOString().slice(0, 10);
-}
-
-type CalendarRow = {
+export type CalendarBucket = {
 	key: string;
 	date: string;
 	unit: string;
@@ -27,32 +13,24 @@ type CalendarRow = {
 	items: Set<string>;
 };
 
-export type CalendarFilters = {
-	from: string;
-	to: string;
-	item: string | null;
-	transport: string;
-	weekly: boolean;
-};
-
 export function shipmentCalendar(
 	shipment: Pick<Shipment, "order" | "plan" | "actual">,
 	filters: CalendarFilters,
 ) {
-	const rows = new Map<string, CalendarRow>();
+	const buckets = new Map<string, CalendarBucket>();
 
-	const getRow = (date: string, unit: string, item: string) => {
+	function bucketFor(date: string, unit: string, item: string) {
 		const isBeforeStart = filters.from !== "" && date < filters.from;
 		const isAfterEnd = filters.to !== "" && date > filters.to;
 		const isDifferentItem = filters.item !== null && filters.item !== item;
 
 		if (isBeforeStart || isAfterEnd || isDifferentItem) return;
 
-		const bucket = filters.weekly ? monday(date) : date;
-		const key = JSON.stringify([bucket, unit]);
-		const row = rows.get(key) ?? {
+		const bucketDate = filters.weekly ? weekStart(date) : date;
+		const key = JSON.stringify([bucketDate, unit]);
+		const bucket = buckets.get(key) ?? {
 			key,
-			date: bucket,
+			date: bucketDate,
 			unit,
 			plan: null,
 			actual: 0,
@@ -60,48 +38,39 @@ export function shipmentCalendar(
 			items: new Set<string>(),
 		};
 
-		row.items.add(item);
-		rows.set(key, row);
+		bucket.items.add(item);
+		buckets.set(key, bucket);
 
-		return row;
-	};
+		return bucket;
+	}
 
 	for (const entry of shipment.plan) {
-		const row = getRow(entry.date, entry.unit, entry.order_line_id);
+		const bucket = bucketFor(entry.date, entry.unit, entry.order_line_id);
 
-		if (row) row.plan = (row.plan ?? 0) + entry.quantity;
+		if (bucket) bucket.plan = (bucket.plan ?? 0) + entry.quantity;
 	}
 
 	for (const entry of shipment.actual) {
-		if (filters.transport && filters.transport !== entry.transport_type)
-			continue;
+		const isOtherTransport =
+			filters.transport !== "" && filters.transport !== entry.transport_type;
 
-		const row = getRow(
+		if (isOtherTransport) continue;
+
+		const bucket = bucketFor(
 			calendarDay(entry.shipped_at, shipment.order.time_zone),
 			entry.unit,
 			entry.order_line_id,
 		);
 
-		if (!row) continue;
+		if (!bucket) continue;
 
-		row.actual += entry.quantity;
-		row.facts.push(entry);
+		bucket.actual += entry.quantity;
+		bucket.facts.push(entry);
 	}
 
-	return [...rows.values()];
+	return [...buckets.values()];
 }
 
-export function shipmentCsv(
-	headers: string[],
-	rows: (string | number | null)[][],
-) {
-	return encodeCsv([headers, ...rows], { separator: ";", includeBom: true });
-}
-
-export function transportSummary(facts: Actual[]) {
-	return (
-		[...new Set(facts.map((fact) => transports[fact.transport_type]))].join(
-			", ",
-		) || "—"
-	);
-}
+export type { CalendarFilters } from "./calendarFilters";
+export { shipmentCsv } from "./shipmentCsv";
+export { transportSummary } from "./transportSummary";
