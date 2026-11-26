@@ -1,6 +1,6 @@
-import { expect, test } from "bun:test";
+import { expect, jest, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import type { LayoutCommand } from "@/ports/warehouse";
+import type { LayoutCommand } from "@/domain/warehouse";
 import { ApiError } from "@/shared/http";
 import { createWarehouseKeys } from "../queries/queryKeys";
 import { LayoutResource } from "./layoutResource";
@@ -153,4 +153,41 @@ test("validation retains field and cell identifiers with the rejected submission
 			{ kind: "field", field: "width", message: "Нужна большая ширина" },
 		],
 	});
+});
+
+test("the commit cannot be replayed after its safe retry window", async () => {
+	const cache = new QueryClient();
+	const session = new AbortController();
+	const operations = new LayoutResource(
+		cache,
+		() => session.signal,
+		() => warehouseKeys,
+		async () => {},
+	);
+	const replay = jest.fn(async () => {});
+
+	jest.useFakeTimers();
+
+	try {
+		await expect(
+			operations.execute("w", command, async (_command, sent) => {
+				sent(replay);
+
+				throw new TypeError("Lost response");
+			}),
+		).rejects.toThrow("Lost response");
+
+		jest.advanceTimersByTime(24 * 60 * 60 * 1000);
+
+		await expect(operations.retryRead("w")).rejects.toThrow(
+			"Срок безопасного повтора истёк",
+		);
+		expect(replay).not.toHaveBeenCalled();
+		expect(
+			cache.getQueryData(warehouseKeys.layoutOperation("w")),
+		).toMatchObject({ status: "unknown", command });
+	} finally {
+		jest.useRealTimers();
+		cache.clear();
+	}
 });

@@ -45,3 +45,18 @@ export type CommandExecutor<Result = unknown> = <
 export type CommandResult = { ok: true } | { ok: false; error: unknown };
 
 export type CommandHandler = CommandExecutor<CommandResult>;
+
+export type LayoutCommand = Extract<
+	WarehouseCommand,
+	{ action: "saveMap" | "resize" | "discard" }
+>;
+
+export function isLayoutCommand(
+	command: WarehouseCommand,
+): command is LayoutCommand {
+	return (
+		command.action === "saveMap" ||
+		command.action === "resize" ||
+		command.action === "discard"
+	);
+}

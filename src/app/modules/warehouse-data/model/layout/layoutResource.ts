@@ -1,9 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
-import {
-	blocksLayoutWrite,
-	type LayoutCommand,
-	type LayoutOperation,
-} from "@/ports/warehouse";
+import type { LayoutCommand } from "@/domain/warehouse";
+import { blocksLayoutWrite, type LayoutOperation } from "@/ports/warehouse";
 import { ApiError } from "@/shared/http";
 import { UserError } from "@/shared/invariants";
 import {

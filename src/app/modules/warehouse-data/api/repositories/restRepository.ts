@@ -9,7 +9,7 @@ import {
 	selectionSummarySchema,
 } from "@/domain/warehouse";
 import type { WarehouseResource } from "@/ports/warehouse";
-import { isLayoutCommand } from "@/ports/warehouse";
+import { isLayoutCommand } from "@/domain/warehouse";
 import { type HttpClient, parseResponse } from "@/shared/http";
 import { serializeLayoutCells } from "../layout/layoutCells";
 import { LayoutResource } from "../../model/layout/layoutResource";

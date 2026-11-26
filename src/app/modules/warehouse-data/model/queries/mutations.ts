@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import type { Warehouse, WarehouseCommand } from "@/domain/warehouse";
-import { isLayoutCommand, type MutationReceipt } from "@/ports/warehouse";
+import { isLayoutCommand } from "@/domain/warehouse";
+import type { MutationReceipt } from "@/ports/warehouse";
 import { useWarehouseRepository } from "../../WarehouseRepositoryProvider";
 import { mutationIdentity } from "./mutationIdentity";
 import { commandResources } from "./resources";

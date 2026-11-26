@@ -1,9 +1,4 @@
-import type { WarehouseCommand } from "@/domain/warehouse";
-
-export type LayoutCommand = Extract<
-	WarehouseCommand,
-	{ action: "saveMap" | "resize" | "discard" }
->;
+import type { LayoutCommand } from "@/domain/warehouse";
 
 export type LayoutIssue =
 	| { kind: "field"; field: string; message: string }
@@ -19,16 +14,6 @@ export interface LayoutOperation {
 		| "rejected"
 		| "refreshing"
 		| "refresh-failed";
-}
-
-export function isLayoutCommand(
-	command: WarehouseCommand,
-): command is LayoutCommand {
-	return (
-		command.action === "saveMap" ||
-		command.action === "resize" ||
-		command.action === "discard"
-	);
 }
 
 export function blocksLayoutWrite(operation: LayoutOperation | null) {
