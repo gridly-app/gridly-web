@@ -5,7 +5,7 @@ import { warehouseDto } from "@/app/modules/warehouse-data/api/warehouses/wareho
 import type { RequestOptions } from "@/shared/http";
 import { requiredAt } from "@/shared/invariants";
 
-import { reportWarehouse as base, payload } from "./reportWarehouse";
+import { reportWarehouse as base, payload } from "../../../../../../tests/integration/warehouse/reportWarehouse";
 
 test("archive and settings mutations preserve scoped paths and revision preconditions", async () => {
 	const calls: { path: string; options: RequestOptions }[] = [];

@@ -5,7 +5,7 @@ import {
 } from "@/app/modules/warehouse/warehouse-map/lib/canvas/robotMotion";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 
-import { event, harness, patch, until } from "./liveStreamFixture";
+import { event, harness, patch, until } from "./liveStream.test-support";
 
 test("patch updates positions once, retains idle microsteps and invalidates affected resources", async () => {
 	const h = harness();

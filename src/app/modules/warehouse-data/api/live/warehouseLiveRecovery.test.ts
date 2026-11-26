@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { QueryObserver } from "@tanstack/react-query";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 
-import { event, harness, patch, until } from "./liveStreamFixture";
+import { event, harness, patch, until } from "./liveStream.test-support";
 
 test("resource events finish the active read and queue one follow-up", async () => {
 	const h = harness();

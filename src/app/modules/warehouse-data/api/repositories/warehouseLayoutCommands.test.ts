@@ -7,7 +7,7 @@ import { ApiError, type RequestOptions } from "@/shared/http";
 import {
 	warehouseDto,
 	warehouseRepositoryFixture,
-} from "./warehouseRepositoryFixture";
+} from "./warehouseRepository.test-support";
 
 describe("REST warehouse layout commands", () => {
 	test("missing routes after a confirmed commit require another read rather than another commit", async () => {

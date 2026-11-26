@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { WarehouseLiveStream } from "@/app/modules/warehouse-data/api/live/liveStream";
 import { createWarehouseKeys } from "@/app/modules/warehouse-data/model/queries/queryKeys";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
-import { warehouse } from "../../support/warehouse";
+import { warehouse } from "../../../../../../tests/support/warehouse";
 
 const encoder = new TextEncoder();
 export async function until(check: () => boolean) {

@@ -7,7 +7,7 @@ import { ApiError } from "@/shared/http";
 import {
 	warehouseDto,
 	warehouseRepositoryFixture,
-} from "./warehouseRepositoryFixture";
+} from "./warehouseRepository.test-support";
 
 function waitForCancellation(signal: AbortSignal | undefined) {
 	if (!signal) throw new Error("Expected a cancellable request");

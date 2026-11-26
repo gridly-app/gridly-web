@@ -7,7 +7,7 @@ import { RestWarehouseRepository } from "@/app/modules/warehouse-data/api/reposi
 import { warehouseCommandSchema } from "@/domain/warehouse/commands/commandSchemas";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 import { ApiError, FetchHttpClient, type RequestOptions } from "@/shared/http";
-import { warehouse } from "../../support/warehouse";
+import { warehouse } from "../../../../../../tests/support/warehouse";
 
 function form() {
 	const data = new FormData();

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 
-import { warehouseRepositoryFixture } from "./warehouseRepositoryFixture";
+import { warehouseRepositoryFixture } from "./warehouseRepository.test-support";
 
 describe("REST warehouse snapshots", () => {
 	test("rejects mixed metadata and layout versions or dimensions", async () => {

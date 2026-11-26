@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 
-import { channel, event, patch, until } from "./liveStreamFixture";
+import { channel, event, patch, until } from "./liveStream.test-support";
 
 test("repository shares a stream, skips healthy map polling and resyncs on resubscribe", async () => {
 	const { RestWarehouseRepository } =

@@ -3,11 +3,11 @@ import { QueryClient } from "@tanstack/react-query";
 import { BrowserSessionRepository } from "@/app/modules/session";
 import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 import { memoryStorage } from "@/shared/browser";
-import { channel, until } from "./liveStreamFixture";
+import { channel, until } from "../modules/warehouse-data/api/live/liveStream.test-support";
 import {
 	warehouseDto,
 	warehouseRepositoryFixture,
-} from "./warehouseRepositoryFixture";
+} from "../modules/warehouse-data/api/repositories/warehouseRepository.test-support";
 
 test("a new account opening the same warehouse ignores the old read and write and closes its stream", async () => {
 	const cache = new QueryClient();
