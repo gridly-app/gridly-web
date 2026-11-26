@@ -12,7 +12,7 @@ interface MapRendererOptions extends LayoutRenderState {
 }
 
 export function useMapRenderer({
-	w: { width, height },
+	warehouse: { width, height },
 	cells,
 	selected,
 	selectionKeys,
@@ -47,7 +47,7 @@ export function useMapRenderer({
 	}, []);
 	useEffect(() => {
 		renderer.current?.drawLayout({
-			w: { width, height },
+			warehouse: { width, height },
 			cells,
 			selected,
 			selectionKeys,

@@ -10,9 +10,18 @@ import { useMapRenderer } from "./useMapRenderer";
 export interface MapCanvasOptions {
 	warehouse: MapWarehouse;
 	dark: boolean;
-	editor: MapEditor;
-	routeEditor: ReturnType<typeof useRouteEditor>;
-	camera: ReturnType<typeof useMapCamera>;
+	editor: Pick<
+		MapEditor,
+		"cells" | "mode" | "selection" | "closeEditor" | "busy"
+	>;
+	routeEditor: Pick<
+		ReturnType<typeof useRouteEditor>,
+		"direction" | "drag" | "select"
+	>;
+	camera: Pick<
+		ReturnType<typeof useMapCamera>,
+		"changeZoom" | "onWheel" | "pan" | "resetZoom" | "scroll" | "size" | "zoom"
+	>;
 	editing: boolean;
 	inspection: {
 		presentation: ReturnType<typeof getMapPresentation>;
@@ -35,7 +44,7 @@ export function useMapCanvas({
 	const { presentation, selectedRobotId, selectRobot } = inspection;
 	const configuringRoutes = editing && editor.mode === "routes";
 	const rendering = useMapRenderer({
-		w: warehouse,
+		warehouse,
 		cells,
 		selected,
 		selectionKeys: presentation.highlightedKeys,

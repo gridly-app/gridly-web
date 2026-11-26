@@ -7,7 +7,7 @@ import type { LayoutRenderState } from "./CanvasWarehouseRenderer";
 export function paintWarehouseLayout(
 	ctx: CanvasRenderingContext2D,
 	{
-		w: warehouse,
+		warehouse,
 		cells,
 		selected,
 		selectionKeys,

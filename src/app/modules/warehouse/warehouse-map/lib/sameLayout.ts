@@ -17,8 +17,8 @@ function samePath(a: GridPosition[] = [], b: GridPosition[] = []) {
 export function sameLayout(a: LayoutRenderState, b: LayoutRenderState) {
 	return (
 		a.cells === b.cells &&
-		a.w.width === b.w.width &&
-		a.w.height === b.w.height &&
+		a.warehouse.width === b.warehouse.width &&
+		a.warehouse.height === b.warehouse.height &&
 		a.size === b.size &&
 		a.dark === b.dark &&
 		samePoint(a.selected, b.selected) &&

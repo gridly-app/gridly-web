@@ -11,7 +11,7 @@ import {
 } from "./robotMotion";
 
 export interface LayoutRenderState {
-	w: Pick<Warehouse, "width" | "height">;
+	warehouse: Pick<Warehouse, "width" | "height">;
 	cells: Cell[];
 	selected: Cell | null;
 	selectionKeys: string[];
@@ -140,7 +140,11 @@ export class CanvasWarehouseRenderer {
 			sameLayout(this.layoutState, state)
 		)
 			return;
-		const context = this.prepare(this.layoutCanvas, state.w, state.size);
+		const context = this.prepare(
+			this.layoutCanvas,
+			state.warehouse,
+			state.size,
+		);
 		paintWarehouseLayout(context, state);
 		this.layoutState = state;
 		this.layoutDpr = dpr;
