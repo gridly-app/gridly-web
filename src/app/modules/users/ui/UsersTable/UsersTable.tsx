@@ -70,7 +70,7 @@ export function UsersTable({
 
 				return warehouses.join(", ");
 			},
-			cell: (user) => <WarehouseAccessCell user={user} onRevoke={onDelete} />,
+			cell: (user) => <WarehouseAccessCell user={user} />,
 		},
 		{
 			id: "link",
@@ -109,7 +109,7 @@ export function UsersTable({
 				}
 
 				return (
-					<div className={styles.actions}>
+					<div className={userTableStyles.actions}>
 						{account.allowed_actions.some((permission) =>
 							["edit-profile", "edit-memberships"].includes(permission),
 						) && (
@@ -118,6 +118,14 @@ export function UsersTable({
 								onClick={handleEdit}
 							/>
 						)}
+						{account.allowed_actions.includes("revoke-warehouse-access") &&
+							account.warehouses.map((entry) => (
+								<DeleteRowAction
+									key={entry.warehouse_id}
+									label={`Отозвать доступ к складу «${entry.warehouse_name}»: ${account.name}`}
+									onClick={() => onDelete(account, entry.warehouse_id)}
+								/>
+							))}
 						{account.allowed_actions.includes("deactivate-account") && (
 							<DeleteRowAction
 								label={`Деактивировать аккаунт: ${identity}`}
@@ -140,13 +148,7 @@ export function UsersTable({
 	);
 }
 
-function WarehouseAccessCell({
-	user,
-	onRevoke,
-}: {
-	user: AuditUser;
-	onRevoke: (user: EditableAccount, warehouseId: string) => void;
-}) {
+function WarehouseAccessCell({ user }: { user: AuditUser }) {
 	const mode = useWorkspaceMode();
 
 	return user.kind === "account" ? (
@@ -164,13 +166,6 @@ function WarehouseAccessCell({
 							? `Разрешений: ${entry.permissions.length}`
 							: "Нет разрешений"}
 					</small>
-					{isEditableAccount(user) &&
-						user.allowed_actions.includes("revoke-warehouse-access") && (
-							<DeleteRowAction
-								label={`Отозвать доступ к складу «${entry.warehouse_name}»: ${user.name}`}
-								onClick={() => onRevoke(user, entry.warehouse_id)}
-							/>
-						)}
 				</li>
 			))}
 			{!user.warehouses.length && <li>Нет доступа к складам</li>}

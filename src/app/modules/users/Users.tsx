@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { useWorkspaceMode } from "@/ports/session";
 
-import type { HttpClient } from "@/shared/http";
+import { type HttpClient, isAccessDenied } from "@/shared/http";
 import { useAdminUsers } from "./api/usersApi";
 
 import { adminLocation } from "@/ports/navigation";
@@ -27,6 +27,7 @@ import { Link } from "@/shared/ui/navigation";
 import { UsersFilters } from "./ui/UsersFilters/UsersFilters";
 import { managementStyles as styles } from "@/shared/ui/management";
 import { UsersTable } from "./ui/UsersTable/UsersTable";
+import localStyles from "./Users.module.css";
 import { UserAccessEditor } from "./ui/UserAccessEditor/UserAccessEditor";
 
 import { UserAccessConflict } from "./ui/UserAccessConflict/UserAccessConflict";
@@ -61,13 +62,14 @@ export function Users({
 	const [filters, setFilters] = useState(defaultUserFilters);
 	const mode = useWorkspaceMode();
 	const query = useAdminUsers(http, mode);
-	const users = query.error ? emptyUsers : (query.data?.items ?? emptyUsers);
-	const catalog = query.data?.permission_catalog;
+	const isDenied = isAccessDenied(query.error);
+	const data = isDenied ? undefined : query.data;
+	const users = data?.items ?? emptyUsers;
+	const catalog = data?.permission_catalog;
 	const permissions = catalog ?? emptyPermissions;
 	const canAdd =
-		!!catalog &&
-		!query.error &&
-		query.data?.allowed_actions.includes("add-warehouse-member");
+		!!catalog && !!data?.allowed_actions.includes("add-warehouse-member");
+	const hasRefreshError = !!data && !!query.error;
 	const rows = filterAdminUsers(users, filters, permissions, userId, userKind);
 	const locations = userWarehouseOptions(users);
 	const latest = users.find(
@@ -155,19 +157,23 @@ export function Users({
 
 	return (
 		<section className={styles.panel} aria-label="Пользователи">
-			<UsersFilters
-				filters={filters}
-				locations={locations}
-				onChange={setFilters}
-			/>
-			{canAdd && (
-				<Button onClick={handleOpenAdd}>Добавить участника на склад</Button>
-			)}
+			<div className={`${styles.toolbar} ${localStyles.toolbar}`}>
+				<UsersFilters
+					filters={filters}
+					locations={locations}
+					onChange={setFilters}
+				/>
+				{canAdd && (
+					<Button className={localStyles.add} onClick={handleOpenAdd}>
+						Добавить участника на склад
+					</Button>
+				)}
+			</div>
 			{adding && canAdd && catalog && (
 				<AddWarehouseMember
 					http={http}
 					permissions={catalog}
-					warehouseIds={query.data?.manageable_warehouse_ids}
+					warehouseIds={data?.manageable_warehouse_ids}
 					onClose={handleCloseAdd}
 					onAdded={handleAdded}
 				/>
@@ -180,9 +186,17 @@ export function Users({
 			{query.isPending && (
 				<Feedback tone="loading">Загружаем пользователей…</Feedback>
 			)}
-			{query.error && (
+			{query.error && !hasRefreshError && (
 				<Feedback tone="error" action={<RetryButton onRetry={query.refetch} />}>
 					{errorMessage(query.error)}
+				</Feedback>
+			)}
+			{hasRefreshError && (
+				<Feedback
+					tone="warning"
+					action={<RetryButton onRetry={query.refetch} />}
+				>
+					Не удалось обновить список. Показаны последние загруженные данные.
 				</Feedback>
 			)}
 			{notice && <Feedback tone={notice.tone}>{notice.text}</Feedback>}
@@ -192,7 +206,7 @@ export function Users({
 					http={http}
 					user={{ ...editing, allowed_actions: latestActions }}
 					permissions={catalog}
-					manageableWarehouseIds={query.data?.manageable_warehouse_ids}
+					manageableWarehouseIds={data?.manageable_warehouse_ids}
 					onClose={handleCloseEditor}
 					onSave={handleSave}
 					renderConflict={renderConflict}
@@ -213,7 +227,7 @@ export function Users({
 					onUnavailable={handleRemovalUnavailable}
 				/>
 			)}
-			{query.data && !query.error && (
+			{data && (
 				<>
 					<p className={styles.subtle} aria-live="polite">
 						Найдено пользователей: {rows.length}

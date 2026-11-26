@@ -1,0 +1,7 @@
+.toolbar {
+	inline-size: min(100%, 48rem);
+}
+
+.add {
+	min-block-size: 36px;
+}

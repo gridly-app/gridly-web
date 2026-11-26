@@ -1,8 +1,14 @@
 .accessList {
-	display: grid;
+	display: flex;
 	gap: var(--space-2);
 	margin: 0;
 	padding: 0;
 
 	list-style: none;
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
 }
