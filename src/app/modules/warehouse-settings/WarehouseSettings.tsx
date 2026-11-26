@@ -5,7 +5,7 @@ import {
 	type Warehouse,
 	warehouseCommandSchema,
 } from "@/domain/warehouse";
-import { warehousePath } from "@/ports/navigation";
+import { warehousePath, newWarehouseId } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import {
 	DeleteWarehouseDialog,
@@ -22,7 +22,8 @@ import { ScrollArea } from "@/shared/ui/navigation";
 import { useSettingsPage } from "./model/useSettingsPage";
 import type { SettingsWarehouse } from "./model/warehouseFields";
 import { CabinetSettings } from "./ui/CabinetSettings/CabinetSettings";
-import { SettingsForm } from "./ui/SettingsForm/SettingsForm";
+import { ConfirmationSettings } from "./ui/ConfirmationSettings/ConfirmationSettings";
+import { GeneralSettings } from "./ui/GeneralSettings/GeneralSettings";
 import styles from "./shared.module.css";
 
 export function WarehouseSettings({
@@ -90,7 +91,7 @@ function RouteSettingsPage() {
 								const next = getWarehouses()?.find(
 									(item) => item.id !== warehouse.id,
 								);
-								void navigate(warehousePath(mode, next?.id ?? "new"), {
+								void navigate(warehousePath(mode, next?.id ?? newWarehouseId), {
 									replace: true,
 								});
 							}}
@@ -159,7 +160,7 @@ function SettingsContent({
 	title?: string;
 }) {
 	const props = {
-		w: warehouse,
+		warehouse,
 		execute,
 		pending,
 		settingsError,
@@ -188,8 +189,17 @@ function SettingsContent({
 					</Feedback>
 				)}
 				<div className={styles.settingsGrid} key={warehouse.id}>
-					<SettingsForm section="general" {...props} />
-					<SettingsForm section="confirmations" {...props} />
+					<GeneralSettings
+						warehouse={warehouse}
+						execute={execute}
+						pending={pending}
+						retrySettings={retrySettings}
+					/>
+					<ConfirmationSettings
+						warehouse={warehouse}
+						execute={execute}
+						pending={pending}
+					/>
 					<CabinetSettings {...props} />
 				</div>
 			</div>

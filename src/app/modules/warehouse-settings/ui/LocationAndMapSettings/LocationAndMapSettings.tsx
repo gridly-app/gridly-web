@@ -8,12 +8,12 @@ import { WarehouseCityForm } from "../WarehouseCityForm/WarehouseCityForm";
 import { WarehouseDimensionsForm } from "../WarehouseDimensionsForm/WarehouseDimensionsForm";
 
 export function LocationAndMapSettings({
-	w,
+	warehouse,
 	execute,
 	pending,
 	retrySettings,
 }: {
-	w: SettingsWarehouse;
+	warehouse: SettingsWarehouse;
 	execute: CommandExecutor;
 	pending: boolean;
 	retrySettings: () => Promise<unknown>;
@@ -21,7 +21,7 @@ export function LocationAndMapSettings({
 	const [saving, setSaving] = useState<"city" | "map" | null>(null);
 	const inFlight = useRef(false);
 	const busy = pending || saving !== null;
-	const layout = useLayoutOperation(w.id);
+	const layout = useLayoutOperation(warehouse.id);
 	const layoutBlocked = blocksLayoutWrite(layout.operation);
 	const layoutRefreshFailed = layout.operation?.status === "refresh-failed";
 
@@ -44,9 +44,12 @@ export function LocationAndMapSettings({
 	return (
 		<div className={styles.locationAndMap}>
 			<WarehouseCityForm
-				settings={w.settings}
+				settings={warehouse.settings}
 				retrySettings={retrySettings}
-				canEdit={!!w.settings && !!w.allowedActions?.includes("edit-settings")}
+				canEdit={
+					!!warehouse.settings &&
+					!!warehouse.allowedActions?.includes("edit-settings")
+				}
 				busy={busy}
 				saving={saving === "city"}
 				saveCity={(value) =>
@@ -54,12 +57,12 @@ export function LocationAndMapSettings({
 				}
 			/>
 			<WarehouseDimensionsForm
-				savedWidth={w.width}
-				savedHeight={w.height}
+				savedWidth={warehouse.width}
+				savedHeight={warehouse.height}
 				canResize={
 					!layoutBlocked &&
-					w.draftRevision === undefined &&
-					!!w.allowedActions?.includes("resize")
+					warehouse.draftRevision === undefined &&
+					!!warehouse.allowedActions?.includes("resize")
 				}
 				busy={busy}
 				saving={saving === "map"}
