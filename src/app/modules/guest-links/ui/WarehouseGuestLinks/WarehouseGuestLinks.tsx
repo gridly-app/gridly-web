@@ -5,14 +5,14 @@ import { errorMessage } from "@/shared/lib";
 import { Link } from "@/shared/ui/navigation";
 import { Feedback } from "@/shared/ui/feedback";
 
-import { useGuestLinkDialogs } from "../../model/useGuestLinkDialogs";
+import { useGuestLinkDialogs } from "../../model/editor/useGuestLinkDialogs";
 import { useWarehouseGuestLinkData } from "../../model/useWarehouseGuestLinkData";
 
-import { GuestLinkDialogs } from "../GuestLinkDialogs/GuestLinkDialogs";
-import { IssuedGuestLink } from "../IssuedGuestLink/IssuedGuestLink";
+import { GuestLinkDialogs } from "../editor/GuestLinkDialogs/GuestLinkDialogs";
+import { IssuedGuestLink } from "../creation/IssuedGuestLink/IssuedGuestLink";
 import { WarehouseGuestLinkFeedback } from "../WarehouseGuestLinkFeedback/WarehouseGuestLinkFeedback";
-import { WarehouseGuestLinksList } from "../WarehouseGuestLinksList/WarehouseGuestLinksList";
-import { GuestLinkCreationRecovery } from "../GuestLinkCreationRecovery/GuestLinkCreationRecovery";
+import { WarehouseGuestLinksList } from "../list/WarehouseGuestLinksList/WarehouseGuestLinksList";
+import { GuestLinkCreationRecovery } from "../creation/GuestLinkCreationRecovery/GuestLinkCreationRecovery";
 
 export function WarehouseGuestLinks({
 	path,
