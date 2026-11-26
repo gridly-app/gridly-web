@@ -1,0 +1,15 @@
+.toolbar {
+	--reconciliation-control-height: var(--space-10);
+}
+
+.toolbar > :is([data-slot="select-trigger"], [data-slot="button"]),
+.toolbar [data-slot="input"] {
+	height: var(--reconciliation-control-height);
+	min-height: var(--reconciliation-control-height);
+}
+
+@media (pointer: coarse), (width <= 580px) {
+	.toolbar {
+		--reconciliation-control-height: 44px;
+	}
+}

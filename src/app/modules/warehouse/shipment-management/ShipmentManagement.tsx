@@ -16,6 +16,7 @@ import type { WorkingShipment } from "./model/shipment.dto";
 import { useShipmentActions } from "./model/useShipmentActions";
 import { ShipmentDocumentsEditor } from "./ui/ShipmentDocumentsEditor/ShipmentDocumentsEditor";
 import { ShipmentEditor } from "./ui/ShipmentEditor/ShipmentEditor";
+import { ShipmentReconciliation } from "./ui/ShipmentReconciliation/ShipmentReconciliation";
 import { ShipmentSharing } from "./ui/ShipmentSharing/ShipmentSharing";
 
 import styles from "./shared.module.css";
@@ -160,6 +161,7 @@ function ManagementContent({
 				busy={!canWrite}
 				save={handleSave}
 			/>
+			<ShipmentReconciliation shipment={shipment} />
 			<ShipmentSharing
 				warehouseId={warehouseId}
 				orderId={orderId}
