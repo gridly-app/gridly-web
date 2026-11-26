@@ -34,5 +34,9 @@ export {
 	toUtcDateTimeInput,
 } from "./dates";
 export { encodeCsv } from "./csv";
+export {
+	clearOperationAttempts,
+	operationAttemptKey,
+} from "./operationAttempts";
 export { textSearch, createTextIndex, textSearchQuery } from "./textSearch";
 export { zonedDayBoundary } from "./zonedDayBoundary";
