@@ -55,7 +55,7 @@ export function OrdersTable({
 					<TableHead>Стоимость</TableHead>
 					<TableHead>Создан</TableHead>
 					<TableHead>Статус</TableHead>
-					<TableHead>Действия</TableHead>
+					<TableHead data-column="actions">Действия</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>

@@ -1,11 +1,12 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
 	type CommandExecutor,
 	type Order,
 	orderValue,
-	productPrice,
 } from "@/domain/warehouse";
+import { useSingleFlight, useUpdateSearchParams } from "@/shared/lib";
+import { filterOrders } from "./orderFilters";
 import type { OrderScreenWarehouse } from "./warehouseFields";
 
 export interface OrdersPageOptions {
@@ -21,69 +22,27 @@ export function useOrdersPage({
 	command: CommandExecutor;
 }) {
 	const [params, setParams] = useSearchParams();
-	const confirming = useRef(false);
+	const updateSearchParams = useUpdateSearchParams();
+	const confirming = useSingleFlight();
 	const status = params.get("status") || "all";
 	const category = params.get("category") || "all";
 	const unpriced = params.get("price") === "missing";
 	const from = params.get("from") || "";
 	const to = params.get("to") || "";
 	const setFilter = (key: string, value: string) =>
-		setParams(
-			(current) => {
-				const next = new URLSearchParams(current);
-				if (value === "all") next.delete(key);
-				else next.set(key, value);
-				return next;
-			},
-			{ replace: true },
-		);
+		updateSearchParams({ [key]: value === "all" ? null : value });
 	const setStatus = (value: string) => setFilter("status", value);
 	const setCategory = (value: string) => setFilter("category", value);
 	const resetFilters = () => setParams({}, { replace: true });
-	const dayFormatter = new Intl.DateTimeFormat("en-CA", {
-		timeZone: warehouse.timezone,
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-	});
 	const [search, setSearch] = useState("");
-	const searchQuery = search.toLowerCase();
 	const orders = warehouse.orders.filter((order) => order.kind === page);
-	const dateAndPriceMatches = orders.filter((order) => {
-		const day = Number.isFinite(Date.parse(order.created))
-			? dayFormatter.format(new Date(order.created))
-			: "";
-
-		if (from && (!day || day < from)) return false;
-		if (to && (!day || day > to)) return false;
-		if (!unpriced) return true;
-
-		return order.lines.some((line) => {
-			if (!(line.quantity > 0)) return false;
-
-			const product = warehouse.products.find(({ id }) => id === line.product);
-
-			if (category !== "all" && product?.category !== category) return false;
-
-			return productPrice(product?.price) === null;
-		});
-	});
-	const statusAndCategoryMatches = dateAndPriceMatches.filter((order) => {
-		if (status !== "all" && order.status !== status) return false;
-		if (category === "all") return true;
-
-		return order.lines.some((line) => {
-			const product = warehouse.products.find(({ id }) => id === line.product);
-
-			return product?.category === category;
-		});
-	});
-	const searchMatches = statusAndCategoryMatches.filter((order) => {
-		const searchableText = (order.number + order.party).toLowerCase();
-
-		return searchableText.includes(searchQuery);
-	});
-	const visibleOrders = searchMatches.map((order) => ({
+	const matchingOrders = filterOrders(
+		warehouse.orders,
+		warehouse.products,
+		warehouse.timezone,
+		{ kind: page, status, category, unpriced, from, to, search },
+	);
+	const visibleOrders = matchingOrders.map((order) => ({
 		...order,
 		quantity:
 			order.quantity ??
@@ -104,20 +63,14 @@ export function useOrdersPage({
 		return command("start", orderId);
 	}
 
-	async function confirmOrder(order: Order) {
-		if (confirming.current) return;
-
-		confirming.current = true;
-
-		try {
-			return await command("orderAction", {
+	function confirmOrder(order: Order) {
+		return confirming.run(() =>
+			command("orderAction", {
 				id: order.id,
 				action: "confirm",
 				revision: order.revision,
-			});
-		} finally {
-			confirming.current = false;
-		}
+			}),
+		);
 	}
 
 	return {
