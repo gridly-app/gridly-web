@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { BrowserSessionRepository } from "@/app/modules/session/api/repository";
+import { BrowserSessionRepository } from "@/app/modules/session/api/account/repository";
 import { FetchHttpClient } from "@/shared/http";
 
 import {
@@ -7,7 +7,7 @@ import {
 	credentials,
 	endSandboxSessions,
 	setup,
-} from "./sandboxAccessFixture";
+} from "./sandboxAccess.test-support";
 
 afterEach(endSandboxSessions);
 

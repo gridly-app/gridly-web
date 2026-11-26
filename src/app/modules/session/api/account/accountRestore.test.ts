@@ -6,7 +6,7 @@ import {
 	accountStorage,
 	immediateLock,
 	queuedLock,
-} from "./accountSessionFixture";
+} from "./accountSession.test-support";
 
 test("remembered account waits for a confirmed refresh and network errors are retryable", async () => {
 	const storage = accountStorage("operator");

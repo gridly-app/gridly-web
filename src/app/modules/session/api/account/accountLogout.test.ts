@@ -6,7 +6,7 @@ import {
 	accountStorage,
 	immediateLock,
 	queuedLock,
-} from "./accountSessionFixture";
+} from "./accountSession.test-support";
 
 test("logout clears local identity and data even when revocation fails", async () => {
 	const storage = memoryStorage();

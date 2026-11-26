@@ -7,7 +7,7 @@ import {
 import {
 	sandboxAccessSchema,
 	sandboxMetadataSchema,
-} from "../api/sandboxAccess";
+} from "../../api/sandboxAccess";
 import {
 	type SandboxAccessData,
 	SandboxAccessStorage,

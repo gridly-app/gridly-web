@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useSyncExternalStore } from "react";
 import { SessionContext, type SessionState } from "@/ports/session";
-import type { BrowserSessionRepository } from "../../api/repository";
+import type { BrowserSessionRepository } from "../../api/account/repository";
 
 export function SessionProvider({
 	repository,

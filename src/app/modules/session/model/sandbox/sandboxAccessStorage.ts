@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { KeyValueStorage } from "@/shared/lib";
 import { runtimeNotices } from "@/shared/lib";
-import { sandboxAccessSchema } from "../api/sandboxAccess";
+import { sandboxAccessSchema } from "../../api/sandboxAccess";
 
 const storageKey = "gridly.sandbox.access";
 const storedSchema = sandboxAccessSchema.extend({

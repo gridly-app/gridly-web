@@ -6,7 +6,7 @@ import {
 	accountStorage,
 	immediateLock,
 	queuedLock,
-} from "./accountSessionFixture";
+} from "./accountSession.test-support";
 
 test("a pending login in a second tab prevents replay under the new account", async () => {
 	const storage = memoryStorage();
