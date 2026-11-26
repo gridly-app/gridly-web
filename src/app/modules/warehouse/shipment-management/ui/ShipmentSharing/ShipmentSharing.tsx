@@ -21,6 +21,7 @@ export function ShipmentSharing({
 	issueLink,
 	revokeLink,
 	shipment,
+	canIssueLink,
 	run,
 	busy,
 	attempt,
@@ -31,6 +32,7 @@ export function ShipmentSharing({
 	issueLink: ShipmentResource["issueLink"];
 	revokeLink: ShipmentResource["revokeLink"];
 	shipment: Pick<WorkingShipment, "share_link" | "order" | "allowed_actions">;
+	canIssueLink: boolean;
 	run: RunShipmentAction;
 	busy: boolean;
 	attempt: ShipmentCreation | null | undefined;
@@ -60,6 +62,8 @@ export function ShipmentSharing({
 		run,
 	});
 	const { expiry, url, message, confirm } = form;
+	const isIssueDisabled = busy || !!attempt || !canIssueLink;
+	const issueHintId = `${orderId}-link-unavailable`;
 
 	return (
 		<section className={styles.panel}>
@@ -79,7 +83,11 @@ export function ShipmentSharing({
 						onChange={form.handleExpiryChange}
 					/>
 				</Field>
-				<Button type="submit" disabled={busy || !!attempt}>
+				<Button
+					type="submit"
+					disabled={isIssueDisabled}
+					aria-describedby={canIssueLink ? undefined : issueHintId}
+				>
 					{shipment.share_link ? "Перевыпустить ссылку" : "Выпустить ссылку"}
 				</Button>
 				{(shipment.share_link || expired) && (
@@ -93,6 +101,11 @@ export function ShipmentSharing({
 					</Button>
 				)}
 			</form>
+			{!canIssueLink && (
+				<p id={issueHintId}>
+					Клиентскую ссылку можно выпустить, когда заказ выйдет из черновика.
+				</p>
+			)}
 			{canManage && <Link to={allLinks}>Управлять всеми ссылками заказа</Link>}
 			{canRetry && (
 				<Button variant="secondary" onClick={form.handleRetry} disabled={busy}>

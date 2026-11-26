@@ -42,11 +42,14 @@ export function ShipmentManagement({ http }: { http: HttpClient }) {
 		);
 	}
 
+	const canIssueLink = order.data.status !== "draft";
+
 	return (
 		<OutboundManagement
 			http={http}
 			warehouseId={warehouseId}
 			orderId={orderId}
+			canIssueLink={canIssueLink}
 		/>
 	);
 }
@@ -55,10 +58,12 @@ function OutboundManagement({
 	http,
 	warehouseId,
 	orderId,
+	canIssueLink,
 }: {
 	http: HttpClient;
 	warehouseId: string;
 	orderId: string;
+	canIssueLink: boolean;
 }) {
 	const scopeId = useWarehouseScopeId();
 	const resource = useShipmentResource(http, warehouseId, orderId);
@@ -89,6 +94,7 @@ function OutboundManagement({
 					shipment={shipment}
 					warehouseId={warehouseId}
 					orderId={orderId}
+					canIssueLink={canIssueLink}
 					resource={resource}
 				/>
 			)}
@@ -100,11 +106,13 @@ function ManagementContent({
 	shipment,
 	warehouseId,
 	orderId,
+	canIssueLink,
 	resource,
 }: {
 	shipment: WorkingShipment;
 	warehouseId: string;
 	orderId: string;
+	canIssueLink: boolean;
 	resource: ShipmentResource;
 }) {
 	const [editorVersion, setEditorVersion] = useState(0);
@@ -157,6 +165,7 @@ function ManagementContent({
 				warehouseId={warehouseId}
 				orderId={orderId}
 				shipment={shipment}
+				canIssueLink={canIssueLink}
 				issueLink={resource.issueLink}
 				revokeLink={resource.revokeLink}
 				run={run}
