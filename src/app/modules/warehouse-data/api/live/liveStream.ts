@@ -1,12 +1,16 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
 import { toLiveState } from "@/domain/warehouse";
-import type { WarehouseResource } from "@/ports/warehouse";
 import { ApiError, type HttpClient } from "@/shared/http";
 import { readSse, type ServerEvent } from "@/shared/realtime";
 import type { WarehouseKeys } from "../../model/queries/queryKeys";
-import { applyRobotPatch } from "./applyRobotPatch";
+import { type LiveRefresh, liveRefreshes, nextLiveSnapshot } from "./livePatch";
 import { statePatchDto } from "./statePatch";
+
+export interface LiveStreamStatus {
+	onError(error: unknown): void;
+	onHealthy(): void;
+}
 
 interface LiveStreamOptions {
 	keys: WarehouseKeys;
@@ -27,14 +31,11 @@ export class WarehouseLiveStream {
 	private polling: AbortController | undefined;
 	private layoutVersion = -1;
 	private started = false;
-	private refreshing = new Map<WarehouseResource | "order-details", boolean>();
-	private onError: (error: unknown) => void;
+	private refreshing = new Map<LiveRefresh, boolean>();
 	constructor(
 		private readonly options: LiveStreamOptions,
-		onError: (error: unknown) => void,
-	) {
-		this.onError = onError;
-	}
+		private readonly status: LiveStreamStatus,
+	) {}
 	start() {
 		if (!this.started) {
 			this.started = true;
@@ -75,7 +76,7 @@ export class WarehouseLiveStream {
 			);
 		} catch (error) {
 			if (!polling.signal.aborted) {
-				this.onError(error);
+				this.status.onError(error);
 			}
 		} finally {
 			this.polling = undefined;
@@ -94,7 +95,7 @@ export class WarehouseLiveStream {
 			signal.addEventListener("abort", finish, { once: true });
 		});
 	}
-	private async refresh(resource: WarehouseResource | "order-details") {
+	private async refresh(resource: LiveRefresh) {
 		if (this.refreshing.has(resource)) {
 			this.refreshing.set(resource, true);
 			return;
@@ -148,8 +149,9 @@ export class WarehouseLiveStream {
 				if (!warehouse) throw new Error("Склад не загружен");
 				this.layoutVersion = warehouse.version;
 				cache.setQueryData(this.options.keys.live(id), toLiveState(warehouse));
-				if (!http.openStream) throw new Error("Потоковый транспорт недоступен");
 				activity();
+				if (!http.openStream) throw new Error("Потоковый транспорт недоступен");
+
 				const stream = await http.openStream(
 					`/warehouses/${encodeURIComponent(id)}/stream?since_version=${encodeURIComponent(warehouse.stateVersion ?? "0")}`,
 					{ signal },
@@ -158,7 +160,7 @@ export class WarehouseLiveStream {
 				this.healthy = true;
 				this.stopFallback();
 				activity();
-				this.onError(undefined);
+				this.status.onHealthy();
 				await readSse(
 					stream,
 					async (event) => {
@@ -172,11 +174,11 @@ export class WarehouseLiveStream {
 			} catch (error) {
 				if (this.controller.signal.aborted) break;
 				if (error instanceof ApiError && error.status === 401) {
-					this.onError(error);
+					this.status.onError(error);
 					this.stop();
 					break;
 				}
-				this.onError(error);
+				this.status.onError(error);
 			} finally {
 				clearTimeout(watchdog);
 				connection.abort();
@@ -193,45 +195,29 @@ export class WarehouseLiveStream {
 	}
 	private async apply(event: ServerEvent, signal: AbortSignal) {
 		signal.throwIfAborted();
+
 		if (event.event === "RESYNC_REQUIRED")
 			throw new Error("Требуется синхронизация состояния");
 		if (event.event !== "STATE_PATCH") return;
+
 		const parsed = statePatchDto.safeParse(JSON.parse(event.data));
+
 		if (!parsed.success) throw new Error("Некорректное событие состояния");
-		const patch = parsed.data;
-		const { id, cache } = this.options;
-		if (patch.warehouse_id !== id) throw new Error("Событие другого склада");
-		const current = cache.getQueryData<Warehouse>(this.options.keys.detail(id));
-		if (
-			!current ||
-			current.version !== this.layoutVersion ||
-			(patch.layout_version !== undefined &&
-				patch.layout_version !== current.version)
-		)
-			throw new Error("Карта изменилась");
-		if (BigInt(patch.tick) < BigInt(current.tick))
-			throw new Error("Устаревший тик состояния");
-		const version = BigInt(patch.state_version),
-			previous = BigInt(current.stateVersion ?? "0");
-		if (version <= previous) return;
-		if (
-			version !== previous + 1n ||
-			(event.id && event.id !== patch.state_version)
-		)
-			throw new Error("Пропущено событие состояния");
-		const next = applyRobotPatch(current, patch);
+
+		const { id, cache, keys } = this.options;
+		const next = nextLiveSnapshot(
+			cache.getQueryData<Warehouse>(keys.detail(id)),
+			parsed.data,
+			{ warehouseId: id, layoutVersion: this.layoutVersion, eventId: event.id },
+		);
+
+		if (!next) return;
+
 		signal.throwIfAborted();
-		cache.setQueryData(this.options.keys.detail(id), next);
-		cache.setQueryData(this.options.keys.live(id), toLiveState(next));
-		const resources = new Set<WarehouseResource>();
-		if (patch.tasks?.length) {
-			resources.add("robots");
-			resources.add("orders");
-		}
-		if (patch.order_changes?.length) resources.add("orders");
-		if (patch.stock_changes?.length) resources.add("inventory");
-		if (resources.size) resources.add("history");
-		for (const resource of resources) void this.refresh(resource);
-		if (resources.has("orders")) void this.refresh("order-details");
+		cache.setQueryData(keys.detail(id), next);
+		cache.setQueryData(keys.live(id), toLiveState(next));
+
+		for (const refresh of liveRefreshes(parsed.data))
+			void this.refresh(refresh);
 	}
 }

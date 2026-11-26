@@ -19,23 +19,23 @@ export interface WarehouseRepository {
 	getSessionSignal(): AbortSignal;
 	retryLayoutRead(id: string): Promise<void>;
 	discardRejectedLayout(id: string): void;
-	subscribeLive?(id: string): () => void;
-	proposeRoutes?(
+	subscribeLive(id: string): () => void;
+	proposeRoutes(
 		id: string,
 		cells: Warehouse["cells"],
 		signal?: AbortSignal | undefined,
 	): Promise<NonNullable<Warehouse["routePlans"]>>;
-	selectionSummary?(
+	selectionSummary(
 		id: string,
 		keys: string[],
 		signal?: AbortSignal | undefined,
 	): Promise<{ capacity: number; batchCount: number }>;
-	getLive?(
+	getLive(
 		id: string,
 		signal?: AbortSignal | undefined,
 	): Promise<WarehouseLiveState>;
-	clear?(): void;
-	getOrder?(
+	clear(): void;
+	getOrder(
 		id: string,
 		orderId: string,
 		signal?: AbortSignal | undefined,

@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
-import { WarehouseLiveStream } from "@/app/modules/warehouse-data/api/live/liveStream";
-import { createWarehouseKeys } from "@/app/modules/warehouse-data/model/queries/queryKeys";
+import { WarehouseLiveStream } from "./liveStream";
+import { createWarehouseKeys } from "../../model/queries/queryKeys";
 import type { Warehouse } from "@/domain/warehouse/warehouse";
 import { warehouse } from "../../../../../../tests/support/warehouse";
 
@@ -105,7 +105,7 @@ export function harness(
 				return { ...warehouse(), layoutVersion: 1 };
 			},
 		},
-		(error) => errors.push(error),
+		{ onError: (error) => errors.push(error), onHealthy: () => undefined },
 	);
 	return {
 		keys: warehouseKeys,

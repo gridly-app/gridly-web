@@ -68,11 +68,13 @@ export class WarehouseLiveSubscriptions {
 				},
 				poll: (signal) => this.snapshots.poll(id, signal),
 			},
-			(error) => {
-				this.cache.setQueryData(
-					warehouseKeys.connection(id),
-					error !== undefined,
-				);
+			{
+				onError: () => {
+					this.cache.setQueryData(warehouseKeys.connection(id), true);
+				},
+				onHealthy: () => {
+					this.cache.setQueryData(warehouseKeys.connection(id), false);
+				},
 			},
 		);
 	}

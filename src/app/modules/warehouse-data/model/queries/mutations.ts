@@ -144,10 +144,7 @@ export function useCreateWarehouse() {
 export function useRouteProposal(id: string) {
 	const repository = useWarehouseRepository();
 	return useMutation({
-		mutationFn: async (cells: Warehouse["cells"]) => {
-			if (!repository.proposeRoutes)
-				throw new Error("Построение маршрутов недоступно");
-			return repository.proposeRoutes(id, cells);
-		},
+		mutationFn: (cells: Warehouse["cells"]) =>
+			repository.proposeRoutes(id, cells),
 	});
 }

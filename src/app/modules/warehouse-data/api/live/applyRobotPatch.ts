@@ -34,7 +34,6 @@ export function applyRobotPatch(
 			let path = [update.from, update.to];
 			if (steps?.length) {
 				const ordered = [...steps].sort((a, b) => a.slot - b.slot);
-				// Server slots may be numbered 0..4 or 1..5. Retain idle slots.
 				const origin = ordered.some((step) => step.slot === 0) ? 0 : 1;
 				if (
 					new Set(ordered.map((step) => step.slot)).size !== ordered.length ||

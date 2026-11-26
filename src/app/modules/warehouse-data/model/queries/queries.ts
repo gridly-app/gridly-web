@@ -1,6 +1,7 @@
 import { skipToken, useQueries, useQuery } from "@tanstack/react-query";
+import { newWarehouseId } from "@/ports/navigation";
 import { useEffect } from "react";
-import type { Warehouse } from "@/domain/warehouse";
+import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
 import { selectWarehouseMotion } from "@/domain/warehouse";
 import type { WarehouseResource } from "@/ports/warehouse";
 import { useWarehouseScope } from "@/ports/warehouse";
@@ -16,17 +17,15 @@ export function useOrder(id: string, orderId: string | null) {
 
 	const query = useQuery({
 		queryKey: warehouseKeys.order(id, orderId),
-		queryFn: ({ signal }) => {
-			if (!orderId || !repository.getOrder) {
-				throw new Error("Загрузка заказа недоступна");
-			}
-			return repository.getOrder(id, orderId, signal);
-		},
-		enabled: !!orderId && !!repository.getOrder && visible,
+		queryFn: orderId
+			? ({ signal }) => repository.getOrder(id, orderId, signal)
+			: skipToken,
+		enabled: visible,
 		refetchInterval: visible ? 5000 : false,
 		refetchOnMount: "always",
 	});
-	return { ...query, supported: !!repository.getOrder };
+
+	return { ...query, supported: true };
 }
 
 export function useWarehouses() {
@@ -49,7 +48,7 @@ export function useWarehouse(id: string) {
 	const snapshot = useQuery({
 		queryKey: warehouseKeys.resource(id, "metadata"),
 		queryFn: ({ signal }) => repository.get(id, signal, "metadata"),
-		enabled: id !== "new" && visible,
+		enabled: id !== newWarehouseId && visible,
 		refetchInterval: visible ? 5000 : false,
 		refetchOnMount: "always",
 	});
@@ -60,30 +59,16 @@ export function useWarehouseLiveSubscription(id: string) {
 	const repository = useWarehouseRepository();
 	const visible = usePageVisible();
 	useEffect(() => {
-		if (visible && id !== "new" && repository.subscribeLive)
-			return repository.subscribeLive(id);
+		if (visible && id !== newWarehouseId) return repository.subscribeLive(id);
 	}, [repository, id, visible]);
 }
 
 function useWarehouseLiveUpdates(id: string) {
-	const repository = useWarehouseRepository();
-	const warehouseKeys = repository.keys;
-	const visible = usePageVisible();
-	return useQuery({
+	const { keys: warehouseKeys } = useWarehouseRepository();
+
+	return useQuery<WarehouseLiveState>({
 		queryKey: warehouseKeys.live(id),
-		queryFn: ({ signal }) => {
-			if (!repository.getLive)
-				throw new Error("Поток состояния склада недоступен");
-			return repository.getLive(id, signal);
-		},
-		enabled:
-			!repository.subscribeLive &&
-			!!repository.getLive &&
-			visible &&
-			id !== "new",
-		refetchInterval: visible && !repository.subscribeLive ? 1000 : false,
-		staleTime: 1000,
-		refetchOnWindowFocus: false,
+		queryFn: skipToken,
 	});
 }
 
@@ -105,12 +90,8 @@ export function useSelectionSummary(
 	const ordered = [...keys].sort();
 	return useQuery({
 		queryKey: warehouseKeys.selectionSummary(id, ordered),
-		enabled: enabled && !!ordered.length && !!repository.selectionSummary,
-		queryFn: ({ signal }) => {
-			if (!repository.selectionSummary)
-				throw new Error("Сводка выделения недоступна");
-			return repository.selectionSummary(id, ordered, signal);
-		},
+		enabled: enabled && !!ordered.length,
+		queryFn: ({ signal }) => repository.selectionSummary(id, ordered, signal),
 		refetchInterval: 5000,
 	});
 }
