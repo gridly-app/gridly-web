@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { sandboxEntryPath } from "@/ports/navigation";
 import { useSandboxAccess } from "@/ports/session";
 import { errorMessage } from "@/shared/lib";
 
@@ -33,10 +34,11 @@ export function useLandingSandbox() {
 
 			if (snapshot.status !== "active") {
 				setError(snapshot.error);
+
 				return;
 			}
 
-			await navigate("/sandbox");
+			await navigate(sandboxEntryPath);
 		} catch (error) {
 			if (!request.signal.aborted) setError(errorMessage(error));
 		} finally {

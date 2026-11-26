@@ -1,14 +1,21 @@
 import { Link } from "react-router-dom";
+
+import {
+	accountEntryPath,
+	registrationPath,
+	signInPath,
+} from "@/ports/navigation";
 import { useSession } from "@/ports/session";
 import { Button, StableLabel } from "@/shared/ui/controls";
 import { ShapeBackdrop, StaticText } from "@/shared/ui/visual";
+
 import landingStyles from "./LandingHero.module.css";
 
 export function LandingHero() {
 	const { user } = useSession();
 	const primaryAction = user
-		? { to: "/app", label: "Мои склады" }
-		: { to: "/auth", label: "Войти" };
+		? { to: accountEntryPath, label: "Мои склады" }
+		: { to: signInPath, label: "Войти" };
 
 	return (
 		<section className={landingStyles.landingHero}>
@@ -35,8 +42,8 @@ export function LandingHero() {
 						<Button
 							size="lg"
 							variant="secondary"
-							className={`${landingStyles.heroButton} ${landingStyles.heroSecondary}`}
-							render={<Link to="/auth?mode=register" />}
+							className={landingStyles.heroButton}
+							render={<Link to={registrationPath} />}
 						>
 							Зарегистрироваться
 						</Button>

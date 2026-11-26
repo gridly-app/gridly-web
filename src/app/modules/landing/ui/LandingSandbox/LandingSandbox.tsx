@@ -1,8 +1,11 @@
 import { IconArrowUpRight } from "@tabler/icons-react";
+
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
 import { StaticText } from "@/shared/ui/visual";
+
 import { useLandingSandbox } from "../../model/useLandingSandbox";
+
 import landingStyles from "./LandingSandbox.module.css";
 
 export function LandingSandbox() {

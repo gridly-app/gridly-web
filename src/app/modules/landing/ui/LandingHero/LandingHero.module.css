@@ -1,76 +1,94 @@
 .landingHero {
 	position: relative;
 	isolation: isolate;
+
 	display: grid;
 	place-items: center;
 	grid-template-columns: minmax(0, 1fr);
 	min-height: min(800px, 100svh);
-	padding: 96px 24px 128px;
+	padding: 96px var(--space-6) 128px;
 	overflow: clip;
 	contain: paint;
 }
+
+@media (width <= 700px) {
+	.landingHero {
+		min-height: min(720px, 100svh);
+		padding: 96px var(--space-6);
+	}
+}
+
 .heroCopy {
-	min-width: 0;
 	container-type: inline-size;
 	width: 100%;
+	min-width: 0;
+
 	text-align: center;
+
 	pointer-events: none;
 }
+
 .heroCopy h1 {
-	margin: 0 0 24px;
+	margin: 0 0 var(--space-6);
+
 	font-size: clamp(80px, 11vw, 144px);
-	line-height: 1.1;
 	font-weight: 700;
 	letter-spacing: -0.075em;
+	line-height: 1.1;
 }
+
+@media (width <= 700px) {
+	.heroCopy h1 {
+		font-size: min(clamp(76px, 17vw, 104px), 32cqi);
+	}
+}
+
 .heroDescription {
-	margin: 0 auto;
 	max-width: 60ch;
+	margin: 0 auto;
+
 	font-size: clamp(16px, 1.7vw, 20px);
 	font-weight: 500;
 	line-height: 1.6;
+
 	color: var(--muted-foreground);
 }
+
+@media (width <= 700px) {
+	.heroDescription {
+		font-size: var(--text-body);
+	}
+}
+
 .heroDescription > span {
 	display: block;
 }
+
 .heroActions {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: center;
-	gap: 12px;
-	margin-top: 32px;
+	gap: var(--space-3);
+	margin-top: var(--space-8);
 }
+
+@media (width <= 700px) {
+	.heroActions {
+		gap: var(--space-2);
+	}
+}
+
 .heroButton {
 	min-width: 136px;
 	min-height: 48px;
+	padding: var(--space-3) var(--space-6);
+
 	pointer-events: auto;
-	padding: 12px 24px;
 }
-.heroSecondary {
-	background: var(--card);
-	border-color: var(--border);
-	color: var(--primary);
-}
-.heroSecondary:hover {
-	background: var(--action-secondary-hover);
-}
+
 @media (width <= 700px) {
-	.landingHero {
-		min-height: min(720px, 100svh);
-		padding: 96px 24px;
-	}
-	.heroCopy h1 {
-		font-size: min(clamp(76px, 17vw, 104px), 32cqi);
-	}
-	.heroDescription {
-		font-size: 16px;
-	}
-	.heroActions {
-		gap: 8px;
-	}
 	.heroButton {
 		min-width: 0;
-		padding-inline: 16px;
+		padding-inline: var(--space-4);
 	}
 }

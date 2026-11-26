@@ -51,8 +51,8 @@
 
 .ctaButton {
 	min-height: 48px;
-	padding: var(--space-3) var(--space-6);
 	margin-top: var(--space-2);
+	padding: var(--space-3) var(--space-6);
 }
 
 .sandboxNote {
