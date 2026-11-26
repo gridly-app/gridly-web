@@ -1,4 +1,5 @@
 import type { CellType } from "./warehouse";
+import type { WorkflowKey } from "./workflowPolicy";
 
 export const cellLabels: Record<CellType, string> = {
 	empty: "Пустая клетка",
@@ -48,12 +49,12 @@ export const statuses: Record<string, string> = {
 	idle: "Свободен",
 };
 
-export const confirmationLabels = [
-	"Разгрузка",
-	"Отбор",
-	"Размещение",
-	"Погрузка",
-] as const;
+export const confirmationLabels: Record<WorkflowKey, string> = {
+	confirmUnload: "Разгрузка",
+	confirmPick: "Отбор",
+	confirmPutaway: "Размещение",
+	confirmLoad: "Погрузка",
+};
 
 export const robotRoleLabels: Record<string, string> = {
 	unload: "Разгрузка",

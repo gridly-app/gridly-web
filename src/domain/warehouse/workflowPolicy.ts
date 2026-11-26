@@ -7,6 +7,8 @@ export const workflowKeys = [
 	"confirmLoad",
 ] as const;
 
+export type WorkflowKey = (typeof workflowKeys)[number];
+
 export const workflowPolicySchema = z.object({
 	confirmUnload: z.boolean(),
 	confirmPick: z.boolean(),

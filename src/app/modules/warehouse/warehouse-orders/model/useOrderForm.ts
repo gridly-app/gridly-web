@@ -71,7 +71,7 @@ export function useOrderForm({
 		confirmations: workflowKeys.map((key, index) => ({
 			key,
 			checked: current.manual[key],
-			label: confirmationLabels[index],
+			label: confirmationLabels[key],
 			index,
 		})),
 		changeProduct: (key: string, product: string) =>
