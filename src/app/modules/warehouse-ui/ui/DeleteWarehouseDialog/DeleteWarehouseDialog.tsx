@@ -1,7 +1,7 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { Warehouse } from "@/domain/warehouse";
 import { useWarehouseCommand } from "@/ports/warehouse";
-import { errorMessage, useOnlineStatus } from "@/shared/lib";
+import { errorMessage, useOnlineStatus, useSingleFlight } from "@/shared/lib";
 import { ConfirmDialog } from "@/shared/ui/overlays";
 
 export function DeleteWarehouseDialog({
@@ -15,11 +15,25 @@ export function DeleteWarehouseDialog({
 }) {
 	const mutation = useWarehouseCommand(warehouse.id, warehouse);
 	const online = useOnlineStatus();
-	const submitting = useRef(false);
+	const submission = useSingleFlight();
 	const [error, setError] = useState("");
 
+	async function deleteWarehouse() {
+		setError("");
+
+		try {
+			await mutation.mutateAsync({ action: "deleteWarehouse" });
+		} catch (failure) {
+			setError(errorMessage(failure));
+
+			return;
+		}
+
+		onDeleted();
+	}
+
 	async function confirm() {
-		if (submitting.current) return;
+		if (submission.isRunning) return;
 		if (!online) {
 			setError("Нет соединения. Подключитесь к сети и попробуйте ещё раз.");
 			return;
@@ -31,17 +45,7 @@ export function DeleteWarehouseDialog({
 			setError("Удаление этого склада недоступно.");
 			return;
 		}
-		submitting.current = true;
-		setError("");
-		try {
-			await mutation.mutateAsync({ action: "deleteWarehouse" });
-		} catch (failure) {
-			setError(errorMessage(failure));
-			return;
-		} finally {
-			submitting.current = false;
-		}
-		onDeleted();
+		await submission.run(deleteWarehouse);
 	}
 
 	return (
