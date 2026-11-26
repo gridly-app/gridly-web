@@ -59,6 +59,7 @@ export function RouteToolbar({
 	return (
 		<div
 			ref={container}
+			data-map-editor-menu=""
 			className={`${styles.routeEditorToolbar} ${className}`}
 		>
 			<Toolbar

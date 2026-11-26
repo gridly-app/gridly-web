@@ -19,6 +19,31 @@
 .mapDetails {
 	border-left: 1px solid var(--border);
 }
+
+[data-map-editor-menu]:is([data-slot="toolbar"], [data-slot="menu-popup"]),
+[data-map-editor-menu] [data-slot="toolbar"] {
+	background: transparent;
+	border-color: transparent;
+	box-shadow: none;
+	backdrop-filter: none;
+}
+
+[data-map-editor-menu] [data-control="button"] {
+	background: transparent;
+	color: var(--foreground);
+	box-shadow: none;
+}
+
+[data-map-editor-menu] [data-control="button"][aria-pressed="true"] {
+	outline: 1px solid var(--ring);
+	outline-offset: -1px;
+}
+
+[data-map-editor-menu]
+	[data-control="button"]:is(:focus-visible, [data-highlighted]) {
+	outline: 2px solid var(--ring);
+	outline-offset: -2px;
+}
 .mapFullscreen {
 	position: fixed;
 	inset: 0;

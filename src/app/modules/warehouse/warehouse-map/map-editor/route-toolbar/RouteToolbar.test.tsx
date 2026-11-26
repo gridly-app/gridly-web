@@ -3,6 +3,7 @@ import { act } from "react";
 import { WarmTooltipGroup } from "@/shared/ui/overlays";
 import { mountDom } from "../../../../../../../tests/support/dom";
 import { RouteToolbar, type RouteToolbarProps } from "./index";
+import { within } from "@testing-library/react/pure";
 
 let dom: ReturnType<typeof mountDom>;
 
@@ -12,13 +13,8 @@ beforeEach(() => {
 
 afterEach(() => dom.close());
 
-function button(label: string): HTMLButtonElement {
-	const element = [...document.querySelectorAll("button")].find(
-		(candidate) => candidate.textContent === label,
-	);
-	if (!element) throw new Error(`Button is missing: ${label}`);
-
-	return element;
+function button(label: string) {
+	return within(document.body).getByRole("button", { name: label });
 }
 
 function renderToolbar({ model, editor, pending }: RouteToolbarProps) {

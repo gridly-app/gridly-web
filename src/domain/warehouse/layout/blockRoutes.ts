@@ -5,11 +5,11 @@ import { cellKey } from "./zones";
 
 const neighbors = (cell: Cell) =>
 	[
-		[cell.x + 1, cell.y],
-		[cell.x - 1, cell.y],
-		[cell.x, cell.y + 1],
-		[cell.x, cell.y - 1],
-	].map(([x, y]) => `${x},${y}`);
+		{ x: cell.x + 1, y: cell.y },
+		{ x: cell.x - 1, y: cell.y },
+		{ x: cell.x, y: cell.y + 1 },
+		{ x: cell.x, y: cell.y - 1 },
+	].map(cellKey);
 
 export function connectedBlock(cells: Cell[], selected: Cell | null): Cell[] {
 	if (!selected) {

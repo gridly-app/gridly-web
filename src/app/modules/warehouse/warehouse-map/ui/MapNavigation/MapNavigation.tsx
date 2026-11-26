@@ -41,6 +41,7 @@ export function MapNavigation({
 	return (
 		<Toolbar
 			data-variant="floating"
+			data-map-editor-menu=""
 			aria-label="Действия режима просмотра"
 			ref={navigation}
 			className={mapStyles.mapViewNavigation}
@@ -60,7 +61,10 @@ export function MapNavigation({
 							>
 								Редактирование <IconChevronDown size={14} />
 							</MenuTrigger>
-							<MenuPopup className={mapStyles.spaceNavigationContent}>
+							<MenuPopup
+								className={mapStyles.spaceNavigationContent}
+								data-map-editor-menu=""
+							>
 								<MenuItem
 									nativeButton
 									render={

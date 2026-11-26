@@ -14,7 +14,23 @@ import type { MapEditor } from "../draft/useMapEditor";
 import { exteriorShelfRoute } from "../../lib/shelfRoute";
 import { useRouteDrag } from "./useRouteDrag";
 
-export function useRouteEditor(editor: MapEditor, warehouseId: string) {
+type RouteEditorSource = Pick<
+	MapEditor,
+	| "cells"
+	| "routes"
+	| "editing"
+	| "busy"
+	| "optimizing"
+	| "setRoutes"
+	| "optimizeRoutes"
+	| "save"
+	| "undo"
+	| "redo"
+	| "canUndo"
+	| "canRedo"
+>;
+
+export function useRouteEditor(editor: RouteEditorSource, warehouseId: string) {
 	const allowStorage = useWorkspaceMode() === "sandbox";
 	const proposal = useRouteProposal(warehouseId);
 	async function optimize() {

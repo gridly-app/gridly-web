@@ -22,6 +22,7 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 	return (
 		<div
 			ref={container}
+			data-map-editor-menu=""
 			className={`${styles.editor} ${props.className ?? ""}`}
 		>
 			<div className={styles.measureViewport} aria-hidden="true" inert>
