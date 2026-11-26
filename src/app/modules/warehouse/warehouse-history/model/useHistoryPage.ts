@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useWarehouseScreen } from "@/ports/warehouse";
+import { dateKey } from "@/shared/lib";
 
 import {
 	historyEventGroup as group,
@@ -14,12 +15,6 @@ export function useHistoryPage() {
 	const [to, setTo] = useState("");
 	const [sort, setSort] = useState("newest");
 	const query = search.trim().toLowerCase();
-	const formatter = new Intl.DateTimeFormat("en-CA", {
-		timeZone: warehouse.timezone,
-		year: "numeric",
-		month: "2-digit",
-		day: "2-digit",
-	});
 	const valid = !from || !to || from <= to;
 	const events = warehouse.events
 		.filter(
@@ -34,15 +29,7 @@ export function useHistoryPage() {
 		}));
 	const visibleEvents = events
 		.filter((event) => {
-			const time = Date.parse(event.time);
-			const parts = Number.isFinite(time)
-				? formatter.formatToParts(new Date(time))
-				: [];
-			const part = (type: Intl.DateTimeFormatPartTypes) =>
-				parts.find((item) => item.type === type)?.value ?? "";
-			const day = parts.length
-				? `${part("year")}-${part("month")}-${part("day")}`
-				: "";
+			const day = dateKey(event.time, warehouse.timezone);
 			return (
 				valid &&
 				(category === "all" || event.group === category) &&

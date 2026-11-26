@@ -1,13 +1,10 @@
 .log {
 	min-width: 0;
 }
-.log [data-slot="table-cell"] {
-	vertical-align: top;
-}
 .event {
 	display: flex;
-	flex-direction: column;
-	gap: 6px;
+	align-items: center;
+	gap: var(--space-2);
 	min-width: 0;
 }
 .event strong {
@@ -17,21 +14,17 @@
 }
 .event p {
 	margin: 0;
-	max-width: 80ch;
 	color: var(--muted-foreground);
 	font-size: var(--text-control);
 	line-height: 22px;
-	white-space: normal;
-	overflow-wrap: anywhere;
 }
 .when {
 	text-align: right;
 	white-space: nowrap;
 }
 .when time {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
+	display: inline-flex;
+	gap: var(--space-1);
 	font-size: var(--text-control);
 	line-height: 20px;
 	font-variant-numeric: tabular-nums;
