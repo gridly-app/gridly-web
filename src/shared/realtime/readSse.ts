@@ -4,7 +4,6 @@ export interface ServerEvent {
 	id: string;
 }
 
-/** Incremental SSE decoding: UTF-8, CR/LF, comments, multi-line data. */
 export async function readSse(
 	stream: ReadableStream<Uint8Array>,
 	onEvent: (event: ServerEvent) => Promise<void>,

@@ -1,11 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import { ApiError, FetchHttpClient } from "@/shared/http";
 
+const auth = {
+	prefix: "/auth/",
+	login: "/auth/login",
+	refresh: "/auth/refresh",
+};
+
 function clientWith(
 	transport: (url: string, options: RequestInit) => Promise<Response>,
 ) {
-	return new FetchHttpClient("/api", (input, options = {}) =>
-		transport(String(input), options),
+	return new FetchHttpClient(
+		"/api",
+		(input, options = {}) => transport(String(input), options),
+		{ auth },
 	);
 }
 
@@ -224,4 +232,58 @@ test("canceling one request leaves its shared refresh available to another", asy
 	releaseRefresh(Response.json({ access_token: "fresh" }));
 	expect(await surviving).toEqual({ ok: true });
 	expect(refreshes).toBe(1);
+});
+
+test.each([400, 403, 404, 409, 500])(
+	"an HTTP %d preserves the failure and never resends a write",
+	async (status) => {
+		const calls: string[] = [];
+		const client = clientWith(async (url, options) => {
+			calls.push(`${options.method} ${url}`);
+
+			return status === 500
+				? new Response("<html>Internal failure</html>", { status })
+				: Response.json(
+						{ error: { code: "WRITE_REJECTED", message: "Rejected" } },
+						{ status },
+					);
+		});
+
+		await expect(
+			client.request("/orders", { method: "POST", body: {} }),
+		).rejects.toMatchObject({
+			status,
+			code: status === 500 ? undefined : "WRITE_REJECTED",
+		});
+		expect(calls).toEqual(["POST /api/orders"]);
+	},
+);
+
+test("a request timeout propagates its reason without attempting another write", async () => {
+	const transportStarted = Promise.withResolvers<void>();
+	let calls = 0;
+	const controller = new AbortController();
+	const timeout = new DOMException("Request timed out", "TimeoutError");
+	const client = clientWith(async (_url, options) => {
+		calls++;
+
+		return new Promise<Response>((_resolve, reject) => {
+			options.signal?.addEventListener(
+				"abort",
+				() => reject(options.signal?.reason),
+				{ once: true },
+			);
+			transportStarted.resolve();
+		});
+	});
+
+	const request = client.request("/orders", {
+		method: "POST",
+		signal: controller.signal,
+	});
+	await transportStarted.promise;
+	controller.abort(timeout);
+
+	await expect(request).rejects.toBe(timeout);
+	expect(calls).toBe(1);
 });

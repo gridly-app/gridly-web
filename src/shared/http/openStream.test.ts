@@ -30,20 +30,33 @@ test("stream transport refreshes account bearer and does not parse event data as
 	const auth: string[] = [];
 	const source = channel();
 	let aborted = false;
-	const client = new FetchHttpClient("/api", async (url, init) => {
-		if (String(url).endsWith("/auth/refresh"))
-			return Response.json({ access_token: "fresh" });
-		const token = new Headers(init?.headers).get("Authorization");
-		auth.push(token ?? "");
-		if (!token)
-			return Response.json({ error: { message: "Expired" } }, { status: 401 });
-		init?.signal?.addEventListener("abort", () => {
-			aborted = true;
-		});
-		return new Response(source.stream, {
-			headers: { "Content-Type": "text/event-stream" },
-		});
-	});
+	const client = new FetchHttpClient(
+		"/api",
+		async (url, init) => {
+			if (String(url).endsWith("/auth/refresh"))
+				return Response.json({ access_token: "fresh" });
+			const token = new Headers(init?.headers).get("Authorization");
+			auth.push(token ?? "");
+			if (!token)
+				return Response.json(
+					{ error: { message: "Expired" } },
+					{ status: 401 },
+				);
+			init?.signal?.addEventListener("abort", () => {
+				aborted = true;
+			});
+			return new Response(source.stream, {
+				headers: { "Content-Type": "text/event-stream" },
+			});
+		},
+		{
+			auth: {
+				prefix: "/auth/",
+				login: "/auth/login",
+				refresh: "/auth/refresh",
+			},
+		},
+	);
 	const stream = await client.openStream("/stream");
 	const reader = stream.getReader();
 	source.send(": heartbeat\n\n");

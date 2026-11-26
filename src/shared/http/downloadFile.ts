@@ -14,16 +14,24 @@ export async function saveResponseFile(
 ) {
 	const disposition = response.headers.get("Content-Disposition") ?? "";
 	const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
-	let name = disposition
+	const plain = disposition
 		.match(/filename\s*=\s*(?:"([^"]+)"|([^;]+))/i)
 		?.slice(1)
 		.find(Boolean);
-	try {
-		if (encoded) name = decodeURIComponent(encoded);
-	} catch {
-		// The plain filename can still be used.
-	}
+	const name = decodeFilename(encoded) ?? plain;
 	const blob = await response.blob();
 	signal?.throwIfAborted();
 	saveFile(blob, name?.replace(/[/\\\p{Cc}]/gu, "_").trim() || fallback);
+}
+
+function decodeFilename(encoded: string | undefined) {
+	if (!encoded) return undefined;
+
+	try {
+		return decodeURIComponent(encoded);
+	} catch (error) {
+		if (error instanceof URIError) return undefined;
+
+		throw error;
+	}
 }

@@ -27,7 +27,38 @@ export interface HttpClient {
 	request(path: string, options?: RequestOptions | undefined): Promise<unknown>;
 }
 
+export interface StreamHttpClient extends HttpClient {
+	openStream(
+		path: string,
+		options?: RequestOptions,
+	): Promise<ReadableStream<Uint8Array>>;
+}
+
+export interface SessionHttpClient extends HttpClient {
+	clearSession(): void;
+}
+
+export interface FileHttpClient extends HttpClient {
+	requestFile(path: string, options?: RequestOptions): Promise<Response>;
+}
+
+export interface AuthEndpoints {
+	prefix: string;
+	login: string;
+	refresh: string;
+}
+
+const legacyAuth = { prefix: "/auth/", login: "/auth/login", refresh: "/auth/refresh" };
+
+type ResponseMode = "data" | "stream" | "file";
+
+interface PerformOptions {
+	response?: ResponseMode;
+	validate?: ((data: unknown) => void) | undefined;
+}
+
 export interface HttpSessionPolicy {
+	auth?: AuthEndpoints | undefined;
 	credentials?: RequestCredentials | undefined;
 	accessToken?: (() => string) | undefined;
 	refresh?: boolean | undefined;
@@ -39,7 +70,9 @@ export interface HttpSessionPolicy {
 	): Promise<unknown>;
 }
 
-export class FetchHttpClient implements HttpClient {
+export class FetchHttpClient
+	implements FileHttpClient, StreamHttpClient, SessionHttpClient
+{
 	private token = "";
 	private streamSession = new AbortController();
 	private readonly readBackoff = new HttpReadBackoff();
@@ -66,7 +99,19 @@ export class FetchHttpClient implements HttpClient {
 		this.readBackoff.clear();
 	}
 
-	private refresh() {
+	private isAuthPath(path: string) {
+		const { auth } = this.policy;
+
+		return !!auth && path.startsWith(auth.prefix);
+	}
+
+	private issuesToken(path: string) {
+		const { auth } = this.policy;
+
+		return !!auth && (path === auth.login || path === auth.refresh);
+	}
+
+	private refresh(refreshPath: string) {
 		if (this.refreshRequest) {
 			return this.refreshRequest;
 		}
@@ -75,12 +120,7 @@ export class FetchHttpClient implements HttpClient {
 			AbortSignal.timeout(15000),
 		]);
 		const perform = (validate?: (data: unknown) => void) =>
-			this.perform(
-				"/auth/refresh",
-				{ method: "POST", signal },
-				false,
-				validate,
-			);
+			this.perform(refreshPath, { method: "POST", signal }, { validate });
 		const request = (
 			this.policy.withRefresh?.(perform, signal) ?? perform()
 		).finally(() => {
@@ -93,9 +133,9 @@ export class FetchHttpClient implements HttpClient {
 	}
 
 	async request(path: string, options: RequestOptions = {}): Promise<unknown> {
-		if (path === "/auth/refresh") {
+		if (path === (this.policy.auth ?? legacyAuth)?.refresh) {
 			options.signal?.throwIfAborted();
-			return waitForRefresh(this.refresh(), options.signal);
+			return waitForRefresh(this.refresh(path), options.signal);
 		}
 		return this.perform(path, options);
 	}
@@ -103,7 +143,7 @@ export class FetchHttpClient implements HttpClient {
 		path: string,
 		options: RequestOptions = {},
 	): Promise<Response> {
-		const response = await this.perform(path, options, false, undefined, true);
+		const response = await this.perform(path, options, { response: "file" });
 		if (!(response instanceof Response))
 			throw new ApiError("Файл недоступен", 502, "INVALID_RESPONSE");
 		return response;
@@ -122,7 +162,7 @@ export class FetchHttpClient implements HttpClient {
 				signal,
 				headers: { ...options.headers, Accept: "text/event-stream" },
 			},
-			true,
+			{ response: "stream" },
 		);
 		if (!(result instanceof ReadableStream))
 			throw new ApiError("Поток состояния недоступен", 502, "INVALID_RESPONSE");
@@ -141,17 +181,15 @@ export class FetchHttpClient implements HttpClient {
 	private async perform(
 		path: string,
 		options: RequestOptions,
-		streaming = false,
-		validate?: (data: unknown) => void,
-		file = false,
+		{ response: mode = "data", validate }: PerformOptions = {},
 	): Promise<unknown> {
 		const generation = this.sessionGeneration;
 		const { method = "GET" } = options;
 		const signal = this.requestSignal(options);
-		const auth = path.startsWith("/auth/");
+		const auth = this.isAuthPath(path);
+		const refreshPath = (this.policy.auth ?? legacyAuth)?.refresh;
 		const readOnly = method === "GET" || options.readOnly === true;
 		const [readPath = path] = path.split("?", 1);
-		const issuesToken = path === "/auth/login" || path === "/auth/refresh";
 		const token = this.policy.accessToken?.() ?? this.token;
 		const credentials =
 			options.credentials ??
@@ -161,7 +199,7 @@ export class FetchHttpClient implements HttpClient {
 			method,
 			credentials,
 			token: auth ? "" : token,
-			isPrivate: file || !!options.privacy,
+			isPrivate: mode === "file" || !!options.privacy,
 			signal,
 		});
 		const assertActive = () => {
@@ -186,8 +224,11 @@ export class FetchHttpClient implements HttpClient {
 		let response = await send();
 
 		assertActive();
-		if (response.status === 401 && !auth && this.policy.refresh !== false) {
-			await waitForRefresh(this.refresh(), signal);
+		const canRefresh =
+			!auth && refreshPath !== undefined && this.policy.refresh !== false;
+
+		if (response.status === 401 && canRefresh) {
+			await waitForRefresh(this.refresh(refreshPath), signal);
 			assertActive();
 
 			if (!readOnly) {
@@ -200,9 +241,9 @@ export class FetchHttpClient implements HttpClient {
 			response = await send();
 			assertActive();
 		}
-		if (streaming && response.ok)
+		if (mode === "stream" && response.ok)
 			return readEventStream(response, assertActive);
-		if (file && response.ok) return response;
+		if (mode === "file" && response.ok) return response;
 		const data = await readHttpBody(response, assertActive);
 
 		assertActive();
@@ -217,15 +258,15 @@ export class FetchHttpClient implements HttpClient {
 				this.readBackoff.defer(readPath, error.retryAfterMs);
 			}
 
-			if (response.status === 401 && (!auth || path === "/auth/refresh"))
+			if (response.status === 401 && (!auth || path === refreshPath))
 				this.policy.onUnauthorized?.(error);
 			throw error;
 		}
-		if (issuesToken && !options.detached) {
+		if (this.issuesToken(path) && !options.detached) {
 			const accessToken = readSessionToken(response.status, data);
 			validate?.(data);
 			assertActive();
-			if (path === "/auth/login") {
+			if (path === (this.policy.auth ?? legacyAuth)?.login) {
 				this.sessionGeneration++;
 				this.refreshRequest = null;
 			}
