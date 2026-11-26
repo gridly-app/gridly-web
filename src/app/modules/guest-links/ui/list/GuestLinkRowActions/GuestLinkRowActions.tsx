@@ -37,7 +37,7 @@ export function GuestLinkRowActions({
 				onClick={handleEdit}
 			/>
 			<DeleteRowAction
-				label={`Удалить гостевую ссылку: ${label}`}
+				label={`Отозвать гостевую ссылку: ${label}`}
 				disabled={isSaving}
 				onClick={handleRevoke}
 			/>

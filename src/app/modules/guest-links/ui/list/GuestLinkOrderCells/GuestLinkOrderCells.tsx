@@ -18,7 +18,7 @@ export function GuestLinkOrderCells({
 	return (
 		<div className={orderStyles.orderMarkers}>
 			{orders.map(({ id, number, label }) => {
-				const to = number
+				const orderLocation = number
 					? adminLocation("links", { warehouse_id: warehouseId, order: id })
 					: undefined;
 
@@ -29,8 +29,8 @@ export function GuestLinkOrderCells({
 						className={orderStyles.orderMarker}
 						title={label}
 					>
-						{to ? (
-							<Link className={styles.link} to={to}>
+						{orderLocation ? (
+							<Link className={styles.link} to={orderLocation}>
 								{label}
 							</Link>
 						) : (

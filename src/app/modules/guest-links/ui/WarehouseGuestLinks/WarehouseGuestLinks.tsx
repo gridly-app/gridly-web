@@ -1,18 +1,18 @@
-import { adminLocation } from "@/ports/navigation";
 import type { Warehouse } from "@/domain/warehouse";
+import { adminLocation } from "@/ports/navigation";
 import type { HttpClient } from "@/shared/http";
 import { errorMessage } from "@/shared/lib";
-import { Link } from "@/shared/ui/navigation";
-import { Feedback } from "@/shared/ui/feedback";
 
 import { useGuestLinkDialogs } from "../../model/editor/useGuestLinkDialogs";
 import { useWarehouseGuestLinkData } from "../../model/useWarehouseGuestLinkData";
-
+import { GuestLinkCreationRecovery } from "../creation/GuestLinkCreationRecovery/GuestLinkCreationRecovery";
 import { GuestLinkDialogs } from "../editor/GuestLinkDialogs/GuestLinkDialogs";
 import { IssuedGuestLink } from "../creation/IssuedGuestLink/IssuedGuestLink";
 import { WarehouseGuestLinkFeedback } from "../WarehouseGuestLinkFeedback/WarehouseGuestLinkFeedback";
 import { WarehouseGuestLinksList } from "../list/WarehouseGuestLinksList/WarehouseGuestLinksList";
-import { GuestLinkCreationRecovery } from "../creation/GuestLinkCreationRecovery/GuestLinkCreationRecovery";
+
+import { Feedback } from "@/shared/ui/feedback";
+import { Link } from "@/shared/ui/navigation";
 
 export function WarehouseGuestLinks({
 	path,
@@ -43,27 +43,33 @@ export function WarehouseGuestLinks({
 	const linkId =
 		resolution?.status === "secret-expired" ? resolution.linkId : undefined;
 	const expiredLink = data.links?.find(({ id }) => id === linkId);
-
-	function handleRevokeRecovered() {
-		if (expiredLink) handleRevoke(expiredLink);
-	}
-
 	const canShowRecovery =
 		unknownAttempt && !data.isAccessDenied && !activeDialog;
-
-	const issuedIsActive = data.query.data?.items.some(
+	const isIssuedLinkActive = data.query.data?.items.some(
 		({ id, status }) => id === issued?.id && status === "active",
 	);
-	const canShowIssuedLink = issued && !data.isListUnavailable && issuedIsActive;
+	const canShowIssuedLink =
+		issued && !data.isListUnavailable && isIssuedLinkActive;
+	const canShowCreationError = !activeDialog && creation.error instanceof Error;
 	const isEditorOpen = activeDialog && activeDialog.type !== "revoke";
 	const isCreatingOutsideEditor = creation.isPending && !isEditorOpen;
-	const isCreationBlocked = Boolean(attempt || data.orderResource.error);
+	const isCreationBlocked = Boolean(
+		creation.isStorageBlocked || attempt || data.orderResource.error,
+	);
 	const links = linkedOrder
 		? data.links?.filter(({ order_ids }) => order_ids.includes(linkedOrder))
 		: data.links;
 	const linkedOrderNumber = linkedOrder
 		? (data.orderById.get(linkedOrder)?.number ?? linkedOrder)
 		: null;
+	const canShowLinkedOrder = linkedOrderNumber && !data.isAccessDenied;
+	const allLinksLocation = adminLocation("links", {
+		warehouse_id: warehouse.id,
+	});
+
+	function handleRevokeRecovered() {
+		if (expiredLink) handleRevoke(expiredLink);
+	}
 
 	return (
 		<>
@@ -86,18 +92,16 @@ export function WarehouseGuestLinks({
 				/>
 			)}
 			{notice && <Feedback tone={notice.tone}>{notice.text}</Feedback>}
-			{!activeDialog && creation.error instanceof Error && (
+			{canShowCreationError && (
 				<Feedback tone="info">{errorMessage(creation.error)}</Feedback>
 			)}
 			{canShowIssuedLink && (
 				<IssuedGuestLink url={issued.url} onCopy={handleCopy} />
 			)}
-			{linkedOrderNumber && !data.isAccessDenied && (
+			{canShowLinkedOrder && (
 				<p>
 					Ссылки заказа {linkedOrderNumber}.{" "}
-					<Link to={adminLocation("links", { warehouse_id: warehouse.id })}>
-						Все ссылки склада
-					</Link>
+					<Link to={allLinksLocation}>Все ссылки склада</Link>
 				</p>
 			)}
 			<WarehouseGuestLinksList

@@ -6,13 +6,11 @@ import type { Order, Warehouse } from "@/domain/warehouse";
 
 import type { GuestLink } from "../../../api/guestLink.dto";
 import { filterGuestLinkRows } from "../../../model/list/guestLinkRows";
+import { GuestLinksTable } from "../GuestLinksTable/GuestLinksTable";
 
 import { Button } from "@/shared/ui/controls";
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { Select } from "@/shared/ui/forms";
-
-import { GuestLinksTable } from "../GuestLinksTable/GuestLinksTable";
-
 import { managementStyles as styles } from "@/shared/ui/management";
 
 const statusOptions = [
@@ -50,8 +48,8 @@ export function WarehouseGuestLinksList({
 	if (!links) return null;
 
 	const rows = filterGuestLinkRows(links, orderById, search, status);
-
 	const canCreate = orderById.size > 0 && !isSaving && !isCreationBlocked;
+	const activeFilterCount = Number(status !== "all");
 
 	function handleReset() {
 		setStatus("all");
@@ -66,7 +64,7 @@ export function WarehouseGuestLinksList({
 						value: search,
 						onChange: setSearch,
 					}}
-					count={Number(status !== "all")}
+					count={activeFilterCount}
 					onReset={handleReset}
 				>
 					<Select

@@ -1,18 +1,16 @@
-import type { Warehouse } from "@/domain/warehouse";
-
 import { guestLinkStatuses } from "@/domain/shipment";
+import type { Warehouse } from "@/domain/warehouse";
 import { formatMoment } from "@/shared/lib";
-import type { GuestLinkRow } from "../../../model/list/guestLinkRows";
+
 import type { GuestLink } from "../../../api/guestLink.dto";
-
-import { Badge } from "@/shared/ui/dataDisplay";
-import { type TableColumns, SortedTable } from "@/shared/ui/management";
-
+import type { GuestLinkRow } from "../../../model/list/guestLinkRows";
 import { GuestLinkOrderCells } from "../GuestLinkOrderCells/GuestLinkOrderCells";
 import { GuestLinkRowActions } from "../GuestLinkRowActions/GuestLinkRowActions";
 import { GuestLinkUrlCell } from "../GuestLinkUrlCell/GuestLinkUrlCell";
 
-import guestLinksTableStyles from "./GuestLinksTable.module.css";
+import { Badge } from "@/shared/ui/dataDisplay";
+import { type TableColumns, SortedTable } from "@/shared/ui/management";
+import tableStyles from "./GuestLinksTable.module.css";
 
 export function GuestLinksTable({
 	warehouseId,
@@ -38,7 +36,7 @@ export function GuestLinksTable({
 			label: "Заказчик",
 			value: ({ customer }) => customer,
 			cell: ({ customer }) => (
-				<span className={guestLinksTableStyles.guestLinkName} title={customer}>
+				<span className={tableStyles.guestLinkName} title={customer}>
 					{customer}
 				</span>
 			),
@@ -75,7 +73,7 @@ export function GuestLinksTable({
 			label: "Период действия",
 			value: ({ link }) => Date.parse(link.expires_at),
 			cell: ({ link }) => (
-				<div className={guestLinksTableStyles.guestLinkPeriod}>
+				<div className={tableStyles.guestLinkPeriod}>
 					<span>По {formatMoment(link.expires_at, timezone)}</span>
 				</div>
 			),

@@ -11,6 +11,4 @@
 .guestLinkPeriod {
 	display: grid;
 	gap: 2px;
-	white-space: normal;
-	overflow-wrap: anywhere;
 }
