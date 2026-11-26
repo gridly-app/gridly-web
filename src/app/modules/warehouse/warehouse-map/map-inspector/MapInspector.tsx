@@ -73,7 +73,7 @@ function MapSelectionDetails({ model }: { model: MapInspection }) {
 			<ZonePanel
 				disabled={model.busy}
 				key={model.zonePanelKey}
-				w={model.warehouse}
+				warehouse={model.warehouse}
 				cells={model.cells}
 				keys={model.zoneKeys}
 				editing={model.constructing}

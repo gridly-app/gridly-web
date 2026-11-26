@@ -3,11 +3,11 @@ import type { CommandExecutor, Warehouse } from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
 
 export function useMapSize({
-	w,
+	warehouse,
 	command,
 	blocked,
 }: {
-	w: Pick<Warehouse, "width" | "height" | "allowedActions">;
+	warehouse: Pick<Warehouse, "width" | "height" | "allowedActions">;
 	command: CommandExecutor;
 	blocked: boolean;
 }) {
@@ -54,9 +54,9 @@ export function useMapSize({
 		submit,
 		saving,
 		error,
-		width: w.width,
-		height: w.height,
-		supported: !blocked && !!w.allowedActions?.includes("resize"),
+		width: warehouse.width,
+		height: warehouse.height,
+		supported: !blocked && !!warehouse.allowedActions?.includes("resize"),
 		unavailableReason: blocked
 			? "Завершите операцию с планировкой или закройте черновик перед изменением размера."
 			: "Изменение размера недоступно по данным сервера.",

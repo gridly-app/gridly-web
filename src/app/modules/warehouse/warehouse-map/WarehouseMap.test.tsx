@@ -21,6 +21,7 @@ import {
 	type LayoutRenderState,
 } from "./lib/canvas/CanvasWarehouseRenderer";
 import { WarehouseMap } from "./WarehouseMap";
+import { within } from "@testing-library/react/pure";
 
 function unexpectedRequest(): never {
 	throw new Error(
@@ -124,12 +125,11 @@ function pressMapKey(key: string) {
 }
 
 function button(label: string) {
-	const element = [...document.querySelectorAll("button")].find(
-		(candidate) => candidate.textContent?.trim() === label,
-	);
-	if (!element) throw new Error(`Button is missing: ${label}`);
+	return within(document.body).getByRole("button", { name: label });
+}
 
-	return element;
+function inspectorHeading(name: string) {
+	return within(document.body).getByRole("heading", { level: 3, name });
 }
 
 const draft: Extract<LayoutOperation["command"], { action: "saveMap" }> = {
@@ -142,13 +142,13 @@ test("editing a recovered draft updates the map preview, inspector and submitted
 
 	renderMap({ status: "rejected", command: draft }, command);
 	pressMapKey("ArrowRight");
-	expect(document.querySelector("aside h3")?.textContent).toBe("Проход");
+	expect(inspectorHeading("Проход").textContent).toBe("Проход");
 	pressMapKey("Enter");
 
 	act(() => button("Стена").click());
 
 	expect(preview?.cells).toEqual([wall]);
-	expect(document.querySelector("aside h3")?.textContent).toBe("Стена");
+	expect(inspectorHeading("Стена").textContent).toBe("Стена");
 	await act(async () => button("Сохранить изменения").click());
 	expect(command).toHaveBeenCalledWith(
 		"saveMap",

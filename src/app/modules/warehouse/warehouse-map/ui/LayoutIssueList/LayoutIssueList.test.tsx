@@ -2,6 +2,7 @@ import { expect, mock, test } from "bun:test";
 import { act } from "react";
 import { mountDom } from "../../../../../../../tests/support/dom";
 import { LayoutIssueList } from "./LayoutIssueList";
+import { within } from "@testing-library/react/pure";
 
 test("clicking a layout validation issue selects the cell identified by the server", async () => {
 	const { root, close } = mountDom();
@@ -18,9 +19,10 @@ test("clicking a layout validation issue selects the cell identified by the serv
 				/>,
 			),
 		);
-		const button = document.querySelector("button");
-		expect(button?.textContent).toBe("Клетка 1,2 — Перекрыт проезд");
-		act(() => button?.click());
+		const button = within(document.body).getByRole("button", {
+			name: "Клетка 1,2 — Перекрыт проезд",
+		});
+		act(() => button.click());
 		expect(onSelectCell).toHaveBeenCalledWith(cell);
 	} finally {
 		await close();

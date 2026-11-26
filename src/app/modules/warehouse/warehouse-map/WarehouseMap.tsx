@@ -18,6 +18,7 @@ import { MapLayout } from "./map.compose";
 import { useMapSize } from "./model/editor/useMapSize";
 import { useRouteEditor } from "./model/editor/useRouteEditor";
 import { getMapInspectionModel } from "./model/getMapInspectionModel";
+import { layoutIssueView } from "./model/layoutIssueView";
 import { useMapInspection } from "./model/useMapInspection";
 import { useMapView } from "./model/useMapView";
 import { useMapCamera } from "./model/viewport/useMapCamera";
@@ -77,7 +78,7 @@ export function WarehouseMap({
 	useUnsavedLayoutWarning(hasUnsubmittedChanges);
 
 	const sizeEditor = useMapSize({
-		w: warehouse,
+		warehouse,
 		command,
 		blocked:
 			editor.editing ||
@@ -134,27 +135,12 @@ export function WarehouseMap({
 		sizeEditor.show();
 	}
 
-	const layoutOperation = layout.operation;
-	const saveIssues =
-		layoutOperation?.command.action === "saveMap"
-			? layoutOperation.issues
-			: undefined;
-	const resizeIssues =
-		layoutOperation?.command.action === "resize"
-			? layoutOperation.issues
-			: undefined;
-	const widthError = resizeIssues?.find(
-		(issue) => issue.kind === "field" && issue.field === "width",
-	)?.message;
-	const heightError = resizeIssues?.find(
-		(issue) => issue.kind === "field" && issue.field === "height",
-	)?.message;
 	const selectedCell = editor.selection.selected;
-	const selectedKey = selectedCell && cellKey(selectedCell);
-	const selectedIssues = saveIssues?.filter(
-		(issue) => issue.kind === "cell" && issue.key === selectedKey,
+	const selectedKey = selectedCell ? cellKey(selectedCell) : null;
+	const { saveIssues, widthError, heightError, cellErrors } = layoutIssueView(
+		layout.operation,
+		selectedKey,
 	);
-	const cellErrors = selectedIssues?.map((issue) => issue.message);
 
 	const inspector = getMapInspectionModel({
 		warehouse,

@@ -9,7 +9,7 @@ import { cellKey } from "@/domain/warehouse";
 import { errorMessage, id, UserError } from "@/shared/lib";
 
 export interface ZonePanelOptions {
-	w: Pick<Warehouse, "categories">;
+	warehouse: Pick<Warehouse, "categories">;
 	cells: Cell[];
 	keys: string[];
 	editing: boolean;
@@ -19,7 +19,7 @@ export interface ZonePanelOptions {
 }
 
 export function useZonePanel({
-	w: warehouse,
+	warehouse,
 	cells,
 	keys,
 	onDraft,
