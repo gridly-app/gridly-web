@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import type { RouteDescription, WorkspaceAccess } from "@/ports/navigation";
 import { environment } from "@/shared/config";
+import { FetchHttpClient } from "@/shared/http";
 import { PageNotFound, Skeleton } from "@/shared/ui/feedback";
 import { administrationRoute } from "./modules/administration";
 import { useWorkspaceHttp } from "./composition/workspace-providers.compose";
@@ -36,6 +37,9 @@ import {
 const WorkspaceShell = lazy(warehouseWorkspaceRoute.load);
 const LandingPage = lazy(landingRoute.load);
 const ShipmentPortal = lazy(shipmentPortalRoute.load);
+const guestHttp = new FetchHttpClient(environment.apiBaseUrl, undefined, {
+	refresh: false,
+});
 const ShipmentAdmin = lazy(() =>
 	import("./composition/administration.compose").then(
 		({ AdministrationScreen }) => ({
@@ -126,7 +130,7 @@ const router = createBrowserRouter([
 			),
 			publicRoute(
 				shipmentPortalRoute,
-				<ShipmentPortal progress={ShipmentProgress} />,
+				<ShipmentPortal http={guestHttp} progress={ShipmentProgress} />,
 			),
 			{
 				element: <AccountRoute />,

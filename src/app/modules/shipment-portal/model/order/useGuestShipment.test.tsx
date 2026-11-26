@@ -1,14 +1,18 @@
-import { expect, test } from "bun:test";
+import { expect, spyOn, test } from "bun:test";
 import { act } from "react";
+
 import { ApiError } from "@/shared/http";
+
 import { mountDom } from "../../../../../../tests/support/dom";
 import { shipment } from "../../../../../../tests/support/shipment";
-import type { ReadGuestShipments } from "../../api/guestShipmentApi";
+
 import type { GuestShipments } from "../../api/guestShipment.dto";
+import type { ReadGuestShipments } from "../../api/guestShipmentApi";
 import { useGuestShipment } from "./useGuestShipment";
 
 function snapshot(number: string): GuestShipments {
 	const sample = shipment();
+
 	sample.order.number = number;
 
 	return { orders: [{ ...sample, id: "guest-1", sections: ["calendar"] }] };
@@ -77,6 +81,7 @@ test("a temporary failure keeps the snapshot but denied access clears it", async
 		attempts++;
 
 		if (attempts === 2) throw new ApiError("Unavailable", 503);
+
 		if (attempts === 3) throw new ApiError("Denied", 403);
 
 		return snapshot("OUT-1");
@@ -94,6 +99,38 @@ test("a temporary failure keeps the snapshot but denied access clears it", async
 		expect(model.read().snapshot).toBeNull();
 		expect(model.read().error).toBe("denied");
 	} finally {
+		await model.close();
+	}
+});
+
+test("the guest poll aborts its read and cancels the scheduled refresh on unmount", async () => {
+	const signals: AbortSignal[] = [];
+	const model = mountGuest(async (_token, signal) => {
+		signals.push(signal);
+
+		return snapshot("READ-1");
+	});
+	const schedule = spyOn(globalThis, "setTimeout");
+	const cancel = spyOn(globalThis, "clearTimeout");
+
+	try {
+		await model.render();
+
+		const refreshIndex = schedule.mock.calls.findIndex(
+			([, timeout]) => timeout === 30_000,
+		);
+		const timer = schedule.mock.results[refreshIndex]?.value;
+
+		expect(refreshIndex).toBeGreaterThanOrEqual(0);
+
+		act(() => model.root.unmount());
+
+		expect(signals).toHaveLength(1);
+		expect(signals[0]?.aborted).toBe(true);
+		expect(cancel).toHaveBeenCalledWith(timer);
+	} finally {
+		schedule.mockRestore();
+		cancel.mockRestore();
 		await model.close();
 	}
 });

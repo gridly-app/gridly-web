@@ -1,25 +1,35 @@
 import type { GuestShipment } from "../../api/guestShipment.dto";
 
+type GuestSection = GuestShipment["sections"][number];
+
 export function guestShipmentView(access: GuestShipment) {
 	const sections = new Set(access.sections);
-	const warehouse = sections.has("warehouse")
-		? (access.warehouse ?? {
-				priority: null,
-				quantities: [],
-			})
-		: null;
-	const items = sections.has("items") ? (access.items ?? []) : null;
+
+	function permitted<T>(
+		section: GuestSection,
+		value: T | undefined,
+		fallback: T,
+	) {
+		return sections.has(section) ? (value ?? fallback) : null;
+	}
+
+	const warehouse = permitted("warehouse", access.warehouse, {
+		priority: null,
+		quantities: [],
+	});
+	const items = permitted("items", access.items, []);
 	const detailsById = new Map(items?.map((item) => [item.order_line_id, item]));
+	const calendarItems = (access.calendar_items ?? items ?? []).map((item) => ({
+		order_line_id: item.order_line_id,
+		name: item.name,
+		sku: item.sku,
+		grade: detailsById.get(item.order_line_id)?.grade ?? null,
+	}));
 	const calendar = sections.has("calendar")
 		? {
 				plan: access.plan ?? [],
 				actual: access.actual ?? [],
-				items: (access.calendar_items ?? items ?? []).map((item) => ({
-					order_line_id: item.order_line_id,
-					name: item.name,
-					sku: item.sku,
-					grade: detailsById.get(item.order_line_id)?.grade ?? null,
-				})),
+				items: calendarItems,
 			}
 		: null;
 
@@ -28,7 +38,7 @@ export function guestShipmentView(access: GuestShipment) {
 		warehouse,
 		calendar,
 		items,
-		milestones: sections.has("milestones") ? (access.milestones ?? []) : null,
-		documents: sections.has("documents") ? (access.documents ?? []) : null,
+		milestones: permitted("milestones", access.milestones, []),
+		documents: permitted("documents", access.documents, []),
 	};
 }

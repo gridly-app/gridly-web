@@ -7,7 +7,11 @@ export function ShipmentItems({ items }: { items: Shipment["items"] }) {
 		<section className={styles.panel}>
 			<h2>Номенклатура</h2>
 			{items.length ? (
-				<div className={styles.scroll}>
+				<section
+					className={styles.scroll}
+					aria-label="Таблица номенклатуры"
+					tabIndex={0}
+				>
 					<table className={styles.table}>
 						<thead>
 							<tr>
@@ -34,7 +38,7 @@ export function ShipmentItems({ items }: { items: Shipment["items"] }) {
 							))}
 						</tbody>
 					</table>
-				</div>
+				</section>
 			) : (
 				<p>Состав заказа ещё не внесён.</p>
 			)}

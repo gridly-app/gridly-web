@@ -1,7 +1,9 @@
 import { expect, test } from "bun:test";
-import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
 import { shipment } from "../../../../../../tests/support/shipment";
+
 import { FactDetails } from "../../ui/calendar/FactDetails/FactDetails";
 import { guestShipmentView } from "./guestShipmentView";
 
