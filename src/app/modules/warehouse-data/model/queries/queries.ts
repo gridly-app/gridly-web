@@ -25,7 +25,7 @@ export function useOrder(id: string, orderId: string | null) {
 		refetchOnMount: "always",
 	});
 
-	return { ...query, supported: true };
+	return query;
 }
 
 export function useWarehouses() {

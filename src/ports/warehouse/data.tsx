@@ -34,10 +34,7 @@ export interface WarehouseData {
 	useWarehouse(id: string): UseQueryResult<Warehouse>;
 	useWarehouseConnection(id: string): UseQueryResult<boolean>;
 	useWarehouseLiveSubscription(id: string): void;
-	useOrder(
-		id: string,
-		orderId: string | null,
-	): UseQueryResult<Order> & { supported: boolean };
+	useOrder(id: string, orderId: string | null): UseQueryResult<Order>;
 	useSelectionSummary(
 		id: string,
 		keys: string[],

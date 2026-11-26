@@ -2,37 +2,34 @@ import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { CommandExecutor, OrderInput } from "@/domain/warehouse";
 import { useOrder } from "@/ports/warehouse";
-import { errorMessage } from "@/shared/lib";
+import {
+	errorMessage,
+	type SearchParamChanges,
+	useUpdateSearchParams,
+} from "@/shared/lib";
 import type { OrderScreenWarehouse } from "./warehouseFields";
 
 export function useOrderSelection(
 	warehouse: OrderScreenWarehouse,
 	execute: CommandExecutor,
 ) {
-	const [params, setParams] = useSearchParams();
+	const [params] = useSearchParams();
+	const updateSearchParams = useUpdateSearchParams();
 	const detail = params.get("order");
 	const detailGeneration = useRef(0);
 	const [editing, setEditing] = useState(false);
 	const orderQuery = useOrder(warehouse.id, detail);
-	const selected = orderQuery.supported
-		? orderQuery.data
-		: warehouse.orders.find((order) => order.id === detail);
+	const selected = orderQuery.data;
 
 	function setDetail(id: string | null, highlightUnpriced = false) {
 		detailGeneration.current++;
-		setParams(
-			(current) => {
-				const next = new URLSearchParams(current);
-				if (id) next.set("order", id);
-				else {
-					next.delete("order");
-					next.delete("highlight");
-				}
-				if (highlightUnpriced) next.set("highlight", "unpriced");
-				return next;
-			},
-			{ replace: true },
-		);
+		const changes: SearchParamChanges = id
+			? { order: id }
+			: { order: null, highlight: null };
+
+		if (highlightUnpriced) changes.highlight = "unpriced";
+
+		updateSearchParams(changes);
 		setEditing(false);
 	}
 	function closeOrder() {

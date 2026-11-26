@@ -143,7 +143,7 @@ function ExpandedOrder({
 	warehouse: OrderScreenWarehouse;
 }) {
 	const query = useOrder(warehouse.id, order.id);
-	if (query.supported && query.isPending && !order.lines.length)
+	if (query.isPending && !order.lines.length)
 		return <Feedback tone="loading">Загружаем состав…</Feedback>;
 	if (query.isError && !order.lines.length)
 		return (
