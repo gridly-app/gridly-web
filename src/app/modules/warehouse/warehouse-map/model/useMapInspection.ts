@@ -5,7 +5,7 @@ import { useSelectionSummary } from "@/ports/warehouse";
 import type { MapEditor } from "./draft/useMapEditor";
 import type { useRouteEditor } from "./editor/useRouteEditor";
 import { getMapPresentation, inspectMapSelection } from "./mapPresentation";
-import type { MapWarehouse } from "./warehouseFields";
+import type { MapWarehouse } from "./warehouseResources";
 
 export interface MapInspectionOptions {
 	warehouse: MapWarehouse;

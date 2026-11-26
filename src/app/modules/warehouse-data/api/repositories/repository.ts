@@ -1,5 +1,8 @@
 import type {
 	Order,
+	BlockRoutePlan,
+	Cell,
+	WarehouseResourceTypes,
 	Warehouse,
 	WarehouseCommand,
 	WarehouseInput,
@@ -22,9 +25,9 @@ export interface WarehouseRepository {
 	subscribeLive(id: string): () => void;
 	proposeRoutes(
 		id: string,
-		cells: Warehouse["cells"],
+		cells: Cell[],
 		signal?: AbortSignal | undefined,
-	): Promise<NonNullable<Warehouse["routePlans"]>>;
+	): Promise<BlockRoutePlan[]>;
 	selectionSummary(
 		id: string,
 		keys: string[],
@@ -41,11 +44,11 @@ export interface WarehouseRepository {
 		signal?: AbortSignal | undefined,
 	): Promise<Order>;
 	list(signal?: AbortSignal | undefined): Promise<Warehouse[]>;
-	get(
+	get<Resource extends WarehouseResource>(
 		id: string,
-		signal?: AbortSignal | undefined,
-		resource?: WarehouseResource | undefined,
-	): Promise<Warehouse>;
+		signal: AbortSignal | undefined,
+		resource: Resource,
+	): Promise<WarehouseResourceTypes[Resource]>;
 	create(
 		warehouse: WarehouseInput,
 		options?: MutationOptions | undefined,

@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { QueryClient } from "@tanstack/react-query";
+import type { WarehouseLiveState } from "@/domain/warehouse";
 import { httpDouble } from "../../../../../../tests/support/http";
 
 import { RestWarehouseRepository } from "./restRepository";
@@ -28,12 +30,15 @@ describe("REST warehouse snapshots", () => {
 					},
 				}),
 			);
-			await expect(repository.get("w1")).rejects.toThrow("Карта изменилась");
+			await expect(repository.get("w1", undefined, "map")).rejects.toThrow(
+				"Карта изменилась",
+			);
 		}
 	});
 
-	test("a delayed full snapshot retains newer live motion paths", async () => {
+	test("a delayed layout read leaves newer live motion paths intact", async () => {
 		const base = warehouseRepositoryFixture();
+		const cache = new QueryClient();
 		let version = 1;
 		let delay = false;
 		let release!: () => void;
@@ -79,29 +84,46 @@ describe("REST warehouse snapshots", () => {
 						};
 					if (
 						delay &&
-						new URL(path, "http://localhost").pathname.endsWith("/events")
+						new URL(path, "http://localhost").pathname.endsWith("/layout/draft")
 					) {
 						started();
 						await new Promise<void>((resolve) => {
 							release = resolve;
 						});
 					}
+					if (path.endsWith("/layout/draft"))
+						return {
+							version: 1,
+							revision: 1,
+							width: 3,
+							height: 3,
+							cells: [],
+							routes: [],
+						};
+
 					return base.http.request(path, options);
 				},
 			}),
+			cache,
 		);
-		await repository.get("w1");
+		await repository.getLive("w1");
 		delay = true;
-		const old = repository.get("w1");
+		const old = repository.get("w1", undefined, "map");
 		await waiting;
 		version = 2;
-		const live = await repository.getLive("w1");
+		await repository.getLive("w1");
 		release();
-		const snapshot = await old;
-		const robot = snapshot.robots[0];
-		const liveRobot = live.robots[0];
-		if (!robot || !liveRobot) throw new Error("Missing robot snapshot");
-		expect(robot.motionPath).toEqual(liveRobot.motionPath);
+		await old;
+
+		const cached = cache.getQueryData<WarehouseLiveState>(
+			repository.keys.live("w1"),
+		);
+
+		expect(cached?.stateVersion).toBe("2");
+		expect(cached?.robots[0]?.motionPath).toEqual([
+			{ x: 0, y: 0 },
+			{ x: 1, y: 0 },
+		]);
 	});
 	test("paginates collection envelopes and retains existing query parameters", async () => {
 		const { repository, calls } = warehouseRepositoryFixture();
@@ -115,22 +137,19 @@ describe("REST warehouse snapshots", () => {
 
 	test("normalizes snapshots and caches published layouts until session reset", async () => {
 		const { repository, calls } = warehouseRepositoryFixture();
-		const warehouse = await repository.get("w1");
+		const warehouse = await repository.get("w1", undefined, "map");
 		expect(warehouse.cells).toHaveLength(9);
 		expect(warehouse.draft).toBeNull();
-		await repository.get("w1");
+		await repository.get("w1", undefined, "map");
 		expect(calls.filter((path) => path.endsWith("/layout"))).toHaveLength(1);
 		repository.clear();
-		await expect(repository.getLive("w1")).rejects.toThrow(
-			"Сначала загрузите склад",
-		);
-		await repository.get("w1");
+		await repository.get("w1", undefined, "map");
 		expect(calls.filter((path) => path.endsWith("/layout"))).toHaveLength(2);
 	});
 
 	test("does not roll back a newer live state when an older update arrives", async () => {
 		const { repository, setVersion } = warehouseRepositoryFixture();
-		await repository.get("w1");
+		await repository.get("w1", undefined, "map");
 		setVersion("9007199254740995");
 		expect((await repository.getLive("w1")).stateVersion).toBe(
 			"9007199254740995",
@@ -144,7 +163,7 @@ describe("REST warehouse snapshots", () => {
 	test("legacy map envelopes with null robots remain supported", async () => {
 		const { repository, useLegacy } = warehouseRepositoryFixture();
 		useLegacy();
-		expect((await repository.get("w1")).robots).toEqual([]);
+		expect((await repository.getLive("w1")).robots).toEqual([]);
 		expect((await repository.getLive("w1")).layoutVersion).toBe(1);
 	});
 
@@ -180,7 +199,8 @@ describe("REST warehouse snapshots", () => {
 
 		expect(draftReads()).toBe(1);
 
-		await repository.get("w1");
+		repository.clear();
+		await repository.get("w1", undefined, "map");
 
 		expect(draftReads()).toBe(2);
 	});

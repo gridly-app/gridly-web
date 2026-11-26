@@ -49,6 +49,7 @@ test("the history day is local to its warehouse and excludes another warehouse",
 				createElement(WarehouseScopeProvider, {
 					value: {
 						warehouse: snapshot,
+						resources: ["history"],
 						execute: async () => {
 							throw new Error("Unexpected mutation");
 						},

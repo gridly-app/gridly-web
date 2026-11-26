@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
-import type { Warehouse } from "@/domain/warehouse";
+import type { WarehouseView } from "@/domain/warehouse";
 import {
 	CanvasWarehouseRenderer,
 	type LayoutRenderState,
 } from "../../lib/canvas/CanvasWarehouseRenderer";
 
 interface MapRendererOptions extends LayoutRenderState {
-	robots: Warehouse["robots"];
+	robots: WarehouseView<"robots">["robots"];
 	asOf?: string | undefined;
 	selectedRobotId: string | null;
 }

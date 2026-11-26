@@ -1,12 +1,11 @@
 import { useState } from "react";
-import type { CommandExecutor, Order } from "@/domain/warehouse";
+import type { CommandExecutor, Order, WarehouseView } from "@/domain/warehouse";
 import { errorMessage, formText, useSingleFlight } from "@/shared/lib";
 import { actionLabels } from "../config/orderActions";
-import type { OrderScreenWarehouse } from "./warehouseFields";
 
 export interface OrderDetailOptions {
 	o: Order;
-	w: OrderScreenWarehouse;
+	w: WarehouseView<"catalog" | "robots">;
 	command: CommandExecutor;
 	pending: boolean;
 	onEdit?: (() => void) | undefined;

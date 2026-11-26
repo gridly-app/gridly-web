@@ -3,7 +3,7 @@ import { Button, IconButton } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
 import { Modal } from "@/shared/ui/overlays";
 import type { useOrderCreation } from "../../model/useOrderCreation";
-import type { OrderScreenWarehouse } from "../../model/warehouseFields";
+import type { OrderScreenWarehouse } from "../../model/warehouseResources";
 import styles from "./OrderCreationDialog.module.css";
 import { OrderForm } from "../OrderForm/OrderForm";
 

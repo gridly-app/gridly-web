@@ -17,7 +17,7 @@ import {
 	TableRow,
 } from "@/shared/ui/dataDisplay";
 import type { InventoryStock } from "../../model/inventoryStock";
-import type { InventoryWarehouse } from "../../model/warehouseFields";
+import type { InventoryWarehouse } from "../../model/warehouseResources";
 import { StockLinks } from "../StockLinks/StockLinks";
 import { StockSource } from "../StockSource/StockSource";
 import stockTableStyles from "../../shared.module.css";

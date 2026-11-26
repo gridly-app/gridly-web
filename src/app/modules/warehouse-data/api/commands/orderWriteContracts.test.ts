@@ -33,6 +33,7 @@ test.each([
 				},
 			},
 			snapshot,
+			{},
 		);
 
 		expect(writes).toEqual([
@@ -96,6 +97,7 @@ test("a task whose permission was revoked is rejected before any write", async (
 				value: { id: "task", orderId: "order", action: "confirm", revision: 7 },
 			},
 			warehouse(),
+			{},
 		),
 	).rejects.toThrow("Подтверждение задачи недоступно");
 
@@ -132,6 +134,7 @@ test("editing an order sends its displayed revision and preserves existing line 
 			},
 		},
 		snapshot,
+		{},
 	);
 
 	expect(writes).toMatchObject([

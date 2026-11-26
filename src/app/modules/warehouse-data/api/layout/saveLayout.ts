@@ -10,9 +10,14 @@ export async function saveMap(
 	if (!context.warehouse.allowedActions?.includes("save-map"))
 		throw new UserError("У вас нет прав для сохранения карты.");
 	const draft = command.value;
-	const categoryIds = new Set(context.warehouse.categories.map((c) => c.id));
+	const { catalog, map } = context.resources;
+
+	if (!map || map.version !== context.warehouse.version || !catalog)
+		throw new UserError("Дождитесь синхронизации планировки и каталога");
+
+	const categoryIds = new Set(catalog.categories.map((c) => c.id));
 	const zoneIds = new Set(
-		context.warehouse.cells.flatMap((c) => (c.zone ? [c.zone.id] : [])),
+		map.cells.flatMap((c) => (c.zone ? [c.zone.id] : [])),
 	);
 	await context.send("/layout/commit", {
 		base_version: draft.baseVersion,

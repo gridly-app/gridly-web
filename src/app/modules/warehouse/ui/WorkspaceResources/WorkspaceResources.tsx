@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import type { Warehouse } from "@/domain/warehouse";
 import {
 	useWarehouseResources,
@@ -9,39 +10,43 @@ import { ApiError } from "@/shared/http";
 import { errorMessage, useOnlineStatus } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
-import { ConnectionStatus } from "../ConnectionStatus/ConnectionStatus";
 import { useWorkspaceCommands } from "../../model/workspace/content/useWorkspaceCommands";
+import { ConnectionStatus } from "../ConnectionStatus/ConnectionStatus";
 
 export function WorkspaceResources({
 	warehouse,
 	isSnapshotStale,
 	isSnapshotFetching,
 	resources,
-	children,
 	loadingFallback,
+	children,
 }: {
 	warehouse: Warehouse;
 	isSnapshotStale: boolean;
 	isSnapshotFetching: boolean;
-	resources: WarehouseResource[];
-	children: ReactNode;
+	resources: readonly WarehouseResource[];
 	loadingFallback: ReactNode;
+	children: ReactNode;
 }) {
 	const resource = useWarehouseResources(warehouse, resources);
-	const online = useOnlineStatus();
+	const isOnline = useOnlineStatus();
 	const commands = useWorkspaceCommands(warehouse.id, isSnapshotStale);
 	const accessLost =
 		resource.error instanceof ApiError && resource.error.status === 403;
+	const hasLoadError = Boolean(resource.error) && !resource.data;
 
 	if (resource.loading && !accessLost) return loadingFallback;
-	if (accessLost || (resource.error && !resource.hasData))
+
+	if (accessLost || hasLoadError) {
+		const title = accessLost
+			? "Доступ к разделу закрыт"
+			: "Не удалось загрузить раздел";
+
 		return (
 			<Feedback
 				inset
 				tone="error"
-				title={
-					accessLost ? "Доступ к разделу закрыт" : "Не удалось загрузить раздел"
-				}
+				title={title}
 				action={
 					<RetryButton variant="secondary" size="sm" onRetry={resource.retry} />
 				}
@@ -49,6 +54,25 @@ export function WorkspaceResources({
 				{errorMessage(resource.error)}
 			</Feedback>
 		);
+	}
+
+	if (!resource.data) return loadingFallback;
+
+	const isPending =
+		commands.pending ||
+		!isOnline ||
+		isSnapshotStale ||
+		isSnapshotFetching ||
+		resource.fetching ||
+		resource.data.version !== warehouse.version ||
+		Boolean(resource.error);
+	const scope = {
+		...commands,
+		warehouse: resource.data,
+		resources,
+		pending: isPending,
+	};
+
 	return (
 		<>
 			<ConnectionStatus warehouseId={warehouse.id} />
@@ -66,21 +90,7 @@ export function WorkspaceResources({
 					Показаны последние загруженные данные.
 				</Feedback>
 			)}
-			<WarehouseScopeProvider
-				value={{
-					...commands,
-					warehouse: resource.warehouse,
-					pending:
-						commands.pending ||
-						!online ||
-						isSnapshotStale ||
-						isSnapshotFetching ||
-						resource.fetching ||
-						!!resource.error,
-				}}
-			>
-				{children}
-			</WarehouseScopeProvider>
+			<WarehouseScopeProvider value={scope}>{children}</WarehouseScopeProvider>
 		</>
 	);
 }

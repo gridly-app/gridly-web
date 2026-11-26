@@ -3,13 +3,13 @@ import type {
 	Category,
 	Cell,
 	CommandExecutor,
-	Warehouse,
+	WarehouseView,
 } from "@/domain/warehouse";
 import { cellKey } from "@/domain/warehouse";
 import { errorMessage, id, UserError } from "@/shared/lib";
 
 export interface ZonePanelOptions {
-	warehouse: Pick<Warehouse, "categories">;
+	warehouse: Pick<WarehouseView<"catalog">, "categories">;
 	cells: Cell[];
 	keys: string[];
 	editing: boolean;

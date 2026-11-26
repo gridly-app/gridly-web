@@ -2,13 +2,16 @@ import {
 	cellLabels,
 	type GridPosition,
 	type Robot,
-	type Warehouse,
+	type WarehouseView,
 } from "@/domain/warehouse";
 import mapStyles from "../../shared.module.css";
 
 export interface RobotDetailsProps {
 	robot: Robot;
-	warehouse: Pick<Warehouse, "products" | "orders" | "cells">;
+	warehouse: Pick<
+		WarehouseView<"catalog" | "orders" | "map">,
+		"products" | "orders" | "cells"
+	>;
 }
 
 export function RobotDetails({ robot, warehouse }: RobotDetailsProps) {

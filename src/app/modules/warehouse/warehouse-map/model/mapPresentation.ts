@@ -1,10 +1,10 @@
-import type { Cell, Warehouse } from "@/domain/warehouse";
+import type { Cell, WarehouseView } from "@/domain/warehouse";
 import { cellKey, storageCellTypes } from "@/domain/warehouse";
 import type { MapGeometry } from "@/domain/warehouse/layout";
 import type { LayoutRenderState } from "../lib/canvas/CanvasWarehouseRenderer";
 
 export interface MapPresentationOptions {
-	warehouse: Pick<Warehouse, "draft" | "routePlans">;
+	warehouse: Pick<WarehouseView<"map">, "draft" | "routePlans">;
 	geometry: MapGeometry;
 	selected: Cell | null;
 	inspectedCells: Cell[];
@@ -78,7 +78,10 @@ export function getMapPresentation({
 }
 
 export function inspectMapSelection(
-	warehouse: Pick<Warehouse, "stock" | "products" | "categories">,
+	warehouse: Pick<
+		WarehouseView<"inventory" | "catalog">,
+		"stock" | "products" | "categories"
+	>,
 	inspectedCells: Cell[],
 ) {
 	const zone = inspectedCells[0]?.zone;

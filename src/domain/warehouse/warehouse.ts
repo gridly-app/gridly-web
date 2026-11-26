@@ -1,11 +1,6 @@
 import { z } from "zod";
-import { categorySchema, productSchema } from "./catalog";
-import { eventSchema } from "./history";
-import { stockSchema, writeOffSchema } from "./inventory";
-import { blockRoutePlanSchema, cellSchema } from "./layout/layout";
-import { orderSchema } from "./order";
 import { robotSchema } from "./robot";
-import { cabinetSchema, warehouseSettingsSchema } from "./warehouseSettings";
+import { cabinetSchema } from "./warehouseSettings";
 import { workflowPolicySchema } from "./workflowPolicy";
 
 export {
@@ -67,14 +62,9 @@ export const warehouseSummarySchema = z.object({
 
 export const warehouseSchema = z.object({
 	cabinet: cabinetSchema.optional(),
-	settings: warehouseSettingsSchema.optional(),
-	writeOffs: z.array(writeOffSchema).optional(),
 	allowedActions: z.array(z.string()).optional(),
 	summary: warehouseSummarySchema.optional(),
-	draftRoutes: z.array(blockRoutePlanSchema).optional(),
-	routePlans: z.array(blockRoutePlanSchema).optional(),
 	revision: z.number().optional(),
-	draftRevision: z.number().optional(),
 	policyRevision: z.number().optional(),
 	stateVersion: z.string().optional(),
 	workerHealth: z.string().optional(),
@@ -89,21 +79,25 @@ export const warehouseSchema = z.object({
 	published: z.boolean(),
 	version: z.number(),
 	running: z.boolean(),
-	cells: z.array(cellSchema),
-	draft: z.union([z.array(cellSchema), z.null()]),
-	robots: z.array(robotSchema),
-	categories: z.array(categorySchema),
-	products: z.array(productSchema),
-	stock: z.array(stockSchema),
-	orders: z.array(orderSchema),
-	events: z.array(eventSchema),
 	policy: workflowPolicySchema,
 	tick: z.string(),
 });
 
 export const warehouseLiveStateSchema = warehouseSchema
-	.pick({ stateVersion: true, tick: true, robots: true, asOf: true })
-	.extend({ layoutVersion: z.number() });
+	.pick({ stateVersion: true, tick: true, asOf: true })
+	.extend({
+		layoutVersion: z.number(),
+		robots: z.array(
+			robotSchema.pick({
+				id: true,
+				x: true,
+				y: true,
+				status: true,
+				motionPath: true,
+				motionTimed: true,
+			}),
+		),
+	});
 
 export type Warehouse = z.infer<typeof warehouseSchema>;
 export type WarehouseLiveState = z.infer<typeof warehouseLiveStateSchema>;

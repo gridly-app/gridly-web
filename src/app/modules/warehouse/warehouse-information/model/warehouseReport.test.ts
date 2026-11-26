@@ -1,11 +1,11 @@
 import { expect, test } from "bun:test";
+import { buildReport } from "@/app/modules/warehouse/warehouse-information/model/report";
 import {
-	buildReport,
 	previousPeriod,
 	type ReportFilters,
-} from "@/app/modules/warehouse/warehouse-information/model/report";
+} from "@/app/modules/warehouse/warehouse-information/model/reportPeriod";
 import { reportCsv } from "@/app/modules/warehouse/warehouse-information/model/reportCsv";
-import type { Warehouse } from "@/domain/warehouse";
+import type { WarehouseView } from "@/domain/warehouse";
 import { requiredAt } from "@/shared/invariants";
 
 import { reportWarehouse as base } from "../../../../../../tests/support/reportWarehouse";
@@ -91,7 +91,9 @@ test("unpriced details match each metric and preserve report filters and histori
 	const product = requiredAt(base.products, 0);
 	const order = requiredAt(base.orders, 0);
 	const stock = requiredAt(base.stock, 0);
-	const w: Warehouse = {
+	const w: WarehouseView<
+		"map" | "catalog" | "history" | "robots" | "orders" | "inventory"
+	> = {
 		...base,
 		products: [
 			{ ...product, id: "unknown", category: "a", price: "" },

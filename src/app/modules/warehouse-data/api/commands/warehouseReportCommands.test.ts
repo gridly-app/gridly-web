@@ -33,6 +33,7 @@ test("archive and settings mutations preserve scoped paths and revision precondi
 			value: { revision: 3, lowStockThreshold: 12 },
 		},
 		base,
+		{ catalog: base },
 	);
 	expect(calls[0]).toMatchObject({
 		path: `/warehouses/${base.id}/settings`,
@@ -45,6 +46,7 @@ test("archive and settings mutations preserve scoped paths and revision precondi
 		base.id,
 		{ action: "archiveProduct", value: product.id },
 		base,
+		{ catalog: base },
 	);
 	expect(calls[1]).toMatchObject({
 		path: `/warehouses/${base.id}/products/${encodeURIComponent(product.id)}/archive`,

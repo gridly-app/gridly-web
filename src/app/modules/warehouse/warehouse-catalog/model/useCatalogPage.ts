@@ -5,7 +5,7 @@ import {
 	type Stock,
 } from "@/domain/warehouse";
 import type { CatalogCategory, CatalogProduct, CatalogTab } from "./catalog";
-import type { CatalogWarehouse } from "./warehouseFields";
+import type { CatalogWarehouse } from "./warehouseResources";
 
 export function useCatalogPage(
 	warehouse: CatalogWarehouse,

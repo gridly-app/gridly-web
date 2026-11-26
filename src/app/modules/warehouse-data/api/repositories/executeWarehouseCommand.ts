@@ -1,6 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import type { Warehouse, WarehouseCommand } from "@/domain/warehouse";
+import {
+	mergeRobotPositions,
+	type Warehouse,
+	type WarehouseCommand,
+	type WarehouseLiveState,
+} from "@/domain/warehouse";
 import type { HttpClient, RequestOptions } from "@/shared/http";
 
 import type { WarehouseKeys } from "../../model/queries/queryKeys";
@@ -67,31 +72,28 @@ export async function executeWarehouseCommand({
 		return sendCommit();
 	}
 
+	const robots = cache.getQueryData(keys.resource(id, "robots"));
+	const live = cache.getQueryData<WarehouseLiveState>(keys.live(id));
+	const currentRobots =
+		robots && live?.layoutVersion === warehouse.version
+			? { robots: mergeRobotPositions(robots.robots, live.robots) }
+			: robots;
 	const commands = new RestWarehouseCommands(http, sendMutation);
-	const settings = await commands.execute(id, input, warehouse);
+	const settings = await commands.execute(id, input, warehouse, {
+		map: cache.getQueryData(keys.resource(id, "map")),
+		catalog: cache.getQueryData(keys.resource(id, "catalog")),
+		inventory: cache.getQueryData(keys.resource(id, "inventory")),
+		orders: cache.getQueryData(keys.resource(id, "orders")),
+		robots: currentRobots,
+	});
 
 	session.throwIfAborted();
 
-	if (settings) updateSettingsCache(cache, keys, id, settings);
-}
+	if (!settings) return;
 
-function updateSettingsCache(
-	cache: QueryClient,
-	keys: WarehouseKeys,
-	id: string,
-	settings: NonNullable<Warehouse["settings"]>,
-) {
-	const updatedWarehouse = cache.setQueryData<Warehouse>(
-		keys.detail(id),
-		(current) => {
-			if (!current) return current;
-			if (current.settings && current.settings.revision > settings.revision)
-				return current;
-
-			return { ...current, settings };
-		},
+	cache.setQueryData(keys.resource(id, "settings"), (current) =>
+		current && current.settings.revision > settings.revision
+			? current
+			: { settings },
 	);
-
-	if (updatedWarehouse)
-		cache.setQueryData(keys.resource(id, "settings"), updatedWarehouse);
 }

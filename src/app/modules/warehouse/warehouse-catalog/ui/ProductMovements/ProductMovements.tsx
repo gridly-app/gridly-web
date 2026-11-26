@@ -13,14 +13,14 @@ import {
 } from "@/shared/ui/dataDisplay";
 import { Select } from "@/shared/ui/forms";
 import { Link } from "@/shared/ui/navigation";
-import type { CatalogWarehouse } from "../../model/warehouseFields";
+import type { WarehouseView } from "@/domain/warehouse";
 
 export function ProductMovements({
 	productId,
 	warehouse,
 }: {
 	productId: string;
-	warehouse: CatalogWarehouse;
+	warehouse: WarehouseView<"catalog" | "inventory" | "orders" | "history">;
 }) {
 	const mode = useWorkspaceMode();
 	const [search, setSearch] = useState("");

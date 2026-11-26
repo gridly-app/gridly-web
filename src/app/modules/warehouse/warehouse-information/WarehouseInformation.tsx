@@ -7,7 +7,7 @@ import { ScrollArea } from "@/shared/ui/navigation";
 import { buildReport, previousPeriod, warehouseDay } from "./model/report";
 import { reportCsv } from "./model/reportCsv";
 import { useReportFilters } from "./model/useReportFilters";
-import { warehouseFields } from "./model/warehouseFields";
+import { warehouseResources } from "./model/warehouseResources";
 import { CategoryDistribution } from "./ui/CategoryDistribution/CategoryDistribution";
 import { StatusDistribution } from "./ui/StatusDistribution/StatusDistribution";
 import { StockDistribution } from "./ui/StockDistribution/StockDistribution";
@@ -19,7 +19,7 @@ import { ReportOrders } from "./ui/ReportOrders/ReportOrders";
 import styles from "./shared.module.css";
 
 export function WarehouseInformation() {
-	const { warehouse } = useWarehouseScreen(warehouseFields);
+	const { warehouse } = useWarehouseScreen(warehouseResources);
 	const operations = useRef<HTMLElement>(null);
 	const {
 		filters,

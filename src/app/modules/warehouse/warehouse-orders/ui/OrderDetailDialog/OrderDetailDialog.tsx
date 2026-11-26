@@ -2,7 +2,7 @@ import type { CommandExecutor } from "@/domain/warehouse";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { Modal } from "@/shared/ui/overlays";
 import type { useOrderSelection } from "../../model/useOrderSelection";
-import type { OrderScreenWarehouse } from "../../model/warehouseFields";
+import type { WarehouseView } from "@/domain/warehouse";
 import { OrderForm } from "../OrderForm/OrderForm";
 import { OrderDetail } from "../OrderDetail/OrderDetail";
 
@@ -19,7 +19,7 @@ export interface OrderDetailDialogProps {
 		| "detailError"
 		| "retryDetail"
 	>;
-	warehouse: OrderScreenWarehouse;
+	warehouse: WarehouseView<"catalog" | "robots">;
 	pending: boolean;
 	execute: CommandExecutor;
 }

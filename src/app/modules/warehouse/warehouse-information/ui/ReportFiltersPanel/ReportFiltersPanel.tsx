@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { statusLabels, type Warehouse } from "@/domain/warehouse";
+import { statusLabels, type WarehouseView } from "@/domain/warehouse";
 import { Checkbox } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { DateRangeFields, Field, Label, Select } from "@/shared/ui/forms";
@@ -9,8 +9,8 @@ import styles from "./ReportFiltersPanel.module.css";
 
 interface ReportFiltersPanelProps {
 	filters: ReportFilters;
-	categories: Warehouse["categories"];
-	orders: Warehouse["orders"];
+	categories: WarehouseView<"catalog">["categories"];
+	orders: WarehouseView<"orders">["orders"];
 	period: string;
 	setPeriod: (days: number | "all") => void;
 	onChange: <K extends keyof ReportFilters>(

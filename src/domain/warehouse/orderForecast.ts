@@ -1,4 +1,5 @@
-import type { Order, Robot, Warehouse } from "./warehouse";
+import type { WarehouseView } from "./resources";
+import type { Order, Robot } from "./warehouse";
 import { remainingQuantity } from "./quantities";
 
 const completed = new Set([
@@ -51,7 +52,10 @@ function remainingTaskTicks(robot: Robot): number | null {
 }
 export function orderCompletion(
 	order: Order,
-	warehouse: Pick<Warehouse, "running" | "robots" | "asOf" | "lastTickAt">,
+	warehouse: Pick<
+		WarehouseView<"robots">,
+		"running" | "robots" | "asOf" | "lastTickAt"
+	>,
 	tickMs: number | null,
 ): CompletionForecast {
 	if (completed.has(order.status)) return { at: null, note: "Завершён" };
@@ -115,7 +119,7 @@ export function orderCompletion(
 export function incomingProduct(
 	productId: string,
 	warehouse: Pick<
-		Warehouse,
+		WarehouseView<"orders" | "robots">,
 		"orders" | "running" | "robots" | "asOf" | "lastTickAt"
 	>,
 	tickMs: number | null,

@@ -24,7 +24,10 @@ import { useMapView } from "./model/useMapView";
 import { useMapCamera } from "./model/viewport/useMapCamera";
 import { useMapCanvas } from "./model/viewport/useMapCanvas";
 import { useMapSimulation } from "./model/viewport/useMapSimulation";
-import { type MapWarehouse, warehouseFields } from "./model/warehouseFields";
+import {
+	type MapWarehouse,
+	warehouseResources,
+} from "./model/warehouseResources";
 import { MapNavigation } from "./ui/MapNavigation/MapNavigation";
 import { MapToolbar } from "./ui/MapToolbar/MapToolbar";
 import mapStyles from "./shared.module.css";
@@ -43,7 +46,7 @@ interface WarehouseMapProps {
 
 export function MapPage() {
 	const { warehouse, execute, pending } =
-		useLiveWarehouseScreen(warehouseFields);
+		useLiveWarehouseScreen(warehouseResources);
 	const { dark } = useTheme();
 	const layout = useLayoutOperation(warehouse.id);
 

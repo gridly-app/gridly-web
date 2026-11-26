@@ -1,17 +1,35 @@
-import { useState } from "react";
-import type { Product, ProductInput } from "@/domain/warehouse";
-import { StatusBadge, useWarehouseResources } from "@/ports/warehouse";
+import { type ReactNode, useState } from "react";
+
+import type {
+	Product,
+	ProductInput,
+	WarehouseResource,
+} from "@/domain/warehouse";
+import {
+	StatusBadge,
+	useWarehouseResources,
+	type WarehouseResources,
+} from "@/ports/warehouse";
+import { isAccessDenied } from "@/shared/http";
 import { Button } from "@/shared/ui/controls";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { SegmentedControl } from "@/shared/ui/navigation";
 import { Modal } from "@/shared/ui/overlays";
-import type { CatalogWarehouse } from "../../model/warehouseFields";
-import styles from "./ProductDetail.module.css";
+
+import type { CatalogWarehouse } from "../../model/warehouseResources";
 import { ProductFacts } from "../ProductFacts/ProductFacts";
 import { ProductForm } from "../ProductForm/ProductForm";
 import { ProductMovements } from "../ProductMovements/ProductMovements";
 import { ProductOrdersPanel } from "../ProductOrdersPanel/ProductOrdersPanel";
 import { ProductStockPanel } from "../ProductStockPanel/ProductStockPanel";
+
+import styles from "./ProductDetail.module.css";
+
+type ProductTab = "stock" | "orders" | "movements";
+
+const orderResources = ["orders"] as const;
+const movementResources = ["orders", "history"] as const;
+const stockResources = ["map"] as const;
 
 export function ProductDetail({
 	product,
@@ -26,8 +44,8 @@ export function ProductDetail({
 	onSave: (product: ProductInput) => Promise<void>;
 	onClose: () => void;
 }) {
-	const [tab, setTab] = useState<"stock" | "orders" | "movements">("stock");
-	const [editing, setEditing] = useState(false);
+	const [tab, setTab] = useState<ProductTab>("stock");
+	const [isEditing, setIsEditing] = useState(false);
 	const [stockFilters, setStockFilters] = useState({
 		search: "",
 		zone: "all",
@@ -38,107 +56,136 @@ export function ProductDetail({
 		kind: "all",
 		status: "all",
 	});
-	const canEdit = product.allowedActions?.includes("edit");
+	const canEdit = Boolean(product.allowedActions?.includes("edit"));
 	const stock = warehouse.stock.filter((item) => item.product === product.id);
 	const category = warehouse.categories.find(
 		(item) => item.id === product.category,
 	);
-	const details = useWarehouseResources(
-		warehouse,
-		editing
-			? []
-			: tab === "stock"
-				? ["map"]
-				: tab === "orders"
-					? ["orders"]
-					: ["orders", "history"],
-	);
+	const subtitle = [product.sku, category?.name].filter(Boolean).join(" · ");
+	const tabItems = [
+		{ value: "stock", label: `Партии · ${stock.length}` },
+		{ value: "orders", label: "Заказы" },
+		{ value: "movements", label: "Движения" },
+	] as const;
+
+	function handleStartEditing() {
+		setIsEditing(true);
+	}
+
+	function handleStopEditing() {
+		setIsEditing(false);
+	}
+
+	async function handleSave(input: ProductInput) {
+		await onSave(input);
+		setIsEditing(false);
+	}
+
+	if (isEditing && canEdit) {
+		return (
+			<Modal title="Редактирование товара" wide onClose={onClose}>
+				<Button variant="ghost" onClick={handleStopEditing}>
+					К карточке товара
+				</Button>
+				<ProductForm
+					product={product}
+					categories={warehouse.categories}
+					pending={pending}
+					onSave={handleSave}
+				/>
+			</Modal>
+		);
+	}
 
 	return (
-		<Modal
-			title={editing && canEdit ? "Редактирование товара" : product.name}
-			wide
-			onClose={onClose}
-		>
-			{editing && canEdit ? (
-				<>
-					<Button variant="ghost" onClick={() => setEditing(false)}>
-						К карточке товара
+		<Modal title={product.name} wide onClose={onClose}>
+			<div className={styles.header}>
+				<p>{subtitle}</p>
+				{product.archived && <StatusBadge value="Архив" />}
+				{canEdit && (
+					<Button
+						variant="secondary"
+						disabled={pending}
+						onClick={handleStartEditing}
+					>
+						Изменить товар
 					</Button>
-					<ProductForm
-						product={product}
-						categories={warehouse.categories}
-						pending={pending}
-						onSave={async (input) => {
-							await onSave(input);
-							setEditing(false);
-						}}
-					/>
-				</>
-			) : (
-				<>
-					<div className={styles.header}>
-						<p>{[product.sku, category?.name].filter(Boolean).join(" · ")}</p>
-						{product.archived && <StatusBadge value="Архив" />}
-						{canEdit && (
-							<Button
-								variant="secondary"
-								disabled={pending}
-								onClick={() => setEditing(true)}
-							>
-								Изменить товар
-							</Button>
-						)}
-					</div>
-					<ProductFacts product={product} stock={stock} />
-					<SegmentedControl
-						aria-label="Данные о товаре"
-						value={tab}
-						onValueChange={setTab}
-						items={[
-							{ value: "stock", label: `Партии · ${stock.length}` },
-							{ value: "orders", label: "Заказы" },
-							{ value: "movements", label: "Движения" },
-						]}
-					/>
-					{tab === "stock" && (
+				)}
+			</div>
+			<ProductFacts product={product} stock={stock} />
+			<SegmentedControl
+				aria-label="Данные о товаре"
+				value={tab}
+				onValueChange={setTab}
+				items={tabItems}
+			/>
+			{tab === "stock" && (
+				<ProductTabResources warehouse={warehouse} resources={stockResources}>
+					{(details) => (
 						<ProductStockPanel
 							stock={stock}
-							cells={details.warehouse.cells}
+							cells={details.cells}
 							filters={stockFilters}
 							onChange={setStockFilters}
 						/>
 					)}
-					{tab !== "stock" && details.loading && (
-						<Feedback tone="loading">Загружаем данные…</Feedback>
-					)}
-					{details.error && (
-						<Feedback
-							tone={details.hasData ? "warning" : "error"}
-							action={
-								<RetryButton variant="secondary" onRetry={details.retry} />
-							}
-						>
-							Не удалось обновить данные карточки.
-						</Feedback>
-					)}
-					{tab === "orders" && details.hasData && (
+				</ProductTabResources>
+			)}
+			{tab === "orders" && (
+				<ProductTabResources warehouse={warehouse} resources={orderResources}>
+					{(details) => (
 						<ProductOrdersPanel
 							warehouseId={warehouse.id}
-							warehouseOrders={details.warehouse.orders}
+							warehouseOrders={details.orders}
 							productId={product.id}
 							filters={orderFilters}
 							onChange={setOrderFilters}
 						/>
 					)}
-					{tab === "movements" && details.hasData && (
-						<ProductMovements
-							productId={product.id}
-							warehouse={details.warehouse}
-						/>
+				</ProductTabResources>
+			)}
+			{tab === "movements" && (
+				<ProductTabResources
+					warehouse={warehouse}
+					resources={movementResources}
+				>
+					{(details) => (
+						<ProductMovements productId={product.id} warehouse={details} />
 					)}
-				</>
+				</ProductTabResources>
 			)}
 		</Modal>
+	);
+}
+
+function ProductTabResources<Resource extends WarehouseResource>({
+	warehouse,
+	resources,
+	children,
+}: {
+	warehouse: CatalogWarehouse;
+	resources: readonly Resource[];
+	children: (
+		data: NonNullable<WarehouseResources<CatalogWarehouse, Resource>["data"]>,
+	) => ReactNode;
+}) {
+	const details = useWarehouseResources(warehouse, resources);
+	const data = isAccessDenied(details.error) ? undefined : details.data;
+	const errorTone = data ? "warning" : "error";
+	const isLoading = !data && details.loading;
+
+	return (
+		<>
+			{details.error && (
+				<Feedback
+					tone={errorTone}
+					action={<RetryButton variant="secondary" onRetry={details.retry} />}
+				>
+					Не удалось обновить данные карточки.
+				</Feedback>
+			)}
+			{isLoading && <Feedback tone="loading">Загружаем данные…</Feedback>}
+			{data && children(data)}
+		</>
 	);
 }

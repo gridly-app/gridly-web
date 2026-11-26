@@ -14,7 +14,7 @@ import type { CategoryDto, ProductDto } from "../catalog/catalogDto";
 import { policyFromDto, wireKinds } from "../contracts/contractMappers";
 import type { EventDto } from "../history/historyDto";
 import type { StockDto } from "../inventory/inventoryDto";
-import type { LayoutDto, MapStateDto } from "../layout/layout.dto.ts";
+import type { LayoutDto } from "../layout/layout.dto.ts";
 import type { OrderDto } from "../orders/orderDto";
 import type { RobotDto } from "../robots/robotDto";
 import type { WarehouseDto } from "../warehouses/warehouseDto";
@@ -53,7 +53,6 @@ export function warehouseFromDto(dto: WarehouseDto): Warehouse {
 	return {
 		id: dto.id,
 		cabinet: dto.cabinet_settings,
-		writeOffs: dto.write_offs,
 		allowedActions: dto.allowed_actions,
 		summary: dto.summary,
 		name: dto.name,
@@ -79,14 +78,6 @@ export function warehouseFromDto(dto: WarehouseDto): Warehouse {
 					confirmLoad: false,
 				},
 		policyRevision: dto.workflow_policy?.revision,
-		cells: [],
-		draft: null,
-		robots: [],
-		categories: [],
-		products: [],
-		stock: [],
-		orders: [],
-		events: [],
 	};
 }
 
@@ -116,26 +107,23 @@ export function orderFromDto(dto: OrderDto): Order {
 	};
 }
 
-export function robotFromDto(
-	dto: RobotDto,
-	position?: MapStateDto["robots"][number] | undefined,
-): Robot {
+export function robotFromDto(dto: RobotDto): Robot {
 	return {
 		id: dto.id,
 		allowedActions: dto.allowed_actions,
 		blockedReason: dto.blocked_reason,
 		currentTask: dto.current_task,
 		returnRoute: dto.return_route,
-		motionPath: position?.motion_path ?? dto.motion_path,
+		motionPath: dto.motion_path,
 		revision: dto.revision,
 		name: dto.name,
 		roles: requireValue(dto.roles ?? dto.specializations, "roles"),
-		x: position?.x ?? dto.x,
-		y: position?.y ?? dto.y,
+		x: dto.x,
+		y: dto.y,
 		speed: requireValue(dto.speed ?? dto.speed_cells_per_tick, "speed"),
 		duration: dto.action_ticks,
 		capacity: String(dto.capacity_volume),
-		status: position?.status || dto.status,
+		status: dto.status,
 	};
 }
 

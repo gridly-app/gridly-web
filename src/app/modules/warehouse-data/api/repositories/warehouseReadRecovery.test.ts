@@ -25,12 +25,12 @@ describe("REST warehouse recovery", () => {
 	test("an initial map read times out without publishing an incomplete snapshot", async () => {
 		const base = warehouseRepositoryFixture();
 		const cache = new QueryClient();
-		let firstRobotsRead = true;
+		let firstLayoutRead = true;
 		const repository = new RestWarehouseRepository(
 			httpDouble({
 				async request(path, options) {
-					if (path.includes("/robots") && firstRobotsRead) {
-						firstRobotsRead = false;
+					if (path.endsWith("/layout") && firstLayoutRead) {
+						firstLayoutRead = false;
 						return waitForCancellation(options?.signal);
 					}
 					return base.http.request(path, options);
@@ -43,11 +43,12 @@ describe("REST warehouse recovery", () => {
 		await expect(repository.get("w1", undefined, "map")).rejects.toMatchObject({
 			name: "TimeoutError",
 		});
-		expect(cache.getQueryData(repository.keys.detail("w1"))).toBeUndefined();
+		expect(
+			cache.getQueryData(repository.keys.resource("w1", "map")),
+		).toBeUndefined();
 		await expect(repository.get("w1", undefined, "map")).resolves.toMatchObject(
 			{
 				version: 1,
-				stateVersion: "1",
 			},
 		);
 	});
@@ -135,6 +136,7 @@ describe("REST warehouse recovery", () => {
 		const cache = new QueryClient();
 		let publishedVersion = 1;
 		const sources: ReadableStreamDefaultController<Uint8Array>[] = [];
+		const connected = Promise.withResolvers<void>();
 		let resumed!: () => void;
 		const reconnected = new Promise<void>((resolve) => {
 			resumed = resolve;
@@ -170,6 +172,7 @@ describe("REST warehouse recovery", () => {
 					return new ReadableStream({
 						start(controller) {
 							sources.push(controller);
+							if (sources.length === 1) connected.resolve();
 							if (sources.length === 2) resumed();
 						},
 					});
@@ -177,9 +180,9 @@ describe("REST warehouse recovery", () => {
 			},
 			cache,
 		);
-		await repository.get("w1");
 		const release = repository.subscribeLive("w1");
 		try {
+			await connected.promise;
 			publishedVersion = 2;
 			sources[0]?.enqueue(
 				new TextEncoder().encode("event: RESYNC_REQUIRED\ndata: {}\n\n"),

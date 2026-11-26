@@ -1,8 +1,9 @@
-import type { Robot, Warehouse } from "./warehouse";
+import type { WarehouseView } from "./resources";
+import type { Robot } from "./warehouse";
 
 export function robotAssignment(
 	robot: Robot,
-	warehouse: Pick<Warehouse, "orders" | "products">,
+	warehouse: Pick<WarehouseView<"orders" | "catalog">, "orders" | "products">,
 ) {
 	const task = robot.currentTask;
 	if (!task)

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { productPrice, type Warehouse } from "@/domain/warehouse";
+import { productPrice, type WarehouseView } from "@/domain/warehouse";
 import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { Button } from "@/shared/ui/controls";
@@ -11,7 +11,7 @@ import styles from "./ReportFinancialMetrics.module.css";
 interface ReportFinancialMetricsProps {
 	report: WarehouseReport;
 	previous: WarehouseReport | null;
-	warehouse: Pick<Warehouse, "id" | "products">;
+	warehouse: Pick<WarehouseView<"catalog">, "id" | "products">;
 	filters: ReportFilters;
 }
 

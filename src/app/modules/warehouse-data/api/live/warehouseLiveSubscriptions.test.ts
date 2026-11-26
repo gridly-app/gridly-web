@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import type { Warehouse } from "@/domain/warehouse/warehouse";
+import type { WarehouseLiveState } from "@/domain/warehouse/warehouse";
 
 import { channel, event, patch, until } from "./liveStream.test-support";
 
@@ -86,13 +86,19 @@ test("repository shares a stream, skips healthy map polling and resyncs on resub
 		channels[0]?.send(event(patch()));
 		await until(
 			() =>
-				cache.getQueryData<Warehouse>(repo.keys.detail("w"))?.stateVersion ===
-				"2",
+				cache.getQueryData<WarehouseLiveState>(repo.keys.live("w"))
+					?.stateVersion === "2",
 		);
 		await repo.get("w", undefined, "map");
 		expect(reads).toBe(1);
 		releaseFirst();
-		await Bun.sleep(10);
+		version = "3";
+		channels[0]?.send(event(patch("3")));
+		await until(
+			() =>
+				cache.getQueryData<WarehouseLiveState>(repo.keys.live("w"))
+					?.stateVersion === "3",
+		);
 		expect(channels[0]?.canceled).toBe(false);
 		releaseSecond();
 		await until(() => channels[0]?.canceled === true);
@@ -102,7 +108,7 @@ test("repository shares a stream, skips healthy map polling and resyncs on resub
 		repo.clear();
 		await until(() => channels[1]?.canceled === true);
 		releaseNext();
-		expect(cache.getQueryData(repo.keys.detail("w"))).toBeUndefined();
+		expect(cache.getQueryData(repo.keys.live("w"))).toBeUndefined();
 	} finally {
 		releaseFirst();
 		releaseSecond();

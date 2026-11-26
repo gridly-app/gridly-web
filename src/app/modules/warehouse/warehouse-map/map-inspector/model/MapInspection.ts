@@ -5,11 +5,14 @@ import type {
 	CommandExecutor,
 	Robot,
 	Stock,
-	Warehouse,
+	WarehouseView,
 } from "@/domain/warehouse";
 
 export interface MapInspection {
-	warehouse: Pick<Warehouse, "categories" | "cells" | "orders" | "products">;
+	warehouse: Pick<
+		WarehouseView<"catalog" | "map" | "orders">,
+		"categories" | "cells" | "orders" | "products"
+	>;
 	command: CommandExecutor;
 	onCategory: (category: Category) => void;
 	cells: Cell[];

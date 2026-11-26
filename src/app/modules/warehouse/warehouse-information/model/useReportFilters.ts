@@ -1,12 +1,12 @@
 import { useState } from "react";
-import type { Warehouse } from "@/domain/warehouse";
+import type { WarehouseView } from "@/domain/warehouse";
 import { type ReportFilters, shiftDay, warehouseDay } from "./report";
 
 export type ReportRange = Pick<ReportFilters, "from" | "to">;
 export const reportOrderPageSize = 8;
 
 export function useReportFilters(
-	warehouse: Pick<Warehouse, "orders" | "timezone">,
+	warehouse: Pick<WarehouseView<"orders">, "orders" | "timezone">,
 ) {
 	const [filters, setFilters] = useState<ReportFilters>(() => {
 		const to = warehouseDay(Date.now(), warehouse.timezone);

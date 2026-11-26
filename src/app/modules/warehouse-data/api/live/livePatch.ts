@@ -1,5 +1,8 @@
-import type { Warehouse } from "@/domain/warehouse";
-import type { WarehouseResource } from "@/ports/warehouse";
+import type {
+	WarehouseLayout,
+	WarehouseLiveState,
+	WarehouseResource,
+} from "@/domain/warehouse";
 import { applyRobotPatch } from "./applyRobotPatch";
 import type { StatePatch } from "./statePatch";
 
@@ -12,20 +15,24 @@ export interface LivePatchContext {
 }
 
 export function nextLiveSnapshot(
-	current: Warehouse | undefined,
+	layout: Pick<WarehouseLayout, "version" | "width" | "height"> | undefined,
+	current: WarehouseLiveState | undefined,
 	patch: StatePatch,
 	context: LivePatchContext,
-): Warehouse | null {
+): WarehouseLiveState | null {
 	if (patch.warehouse_id !== context.warehouseId)
 		throw new Error("Событие другого склада");
 
 	const isPatchLayoutCurrent =
 		patch.layout_version === undefined ||
-		patch.layout_version === current?.version;
+		patch.layout_version === layout?.version;
 	const isLayoutCurrent =
-		current?.version === context.layoutVersion && isPatchLayoutCurrent;
+		layout?.version === context.layoutVersion &&
+		current?.layoutVersion === layout.version &&
+		isPatchLayoutCurrent;
 
-	if (!current || !isLayoutCurrent) throw new Error("Карта изменилась");
+	if (!layout || !current || !isLayoutCurrent)
+		throw new Error("Карта изменилась");
 	if (BigInt(patch.tick) < BigInt(current.tick))
 		throw new Error("Устаревший тик состояния");
 
@@ -41,7 +48,7 @@ export function nextLiveSnapshot(
 	if (!isNextVersion || !matchesEventId)
 		throw new Error("Пропущено событие состояния");
 
-	return applyRobotPatch(current, patch);
+	return applyRobotPatch(layout, current, patch);
 }
 
 export function liveRefreshes(patch: StatePatch): LiveRefresh[] {

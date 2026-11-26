@@ -9,7 +9,7 @@ import {
 } from "@/shared/ui/dataDisplay";
 import type { useOrderSelection } from "../../model/useOrderSelection";
 import type { useOrdersPage } from "../../model/useOrdersPage";
-import type { OrderScreenWarehouse } from "../../model/warehouseFields";
+import type { OrderScreenWarehouse } from "../../model/warehouseResources";
 import { OrderRow } from "../OrderRow/OrderRow";
 
 export interface OrdersTableProps {

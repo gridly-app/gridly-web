@@ -7,10 +7,10 @@ import {
 	type SearchParamChanges,
 	useUpdateSearchParams,
 } from "@/shared/lib";
-import type { OrderScreenWarehouse } from "./warehouseFields";
+import type { OrderScreenWarehouse } from "./warehouseResources";
 
 export function useOrderSelection(
-	warehouse: OrderScreenWarehouse,
+	warehouse: Pick<OrderScreenWarehouse, "id">,
 	execute: CommandExecutor,
 ) {
 	const [params] = useSearchParams();

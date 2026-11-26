@@ -1,14 +1,16 @@
 import { useWarehouseResources, useWarehouseScreen } from "@/ports/warehouse";
+
+import { warehouseResources } from "./warehouseResources";
+
 export function useSettingsPage() {
-	const scope = useWarehouseScreen(warehouseFields);
-	const settings = useWarehouseResources(scope.warehouse, ["settings"]);
+	const scope = useWarehouseScreen([]);
+	const settings = useWarehouseResources(scope.warehouse, warehouseResources);
+
 	return {
 		...scope,
-		warehouse: settings.warehouse,
+		warehouse: settings.data ?? scope.warehouse,
 		settingsError: settings.error,
 		retrySettings: settings.retry,
 		settingsLoading: settings.loading,
 	};
 }
-
-import { warehouseFields } from "./warehouseFields";

@@ -4,7 +4,7 @@ import {
 	productPrice,
 	type Stock,
 	stockZoneNames,
-	type Warehouse,
+	type WarehouseView,
 } from "@/domain/warehouse";
 import { warehouseDay } from "./reportPeriod";
 
@@ -17,11 +17,11 @@ export interface UnpricedDetail {
 export type UnpricedSection = "inbound" | "outbound" | "stock" | "writeOffs";
 
 export function reportUnpricedDetails(
-	warehouse: Pick<Warehouse, "cells" | "timezone">,
+	warehouse: Pick<WarehouseView<"map">, "cells" | "timezone">,
 	products: ReadonlyMap<string, Product>,
 	orders: Order[],
 	stock: Stock[],
-	writeOffs: Warehouse["writeOffs"],
+	writeOffs: WarehouseView<"history">["writeOffs"],
 ): Record<UnpricedSection, UnpricedDetail[]> {
 	const productName = (id: string) => products.get(id)?.name ?? `Товар ${id}`;
 	const orderDetails = (kind: Order["kind"]): UnpricedDetail[] =>

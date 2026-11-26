@@ -1,13 +1,8 @@
-export type WarehouseResource =
-	| "settings"
-	| "metadata"
-	| "map"
-	| "catalog"
-	| "orders"
-	| "inventory"
-	| "history"
-	| "robots"
-	| "all";
+export type {
+	WarehouseResource,
+	WarehouseResourceData,
+	WarehouseView,
+} from "@/domain/warehouse";
 
 export * from "./data";
 export * from "./layout";

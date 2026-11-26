@@ -1,8 +1,13 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { CommandExecutor } from "@/domain/warehouse";
-import { blocksLayoutWrite, useLayoutOperation } from "@/ports/warehouse";
+import {
+	blocksLayoutWrite,
+	useLayoutOperation,
+	useWarehouseResources,
+} from "@/ports/warehouse";
+import { useSingleFlight } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
-import type { SettingsWarehouse } from "../../model/warehouseFields";
+import type { SettingsWarehouse } from "../../model/warehouseResources";
 import styles from "../../shared.module.css";
 import { WarehouseCityForm } from "../WarehouseCityForm/WarehouseCityForm";
 import { WarehouseDimensionsForm } from "../WarehouseDimensionsForm/WarehouseDimensionsForm";
@@ -19,25 +24,36 @@ export function LocationAndMapSettings({
 	retrySettings: () => Promise<unknown>;
 }) {
 	const [saving, setSaving] = useState<"city" | "map" | null>(null);
-	const inFlight = useRef(false);
-	const busy = pending || saving !== null;
+	const flight = useSingleFlight();
+	const busy = pending || flight.isRunning;
 	const layout = useLayoutOperation(warehouse.id);
+	const layoutResource = useWarehouseResources(warehouse, ["map"]);
+	const hasNoDraft =
+		layoutResource.data !== undefined &&
+		layoutResource.data.draftRevision === undefined;
 	const layoutBlocked = blocksLayoutWrite(layout.operation);
 	const layoutRefreshFailed = layout.operation?.status === "refresh-failed";
+	const mayResize = !!warehouse.allowedActions?.includes("resize");
+	const canResize = mayResize && hasNoDraft && !layoutBlocked;
 
 	async function save(
 		section: "city" | "map",
 		command: () => Promise<unknown>,
 	) {
-		if (inFlight.current || busy) return false;
-		inFlight.current = true;
+		if (busy) return false;
+
 		setSaving(section);
+
 		try {
-			await command();
-			return true;
+			const isSaved = await flight.run(async () => {
+				await command();
+
+				return true;
+			});
+
+			return isSaved ?? false;
 		} finally {
 			setSaving(null);
-			inFlight.current = false;
 		}
 	}
 
@@ -59,11 +75,7 @@ export function LocationAndMapSettings({
 			<WarehouseDimensionsForm
 				savedWidth={warehouse.width}
 				savedHeight={warehouse.height}
-				canResize={
-					!layoutBlocked &&
-					warehouse.draftRevision === undefined &&
-					!!warehouse.allowedActions?.includes("resize")
-				}
+				canResize={canResize}
 				busy={busy}
 				saving={saving === "map"}
 				saveDimensions={(value) => save("map", () => execute("resize", value))}

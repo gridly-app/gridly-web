@@ -1,14 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
+import type { WarehouseLiveState } from "@/domain/warehouse";
 import type { StreamHttpClient } from "@/shared/http";
 import type { WarehouseKeys } from "../../model/queries/queryKeys";
 import { WarehouseLiveStream } from "./liveStream";
 
 interface LiveSnapshots {
-	snapshotReady(id: string): boolean;
-	resync(id: string, signal: AbortSignal): Promise<Warehouse>;
+	resync(id: string, signal: AbortSignal): Promise<WarehouseLiveState>;
 	poll(id: string, signal: AbortSignal): Promise<WarehouseLiveState>;
-	onIdle(id: string): void;
 }
 
 export class WarehouseLiveSubscriptions {
@@ -42,7 +40,6 @@ export class WarehouseLiveSubscriptions {
 			if (this.entries.get(id) !== entry) return;
 
 			this.entries.delete(id);
-			this.snapshots.onIdle(id);
 			this.cache.setQueryData(this.getKeys().connection(id), false);
 		};
 	}
@@ -56,11 +53,9 @@ export class WarehouseLiveSubscriptions {
 				keys: warehouseKeys,
 				http: this.http,
 				cache: this.cache,
-				snapshotReady: () => this.snapshots.snapshotReady(id),
 				resync: async (signal) => {
 					const snapshot = await this.snapshots.resync(id, signal);
 					signal.throwIfAborted();
-					this.cache.setQueryData(warehouseKeys.resource(id, "map"), snapshot);
 					void this.cache.invalidateQueries({
 						queryKey: warehouseKeys.resource(id, "robots"),
 					});
@@ -79,8 +74,10 @@ export class WarehouseLiveSubscriptions {
 		);
 	}
 
-	isHealthy(id: string) {
-		return this.entries.get(id)?.stream.healthy === true;
+	invalidateIfHealthy(id: string) {
+		const stream = this.entries.get(id)?.stream;
+
+		if (stream?.healthy) stream.invalidate();
 	}
 
 	invalidate(id: string) {

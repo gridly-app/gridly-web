@@ -33,6 +33,6 @@ test("the shipment route is available in both workspaces", () => {
 		WarehouseRouteHandle | undefined;
 	expect(map).toEqual({
 		warehouseSection: "map",
-		resources: ["map", "catalog"],
+		resources: ["map", "robots", "catalog", "inventory", "orders"],
 	});
 });

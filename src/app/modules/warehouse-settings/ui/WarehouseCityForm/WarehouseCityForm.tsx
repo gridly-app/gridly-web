@@ -1,5 +1,8 @@
 import { type FormEvent, useState } from "react";
-import type { Warehouse, WarehouseSettingsChange } from "@/domain/warehouse";
+import type {
+	WarehouseSettings,
+	WarehouseSettingsChange,
+} from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice, Feedback } from "@/shared/ui/feedback";
@@ -15,7 +18,7 @@ export function WarehouseCityForm({
 	saveCity,
 	retrySettings,
 }: {
-	settings: Warehouse["settings"];
+	settings: WarehouseSettings | undefined;
 	canEdit: boolean;
 	busy: boolean;
 	saving: boolean;

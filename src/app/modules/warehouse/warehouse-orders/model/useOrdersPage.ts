@@ -7,7 +7,7 @@ import {
 } from "@/domain/warehouse";
 import { useSingleFlight, useUpdateSearchParams } from "@/shared/lib";
 import { filterOrders } from "./orderFilters";
-import type { OrderScreenWarehouse } from "./warehouseFields";
+import type { OrderScreenWarehouse } from "./warehouseResources";
 
 export interface OrdersPageOptions {
 	kind: Order["kind"];

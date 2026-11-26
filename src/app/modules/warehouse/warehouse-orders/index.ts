@@ -1,3 +1,4 @@
+import { warehouseResources } from "./model/warehouseResources";
 import {
 	type WarehouseScreenRoute,
 	warehouseAccess,
@@ -6,7 +7,7 @@ import {
 
 const common = {
 	access: warehouseAccess,
-	resources: ["orders", "catalog", "robots"],
+	resources: warehouseResources,
 } as const;
 
 export const ordersRoute = {

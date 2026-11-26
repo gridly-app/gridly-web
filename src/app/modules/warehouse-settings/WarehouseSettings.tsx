@@ -20,7 +20,10 @@ import { Button } from "@/shared/ui/controls";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { ScrollArea } from "@/shared/ui/navigation";
 import { useSettingsPage } from "./model/useSettingsPage";
-import type { SettingsWarehouse } from "./model/warehouseFields";
+import {
+	type SettingsWarehouse,
+	warehouseResources,
+} from "./model/warehouseResources";
 import { CabinetSettings } from "./ui/CabinetSettings/CabinetSettings";
 import { ConfirmationSettings } from "./ui/ConfirmationSettings/ConfirmationSettings";
 import { GeneralSettings } from "./ui/GeneralSettings/GeneralSettings";
@@ -105,9 +108,10 @@ function RouteSettingsPage() {
 
 function EmbeddedSettingsPage({ warehouse }: { warehouse: Warehouse }) {
 	const metadata = useWarehouse(warehouse.id);
-	const resources = useWarehouseResources(metadata.data ?? warehouse, [
-		"settings",
-	]);
+	const resources = useWarehouseResources(
+		metadata.data ?? warehouse,
+		warehouseResources,
+	);
 	const mutation = useWarehouseCommand(warehouse.id);
 	const execute: CommandExecutor = async (action, ...[value, intent]) => {
 		if (!navigator.onLine || resources.error || metadata.isError) {
@@ -130,9 +134,11 @@ function EmbeddedSettingsPage({ warehouse }: { warehouse: Warehouse }) {
 
 	return (
 		<SettingsContent
-			warehouse={resources.warehouse}
+			warehouse={resources.data ?? metadata.data ?? warehouse}
 			execute={execute}
-			pending={mutation.isPending || !!resources.error || metadata.isError}
+			pending={
+				mutation.isPending || Boolean(resources.error) || metadata.isError
+			}
 			settingsError={resources.error}
 			retrySettings={() => resources.retry()}
 			settingsLoading={resources.loading}

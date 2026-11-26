@@ -1,4 +1,4 @@
-import type { Warehouse } from "@/domain/warehouse";
+import type { WarehouseView } from "@/domain/warehouse";
 import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import {
@@ -20,7 +20,7 @@ export function ExpectedDeliveriesTable({
 	items,
 	hiddenColumns,
 }: {
-	warehouse: Pick<Warehouse, "id" | "orders">;
+	warehouse: Pick<WarehouseView<"orders">, "id" | "orders">;
 	items: ReturnType<typeof useInventoryPage>["expectedProducts"];
 	hiddenColumns: number[];
 }) {

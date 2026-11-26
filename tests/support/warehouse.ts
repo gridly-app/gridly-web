@@ -1,6 +1,9 @@
-import { type Warehouse, warehouseSchema } from "@/domain/warehouse";
-export function warehouse(): Warehouse {
-	return warehouseSchema.parse({
+import type { WarehouseView } from "@/domain/warehouse";
+
+export function warehouse(): WarehouseView<
+	"map" | "robots" | "catalog" | "inventory" | "orders" | "history"
+> {
+	return {
 		id: "w",
 		name: "Test",
 		location: "",
@@ -61,5 +64,5 @@ export function warehouse(): Warehouse {
 			confirmPutaway: false,
 			confirmLoad: false,
 		},
-	});
+	};
 }

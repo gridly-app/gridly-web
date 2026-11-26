@@ -9,7 +9,7 @@ import type {
 import { blocksLayoutWrite, type LayoutOperation } from "@/ports/warehouse";
 import { errorMessage } from "@/shared/lib";
 import { useCellSelection } from "../editor/useCellSelection";
-import type { MapWarehouse } from "../warehouseFields";
+import type { MapWarehouse } from "../warehouseResources";
 import {
 	type EditorOperation,
 	editorReducer,

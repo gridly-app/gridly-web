@@ -6,11 +6,23 @@ import type {
 	Warehouse,
 	WarehouseCommand,
 	WarehouseInput,
+	WarehouseResource,
+	WarehouseResourceData,
 } from "@/domain/warehouse";
 import type { UseMutationResult, UseQueryResult } from "@/shared/query";
-import type { WarehouseResource } from "./index";
 import type { LayoutOperation } from "./layout";
 import { selectWarehouseScope, type WarehouseScope } from "./warehouseScope";
+
+export interface WarehouseResources<
+	Snapshot extends Pick<Warehouse, "id">,
+	Resource extends WarehouseResource,
+> {
+	data: (Snapshot & WarehouseResourceData<Resource>) | undefined;
+	loading: boolean;
+	error: Error | undefined;
+	fetching: boolean;
+	retry(): Promise<unknown>;
+}
 
 export interface MutationReceipt {
 	id: string;
@@ -40,17 +52,13 @@ export interface WarehouseData {
 		keys: string[],
 		enabled: boolean,
 	): UseQueryResult<{ capacity: number; batchCount: number }>;
-	useWarehouseResources<Snapshot extends Pick<Warehouse, "id">>(
+	useWarehouseResources<
+		Snapshot extends Pick<Warehouse, "id">,
+		Resource extends WarehouseResource,
+	>(
 		warehouse: Snapshot,
-		resources: WarehouseResource[],
-	): {
-		warehouse: Snapshot;
-		hasData: boolean;
-		loading: boolean;
-		error: Error | undefined;
-		fetching: boolean;
-		retry(): Promise<unknown>;
-	};
+		resources: readonly Resource[],
+	): WarehouseResources<Snapshot, Resource>;
 	useLiveWarehouseScope(): WarehouseScope;
 	useWarehouseCommand(
 		id: string,
@@ -103,17 +111,17 @@ export function useSelectionSummary(
 	return useData().useSelectionSummary(id, keys, enabled);
 }
 
-export function useWarehouseResources<Snapshot extends Pick<Warehouse, "id">>(
-	warehouse: Snapshot,
-	resources: WarehouseResource[],
-) {
+export function useWarehouseResources<
+	Snapshot extends Pick<Warehouse, "id">,
+	Resource extends WarehouseResource,
+>(warehouse: Snapshot, resources: readonly Resource[]) {
 	return useData().useWarehouseResources(warehouse, resources);
 }
 
-export function useLiveWarehouseScreen<Key extends keyof Warehouse>(
-	fields: readonly Key[],
+export function useLiveWarehouseScreen<Resource extends WarehouseResource>(
+	resources: readonly Resource[],
 ) {
-	return selectWarehouseScope(useData().useLiveWarehouseScope(), fields);
+	return selectWarehouseScope(useData().useLiveWarehouseScope(), resources);
 }
 
 export function useWarehouseCommand(id: string, fallbackWarehouse?: Warehouse) {

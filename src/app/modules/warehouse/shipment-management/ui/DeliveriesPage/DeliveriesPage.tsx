@@ -37,14 +37,7 @@ export function DeliveriesPage({
 	http: HttpClient;
 	progress: ShipmentProgressSlot;
 }) {
-	const { warehouse } = useWarehouseScreen([
-		"id",
-		"orders",
-		"products",
-		"cabinet",
-		"settings",
-		"location",
-	]);
+	const { warehouse } = useWarehouseScreen(["orders", "catalog"]);
 	const mode = useWorkspaceMode();
 	const [params, setParams] = useSearchParams();
 	const { orders } = warehouse;

@@ -7,7 +7,7 @@ import {
 	type OrderFormValues,
 	type SavedOrderForm,
 } from "./orderFormDrafts";
-import type { OrderScreenWarehouse } from "./warehouseFields";
+import type { OrderScreenWarehouse } from "./warehouseResources";
 
 type Creation = { id: string; values: OrderFormValues; baseline: string };
 

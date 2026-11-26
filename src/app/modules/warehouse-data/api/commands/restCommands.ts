@@ -1,4 +1,8 @@
-import type { Warehouse, WarehouseCommand } from "@/domain/warehouse";
+import type {
+	Warehouse,
+	WarehouseCommand,
+	WarehouseSettings,
+} from "@/domain/warehouse";
 import { warehouseCommandSchema } from "@/domain/warehouse";
 import {
 	ApiError,
@@ -20,6 +24,7 @@ import { deleteRobot, saveRobot } from "../robots/robotsCommands";
 import { warehouseSettingsDto } from "../settings/settings.dto.ts";
 import { saveSettings, setSimulation } from "../settings/settingsCommands";
 import {
+	type CommandResources,
 	type RestCommandContext,
 	requireRevision,
 	type SendMutation,
@@ -35,7 +40,8 @@ export class RestWarehouseCommands {
 		id: string,
 		command: WarehouseCommand,
 		warehouse: Warehouse,
-	): Promise<Warehouse["settings"] | void> {
+		resources: CommandResources,
+	): Promise<WarehouseSettings | void> {
 		command = warehouseCommandSchema.parse(command);
 		const base = `/warehouses/${encodeURIComponent(id)}`;
 		const send = (
@@ -47,6 +53,7 @@ export class RestWarehouseCommands {
 		const context: RestCommandContext = {
 			base,
 			warehouse,
+			resources,
 			http: this.http,
 			mutate: this.sendMutation,
 			send,
@@ -64,9 +71,9 @@ export class RestWarehouseCommands {
 			case "archiveProduct":
 			case "archiveCategory": {
 				const product = command.action === "archiveProduct";
-				const item = (product ? warehouse.products : warehouse.categories).find(
-					(i) => i.id === command.value,
-				);
+				const item = (
+					product ? resources.catalog?.products : resources.catalog?.categories
+				)?.find((i) => i.id === command.value);
 				try {
 					await send(
 						`/${product ? "products" : "categories"}/${encodeURIComponent(command.value)}/archive`,
@@ -94,7 +101,8 @@ export class RestWarehouseCommands {
 			case "deleteOrder":
 				await remove(
 					`/orders/${encodeURIComponent(command.value)}`,
-					warehouse.orders.find((o) => o.id === command.value)?.revision,
+					resources.orders?.orders.find((o) => o.id === command.value)
+						?.revision,
 				);
 				return;
 			case "warehouseSettings": {
@@ -116,8 +124,12 @@ export class RestWarehouseCommands {
 			}
 			case "saveMap":
 				return saveMap(context, command);
-			case "resize":
-				if (warehouse.draftRevision !== undefined) {
+			case "resize": {
+				const layout = resources.map;
+
+				if (!layout || layout.version !== warehouse.version)
+					throw new UserError("Дождитесь синхронизации планировки склада");
+				if (layout.draftRevision !== undefined) {
 					throw new UserError(
 						"Сохраните или удалите черновик планировки перед изменением размера.",
 					);
@@ -129,6 +141,7 @@ export class RestWarehouseCommands {
 					base_version: warehouse.version,
 				});
 				return;
+			}
 			case "simulation":
 				return setSimulation(context, command);
 			case "order":
@@ -146,7 +159,7 @@ export class RestWarehouseCommands {
 					value: {
 						id: command.value,
 						action: "confirm",
-						revision: warehouse.orders.find(
+						revision: resources.orders?.orders.find(
 							(order) => order.id === command.value,
 						)?.revision,
 					},

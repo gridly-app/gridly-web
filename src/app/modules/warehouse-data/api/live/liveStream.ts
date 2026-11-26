@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
-import { toLiveState } from "@/domain/warehouse";
+import type { WarehouseLiveState } from "@/domain/warehouse";
 import { ApiError, type StreamHttpClient } from "@/shared/http";
 import { readSse, type ServerEvent } from "@/shared/realtime";
 import type { WarehouseKeys } from "../../model/queries/queryKeys";
@@ -18,8 +17,7 @@ interface LiveStreamOptions {
 	timing?: { heartbeatMs: number; fallbackMs: number; retryMs: number[] };
 	http: StreamHttpClient;
 	cache: QueryClient;
-	snapshotReady: () => boolean;
-	resync: (signal: AbortSignal) => Promise<Warehouse>;
+	resync: (signal: AbortSignal) => Promise<WarehouseLiveState>;
 	poll: (signal: AbortSignal) => Promise<WarehouseLiveState>;
 }
 
@@ -68,12 +66,7 @@ export class WarehouseLiveStream {
 		const polling = new AbortController();
 		this.polling = polling;
 		try {
-			const state = await this.options.poll(polling.signal);
-			polling.signal.throwIfAborted();
-			this.options.cache.setQueryData(
-				this.options.keys.live(this.options.id),
-				state,
-			);
+			await this.options.poll(polling.signal);
 		} catch (error) {
 			if (!polling.signal.aborted) {
 				this.status.onError(error);
@@ -121,7 +114,6 @@ export class WarehouseLiveStream {
 	private async run() {
 		const { http, id, cache } = this.options;
 		let failures = 0;
-		let first = true;
 		while (!this.controller.signal.aborted) {
 			const connection = new AbortController();
 			this.connection = connection;
@@ -139,19 +131,18 @@ export class WarehouseLiveStream {
 			};
 			try {
 				this.startFallback();
-				if (!first || !this.options.snapshotReady())
-					await this.options.resync(signal);
-				first = false;
+				await this.options.resync(signal);
 				signal.throwIfAborted();
-				const warehouse = cache.getQueryData<Warehouse>(
-					this.options.keys.detail(id),
+				const state = cache.getQueryData<WarehouseLiveState>(
+					this.options.keys.live(id),
 				);
-				if (!warehouse) throw new Error("Склад не загружен");
-				this.layoutVersion = warehouse.version;
-				cache.setQueryData(this.options.keys.live(id), toLiveState(warehouse));
+
+				if (!state) throw new Error("Склад не загружен");
+
+				this.layoutVersion = state.layoutVersion;
 				activity();
 				const stream = await http.openStream(
-					`/warehouses/${encodeURIComponent(id)}/stream?since_version=${encodeURIComponent(warehouse.stateVersion ?? "0")}`,
+					`/warehouses/${encodeURIComponent(id)}/stream?since_version=${encodeURIComponent(state.stateVersion ?? "0")}`,
 					{ signal },
 				);
 				signal.throwIfAborted();
@@ -204,7 +195,8 @@ export class WarehouseLiveStream {
 
 		const { id, cache, keys } = this.options;
 		const next = nextLiveSnapshot(
-			cache.getQueryData<Warehouse>(keys.detail(id)),
+			cache.getQueryData(keys.resource(id, "map")),
+			cache.getQueryData<WarehouseLiveState>(keys.live(id)),
 			parsed.data,
 			{ warehouseId: id, layoutVersion: this.layoutVersion, eventId: event.id },
 		);
@@ -212,8 +204,7 @@ export class WarehouseLiveStream {
 		if (!next) return;
 
 		signal.throwIfAborted();
-		cache.setQueryData(keys.detail(id), next);
-		cache.setQueryData(keys.live(id), toLiveState(next));
+		cache.setQueryData(keys.live(id), next);
 
 		for (const refresh of liveRefreshes(parsed.data))
 			void this.refresh(refresh);

@@ -1,10 +1,11 @@
-import type { Warehouse } from "@/domain/warehouse";
+import type { WarehouseLayout, WarehouseLiveState } from "@/domain/warehouse";
 import type { StatePatch } from "./statePatch";
 
 export function applyRobotPatch(
-	current: Warehouse,
+	layout: Pick<WarehouseLayout, "width" | "height">,
+	current: WarehouseLiveState,
 	patch: StatePatch,
-): Warehouse {
+): WarehouseLiveState {
 	const known = new Set(current.robots.map((r) => r.id));
 	if (patch.robots?.some((r) => !known.has(r.robot_id)))
 		throw new Error("Требуется загрузить новых роботов");
@@ -12,7 +13,7 @@ export function applyRobotPatch(
 	if (robots.size !== (patch.robots?.length ?? 0))
 		throw new Error("Повторный робот в событии");
 	const inBounds = (point: { x: number; y: number }) =>
-		point.x < current.width && point.y < current.height;
+		point.x < layout.width && point.y < layout.height;
 	return {
 		...current,
 		stateVersion: patch.state_version,

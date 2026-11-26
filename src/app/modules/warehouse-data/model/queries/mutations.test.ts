@@ -25,6 +25,9 @@ test("a write that completes after a session switch cannot invalidate the new wa
 		cache,
 	);
 	const snapshot = warehouse();
+	cache.setQueryData(repository.keys.resource(snapshot.id, "inventory"), {
+		stock: snapshot.stock,
+	});
 	let mutation: ReturnType<typeof useWarehouseCommand> | undefined;
 
 	function Commands() {
@@ -64,7 +67,7 @@ test("a write that completes after a session switch cannot invalidate the new wa
 		});
 		repository.clear();
 
-		const current = { ...snapshot, name: "Current account warehouse" };
+		const current = { stock: [] };
 		const inventory = repository.keys.resource(snapshot.id, "inventory");
 
 		cache.setQueryData(inventory, current);

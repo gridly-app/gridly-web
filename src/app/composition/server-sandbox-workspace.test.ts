@@ -208,14 +208,24 @@ describe("server sandbox workspace", () => {
 		expect(id).toBe("server-warehouse");
 		if (!id) throw new Error("Missing initial warehouse ID");
 		expect((await repository.list()).map((w) => w.id)).toEqual([id]);
-		const snapshot = await repository.get(id as string);
-		expect(snapshot.cells[0]).toMatchObject({ type: "storage", capacity: 10 });
-		expect(snapshot.robots[0]).toMatchObject({ id: "r", x: 1, y: 0 });
-		expect(snapshot.categories[0]?.name).toBe("Server category");
-		expect(snapshot.products[0]?.sku).toBe("SERVER");
-		expect(snapshot.orders[0]?.number).toBe("SERVER-1");
-		expect(snapshot.stock[0]?.quantity).toBe(5);
-		expect(snapshot.events[0]?.title).toBe("Server event");
+		const [snapshot, map, robots, catalog, orders, inventory, history] =
+			await Promise.all([
+				repository.get(id, undefined, "metadata"),
+				repository.get(id, undefined, "map"),
+				repository.getLive(id),
+				repository.get(id, undefined, "catalog"),
+				repository.get(id, undefined, "orders"),
+				repository.get(id, undefined, "inventory"),
+				repository.get(id, undefined, "history"),
+			]);
+
+		expect(map.cells[0]).toMatchObject({ type: "storage", capacity: 10 });
+		expect(robots.robots[0]).toMatchObject({ id: "r", x: 1, y: 0 });
+		expect(catalog.categories[0]?.name).toBe("Server category");
+		expect(catalog.products[0]?.sku).toBe("SERVER");
+		expect(orders.orders[0]?.number).toBe("SERVER-1");
+		expect(inventory.stock[0]?.quantity).toBe(5);
+		expect(history.events[0]?.title).toBe("Server event");
 		expect(
 			await repository.execute(snapshot.id, {
 				action: "settings",
@@ -233,16 +243,22 @@ describe("server sandbox workspace", () => {
 		const { session, repository } = serverWorkspace(true);
 		await session.start();
 		expect(await repository.list()).toEqual([]);
-		const snapshot = await repository.get("server-warehouse");
-		for (const field of [
-			"robots",
-			"categories",
-			"products",
-			"orders",
-			"stock",
-			"events",
-		] as const)
-			expect(snapshot[field]).toEqual([]);
+		const id = "server-warehouse";
+		const [snapshot, robots, catalog, orders, inventory, history] =
+			await Promise.all([
+				repository.get(id, undefined, "map"),
+				repository.get(id, undefined, "robots"),
+				repository.get(id, undefined, "catalog"),
+				repository.get(id, undefined, "orders"),
+				repository.get(id, undefined, "inventory"),
+				repository.get(id, undefined, "history"),
+			]);
+
+		expect(robots).toEqual({ robots: [] });
+		expect(catalog).toEqual({ categories: [], products: [] });
+		expect(orders).toEqual({ orders: [] });
+		expect(inventory).toEqual({ stock: [] });
+		expect(history.events).toEqual([]);
 		expect(snapshot.cells.map((cell) => cell.type)).toEqual([
 			"empty",
 			"empty",
@@ -276,14 +292,20 @@ describe("server sandbox workspace", () => {
 			const { session, repository, fail } = serverWorkspace();
 			await session.start();
 			fail("/warehouses/server-warehouse/products", response);
-			await expect(repository.get("server-warehouse")).rejects.toThrow();
+			await expect(
+				repository.get("server-warehouse", undefined, "catalog"),
+			).rejects.toThrow();
 		}
 	});
 
 	test("failed mutations do not change the cached snapshot or report success", async () => {
 		const { session, repository, fail } = serverWorkspace();
 		await session.start();
-		const snapshot = await repository.get("server-warehouse");
+		const snapshot = await repository.get(
+			"server-warehouse",
+			undefined,
+			"metadata",
+		);
 		fail("/warehouses/server-warehouse", () =>
 			Response.json({ error: { message: "Conflict" } }, { status: 409 }),
 		);
@@ -330,12 +352,12 @@ describe("server sandbox workspace", () => {
 	test("an empty live response preserves the last server state", async () => {
 		const { session, repository, fail } = serverWorkspace();
 		await session.start();
-		const snapshot = await repository.get("server-warehouse");
+		const snapshot = await repository.getLive("server-warehouse");
 		fail(
 			"/warehouses/server-warehouse/map/state",
 			() => new Response(null, { status: 204 }),
 		);
-		const live = await repository.getLive(snapshot.id);
+		const live = await repository.getLive("server-warehouse");
 		expect(live.robots).toEqual(snapshot.robots);
 		expect(live.stateVersion).toBe("8");
 		expect(live.tick).toBe("8");

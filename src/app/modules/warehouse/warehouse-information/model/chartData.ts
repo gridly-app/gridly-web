@@ -4,7 +4,7 @@ import {
 	shiftDay,
 	warehouseDay,
 } from "./report";
-import type { ReportWarehouse } from "./warehouseFields";
+import type { ReportWarehouse } from "./warehouseResources";
 
 export type WarehouseReport = ReturnType<typeof buildReport>;
 export interface TrafficBucket {

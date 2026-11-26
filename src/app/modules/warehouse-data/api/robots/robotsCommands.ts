@@ -7,21 +7,26 @@ export async function saveRobot(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "robot" }>,
 ): Promise<void> {
-	const { warehouse, send } = context;
+	const { resources, send, warehouse } = context;
 	const r = command.value;
-	const old = warehouse.robots.find((x) => x.id === r.id);
+	const { map, robots } = resources;
+
+	if (!robots) throw new UserError("Дождитесь синхронизации роботов");
+
+	const old = robots.robots.find((x) => x.id === r.id);
 	if (r.id && !old)
 		throw new UserError("Робот больше не существует. Обновите данные.");
 	if (
 		"x" in r &&
-		(!warehouse.published ||
-			!warehouse.cells.some(
+		(!map?.published ||
+			map.version !== warehouse.version ||
+			!map.cells.some(
 				(c) =>
 					c.x === r.x &&
 					c.y === r.y &&
 					(c.type === "aisle" || c.type === "charge"),
 			) ||
-			warehouse.robots.some((robot) => robot.x === r.x && robot.y === r.y))
+			robots.robots.some((robot) => robot.x === r.x && robot.y === r.y))
 	) {
 		throw new UserError(
 			"Выберите свободную клетку прохода или зарядки опубликованной карты.",
@@ -50,12 +55,12 @@ export async function deleteRobot(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "deleteRobot" }>,
 ): Promise<void> {
-	const { warehouse, base, mutate } = context;
+	const { resources, base, mutate } = context;
 
 	await mutate(`${base}/robots/${encodeURIComponent(command.value)}`, {
 		method: "DELETE",
 		headers: {
-			"If-Match": `"${requireRevision(warehouse.robots.find((robot) => robot.id === command.value)?.revision)}"`,
+			"If-Match": `"${requireRevision(resources.robots?.robots.find((robot) => robot.id === command.value)?.revision)}"`,
 		},
 	});
 }

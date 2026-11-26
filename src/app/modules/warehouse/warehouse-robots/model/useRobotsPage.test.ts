@@ -29,6 +29,7 @@ test("only unoccupied passable cells on a published map can start a robot", asyn
 					value: {
 						...warehouseData,
 						useLiveWarehouseScope: () => ({
+							resources: ["map", "robots", "orders", "catalog"] as const,
 							warehouse: {
 								...snapshot,
 								cells: [occupied, charge, wall],

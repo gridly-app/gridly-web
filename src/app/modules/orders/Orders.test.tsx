@@ -1,70 +1,72 @@
 import { expect, test } from "bun:test";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act } from "react";
 import { MemoryRouter } from "react-router-dom";
 
-import type { Order } from "@/domain/warehouse";
-import {
-	type WarehouseData,
-	WarehouseDataProvider,
-	WarehouseUiProvider,
-} from "@/ports/warehouse";
+import { WarehouseDataProvider, WarehouseUiProvider } from "@/ports/warehouse";
 import { ApiError } from "@/shared/http";
 
+import { httpDouble } from "../../../../tests/support/http";
 import { renderDom } from "../../../../tests/support/rtl";
 import { warehouse } from "../../../../tests/support/warehouse";
+import { RestWarehouseRepository } from "../warehouse-data/api/repositories/restRepository";
 import { warehouseData } from "../warehouse-data/model/warehouseData";
+import { WarehouseRepositoryProvider } from "../warehouse-data/WarehouseRepositoryProvider";
 import * as warehouseUi from "../warehouse-ui";
 
 import { Orders } from "./Orders";
 
-type OrdersState = "loading" | "denied" | "success" | "stale" | "empty";
-
-test("orders shows loading, hides stale data on denial and restores the list on retry", async () => {
+test("orders hides cached rows on denial and restores the list on retry", async () => {
 	const snapshot = warehouse();
-	const order: Order = {
+	const first = Promise.withResolvers<unknown>();
+	const order = {
 		id: "order-1",
 		number: "IN-100",
 		kind: "inbound",
-		party: "Поставщик",
+		counterparty_text: "Поставщик",
 		status: "draft",
-		created: "2026-11-12T00:00:00Z",
+		allowed_actions: [],
+		created_at: "2026-11-12T00:00:00Z",
 		lines: [],
-		manual: snapshot.policy,
 	};
-	let retries = 0;
-	let state: OrdersState = "loading";
-	const errors: Partial<Record<OrdersState, Error>> = {
-		denied: new ApiError("Private data", 403),
-		stale: new TypeError("Failed to fetch"),
-	};
-	const data: WarehouseData = {
-		...warehouseData,
-		useWarehouseResources(current) {
-			return {
-				warehouse: { ...current, orders: state === "empty" ? [] : [order] },
-				hasData: state !== "loading",
-				loading: state === "loading",
-				error: errors[state],
-				fetching: state === "loading",
-				retry: async () => {
-					retries++;
-				},
-			};
-		},
-	};
-
-	function ordersPage() {
-		return (
-			<MemoryRouter>
-				<WarehouseDataProvider value={data}>
-					<WarehouseUiProvider value={warehouseUi}>
-						<Orders warehouse={snapshot} />
-					</WarehouseUiProvider>
-				</WarehouseDataProvider>
-			</MemoryRouter>
-		);
-	}
-
-	const result = await renderDom(ordersPage());
+	type State = "loading" | "denied" | "success" | "stale" | "empty";
+	let state: State = "loading";
+	const cache = new QueryClient({
+		defaultOptions: { queries: { retry: false } },
+	});
+	const repository = new RestWarehouseRepository(
+		httpDouble({
+			request: async () => {
+				switch (state) {
+					case "loading":
+						return first.promise;
+					case "denied":
+						throw new ApiError("Private data", 403);
+					case "stale":
+						throw new TypeError("Failed to fetch");
+					case "success":
+						return { items: [order], total: 1 };
+					case "empty":
+						return { items: [], total: 0 };
+				}
+			},
+		}),
+		cache,
+	);
+	const queryKey = repository.keys.resource(snapshot.id, "orders");
+	const result = await renderDom(
+		<MemoryRouter>
+			<QueryClientProvider client={cache}>
+				<WarehouseRepositoryProvider repository={repository}>
+					<WarehouseDataProvider value={warehouseData}>
+						<WarehouseUiProvider value={warehouseUi}>
+							<Orders warehouse={snapshot} />
+						</WarehouseUiProvider>
+					</WarehouseDataProvider>
+				</WarehouseRepositoryProvider>
+			</QueryClientProvider>
+		</MemoryRouter>,
+	);
 
 	try {
 		expect(result.getByRole("status").textContent).toContain(
@@ -72,36 +74,36 @@ test("orders shows loading, hides stale data on denial and restores the list on 
 		);
 		expect(result.queryByRole("link", { name: "IN-100" })).toBeNull();
 
+		await act(async () => first.resolve({ items: [order], total: 1 }));
+		await result.findByRole("link", { name: "IN-100" });
+
 		state = "denied";
-		result.rerender(ordersPage());
-		expect(result.getByRole("alert").textContent).toContain("У вас нет прав");
+		await act(() => cache.invalidateQueries({ queryKey }));
+		const denied = await result.findByRole("alert");
+
+		expect(denied.textContent).toContain("У вас нет прав");
 		expect(result.queryByRole("link", { name: "IN-100" })).toBeNull();
 
-		await result.user.click(result.getByRole("button", { name: "Повторить" }));
-		expect(retries).toBe(1);
-
 		state = "success";
-		result.rerender(ordersPage());
-		expect(
-			result.getByRole("link", { name: "IN-100" }).getAttribute("href"),
-		).toContain("order=order-1");
+		await result.user.click(result.getByRole("button", { name: "Повторить" }));
+		const link = await result.findByRole("link", { name: "IN-100" });
+
+		expect(link.getAttribute("href")).toContain("order=order-1");
 
 		state = "stale";
-		result.rerender(ordersPage());
+		await act(() => cache.invalidateQueries({ queryKey }));
+		await result.findByText(
+			"Не удалось обновить заказы. Показаны последние загруженные данные.",
+		);
 		expect(result.getByRole("link", { name: "IN-100" })).toBeTruthy();
-		expect(
-			result.getByText(
-				"Не удалось обновить заказы. Показаны последние загруженные данные.",
-			),
-		).toBeTruthy();
 
 		state = "empty";
-		result.rerender(ordersPage());
-		expect(result.getByRole("status").textContent).toContain(
-			"Найдено заказов: 0",
-		);
+		await act(() => cache.invalidateQueries({ queryKey }));
+		await result.findByText("Найдено заказов: 0");
 		expect(result.queryByRole("link", { name: "IN-100" })).toBeNull();
 	} finally {
 		await result.close();
+		repository.clear();
+		cache.clear();
 	}
 });

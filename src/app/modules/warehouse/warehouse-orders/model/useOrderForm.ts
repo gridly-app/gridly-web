@@ -4,12 +4,12 @@ import type { Order, OrderInput } from "@/domain/warehouse";
 import { confirmationLabels, workflowKeys } from "@/domain/warehouse";
 import { initialOrderForm, type OrderFormValues } from "./orderFormDrafts";
 import { orderFromForm } from "./orderFromForm";
-import type { OrderScreenWarehouse } from "./warehouseFields";
+import type { WarehouseView } from "@/domain/warehouse";
 
 export interface OrderFormOptions {
 	kind: Order["kind"];
 	order?: Order | undefined;
-	warehouse: OrderScreenWarehouse;
+	warehouse: WarehouseView<"catalog" | "robots">;
 	pending: boolean;
 	onSave: (order: OrderInput) => Promise<void>;
 	values?: OrderFormValues | undefined;

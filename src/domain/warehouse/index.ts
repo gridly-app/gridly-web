@@ -9,6 +9,7 @@ export * from "./operationPresentation";
 export * from "./orderForecast";
 export * from "./productMetrics";
 export * from "./quantities";
+export * from "./resources";
 export * from "./robotAssignment";
 export * from "./statusTone";
 export * from "./warehouse";

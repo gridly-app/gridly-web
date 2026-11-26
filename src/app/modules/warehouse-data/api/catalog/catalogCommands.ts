@@ -6,9 +6,9 @@ export async function saveProduct(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "product" }>,
 ): Promise<void> {
-	const { warehouse, send } = context;
+	const { resources, send } = context;
 	const product = command.value;
-	const old = warehouse.products.find((x) => x.id === product.id);
+	const old = resources.catalog?.products.find((x) => x.id === product.id);
 
 	if (product.id && !old) {
 		throw new UserError("Товар больше не доступен. Обновите каталог.");
@@ -44,10 +44,10 @@ export async function saveCategory(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "category" }>,
 ): Promise<void> {
-	const { warehouse, send } = context;
+	const { resources, send } = context;
 	const category = command.value;
 	const id = category.id;
-	const old = warehouse.categories.find((entry) => entry.id === id);
+	const old = resources.catalog?.categories.find((entry) => entry.id === id);
 
 	await send(
 		id ? `/categories/${encodeURIComponent(id)}` : "/categories",

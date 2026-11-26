@@ -11,7 +11,7 @@ export function useWarehouseGuestLinkData(
 ) {
 	const query = useGuestLinks(http, path);
 	const orderResource = useWarehouseResources(warehouse, ["orders"]);
-	const orders = orderResource.warehouse.orders.filter(
+	const orders = (orderResource.data?.orders ?? []).filter(
 		({ kind }) => kind === "outbound",
 	);
 	const orderById = new Map(orders.map((order) => [order.id, order]));
@@ -26,7 +26,8 @@ export function useWarehouseGuestLinkData(
 		orderById,
 		timezone: warehouse.timezone,
 		links: query.isSuccess ? query.data.items : undefined,
-		canOpenEditor: !isDenied && Boolean(query.data) && orderResource.hasData,
+		canOpenEditor:
+			!isDenied && Boolean(query.data) && Boolean(orderResource.data),
 		canWrite: query.isSuccess && !orderResource.error,
 		isAccessDenied: isDenied,
 		isListUnavailable: isDenied || errorStatus === 404,

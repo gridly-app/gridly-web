@@ -1,9 +1,9 @@
-import type { Order, Warehouse } from "@/domain/warehouse";
+import type { Order, WarehouseView } from "@/domain/warehouse";
 import { productPrice, processedQuantity } from "@/domain/warehouse";
 
 export function getOrderPresentation(
 	order: Order,
-	warehouse: Pick<Warehouse, "products">,
+	warehouse: Pick<WarehouseView<"catalog">, "products">,
 ) {
 	const products = new Map(
 		warehouse.products.map((product) => [product.id, product]),

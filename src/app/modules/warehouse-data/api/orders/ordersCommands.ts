@@ -38,10 +38,10 @@ export async function saveOrder(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "order" }>,
 ): Promise<void> {
-	const { warehouse, send } = context;
+	const { resources, send } = context;
 	const order = command.value;
 	const id = order.id;
-	const existing = warehouse.orders.find((entry) => entry.id === id);
+	const existing = resources.orders?.orders.find((entry) => entry.id === id);
 
 	await send(
 		id ? `/orders/${encodeURIComponent(id)}` : "/orders",
@@ -68,14 +68,15 @@ export async function runLegacyOrderAction(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "start" | "cancel" }>,
 ): Promise<void> {
-	const { warehouse } = context;
+	const { resources } = context;
 
 	await runOrderAction(
 		context,
 		command.value,
 		command.action,
 		undefined,
-		warehouse.orders.find((order) => order.id === command.value)?.revision,
+		resources.orders?.orders.find((order) => order.id === command.value)
+			?.revision,
 	);
 }
 

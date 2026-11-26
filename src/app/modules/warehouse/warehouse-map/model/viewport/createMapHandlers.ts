@@ -1,5 +1,5 @@
 import type { KeyboardEvent, PointerEvent } from "react";
-import type { Cell, GridPosition, Warehouse } from "@/domain/warehouse";
+import type { Cell, GridPosition, WarehouseView } from "@/domain/warehouse";
 import { cellKey, storageCellTypes } from "@/domain/warehouse";
 import type { MapEditor } from "../draft/useMapEditor";
 import type { useRouteEditor } from "../editor/useRouteEditor";
@@ -7,7 +7,7 @@ import type { useMapCamera } from "./useMapCamera";
 import type { useMapRenderer } from "./useMapRenderer";
 
 export interface MapInteractionOptions {
-	warehouse: Pick<Warehouse, "width" | "height" | "robots">;
+	warehouse: Pick<WarehouseView<"robots">, "width" | "height" | "robots">;
 	editor: Pick<MapEditor, "selection" | "closeEditor" | "busy">;
 	cellIndex: ReadonlyMap<string, Cell>;
 	routeEditor: Pick<ReturnType<typeof useRouteEditor>, "select" | "drag">;

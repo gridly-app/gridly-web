@@ -3,7 +3,7 @@ import type { Order } from "@/domain/warehouse";
 import { storedWorkflowPolicySchema } from "@/domain/warehouse";
 import type { KeyValueStorage } from "@/shared/lib";
 import { formDraftPrefix } from "@/shared/lib";
-import type { OrderScreenWarehouse } from "./warehouseFields";
+import type { WarehouseView } from "@/domain/warehouse";
 
 const formValuesSchema = z.object({
 	party: z.string(),
@@ -31,7 +31,7 @@ export type OrderFormValues = z.infer<typeof formValuesSchema>;
 export type SavedOrderForm = z.infer<typeof savedFormSchema>;
 
 export function initialOrderForm(
-	warehouse: OrderScreenWarehouse,
+	warehouse: WarehouseView<"catalog" | "robots">,
 	order?: Order | undefined,
 ): OrderFormValues {
 	return {

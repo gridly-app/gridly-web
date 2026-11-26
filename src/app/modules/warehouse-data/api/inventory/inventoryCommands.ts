@@ -7,8 +7,10 @@ export async function writeOffStock(
 	context: RestCommandContext,
 	command: Extract<WarehouseCommand, { action: "writeoff" }>,
 ): Promise<void> {
-	const { warehouse, send } = context;
-	const stock = warehouse.stock.find((stock) => stock.id === command.value.id);
+	const { resources, send } = context;
+	const stock = resources.inventory?.stock.find(
+		(stock) => stock.id === command.value.id,
+	);
 
 	if (!stock) {
 		throw new UserError("Остаток не найден.");

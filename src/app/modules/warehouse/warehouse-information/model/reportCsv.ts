@@ -1,7 +1,7 @@
 import { productPrice } from "@/domain/warehouse";
 import { encodeCsv } from "@/shared/lib";
 import { buildReport, previousPeriod, type ReportFilters } from "./report";
-import type { ReportWarehouse } from "./warehouseFields";
+import type { ReportWarehouse } from "./warehouseResources";
 
 export function reportCsv(warehouse: ReportWarehouse, filters: ReportFilters) {
 	const report = buildReport(warehouse, filters);

@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import {
 	isLayoutCommand,
-	type Warehouse,
+	type Cell,
 	type WarehouseCommand,
 	type WarehouseInput,
 } from "@/domain/warehouse";
@@ -50,16 +50,15 @@ export class RestWarehouseRepository implements WarehouseRepository {
 			sessionSignal,
 			() => this.keys,
 			readTimeoutMs,
+			(id) => this.live.invalidateIfHealthy(id),
 		);
 		this.live = new WarehouseLiveSubscriptions(
 			this.http,
 			this.cache,
 			() => this.keys,
 			{
-				snapshotReady: (id) => this.snapshots.isReady(id),
-				resync: (id, signal) => this.snapshots.readWarehouse(id, signal, "map"),
+				resync: (id, signal) => this.snapshots.resyncLive(id, signal),
 				poll: (id, signal) => this.snapshots.getLive(id, signal),
-				onIdle: (id) => this.snapshots.forgetMapState(id),
 			},
 		);
 		this.mutations = new WarehouseMutationRequests(this.http, sessionSignal);
@@ -77,11 +76,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		await this.cache.cancelQueries({ queryKey: this.keys.resources(id) });
 		signal.throwIfAborted();
 
-		const snapshot = await this.snapshots.readWarehouse(id, signal, "map");
-
-		signal.throwIfAborted();
-		this.cache.setQueryData(this.keys.resource(id, "map"), snapshot);
-		this.cache.setQueryData(this.keys.resource(id, "metadata"), snapshot);
+		await this.snapshots.read(id, "map", signal);
 	}
 
 	getSessionSignal() {
@@ -120,7 +115,9 @@ export class RestWarehouseRepository implements WarehouseRepository {
 	}
 
 	getLive(id: string, signal?: AbortSignal) {
-		return this.snapshots.getLive(id, signal);
+		return this.snapshots.isReady(id)
+			? this.snapshots.getLive(id, signal)
+			: this.snapshots.resyncLive(id, signal);
 	}
 
 	getOrder(id: string, orderId: string, signal?: AbortSignal | undefined) {
@@ -131,23 +128,20 @@ export class RestWarehouseRepository implements WarehouseRepository {
 		return readWarehouses(this.http, signal);
 	}
 
-	async get(
+	get<Resource extends WarehouseResource>(
 		id: string,
-		signal?: AbortSignal | undefined,
-		resource: WarehouseResource = "all",
+		signal: AbortSignal | undefined,
+		resource: Resource,
 	) {
-		return this.snapshots.readWarehouse(id, signal, resource, this.live);
+		return this.snapshots.read(id, resource, signal);
 	}
 
-	proposeRoutes(
-		id: string,
-		cells: Warehouse["cells"],
-		signal?: AbortSignal | undefined,
-	) {
-		const savedCells =
-			this.cache.getQueryData<Warehouse>(this.keys.detail(id))?.cells ?? [];
+	proposeRoutes(id: string, cells: Cell[], signal?: AbortSignal | undefined) {
+		const map = this.cache.getQueryData(this.keys.resource(id, "map"));
+
+		if (!map) throw new Error("Сначала загрузите планировку склада");
 		const zoneIds = new Set(
-			savedCells.flatMap((cell) => (cell.zone ? [cell.zone.id] : [])),
+			map.cells.flatMap((cell) => (cell.zone ? [cell.zone.id] : [])),
 		);
 
 		return proposeRoutes(this.http, id, cells, zoneIds, signal);
@@ -181,9 +175,13 @@ export class RestWarehouseRepository implements WarehouseRepository {
 	) {
 		const session = this.session.signal;
 		const keys = this.keys;
+		const metadata = this.cache.getQueryData(keys.resource(id, "metadata"));
+		const fallback = options?.warehouse;
 		const warehouse =
-			options?.warehouse ??
-			this.cache.getQueryData<Warehouse>(this.keys.detail(id));
+			fallback &&
+			(!metadata || (fallback.revision ?? -1) > (metadata.revision ?? -1))
+				? fallback
+				: metadata;
 
 		if (!warehouse) {
 			throw new Error("Сначала синхронизируйте склад");

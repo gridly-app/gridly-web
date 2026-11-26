@@ -8,7 +8,7 @@ import {
 } from "./eventGroup";
 
 export function useHistoryPage() {
-	const { warehouse } = useWarehouseScreen(["id", "timezone", "events"]);
+	const { warehouse } = useWarehouseScreen(["history"]);
 	const [search, setSearch] = useState("");
 	const [category, setCategory] = useState("all");
 	const [from, setFrom] = useState("");

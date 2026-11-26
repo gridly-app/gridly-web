@@ -1,182 +1,68 @@
-import type { Warehouse } from "@/domain/warehouse";
-import type { WarehouseResource } from "@/ports/warehouse";
+import type { Warehouse, WarehouseLayout } from "@/domain/warehouse";
 import { ApiError, type HttpClient, parseResponse } from "@/shared/http";
-import { categoryDto, productDto } from "../catalog/catalogDto";
-import { eventDto } from "../history/historyDto";
-import { stockDto } from "../inventory/inventoryDto";
-import { type LayoutDto, layoutDto } from "../layout/layout.dto.ts";
-import { readMapState } from "../live/readMapState";
-import { orderDto } from "../orders/orderDto";
-import { robotDto } from "../robots/robotDto";
-import { readWarehouseCollection } from "./readWarehouseCollection";
-import {
-	categoryFromDto,
-	cellsFromDto,
-	eventFromDto,
-	orderFromDto,
-	productFromDto,
-	robotFromDto,
-	stockFromDto,
-} from "./restMappers";
+import { type LayoutDto, layoutDto } from "../layout/layout.dto";
+import { cellsFromDto } from "./restMappers";
 
-export async function readSnapshotParts(
+export async function readPublishedLayout(
 	http: HttpClient,
 	base: string,
 	warehouse: Warehouse,
-	resource: WarehouseResource,
-	{
-		skipLive,
-		skipDraft,
-		cachedLayout,
-		signal,
-	}: {
-		skipLive: boolean;
-		skipDraft: boolean;
-		cachedLayout: LayoutDto | undefined;
-		signal: AbortSignal;
-	},
+	cached: LayoutDto | undefined,
+	signal: AbortSignal,
 ) {
-	const needs = (name: WarehouseResource) =>
-		resource === "all" || resource === name;
-	const withMap = needs("map");
-	const layoutPromise = readPublishedLayout();
-	const draftPromise = readDraftLayout();
+	if (!warehouse.published) return undefined;
+	if (
+		cached?.version === warehouse.version &&
+		cached.width === warehouse.width &&
+		cached.height === warehouse.height
+	)
+		return cached;
 
-	async function readPublishedLayout() {
-		if (!withMap || !warehouse.published) return null;
-		if (cachedLayout) return cachedLayout;
-
-		const data = await http.request(`${base}/layout`, { signal });
-
-		return parseResponse(layoutDto, data);
-	}
-
-	async function readDraftLayout() {
-		if (!withMap || skipDraft) return null;
-
-		try {
-			const data = await http.request(`${base}/layout/draft`, { signal });
-
-			return parseResponse(layoutDto, data);
-		} catch (error) {
-			if (error instanceof ApiError && error.status === 404) return null;
-
-			throw error;
-		}
-	}
-
-	const [
-		layout,
-		draft,
-		state,
-		robots,
-		categories,
-		products,
-		orders,
-		stock,
-		events,
-	] = await Promise.all([
-		layoutPromise,
-		draftPromise,
-		withMap && !skipLive
-			? readMapState(http, `${base}/map/state`, { signal })
-			: Promise.resolve(null),
-		withMap || needs("robots")
-			? readWarehouseCollection(http, `${base}/robots`, robotDto, signal)
-			: Promise.resolve([]),
-		needs("catalog")
-			? readWarehouseCollection(
-					http,
-					`${base}/categories?include_archived=true`,
-					categoryDto,
-					signal,
-				)
-			: Promise.resolve([]),
-		needs("catalog")
-			? readWarehouseCollection(
-					http,
-					`${base}/products?include_archived=true`,
-					productDto,
-					signal,
-				)
-			: Promise.resolve([]),
-		needs("orders")
-			? readWarehouseCollection(http, `${base}/orders`, orderDto, signal)
-			: Promise.resolve([]),
-		needs("inventory")
-			? readWarehouseCollection(
-					http,
-					`${base}/inventory?include_robots=true`,
-					stockDto,
-					signal,
-				)
-			: Promise.resolve([]),
-		needs("history")
-			? readWarehouseCollection(http, `${base}/events`, eventDto, signal)
-			: Promise.resolve([]),
-	]);
-
-	return {
-		layout,
-		draft,
-		state,
-		robots,
-		categories,
-		products,
-		orders,
-		stock,
-		events,
-	};
+	return parseResponse(
+		layoutDto,
+		await http.request(`${base}/layout`, { signal }),
+	);
 }
 
-export function assembleSnapshot(
-	warehouse: Warehouse,
-	parts: Awaited<ReturnType<typeof readSnapshotParts>>,
+export async function readDraftLayout(
+	http: HttpClient,
+	base: string,
+	signal: AbortSignal,
 ) {
-	const {
-		layout,
-		draft,
-		state,
-		robots,
-		categories,
-		products,
-		orders,
-		stock,
-		events,
-	} = parts;
-	if (!layout) {
-		warehouse.cells = Array.from(
-			{ length: warehouse.width * warehouse.height },
-			(_, index) => ({
-				x: index % warehouse.width,
-				y: Math.floor(index / warehouse.width),
-				type: "empty",
-				capacity: undefined,
-			}),
+	try {
+		return parseResponse(
+			layoutDto,
+			await http.request(`${base}/layout/draft`, { signal }),
 		);
-	}
-	if (layout) {
-		warehouse.cells = cellsFromDto(layout);
-		warehouse.routePlans = layout.routes;
-	}
-	if (draft) {
-		warehouse.draft = cellsFromDto(draft);
-		warehouse.draftRoutes = draft.routes;
-		warehouse.draftRevision = draft.revision;
-	}
-	warehouse.stateVersion = String(
-		state?.state_version ?? warehouse.stateVersion ?? "0",
-	);
-	warehouse.tick = String(state?.tick ?? warehouse.tick);
-	warehouse.asOf = state?.as_of || warehouse.asOf;
-	const live = new Map((state?.robots ?? []).map((r) => [r.id, r]));
+	} catch (error) {
+		if (error instanceof ApiError && error.status === 404) return undefined;
 
-	warehouse.robots = robots.map((robot) =>
-		robotFromDto(robot, live.get(robot.id)),
-	);
-	warehouse.categories = categories.map(categoryFromDto);
-	warehouse.products = products.map(productFromDto);
-	warehouse.orders = orders.map(orderFromDto);
-	warehouse.stock = stock.map(stockFromDto);
-	warehouse.events = events.map(eventFromDto);
+		throw error;
+	}
+}
+
+export function mapFromLayouts(
+	{ width, height, version, published }: Warehouse,
+	layout: LayoutDto | undefined,
+	draft: LayoutDto | undefined,
+): WarehouseLayout {
+	const cells: WarehouseLayout["cells"] = layout
+		? cellsFromDto(layout)
+		: Array.from({ length: width * height }, (_, index) => ({
+				x: index % width,
+				y: Math.floor(index / width),
+				type: "empty",
+			}));
+
+	return {
+		width,
+		height,
+		version,
+		published,
+		cells,
+		routePlans: layout?.routes,
+		draft: draft ? cellsFromDto(draft) : null,
+		draftRoutes: draft?.routes,
+		draftRevision: draft?.revision,
+	};
 }

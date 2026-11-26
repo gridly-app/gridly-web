@@ -43,7 +43,11 @@ test("retrying a write-off after a lost response keeps the same idempotency key"
 	};
 
 	try {
-		cache.setQueryData(repository.keys.detail("w"), warehouse());
+		const snapshot = warehouse();
+		cache.setQueryData(repository.keys.resource("w", "metadata"), snapshot);
+		cache.setQueryData(repository.keys.resource("w", "inventory"), {
+			stock: snapshot.stock,
+		});
 
 		await expect(repository.execute("w", command)).rejects.toThrow(
 			"Lost acknowledgement",

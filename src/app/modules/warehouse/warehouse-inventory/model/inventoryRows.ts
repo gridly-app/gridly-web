@@ -10,7 +10,7 @@ import {
 } from "@/domain/warehouse";
 import { dateKey } from "@/shared/lib";
 import type { InventoryStock } from "./inventoryStock";
-import type { InventoryWarehouse } from "./warehouseFields";
+import type { InventoryWarehouse } from "./warehouseResources";
 
 interface InventorySearch {
 	category: string;

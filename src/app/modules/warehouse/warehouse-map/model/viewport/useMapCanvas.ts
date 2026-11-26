@@ -2,7 +2,7 @@ import { gridInset } from "../../config/grid";
 import type { MapEditor } from "../draft/useMapEditor";
 import type { useRouteEditor } from "../editor/useRouteEditor";
 import type { getMapPresentation } from "../mapPresentation";
-import type { MapWarehouse } from "../warehouseFields";
+import type { MapWarehouse } from "../warehouseResources";
 import { createMapHandlers } from "./createMapHandlers";
 import type { useMapCamera } from "./useMapCamera";
 import { useMapRenderer } from "./useMapRenderer";

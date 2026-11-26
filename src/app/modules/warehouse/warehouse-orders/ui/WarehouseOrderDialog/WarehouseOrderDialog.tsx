@@ -7,24 +7,27 @@ import { useWarehouseCommand, useWarehouseResources } from "@/ports/warehouse";
 import { errorMessage, UserError } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { Modal } from "@/shared/ui/overlays";
+
 import { useOrderSelection } from "../../model/useOrderSelection";
 import { OrderDetailDialog } from "../OrderDetailDialog/OrderDetailDialog";
 
 export function WarehouseOrderDialog({ warehouse }: { warehouse: Warehouse }) {
 	const resources = useWarehouseResources(warehouse, ["catalog", "robots"]);
 	const mutation = useWarehouseCommand(warehouse.id);
+
 	const execute: CommandExecutor = async (action, ...[value, intent]) => {
-		if (!navigator.onLine || resources.error) {
+		if (!navigator.onLine || resources.error)
 			throw new UserError("Дождитесь синхронизации склада");
-		}
+
 		return mutation.mutateAsync({
 			...warehouseCommandSchema.parse({ action, value }),
 			operationId: intent?.operationId,
 		});
 	};
-	const selection = useOrderSelection(resources.warehouse, execute);
 
-	if (!resources.hasData) {
+	const selection = useOrderSelection(warehouse, execute);
+
+	if (!resources.data) {
 		return (
 			<Modal title="Карточка заказа" onClose={selection.closeOrder}>
 				{resources.error ? (
@@ -44,8 +47,8 @@ export function WarehouseOrderDialog({ warehouse }: { warehouse: Warehouse }) {
 	return (
 		<OrderDetailDialog
 			model={selection}
-			warehouse={resources.warehouse}
-			pending={mutation.isPending || !!resources.error}
+			warehouse={resources.data}
+			pending={mutation.isPending || Boolean(resources.error)}
 			execute={execute}
 		/>
 	);

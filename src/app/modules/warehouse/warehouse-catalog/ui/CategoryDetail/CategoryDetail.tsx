@@ -12,7 +12,7 @@ import { Button } from "@/shared/ui/controls";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { Link } from "@/shared/ui/navigation";
 import { Modal } from "@/shared/ui/overlays";
-import type { CatalogWarehouse } from "../../model/warehouseFields";
+import type { CatalogWarehouse } from "../../model/warehouseResources";
 import styles from "./CategoryDetail.module.css";
 import { CategoryForm } from "../CategoryForm/CategoryForm";
 import { CategoryStorage } from "../CategoryStorage/CategoryStorage";
@@ -110,15 +110,15 @@ export function CategoryDetail({
 				<Feedback tone="error" action={<RetryButton onRetry={map.retry} />}>
 					Не удалось загрузить зоны склада.
 				</Feedback>
-			) : (
+			) : map.data ? (
 				<CategoryStorage
-					key={map.warehouse.version}
+					key={map.data.version}
 					category={category}
-					warehouse={map.warehouse}
+					warehouse={map.data}
 					execute={execute}
 					pending={pending}
 				/>
-			)}
+			) : null}
 		</Modal>
 	);
 }

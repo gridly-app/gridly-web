@@ -1,10 +1,12 @@
 import { useState } from "react";
-import type { CommandExecutor, Warehouse } from "@/domain/warehouse";
+import type { CommandExecutor, WarehouseView } from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
 
 const activeRobotStatuses = new Set(["working", "moving", "carrying"]);
 
-export function robotCounts(warehouse: Pick<Warehouse, "robots" | "summary">) {
+export function robotCounts(
+	warehouse: Pick<WarehouseView<"robots">, "robots" | "summary">,
+) {
 	const activeFallback = warehouse.robots.filter(({ status }) =>
 		activeRobotStatuses.has(status),
 	).length;
@@ -16,7 +18,10 @@ export function robotCounts(warehouse: Pick<Warehouse, "robots" | "summary">) {
 }
 
 export function useMapSimulation(
-	warehouse: Pick<Warehouse, "robots" | "summary" | "allowedActions">,
+	warehouse: Pick<
+		WarehouseView<"robots">,
+		"robots" | "summary" | "allowedActions"
+	>,
 	command: CommandExecutor,
 ) {
 	const [error, setError] = useState("");

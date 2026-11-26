@@ -16,7 +16,7 @@ import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { getOrderPresentation } from "../../model/getOrderPresentation";
 import type { useOrderSelection } from "../../model/useOrderSelection";
 import type { useOrdersPage } from "../../model/useOrdersPage";
-import type { OrderScreenWarehouse } from "../../model/warehouseFields";
+import type { OrderScreenWarehouse } from "../../model/warehouseResources";
 import { OrderLines } from "../OrderLines/OrderLines";
 import styles from "./OrderRow.module.css";
 

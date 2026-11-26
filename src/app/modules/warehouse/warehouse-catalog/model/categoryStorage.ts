@@ -3,7 +3,7 @@ import {
 	type Cell,
 	cellKey,
 	storageCellTypes,
-	type Warehouse,
+	type WarehouseView,
 } from "@/domain/warehouse";
 
 export function categoryStorageZones(categoryId: string, cells: Cell[]) {
@@ -20,7 +20,7 @@ export function categoryStorageZones(categoryId: string, cells: Cell[]) {
 
 export function categoryStorageRows(
 	zones: Map<string, Cell[]>,
-	stock: Warehouse["stock"],
+	stock: WarehouseView<"inventory">["stock"],
 	categoryId: string,
 	canEdit: boolean,
 ) {

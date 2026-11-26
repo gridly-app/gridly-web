@@ -1,7 +1,6 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
 import { RestWarehouseRepository } from "../repositories/restRepository";
-import type { Warehouse } from "@/domain/warehouse/warehouse";
 import { ApiError, FetchHttpClient, type RequestOptions } from "@/shared/http";
 import { httpDouble } from "../../../../../../tests/support/http";
 import { warehouse } from "../../../../../../tests/support/warehouse";
@@ -37,18 +36,25 @@ test("confirm derives direction from a fresh read and retains the displayed revi
 				value: { id: "o", action: "confirm", revision: 3 },
 			},
 			warehouse(),
+			{},
 		);
 		expect(bodies[0]).toEqual({
 			revision: 3,
 			action: kind === "inbound" ? "unload" : "load",
 		});
-		await commands.execute("w", { action: "start", value: "o" }, warehouse());
+		await commands.execute(
+			"w",
+			{ action: "start", value: "o" },
+			warehouse(),
+			{},
+		);
 		expect(bodies[1]).toEqual({ revision: 7 });
 		await expect(
 			commands.execute(
 				"w",
 				{ action: "orderAction", value: { id: "o", action: "confirm" } },
 				warehouse(),
+				{},
 			),
 		).rejects.toThrow("Обновите данные");
 		expect(bodies).toHaveLength(2);
@@ -93,7 +99,7 @@ test("settings keep a separate revision, only send changed fields and retain ser
 		});
 	});
 	const repo = new RestWarehouseRepository(client, cache);
-	cache.setQueryData(repo.keys.detail("w"), warehouse());
+	cache.setQueryData(repo.keys.resource("w", "metadata"), warehouse());
 	expect((await repo.get("w", undefined, "settings")).settings?.revision).toBe(
 		4,
 	);
@@ -114,7 +120,8 @@ test("settings keep a separate revision, only send changed fields and retain ser
 			}),
 		).rejects.toBeInstanceOf(ApiError);
 		expect(
-			cache.getQueryData<Warehouse>(repo.keys.detail("w"))?.settings?.location,
+			cache.getQueryData(repo.keys.resource("w", "settings"))?.settings
+				?.location,
 		).toBe("Москва");
 	}
 	repo.clear();
@@ -148,6 +155,7 @@ test("editing an item outside the current snapshot never sends a create request"
 				},
 			},
 			snapshot,
+			{ catalog: snapshot },
 		),
 	).rejects.toThrow("Обновите каталог");
 
@@ -158,6 +166,7 @@ test("editing an item outside the current snapshot never sends a create request"
 			value: { id: "category", revision: 3, name: "Category", cold: false },
 		},
 		snapshot,
+		{ catalog: snapshot },
 	);
 	await commands.execute(
 		"w",
@@ -173,6 +182,7 @@ test("editing an item outside the current snapshot never sends a create request"
 			},
 		},
 		snapshot,
+		{ catalog: snapshot },
 	);
 
 	expect(calls).toEqual([
@@ -201,7 +211,7 @@ test("a confirmed zero threshold survives a failed refresh without another PATCH
 		}),
 		cache,
 	);
-	cache.setQueryData(repository.keys.detail("w"), warehouse());
+	cache.setQueryData(repository.keys.resource("w", "metadata"), warehouse());
 
 	try {
 		await repository.execute("w", {
@@ -212,7 +222,7 @@ test("a confirmed zero threshold survives a failed refresh without another PATCH
 			"Read failed",
 		);
 		expect(
-			cache.getQueryData<Warehouse>(repository.keys.detail("w"))?.settings,
+			cache.getQueryData(repository.keys.resource("w", "settings"))?.settings,
 		).toEqual({
 			revision: 8,
 			location: "",
@@ -221,8 +231,8 @@ test("a confirmed zero threshold survives a failed refresh without another PATCH
 		});
 		expect(writes).toBe(1);
 		expect(
-			cache.getQueryData<Warehouse>(repository.keys.resource("w", "settings"))
-				?.settings?.lowStockThreshold,
+			cache.getQueryData(repository.keys.resource("w", "settings"))?.settings
+				?.lowStockThreshold,
 		).toBe(0);
 	} finally {
 		repository.clear();
@@ -245,6 +255,7 @@ test("catalog writes preserve the difference between a missing price and zero", 
 			"w",
 			{ action: "product", value: { ...snapshot.products[0]!, price } },
 			snapshot,
+			{ catalog: snapshot },
 		);
 	}
 

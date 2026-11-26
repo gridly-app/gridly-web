@@ -6,7 +6,7 @@ import {
 	robotRoleLabels,
 } from "@/domain/warehouse";
 import { useLiveWarehouseScreen } from "@/ports/warehouse";
-import { warehouseFields } from "./warehouseFields";
+import { warehouseResources } from "./warehouseResources";
 
 const roleLabel = (role: string) =>
 	robotRoleLabels[role] ??
@@ -14,7 +14,7 @@ const roleLabel = (role: string) =>
 	role;
 export function useRobotsPage() {
 	const { warehouse, execute, command, pending } =
-		useLiveWarehouseScreen(warehouseFields);
+		useLiveWarehouseScreen(warehouseResources);
 	const [status, setStatus] = useState("all");
 	const [role, setRole] = useState("all");
 	const [search, setSearch] = useState("");

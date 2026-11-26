@@ -24,13 +24,13 @@ export function Orders({ warehouse }: { warehouse: Warehouse }) {
 	const [search, setSearch] = useState("");
 	const [kind, setKind] = useState<KindFilter>("all");
 	const [status, setStatus] = useState("all");
-	const orders = query.warehouse.orders;
+	const isDenied = isAccessDenied(query.error);
+	const orders = isDenied ? [] : (query.data?.orders ?? []);
 	const filters = { search, kind, status };
 	const statusOptions = orderStatusOptions(orders);
 	const filterCount = activeFilterCount(filters);
 	const rows = filterOrders(orders, filters);
-	const isDenied = isAccessDenied(query.error);
-	const canShowOrders = query.hasData && !isDenied;
+	const canShowOrders = Boolean(query.data) && !isDenied;
 	const hasRefreshError = canShowOrders && !!query.error;
 
 	function handleKindChange(value: string) {

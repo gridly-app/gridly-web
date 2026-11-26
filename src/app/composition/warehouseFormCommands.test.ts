@@ -33,6 +33,7 @@ test("robot wire DTO uses x/y on POST and revision on PATCH", async () => {
 		"w",
 		{ action: "robot", value: robotFromForm(form(), undefined, w.cells) },
 		w,
+		{ map: w, robots: w },
 	);
 	expect(calls[0]).toMatchObject({
 		path: "/warehouses/w/robots",
@@ -45,6 +46,7 @@ test("robot wire DTO uses x/y on POST and revision on PATCH", async () => {
 		"w",
 		{ action: "robot", value: robotFromForm(form(), w.robots[0], []) },
 		w,
+		{ map: w, robots: w },
 	);
 	expect(calls[1]).toMatchObject({
 		path: "/warehouses/w/robots/r",
@@ -61,8 +63,12 @@ test("archive commands use POST and direct stock commands are rejected before se
 			calls.push({ path, options });
 		},
 	);
-	await commands.execute("w", { action: "archiveProduct", value: "p" }, w);
-	await commands.execute("w", { action: "archiveCategory", value: "c" }, w);
+	await commands.execute("w", { action: "archiveProduct", value: "p" }, w, {
+		catalog: w,
+	});
+	await commands.execute("w", { action: "archiveCategory", value: "c" }, w, {
+		catalog: w,
+	});
 	expect(calls.map((c) => [c.path, c.options.method])).toEqual([
 		["/warehouses/w/products/p/archive", "POST"],
 		["/warehouses/w/categories/c/archive", "POST"],
@@ -88,11 +94,14 @@ test("archive commands use POST and direct stock commands are rejected before se
 			"w",
 			{ action: "writeoff", value: { id: "s", quantity: 9, reason: "Damage" } },
 			w,
+			{ inventory: w },
 		),
 	).rejects.toThrow("доступный");
 	data.set("quantity", "2");
 	const value = writeOffFromForm(data, stock);
-	await commands.execute("w", { action: "writeoff", value }, w);
+	await commands.execute("w", { action: "writeoff", value }, w, {
+		inventory: w,
+	});
 	expect(calls[2]).toMatchObject({
 		path: "/warehouses/w/inventory/write-offs",
 		options: {

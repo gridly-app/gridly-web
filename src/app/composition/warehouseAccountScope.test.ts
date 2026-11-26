@@ -69,13 +69,16 @@ test("a new account opening the same warehouse ignores the old read and write an
 
 	await session.authenticate("login", { login: "first", password: "fixture" });
 	await repository.get("w1", undefined, "map");
+	await repository.get("w1", undefined, "catalog");
 	const firstKeys = repository.keys;
 	const releaseFirst = repository.subscribeLive("w1");
 
 	try {
 		await until(() => streams.length === 1);
 		holdRead = true;
-		const staleRead = repository.get("w1").catch((error: unknown) => error);
+		const staleRead = repository
+			.get("w1", undefined, "metadata")
+			.catch((error: unknown) => error);
 		await readStarted.promise;
 		const staleWrite = repository
 			.execute("w1", {
@@ -103,20 +106,28 @@ test("a new account opening the same warehouse ignores the old read and write an
 
 		try {
 			await until(() => streams.length === 2 && streams[0]?.canceled === true);
-			expect(secondKeys.detail("w1")).not.toEqual(firstKeys.detail("w1"));
+			expect(secondKeys.resource("w1", "metadata")).not.toEqual(
+				firstKeys.resource("w1", "metadata"),
+			);
 			releaseRead.resolve();
 			releaseWrite.resolve();
 
 			expect(await staleRead).toMatchObject({ name: "AbortError" });
 			expect(await staleWrite).toMatchObject({ name: "AbortError" });
-			expect(cache.getQueryData(secondKeys.detail("w1"))).toMatchObject({
+			expect(
+				cache.getQueryData(secondKeys.resource("w1", "metadata")),
+			).toMatchObject({
 				name: "second",
-				draft: null,
 			});
+			expect(
+				cache.getQueryData(secondKeys.resource("w1", "map"))?.draft,
+			).toBeNull();
 			expect(
 				cache.getQueryData(secondKeys.layoutOperation("w1")),
 			).toBeUndefined();
-			expect(cache.getQueryData(firstKeys.detail("w1"))).toBeUndefined();
+			expect(
+				cache.getQueryData(firstKeys.resource("w1", "metadata")),
+			).toBeUndefined();
 			expect(
 				cache.getQueryData(firstKeys.layoutOperation("w1")),
 			).toBeUndefined();

@@ -1,7 +1,10 @@
 import { expect, test } from "bun:test";
+import type { WarehouseLiveState } from "@/domain/warehouse";
 import { QueryClient } from "@tanstack/react-query";
 import { httpDouble } from "../../../../../../tests/support/http";
 
+import { RestWarehouseSnapshots } from "./restWarehouseSnapshots";
+import { createWarehouseKeys } from "../../model/queries/queryKeys";
 import { RestWarehouseRepository } from "./restRepository";
 import { ApiError } from "@/shared/http";
 
@@ -38,13 +41,16 @@ test("REST rejects an unknown warehouse time zone before caching metadata", asyn
 		status: 502,
 		code: "INVALID_RESPONSE",
 	});
-	expect(cache.getQueryData(repository.keys.detail("w"))).toBeUndefined();
+	expect(
+		cache.getQueryData(repository.keys.resource("w", "metadata")),
+	).toBeUndefined();
 });
 
-test("a full REST snapshot preserves the published trajectory at an equal numeric version", async () => {
+test("a REST live resync preserves the published trajectory at an equal numeric version", async () => {
 	const cache = new QueryClient();
 	let restVersion = "1";
-	const repository = new RestWarehouseRepository(
+	const keys = createWarehouseKeys("live-test");
+	const snapshots = new RestWarehouseSnapshots(
 		httpDouble({
 			async request(path) {
 				if (path === "/warehouses/w?include_summary=true") return metadata;
@@ -75,13 +81,17 @@ test("a full REST snapshot preserves the published trajectory at an equal numeri
 			},
 		}),
 		cache,
+		() => new AbortController().signal,
+		() => keys,
+		1000,
+		() => undefined,
 	);
-	const snapshot = await repository.get("w", undefined, "map");
+	const snapshot = await snapshots.resyncLive("w");
 	const motionPath = [
 		{ x: 0, y: 0 },
 		{ x: 1, y: 0 },
 	];
-	cache.setQueryData(repository.keys.detail("w"), {
+	cache.setQueryData<WarehouseLiveState>(keys.live("w"), {
 		...snapshot,
 		stateVersion: "2",
 		robots: snapshot.robots.map((robot) => ({
@@ -92,7 +102,7 @@ test("a full REST snapshot preserves the published trajectory at an equal numeri
 	});
 
 	restVersion = "02";
-	const result = await repository.get("w", undefined, "map");
+	const result = await snapshots.resyncLive("w");
 	expect(result.stateVersion).toBe("2");
 	expect(result.robots[0]).toMatchObject({ motionPath, motionTimed: true });
 });

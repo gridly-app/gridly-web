@@ -6,7 +6,7 @@ import {
 } from "@/domain/warehouse";
 import { type ReportFilters, warehouseDay } from "./reportPeriod";
 import { reportUnpricedDetails } from "./reportUnpricedDetails";
-import type { ReportWarehouse } from "./warehouseFields";
+import type { ReportWarehouse } from "./warehouseResources";
 
 export { productPrice } from "@/domain/warehouse";
 export {

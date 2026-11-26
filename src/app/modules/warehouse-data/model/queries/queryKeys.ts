@@ -1,3 +1,9 @@
+import { queryOptions } from "@tanstack/react-query";
+import type {
+	WarehouseResource,
+	WarehouseResourceTypes,
+} from "@/domain/warehouse";
+
 export const layoutOperationNamespace = "warehouse-layout-operation";
 
 export function createWarehouseKeys(scopeId: string) {
@@ -16,8 +22,13 @@ export function createWarehouseKeys(scopeId: string) {
 		layoutOperations,
 		layoutOperation: (id: string) => [...layoutOperations, id] as const,
 		resources,
-		resource: (id: string, resource: string) =>
-			[...resources(id), resource] as const,
+		resource: <Resource extends WarehouseResource>(
+			id: string,
+			resource: Resource,
+		) =>
+			queryOptions<WarehouseResourceTypes[Resource]>({
+				queryKey: [...resources(id), resource],
+			}).queryKey,
 		selectionSummaries,
 		selectionSummary: (id: string, cells: string[]) =>
 			[...selectionSummaries(id), cells] as const,
@@ -28,7 +39,6 @@ export function createWarehouseKeys(scopeId: string) {
 		orders,
 		order: (id: string, orderId: string | null) =>
 			[...orders(id), orderId] as const,
-		detail: (id: string) => [...warehouse(id), "snapshot"] as const,
 	};
 }
 

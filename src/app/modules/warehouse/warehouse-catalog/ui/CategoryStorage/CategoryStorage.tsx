@@ -1,5 +1,9 @@
 import { useState } from "react";
-import type { Category, CommandExecutor } from "@/domain/warehouse";
+import type {
+	Category,
+	CommandExecutor,
+	WarehouseLayout,
+} from "@/domain/warehouse";
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { Feedback } from "@/shared/ui/feedback";
 import { FormShell, Select } from "@/shared/ui/forms";
@@ -8,7 +12,7 @@ import {
 	categoryStorageRows,
 	categoryStorageZones,
 } from "../../model/categoryStorage";
-import type { CatalogWarehouse } from "../../model/warehouseFields";
+import type { CatalogWarehouse } from "../../model/warehouseResources";
 import { StorageZoneFields } from "../StorageZoneFields/StorageZoneFields";
 
 export function CategoryStorage({
@@ -18,7 +22,7 @@ export function CategoryStorage({
 	pending,
 }: {
 	category: Category;
-	warehouse: CatalogWarehouse;
+	warehouse: CatalogWarehouse & WarehouseLayout;
 	execute: CommandExecutor;
 	pending: boolean;
 }) {

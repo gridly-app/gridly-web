@@ -12,7 +12,7 @@ import { Modal } from "@/shared/ui/overlays";
 import { productColumns } from "./model/productColumns";
 import { useCatalogDialog } from "./model/useCatalogDialog";
 import { useCatalogPage } from "./model/useCatalogPage";
-import { warehouseFields } from "./model/warehouseFields";
+import { warehouseResources } from "./model/warehouseResources";
 import { CatalogDialog } from "./ui/CatalogDialog/CatalogDialog";
 import { CatalogFilters } from "./ui/CatalogFilters/CatalogFilters";
 import { CatalogToolbar } from "./ui/CatalogToolbar/CatalogToolbar";
@@ -23,7 +23,7 @@ import { ProductsTable } from "./ui/ProductsTable/ProductsTable";
 
 export function WarehouseCatalog() {
 	const { warehouse, execute, command, pending } =
-		useWarehouseScreen(warehouseFields);
+		useWarehouseScreen(warehouseResources);
 	const catalog = useCatalogPage(warehouse, command);
 	const {
 		empty,

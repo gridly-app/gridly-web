@@ -2,7 +2,8 @@ import { expect, test } from "bun:test";
 
 import { warehouse } from "../../../tests/support/warehouse";
 import { incomingProduct, orderCompletion } from "./orderForecast";
-import type { Order, Robot, Warehouse } from "./warehouse";
+import type { WarehouseView } from "./resources";
+import type { Order, Robot } from "./warehouse";
 
 function inboundFixture() {
 	const base = warehouse();
@@ -44,7 +45,9 @@ function inboundFixture() {
 			carrying: true,
 		},
 	};
-	const snapshot: Warehouse = {
+	const snapshot: WarehouseView<
+		"map" | "catalog" | "history" | "robots" | "orders" | "inventory"
+	> = {
 		...base,
 		asOf,
 		orders: [order],

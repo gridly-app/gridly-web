@@ -30,3 +30,5 @@ export const writeOffSchema = z.object({
 });
 
 export type Stock = z.infer<typeof stockSchema>;
+
+export type WriteOff = z.infer<typeof writeOffSchema>;

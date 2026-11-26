@@ -13,7 +13,7 @@ import {
 	warehouseFromDto,
 } from "@/app/modules/warehouse-data/api/repositories/restMappers";
 import { warehouseDto } from "@/app/modules/warehouse-data/api/warehouses/warehouseDto";
-import type { Warehouse } from "@/domain/warehouse";
+import type { WarehouseView } from "@/domain/warehouse";
 
 import { loadMockRoutes } from "../../bruno/mock-fixture";
 
@@ -26,10 +26,16 @@ export function payload(name: string): unknown {
 function items<T>(name: string, schema: z.ZodType<T>): T[] {
 	return z.object({ items: z.array(schema) }).parse(payload(name)).items;
 }
-export const reportWarehouse: Warehouse = {
+export const reportWarehouse: WarehouseView<
+	"map" | "robots" | "catalog" | "orders" | "inventory" | "history"
+> = {
 	...warehouseFromDto(
 		warehouseDto.parse(payload("Карточка склада (Центральный)")),
 	),
+	cells: [],
+	draft: null,
+	robots: [],
+	events: [],
 	orders: items("Список заказов (Центральный)", orderDto).map(orderFromDto),
 	products: items("Список товаров (Центральный)", productDto).map(
 		productFromDto,

@@ -4,7 +4,7 @@ import { type Stock, stockZoneCells, stockZoneNames } from "@/domain/warehouse";
 import { useLiveWarehouseScreen } from "@/ports/warehouse";
 import { useUpdateSearchParams } from "@/shared/lib";
 import { expectedDeliveries, stockRows, writeOffRows } from "./inventoryRows";
-import { warehouseFields } from "./warehouseFields";
+import { warehouseResources } from "./warehouseResources";
 
 type InventoryView = "stock" | "incoming" | "writeoffs";
 
@@ -12,7 +12,7 @@ import { useSimulationCadence } from "./useSimulationCadence";
 
 export function useInventoryPage() {
 	const { warehouse, execute, pending } =
-		useLiveWarehouseScreen(warehouseFields);
+		useLiveWarehouseScreen(warehouseResources);
 	const cadence = useSimulationCadence(warehouse);
 	const [params, setParams] = useSearchParams();
 	const updateSearchParams = useUpdateSearchParams();

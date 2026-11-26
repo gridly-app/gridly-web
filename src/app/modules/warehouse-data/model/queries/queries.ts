@@ -1,14 +1,18 @@
 import { skipToken, useQueries, useQuery } from "@tanstack/react-query";
 import { newWarehouseId } from "@/ports/navigation";
 import { useEffect } from "react";
-import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
-import { selectWarehouseMotion } from "@/domain/warehouse";
-import type { WarehouseResource } from "@/ports/warehouse";
+import {
+	isApplicableLiveState,
+	mergeRobotPositions,
+	type Warehouse,
+	type WarehouseLiveState,
+	type WarehouseResource,
+	type WarehouseResourceData,
+} from "@/domain/warehouse";
 import { useWarehouseScope } from "@/ports/warehouse";
 import { ApiError } from "@/shared/http";
 import { usePageVisible } from "@/shared/lib";
 import { useWarehouseRepository } from "../../WarehouseRepositoryProvider";
-import { warehouseResourceData } from "./resources";
 
 export function useOrder(id: string, orderId: string | null) {
 	const repository = useWarehouseRepository();
@@ -96,10 +100,10 @@ export function useSelectionSummary(
 	});
 }
 
-export function useWarehouseResources<Snapshot extends Pick<Warehouse, "id">>(
-	warehouse: Snapshot,
-	resources: WarehouseResource[],
-) {
+export function useWarehouseResources<
+	Snapshot extends Pick<Warehouse, "id">,
+	Resource extends WarehouseResource,
+>(warehouse: Snapshot, resources: readonly Resource[]) {
 	const repository = useWarehouseRepository();
 	const warehouseKeys = repository.keys;
 	const visible = usePageVisible();
@@ -112,19 +116,17 @@ export function useWarehouseResources<Snapshot extends Pick<Warehouse, "id">>(
 			refetchInterval: visible ? 5000 : false,
 		})),
 	});
-	const merged = { ...warehouse };
-	queries.forEach((query, index) => {
-		const resource = resources[index];
-		if (query.data && resource)
-			Object.assign(merged, warehouseResourceData(resource, query.data));
-	});
+	const loaded = queries.flatMap(({ data }) => (data ? [data] : []));
+	const data: (Snapshot & WarehouseResourceData<Resource>) | undefined =
+		loaded.length === resources.length
+			? Object.assign({}, warehouse, ...loaded)
+			: undefined;
 	const denied = queries
 		.map((query) => query.error ?? query.failureReason)
 		.find((error) => error instanceof ApiError && error.status === 403);
 
 	return {
-		warehouse: merged,
-		hasData: queries.every((query) => query.data !== undefined),
+		data,
 		loading: queries.some((query) => query.isPending),
 		error: denied ?? queries.find((query) => query.isError)?.error,
 		fetching: queries.some((query) => query.isFetching),
@@ -135,12 +137,23 @@ export function useWarehouseResources<Snapshot extends Pick<Warehouse, "id">>(
 export function useLiveWarehouseScope() {
 	const scope = useWarehouseScope();
 	const live = useWarehouseLiveUpdates(scope.warehouse.id);
+	const { warehouse } = scope;
+
+	if (!isApplicableLiveState(warehouse, live.data)) return scope;
+
+	const { asOf, tick, stateVersion } = live.data;
+	const robots = warehouse.robots
+		? { robots: mergeRobotPositions(warehouse.robots, live.data.robots) }
+		: undefined;
+
 	return {
 		...scope,
 		warehouse: {
-			...scope.warehouse,
-			...selectWarehouseMotion(scope.warehouse, live.data),
+			...warehouse,
+			asOf: asOf ?? warehouse.asOf,
+			tick,
+			stateVersion,
+			...robots,
 		},
-		pending: scope.pending || live.isError,
 	};
 }

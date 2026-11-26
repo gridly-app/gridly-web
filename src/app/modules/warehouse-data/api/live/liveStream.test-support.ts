@@ -1,7 +1,8 @@
+import { jest } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
 import { WarehouseLiveStream } from "./liveStream";
 import { createWarehouseKeys } from "../../model/queries/queryKeys";
-import type { Warehouse } from "@/domain/warehouse/warehouse";
+import type { WarehouseLiveState } from "@/domain/warehouse/warehouse";
 import { warehouse } from "../../../../../../tests/support/warehouse";
 
 const encoder = new TextEncoder();
@@ -12,6 +13,29 @@ export async function until(check: () => boolean) {
 	}
 	throw new Error("Timed out waiting for stream");
 }
+async function flushMicrotasks() {
+	for (let i = 0; i < 20; i++) await Promise.resolve();
+}
+
+export async function untilAdvanced(check: () => boolean) {
+	for (let elapsed = 0; elapsed < 1000; elapsed++) {
+		await flushMicrotasks();
+
+		if (check()) return;
+
+		jest.advanceTimersByTime(1);
+	}
+
+	throw new Error("Timed out waiting for stream on fake timers");
+}
+
+export async function advanceBy(milliseconds: number) {
+	for (let elapsed = 0; elapsed < milliseconds; elapsed++) {
+		jest.advanceTimersByTime(1);
+		await flushMicrotasks();
+	}
+}
+
 export function channel() {
 	let controller!: ReadableStreamDefaultController<Uint8Array>;
 	let canceled = false;
@@ -71,7 +95,21 @@ export function harness(
 ) {
 	const cache = new QueryClient();
 	const warehouseKeys = createWarehouseKeys("stream-test");
-	cache.setQueryData(warehouseKeys.detail("w"), warehouse());
+	const fixture = warehouse();
+	cache.setQueryData(warehouseKeys.resource("w", "map"), {
+		width: fixture.width,
+		height: fixture.height,
+		version: fixture.version,
+		published: fixture.published,
+		cells: fixture.cells,
+		draft: fixture.draft,
+	});
+	cache.setQueryData(warehouseKeys.live("w"), {
+		layoutVersion: fixture.version,
+		tick: fixture.tick,
+		stateVersion: fixture.stateVersion,
+		robots: fixture.robots,
+	});
 	const channels: ReturnType<typeof channel>[] = [];
 	const urls: string[] = [];
 	const errors: unknown[] = [];
@@ -83,7 +121,6 @@ export function harness(
 			keys: warehouseKeys,
 			cache,
 			timing,
-			snapshotReady: () => true,
 			http: {
 				request: async () => undefined,
 				openStream: async (url) => {
@@ -96,7 +133,9 @@ export function harness(
 			resync: async (signal) => {
 				signal.throwIfAborted();
 				resyncs++;
-				const w = cache.getQueryData<Warehouse>(warehouseKeys.detail("w"));
+				const w = cache.getQueryData<WarehouseLiveState>(
+					warehouseKeys.live("w"),
+				);
 				if (!w) throw new Error("Missing warehouse");
 				return w;
 			},

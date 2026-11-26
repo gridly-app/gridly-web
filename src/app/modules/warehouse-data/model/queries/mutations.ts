@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import type { Warehouse, WarehouseCommand } from "@/domain/warehouse";
+import type { Cell, Warehouse, WarehouseCommand } from "@/domain/warehouse";
 import { isLayoutCommand } from "@/domain/warehouse";
 import type { MutationReceipt } from "@/ports/warehouse";
 import { useWarehouseRepository } from "../../WarehouseRepositoryProvider";
@@ -33,13 +33,6 @@ export function useWarehouseCommand(id: string, fallbackWarehouse?: Warehouse) {
 			const signature = JSON.stringify(command);
 			if (operation.current.signature !== signature)
 				operation.current = { signature, id: crypto.randomUUID() };
-			const snapshot = cache.getQueryData<Warehouse>(warehouseKeys.detail(id));
-			const warehouse =
-				fallbackWarehouse &&
-				(!snapshot ||
-					(fallbackWarehouse.revision ?? -1) > (snapshot.revision ?? -1))
-					? fallbackWarehouse
-					: snapshot;
 			const operationId = command.operationId
 				? await mutationIdentity(
 						command.operationId,
@@ -49,7 +42,7 @@ export function useWarehouseCommand(id: string, fallbackWarehouse?: Warehouse) {
 			session.throwIfAborted();
 			const result = await repository.execute(id, command, {
 				operationId,
-				warehouse,
+				warehouse: fallbackWarehouse,
 			});
 			operation.current = { signature: "", id: crypto.randomUUID() };
 			if (!active.current)
@@ -144,7 +137,6 @@ export function useCreateWarehouse() {
 export function useRouteProposal(id: string) {
 	const repository = useWarehouseRepository();
 	return useMutation({
-		mutationFn: (cells: Warehouse["cells"]) =>
-			repository.proposeRoutes(id, cells),
+		mutationFn: (cells: Cell[]) => repository.proposeRoutes(id, cells),
 	});
 }

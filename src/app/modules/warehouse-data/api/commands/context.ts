@@ -1,4 +1,4 @@
-import type { Warehouse } from "@/domain/warehouse";
+import type { Warehouse, WarehouseResourceTypes } from "@/domain/warehouse";
 import type { HttpClient, RequestOptions } from "@/shared/http";
 import { UserError } from "@/shared/lib";
 
@@ -8,7 +8,13 @@ export type SendMutation = (
 	keyed?: boolean | undefined,
 ) => Promise<unknown>;
 
+export type CommandResources = {
+	[Resource in "map" | "robots" | "catalog" | "orders" | "inventory"]?:
+		WarehouseResourceTypes[Resource] | undefined;
+};
+
 export interface RestCommandContext {
+	resources: CommandResources;
 	warehouse: Warehouse;
 	base: string;
 	http: HttpClient;

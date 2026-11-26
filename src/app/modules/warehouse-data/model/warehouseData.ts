@@ -25,7 +25,7 @@ function useWarehouseCache() {
 
 	return {
 		getSnapshot: (id: string) =>
-			cache.getQueryData<Warehouse>(warehouseKeys.detail(id)),
+			cache.getQueryData(warehouseKeys.resource(id, "metadata")),
 		getWarehouses: () => cache.getQueryData<Warehouse[]>(warehouseKeys.all),
 		hasReadError: (id: string) =>
 			cache

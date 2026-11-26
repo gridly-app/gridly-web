@@ -1,7 +1,7 @@
 import { Button } from "@/shared/ui/controls";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
 import { stockCategories } from "../../model/chartData";
-import type { ReportWarehouse } from "../../model/warehouseFields";
+import type { ReportWarehouse } from "../../model/warehouseResources";
 import chartStyles from "../../shared.module.css";
 import styles from "./CategoryDistribution.module.css";
 

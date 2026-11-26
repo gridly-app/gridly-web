@@ -1,4 +1,4 @@
-import type { Warehouse } from "@/domain/warehouse";
+import type { WarehouseView } from "@/domain/warehouse";
 import {
 	Table,
 	TableBody,
@@ -17,7 +17,7 @@ export function WriteOffsTable({
 	hiddenColumns,
 	highlightUnpriced,
 }: {
-	warehouse: Pick<Warehouse, "id" | "orders" | "timezone">;
+	warehouse: Pick<WarehouseView<"orders">, "id" | "orders" | "timezone">;
 	items: ReturnType<typeof useInventoryPage>["writeOffs"];
 	hiddenColumns: number[];
 	highlightUnpriced: boolean;

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { Warehouse } from "@/domain/warehouse/warehouse";
+import type { WarehouseLiveState } from "@/domain/warehouse/warehouse";
 
 import { event, harness, patch, until } from "./liveStream.test-support";
 
@@ -27,9 +27,10 @@ test("gaps, unknown robots, malformed patches and RESYNC_REQUIRED reload before 
 		try {
 			await until(() => h.live.healthy);
 			h.channels[0]?.send(message);
-			await until(() => h.resyncs > 0 && h.channels.length > 1);
+			await until(() => h.resyncs > 1 && h.channels.length > 1);
 			expect(
-				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.stateVersion,
+				h.cache.getQueryData<WarehouseLiveState>(h.keys.live("w"))
+					?.stateVersion,
 			).toBe("1");
 			expect(h.urls[1]).toContain("since_version=1");
 		} finally {
@@ -68,9 +69,10 @@ test("invalid trajectories and layout changes resynchronize rather than enter th
 		try {
 			await until(() => h.live.healthy);
 			h.channels[0]?.send(event(patch("2", changes)));
-			await until(() => h.resyncs > 0);
+			await until(() => h.resyncs > 1);
 			expect(
-				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.robots[0]?.x,
+				h.cache.getQueryData<WarehouseLiveState>(h.keys.live("w"))?.robots[0]
+					?.x,
 			).toBe(0);
 		} finally {
 			h.live.stop();

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { CommandExecutor } from "@/domain/warehouse";
 import { useWarehouseCache } from "@/ports/warehouse";
-import type { SettingsWarehouse } from "./warehouseFields";
+import type { SettingsWarehouse } from "./warehouseResources";
 import { useSettingsSave } from "./useSettingsSave";
 
 export interface SettingsCommandOptions {

@@ -36,7 +36,8 @@ describe("REST warehouse layout commands", () => {
 		);
 
 		try {
-			await repository.get("w1");
+			await repository.get("w1", undefined, "map");
+			await repository.get("w1", undefined, "catalog");
 			await repository.execute("w1", {
 				action: "saveMap",
 				value: {
@@ -88,7 +89,8 @@ describe("REST warehouse layout commands", () => {
 		};
 
 		try {
-			await repository.get("w1");
+			await repository.get("w1", undefined, "map");
+			await repository.get("w1", undefined, "catalog");
 			await expect(repository.execute("w1", command)).rejects.toThrow(
 				"Lost response",
 			);
@@ -127,12 +129,10 @@ describe("REST warehouse layout commands", () => {
 			cache,
 		);
 
-		await repository.get("w1");
+		await repository.get("w1", undefined, "map");
+		await repository.get("w1", undefined, "catalog");
 		const catalogKey = repository.keys.resource("w1", "catalog");
-		cache.setQueryData(
-			catalogKey,
-			await repository.get("w1", undefined, "catalog"),
-		);
+
 		const receipt = await repository.execute("w1", {
 			action: "saveMap",
 			value: {
@@ -181,26 +181,19 @@ describe("REST warehouse layout commands", () => {
 					}
 					if (path.endsWith("/layout"))
 						return { version, width: 3, height: 3, cells: [], routes: [] };
-					if (path.endsWith("/map/state") && holdOldRead) {
+					if (path.endsWith("/layout/draft") && !holdOldRead)
+						return {
+							version,
+							revision: 1,
+							width: 3,
+							height: 3,
+							cells: [],
+							routes: [],
+						};
+					if (path.endsWith("/layout/draft") && holdOldRead) {
 						holdOldRead = false;
 						started.resolve();
 						await release.promise;
-						return {
-							warehouse_id: "w1",
-							layout_version: 1,
-							state_version: "1",
-							tick: "1",
-							robots: [],
-						};
-					}
-					if (path.endsWith("/map/state")) {
-						return {
-							warehouse_id: "w1",
-							layout_version: version,
-							state_version: "1",
-							tick: "1",
-							robots: [],
-						};
 					}
 					if (path.endsWith("/layout/commit") && options?.method === "POST") {
 						version = 2;
@@ -212,7 +205,8 @@ describe("REST warehouse layout commands", () => {
 			cache,
 		);
 
-		await repository.get("w1");
+		await repository.get("w1", undefined, "map");
+		await repository.get("w1", undefined, "catalog");
 		holdOldRead = true;
 		const oldRead = repository
 			.get("w1", undefined, "map")
@@ -229,7 +223,9 @@ describe("REST warehouse layout commands", () => {
 		}
 
 		expect(await oldRead).toMatchObject({ name: "AbortError" });
-		expect(cache.getQueryData(repository.keys.detail("w1"))).toMatchObject({
+		expect(
+			cache.getQueryData(repository.keys.resource("w1", "metadata")),
+		).toMatchObject({
 			version: 2,
 		});
 		expect(
@@ -267,31 +263,20 @@ describe("REST warehouse layout commands", () => {
 						};
 					}
 
-					if (path === "/warehouses/w1/map/state" && delayRead) {
-						delayRead = false;
-						reading.resolve();
-						await releaseRead.promise;
+					if (path === "/warehouses/w1/layout/draft") {
+						if (delayRead) {
+							delayRead = false;
+							reading.resolve();
+							await releaseRead.promise;
+						}
 
 						return {
-							warehouse_id: "w1",
-							layout_version: 1,
-							state_version: "1",
-							tick: "1",
-							robots: [],
-						};
-					}
-
-					if (
-						path === "/warehouses/w2/map/state" ||
-						path === "/warehouses/w1/map/state"
-					) {
-						const second = path.includes("/w2/");
-						return {
-							warehouse_id: second ? "w2" : "w1",
-							layout_version: second ? 7 : publishedVersion,
-							state_version: "1",
-							tick: "1",
-							robots: [],
+							version: publishedVersion,
+							revision: 1,
+							width: 3,
+							height: 3,
+							cells: [],
+							routes: [],
 						};
 					}
 
@@ -330,6 +315,7 @@ describe("REST warehouse layout commands", () => {
 		);
 
 		await repository.get("w1", undefined, "map");
+		await repository.get("w1", undefined, "catalog");
 		delayRead = true;
 		const oldRead = repository
 			.get("w1", undefined, "map")
@@ -345,7 +331,7 @@ describe("REST warehouse layout commands", () => {
 		try {
 			const current = await repository.get("w2", undefined, "map");
 
-			expect(current).toMatchObject({ id: "w2", version: 7 });
+			expect(current.version).toBe(7);
 			expect(current.cells[0]).toMatchObject({ x: 0, y: 0, type: "charge" });
 			releaseWrite.resolve();
 			await oldWrite;
@@ -355,12 +341,15 @@ describe("REST warehouse layout commands", () => {
 		}
 
 		expect(await oldRead).toMatchObject({ name: "AbortError" });
-		expect(cache.getQueryData(repository.keys.detail("w1"))).toMatchObject({
+		expect(
+			cache.getQueryData(repository.keys.resource("w1", "metadata")),
+		).toMatchObject({
 			id: "w1",
 			version: 2,
 		});
-		expect(cache.getQueryData(repository.keys.detail("w2"))).toMatchObject({
-			id: "w2",
+		expect(
+			cache.getQueryData(repository.keys.resource("w2", "map")),
+		).toMatchObject({
 			version: 7,
 			draft: null,
 		});
@@ -388,7 +377,7 @@ describe("REST warehouse layout commands", () => {
 			}),
 		);
 
-		await repository.get("w1");
+		await repository.get("w1", undefined, "map");
 		await expect(
 			repository.execute("w1", {
 				action: "resize",
@@ -423,7 +412,9 @@ describe("REST warehouse layout commands", () => {
 				},
 			}),
 		);
-		expect((await repository.get("w1")).draftRevision).toBe(5);
+		expect((await repository.get("w1", undefined, "map")).draftRevision).toBe(
+			5,
+		);
 		await expect(
 			repository.execute("w1", {
 				action: "discard",
@@ -435,14 +426,19 @@ describe("REST warehouse layout commands", () => {
 
 	test("route proposals preserve zone boundaries including new zones", async () => {
 		let body: unknown;
+		const fixture = warehouseRepositoryFixture();
 		const repository = new RestWarehouseRepository(
 			httpDouble({
-				async request(_path, options) {
-					body = options?.body;
+				async request(path, options) {
+					if (options?.method !== "POST")
+						return fixture.http.request(path, options);
+
+					body = options.body;
 					return [];
 				},
 			}),
 		);
+		await repository.get("w1", undefined, "map");
 		await repository.proposeRoutes("w1", [
 			{
 				x: 0,

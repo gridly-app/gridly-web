@@ -15,8 +15,8 @@ import { useOrderCreation } from "./model/useOrderCreation";
 import { useOrderSelection } from "./model/useOrderSelection";
 import type { OrdersPageOptions } from "./model/useOrdersPage";
 import { useOrdersPage } from "./model/useOrdersPage";
-import type { OrderScreenWarehouse } from "./model/warehouseFields";
-import { warehouseFields } from "./model/warehouseFields";
+import type { OrderScreenWarehouse } from "./model/warehouseResources";
+import { warehouseResources } from "./model/warehouseResources";
 import { OrderDetailDialog } from "./ui/OrderDetailDialog/OrderDetailDialog";
 import { OrderCreationDialog } from "./ui/OrderCreationDialog/OrderCreationDialog";
 import { OrdersToolbar } from "./ui/OrdersToolbar/OrdersToolbar";
@@ -26,7 +26,7 @@ export type OrdersPageProps = OrdersPageOptions;
 
 export function WarehouseOrders({ kind }: OrdersPageProps) {
 	const { warehouse, execute, command, pending } =
-		useLiveWarehouseScreen(warehouseFields);
+		useLiveWarehouseScreen(warehouseResources);
 	const mode = useWorkspaceMode();
 	const { user } = useSession();
 	const sandbox = useSandboxAccess();

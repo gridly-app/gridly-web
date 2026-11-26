@@ -1,4 +1,9 @@
-import type { Cell, GridPosition, Warehouse } from "@/domain/warehouse";
+import type {
+	Cell,
+	GridPosition,
+	Warehouse,
+	WarehouseView,
+} from "@/domain/warehouse";
 import { gridInset } from "../../config/grid";
 import { sameLayout } from "../sameLayout";
 import { paintWarehouseLayout } from "./paintWarehouseLayout";
@@ -151,7 +156,10 @@ export class CanvasWarehouseRenderer {
 	}
 
 	drawRobots(
-		warehouse: Pick<Warehouse, "width" | "height" | "robots" | "asOf">,
+		warehouse: Pick<
+			WarehouseView<"robots">,
+			"width" | "height" | "robots" | "asOf"
+		>,
 		size: number,
 		selectedRobotId?: (string | null) | undefined,
 	) {

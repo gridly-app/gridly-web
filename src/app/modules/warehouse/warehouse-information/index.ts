@@ -1,10 +1,11 @@
+import { warehouseResources } from "./model/warehouseResources";
 import { warehouseAccess, warehousePaths } from "@/ports/navigation";
 
 export const informationRoute = {
 	id: "information",
 	path: warehousePaths.information,
 	access: warehouseAccess,
-	resources: ["orders", "catalog", "inventory", "history"],
+	resources: warehouseResources,
 	load: () =>
 		import("./WarehouseInformation").then(({ WarehouseInformation }) => ({
 			default: WarehouseInformation,

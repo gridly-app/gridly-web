@@ -3,7 +3,7 @@ import {
 	prepareRobotMotionTrack,
 	robotMotionPosition,
 } from "@/app/modules/warehouse/warehouse-map/lib/canvas/robotMotion";
-import type { Warehouse } from "@/domain/warehouse/warehouse";
+import type { WarehouseLiveState } from "@/domain/warehouse";
 
 import {
 	event,
@@ -19,8 +19,9 @@ test("patch updates positions once, retains idle microsteps and invalidates affe
 		if (e.type === "updated" && e.action.type === "invalidate")
 			invalidated.push(JSON.stringify(e.query.queryKey));
 	});
-	for (const name of ["orders", "inventory", "history"])
-		h.cache.setQueryData(h.keys.resource("w", name), {});
+	h.cache.setQueryData(h.keys.resource("w", "orders"), { orders: [] });
+	h.cache.setQueryData(h.keys.resource("w", "inventory"), { stock: [] });
+	h.cache.setQueryData(h.keys.resource("w", "history"), { events: [] });
 	h.live.start();
 	try {
 		await until(() => h.live.healthy);
@@ -36,10 +37,10 @@ test("patch updates positions once, retains idle microsteps and invalidates affe
 		);
 		await until(
 			() =>
-				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.stateVersion ===
-				"2",
+				h.cache.getQueryData<WarehouseLiveState>(h.keys.live("w"))
+					?.stateVersion === "2",
 		);
-		const robot = h.cache.getQueryData<Warehouse>(h.keys.detail("w"))
+		const robot = h.cache.getQueryData<WarehouseLiveState>(h.keys.live("w"))
 			?.robots[0];
 		expect(h.cache.getQueryData(h.keys.live("w"))).not.toHaveProperty("stock");
 		expect(robot?.motionPath).toEqual([
@@ -63,8 +64,13 @@ test("patch updates positions once, retains idle microsteps and invalidates affe
 			JSON.stringify(h.keys.resource("w", "inventory")),
 		);
 		source.send(event(patch("2", { robots: [] })));
-		await Bun.sleep(15);
-		expect(h.resyncs).toBe(0);
+		source.send(event(patch("3")));
+		await until(
+			() =>
+				h.cache.getQueryData<WarehouseLiveState>(h.keys.live("w"))
+					?.stateVersion === "3",
+		);
+		expect(h.resyncs).toBe(1);
 		expect(h.polls).toBe(0);
 	} finally {
 		h.live.stop();

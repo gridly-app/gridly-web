@@ -1,13 +1,20 @@
-import { expect, test } from "bun:test";
+import { expect, jest, test } from "bun:test";
 import { QueryObserver } from "@tanstack/react-query";
-import type { Warehouse } from "@/domain/warehouse/warehouse";
+import type { WarehouseLiveState } from "@/domain/warehouse/warehouse";
 
-import { event, harness, patch, until } from "./liveStream.test-support";
+import {
+	advanceBy,
+	event,
+	harness,
+	patch,
+	until,
+	untilAdvanced,
+} from "./liveStream.test-support";
 
 test("resource events finish the active read and queue one follow-up", async () => {
 	const h = harness();
 	const queryKey = h.keys.resource("w", "inventory");
-	h.cache.setQueryData(queryKey, 0);
+	h.cache.setQueryData(queryKey, { stock: [] });
 	let reads = 0;
 	let canceled = false;
 	let finishRead!: () => void;
@@ -25,7 +32,7 @@ test("resource events finish the active read and queue one follow-up", async () 
 					});
 				});
 			}
-			return read;
+			return { stock: [], read };
 		},
 	});
 	const unsubscribe = observer.subscribe(() => undefined);
@@ -43,13 +50,13 @@ test("resource events finish the active read and queue one follow-up", async () 
 		source.send(event(patch("4", { stock_changes })));
 		await until(
 			() =>
-				h.cache.getQueryData<Warehouse>(h.keys.detail("w"))?.stateVersion ===
-				"4",
+				h.cache.getQueryData<WarehouseLiveState>(h.keys.live("w"))
+					?.stateVersion === "4",
 		);
 		expect(reads).toBe(1);
 		expect(canceled).toBe(false);
 		finishRead();
-		await until(() => h.cache.getQueryData(queryKey) === 2);
+		await until(() => observer.getCurrentResult().data?.read === 2);
 		expect(reads).toBe(2);
 	} finally {
 		h.live.stop();
@@ -58,22 +65,36 @@ test("resource events finish the active read and queue one follow-up", async () 
 	}
 });
 test("heartbeat watchdog reconnects, fallback polls only while unavailable, stop cancels everything", async () => {
+	jest.useFakeTimers();
+
 	const h = harness({ heartbeatMs: 30, fallbackMs: 5, retryMs: [25] });
+
 	h.live.start();
+
 	try {
-		await until(() => h.live.healthy);
+		await untilAdvanced(() => h.live.healthy);
 		h.channels[0]?.send(": heartbeat\n\n");
-		await until(() => h.polls > 0);
-		await until(() => h.channels.length > 1);
+		await untilAdvanced(() => h.polls > 0);
+		await untilAdvanced(() => h.channels.length > 1);
+
+		const pollsBeforeOutage = h.polls;
+
+		h.live.invalidate();
+		await untilAdvanced(() => h.polls > pollsBeforeOutage);
 		h.live.stop();
-		const streams = h.channels.length,
-			polls = h.polls;
-		await Bun.sleep(70);
+
+		const streams = h.channels.length;
+		const polls = h.polls;
+
+		await advanceBy(100);
+
 		expect(h.channels.length).toBe(streams);
 		expect(h.polls).toBe(polls);
-		expect(h.channels.every((s) => s.canceled)).toBe(true);
+		expect(h.channels.every((stream) => stream.canceled)).toBe(true);
+		expect(jest.getTimerCount()).toBe(0);
 	} finally {
 		h.live.stop();
 		h.cache.clear();
+		jest.useRealTimers();
 	}
 });
