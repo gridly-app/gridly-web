@@ -59,3 +59,14 @@ test("zero price is known while a missing price keeps the total incomplete", () 
 	expect(result.unknown).toBe(2);
 	expect(result.label).toStartWith("от ");
 });
+
+test.each([
+	{ input: "2,50", price: 2.5 },
+	{ input: " 0 ", price: 0 },
+	{ input: "  ", price: null },
+	{ input: "-12", price: null },
+	{ input: "Infinity", price: null },
+	{ input: "12,2,1", price: null },
+])("reads catalogue price $input as $price", ({ input, price }) => {
+	expect(productPrice(input)).toBe(price);
+});

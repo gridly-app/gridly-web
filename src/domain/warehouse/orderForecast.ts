@@ -1,4 +1,5 @@
 import type { Order, Robot, Warehouse } from "./warehouse";
+import { remainingQuantity } from "./quantities";
 
 const completed = new Set([
 	"received",
@@ -75,12 +76,7 @@ export function orderCompletion(
 	if (!Number.isFinite(at)) return { at: null, note: "Нет времени обновления" };
 	const remaining = order.lines.length
 		? order.lines.reduce(
-				(sum, line) =>
-					sum +
-					Math.max(
-						0,
-						line.quantity - (line.putaway ?? 0) - (line.writtenOff ?? 0),
-					),
+				(sum, line) => sum + Math.max(0, remainingQuantity(line)),
 				0,
 			)
 		: (order.quantity ?? 0);
@@ -133,15 +129,7 @@ export function incomingProduct(
 	const incoming = orders.flatMap((order) => {
 		const quantity = order.lines
 			.filter((line) => line.product === productId)
-			.reduce(
-				(sum, line) =>
-					sum +
-					Math.max(
-						0,
-						line.quantity - (line.putaway ?? 0) - (line.writtenOff ?? 0),
-					),
-				0,
-			);
+			.reduce((sum, line) => sum + Math.max(0, remainingQuantity(line)), 0);
 		return quantity > 0
 			? [
 					{

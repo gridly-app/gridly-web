@@ -7,6 +7,10 @@ export const stockSchema = z.object({
 	canWriteOff: z.boolean().optional(),
 	revision: z.number().optional(),
 	batchId: z.string().optional(),
+	sourceOrderId: z.string().optional(),
+	sourceOrder: z
+		.object({ id: z.string(), number: z.string(), party: z.string() })
+		.optional(),
 	cellId: z.string().optional(),
 	id: z.string(),
 	product: z.string(),
