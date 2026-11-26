@@ -63,3 +63,56 @@ export async function signInHistoryScenario({ page, base }: UiScenario) {
 	await expect(confirmation).toHaveValue("");
 	await expect(page.getByRole("alert")).toHaveCount(0);
 }
+
+export async function registrationScenario({ page, base }: UiScenario) {
+	const credentials = {
+		login: "new-ui-account",
+		password: "new test password",
+	};
+	const requests: string[] = [];
+
+	await page.route("**/api/v1/auth/{register,login}", async (route) => {
+		const request = route.request();
+		const path = new URL(request.url()).pathname;
+		const action = path.split("/").at(-1);
+
+		expect(request.method()).toBe("POST");
+		expect(request.postDataJSON()).toEqual(credentials);
+
+		if (action === "register") {
+			requests.push("register");
+
+			return route.fulfill({ status: 201, json: {} });
+		}
+
+		if (!requests.includes("register")) {
+			return route.fulfill({
+				status: 401,
+				json: { code: "INVALID_CREDENTIALS" },
+			});
+		}
+
+		requests.push("login");
+
+		return route.fulfill({
+			json: {
+				access_token: "bruno-account-token",
+				user: { login: credentials.login },
+			},
+		});
+	});
+
+	await page.goto(`${base}/auth?mode=register`);
+	await page.getByLabel("Логин", { exact: true }).fill(credentials.login);
+	await page.getByLabel("Пароль", { exact: true }).fill(credentials.password);
+	await page
+		.getByLabel("Подтвердите пароль", { exact: true })
+		.fill(credentials.password);
+	await page
+		.getByRole("button", { name: "Зарегистрироваться", exact: true })
+		.click();
+
+	await expect(page).toHaveURL(/\/warehouses\/warehouse-demo\/map$/);
+	await expect(page.locator("canvas").first()).toBeVisible();
+	expect(requests).toEqual(["register", "login"]);
+}

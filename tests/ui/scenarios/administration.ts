@@ -45,10 +45,17 @@ export async function administrationScenario({
 	await expect(page).toHaveURL(
 		/\/admin\/shipments\?tab=orders&warehouse_id=warehouse-north/,
 	);
-	await page.keyboard.press("Escape");
+	const orderUrl = page.url();
+
+	await page.goBack();
+	await expect(page.getByRole("dialog")).toHaveCount(0);
 	await expect(
 		page.getByRole("textbox", { name: "Поиск по заказам" }),
 	).toHaveValue("3101");
+
+	await page.goto(orderUrl);
+	await expect(page.getByRole("dialog")).toContainText("Балтийская доставка");
+	await page.keyboard.press("Escape");
 
 	await page.goto(`${base}/admin/shipments?tab=users`);
 	const operator = page.getByRole("row").filter({ hasText: "Иван Петров" });
@@ -151,10 +158,10 @@ export async function administrationScenario({
 		).toBeVisible();
 
 		await page
-			.getByRole("button", { name: /^Удалить гостевую ссылку:/ })
+			.getByRole("button", { name: /^Отозвать гостевую ссылку:/ })
 			.click();
 		await page
-			.getByRole("button", { name: "Удалить ссылку", exact: true })
+			.getByRole("button", { name: "Отозвать ссылку", exact: true })
 			.click();
 		await expect(
 			page.getByRole("cell", { name: "Отозвана", exact: true }),

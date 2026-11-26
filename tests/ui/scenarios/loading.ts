@@ -12,11 +12,8 @@ export async function loadingScenario({ base, page, signIn }: UiScenario) {
 	await page.goto(`${base}/`, { waitUntil: "commit" });
 	await landingRequested;
 	try {
-		await expect(page.locator("#root")).toBeEmpty();
-		await expect(page.locator("body")).toHaveCSS(
-			"background-color",
-			"rgb(255, 255, 255)",
-		);
+		await expect(page.getByRole("heading", { name: "Gridly" })).toHaveCount(0);
+		await expect(page.locator('[data-slot="skeleton"]')).toHaveCount(0);
 	} finally {
 		landing.resolve();
 	}

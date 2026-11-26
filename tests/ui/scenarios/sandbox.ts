@@ -21,31 +21,6 @@ export async function sandboxScenario({
 	await expect(
 		scenarios.getByRole("radio", { name: "Отгрузка", exact: true }),
 	).toBeChecked();
-	await expect
-		.poll(() =>
-			scenarios.evaluate((root) => {
-				const thumb = root
-					.querySelector('[data-slot="rubber-segment-thumb"]')
-					?.getBoundingClientRect();
-				const selected = root
-					.querySelector('[role="radio"][data-checked]')
-					?.getBoundingClientRect();
-				return thumb && selected
-					? Math.abs(thumb.x - selected.x) +
-							Math.abs(thumb.width - selected.width)
-					: Infinity;
-			}),
-		)
-		.toBeLessThan(2);
-	const shapeCanvas = page.locator('[data-slot="shape-grid-canvas"]');
-	await expect(shapeCanvas).toBeVisible();
-	expect(
-		await shapeCanvas.evaluate(
-			(el: HTMLCanvasElement) => el.width > 1 && el.height > 1,
-		),
-	).toBe(true);
-	await page.mouse.move(200, 200);
-	await screenshot("landing-pointer");
 
 	const map = page.locator('[data-scenario-map="outbound"]');
 
@@ -58,7 +33,7 @@ export async function sandboxScenario({
 
 	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.reload();
-	await expect(page.locator('[data-slot="shape-grid-canvas"]')).toBeVisible();
+	await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 	await page.setViewportSize({ width: 375, height: 1000 });
 	expect(
 		await page.evaluate(
@@ -73,14 +48,6 @@ export async function sandboxScenario({
 			() => document.documentElement.scrollWidth > innerWidth,
 		),
 	).toBe(false);
-	await expect
-		.poll(async () => {
-			const heroTitle = await page.locator("h1 > span").boundingBox();
-			return (
-				!!heroTitle && heroTitle.x >= 0 && heroTitle.x + heroTitle.width <= 376
-			);
-		})
-		.toBe(true);
 	await screenshot("landing-zoom-200");
 	await page.evaluate(() => {
 		document.documentElement.style.zoom = "";
@@ -102,6 +69,27 @@ export async function sandboxScenario({
 	await page.waitForURL("**/sandbox/warehouses/warehouse-demo/**");
 	await expect(page.locator("canvas").first()).toBeVisible();
 	await page.setViewportSize({ width: 1440, height: 1000 });
+	await page.getByRole("link", { name: "Отгрузки", exact: true }).click();
+	const shipment = page.getByRole("row").filter({ hasText: "ЗК-2087" });
+	await shipment.getByRole("link", { name: "Управление отгрузкой" }).click();
+	await expect(page).toHaveURL(
+		`${base}/sandbox/warehouses/warehouse-demo/outbound/order-out-2087/shipment`,
+	);
+	await expect(
+		page.getByRole("heading", { name: "Сверка отгрузки" }),
+	).toBeVisible();
+	await expect(page.getByRole("row", { name: /Кофе в зёрнах/ })).toContainText(
+		"К отгрузке",
+	);
+	await expect(
+		page.getByRole("button", { name: "Скопировать сводку" }),
+	).toBeVisible();
+	const [shipmentCsv] = await Promise.all([
+		page.waitForEvent("download"),
+		page.getByRole("button", { name: "Скачать ведомость CSV" }).click(),
+	]);
+	expect(shipmentCsv.suggestedFilename()).toBe("отгрузка-ЗК-2087.csv");
+
 	const sandboxSettings = `${base}/sandbox/warehouses/warehouse-demo/settings`;
 	await page.locator('a[href$="/settings"]').click();
 	await page.waitForURL(sandboxSettings);

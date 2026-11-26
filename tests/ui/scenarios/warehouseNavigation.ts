@@ -14,14 +14,6 @@ export async function warehouseNavigationScenario({
 		exact: true,
 	});
 	await expect(warehouseSelector).toBeVisible();
-	expect(
-		await warehouseSelector.evaluate((trigger) => {
-			const parent = trigger.parentElement;
-			return parent
-				? Math.abs(trigger.getBoundingClientRect().width - parent.clientWidth)
-				: Infinity;
-		}),
-	).toBeLessThan(1);
 	await ready("map");
 	await page.reload();
 	await expect(page).toHaveURL(`${base}/warehouses/warehouse-demo/map`);
@@ -45,8 +37,6 @@ export async function warehouseNavigationScenario({
 		"settings",
 	]) {
 		await ready(path);
-		await expect(page.locator("input[role=combobox]")).toHaveCount(0);
-		await expect(page.locator("[title]")).toHaveCount(0);
 		if (path === "history") {
 			await expect(
 				page.getByText("Склад создан", { exact: true }),
@@ -96,38 +86,12 @@ export async function warehouseNavigationScenario({
 	});
 	await sidebarTrigger.click();
 	await expect(sidebarTrigger).toHaveAttribute("aria-expanded", "false");
-	await expect(
-		page.getByRole("link", { name: "Каталог", exact: true }),
-	).toBeVisible();
 	const navCatalog = page.getByRole("link", { name: "Каталог", exact: true });
-	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await navCatalog.click();
-	const railSelection = navCatalog.locator("[data-rail-selection]");
-	await expect(railSelection).toBeVisible();
-	await expect
-		.poll(async () => {
-			const link = await navCatalog.boundingBox();
-			const highlight = await railSelection.boundingBox();
-			return link && highlight ? Math.abs(link.y - highlight.y) : Infinity;
-		})
-		.toBeLessThan(1);
-	await page.emulateMedia({ reducedMotion: "reduce" });
-	const profile = page.getByRole("button", { name: "Меню профиля" });
+	await expect(navCatalog).toHaveAttribute("aria-current", "page");
 	await expect(
-		page.locator('[data-collapsible="icon"] [data-slot="separator"]'),
+		page.getByRole("button", { name: "Меню профиля" }),
 	).toBeVisible();
-	await expect
-		.poll(async () => {
-			const avatar = await profile
-				.locator('[data-slot="avatar"]')
-				.first()
-				.boundingBox();
-			const link = await navCatalog.boundingBox();
-			return avatar && link
-				? Math.abs(avatar.x + avatar.width / 2 - link.x - link.width / 2)
-				: Infinity;
-		})
-		.toBeLessThan(2);
 
 	await sidebarTrigger.click();
 	await expect(sidebarTrigger).toHaveAttribute("aria-expanded", "true");

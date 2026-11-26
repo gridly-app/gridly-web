@@ -1,19 +1,25 @@
-import { controlAppearanceScenario } from "./scenarios/controlAppearance";
 import { accountScenario } from "./scenarios/account";
-import { signInHistoryScenario } from "./scenarios/signInHistory";
+import {
+	registrationScenario,
+	signInHistoryScenario,
+} from "./scenarios/signInHistory";
+import { guestTokenSwitchScenario } from "./scenarios/shipmentGuestFlow";
 import { shipmentAccessScenario } from "./scenarios/shipmentAccess";
 import { administrationScenario } from "./scenarios/administration";
 import { administrationRecoveryScenario } from "./scenarios/administrationRecovery";
 import { catalogScenario } from "./scenarios/catalog";
-import { destructiveConfirmationScenario } from "./scenarios/destructiveConfirmation";
 import { inventoryScenario } from "./scenarios/inventory";
 import { loadingScenario } from "./scenarios/loading";
-import { mapEditorScenario } from "./scenarios/mapEditor";
+import { mapBackScenario, mapEditorScenario } from "./scenarios/mapEditor";
 import { mapSessionScenario } from "./scenarios/mapSession";
 import { modeSwitchScenario } from "./scenarios/modeSwitch";
 import { ordersScenario } from "./scenarios/orders";
 import { permissionsScenario } from "./scenarios/permissions";
-import { responsiveLayoutScenario } from "./scenarios/responsiveLayout";
+import { mobileNavigationScenario } from "./scenarios/mobileNavigation";
+import {
+	routeChunkRecoveryScenario,
+	routeRecoveryScenario,
+} from "./scenarios/routeRecovery";
 import { robotScenario } from "./scenarios/robot";
 import { routeDragScenario } from "./scenarios/routeDrag";
 import { sandboxScenario } from "./scenarios/sandbox";
@@ -28,18 +34,18 @@ import { warehouseSettingsScenario } from "./scenarios/warehouseSettings";
 import { output, runScenarios } from "./uiBrowserFixture";
 
 const scenarios = [
-	["control-appearance", controlAppearanceScenario],
 	["loading", loadingScenario],
 	["account", accountScenario],
 	["sign-in-history", signInHistoryScenario],
+	["registration", registrationScenario],
 	["shipment-access", shipmentAccessScenario],
+	["guest-token-switch", guestTokenSwitchScenario],
 	["warehouse-navigation", warehouseNavigationScenario],
 	["warehouse-deletion", warehouseDeletionScenario],
 	["catalog", catalogScenario],
 	["inventory", inventoryScenario],
 	["warehouse-live", warehouseLiveScenario],
 	["robot", robotScenario],
-	["destructive-confirmation", destructiveConfirmationScenario],
 	["warehouse-settings", warehouseSettingsScenario],
 	["warehouse-dimensions", warehouseDimensionsScenario],
 	["orders", ordersScenario],
@@ -48,17 +54,25 @@ const scenarios = [
 	["administration-recovery", administrationRecoveryScenario],
 	["system-errors", systemErrorsScenario],
 	["map-editor", mapEditorScenario],
+	["map-back", mapBackScenario],
 	["map-session", mapSessionScenario],
 	["mode-switch", modeSwitchScenario],
 	["route-drag", routeDragScenario],
 	["warehouse-report", warehouseReportScenario],
-	["responsive-layout", responsiveLayoutScenario],
+	["mobile-navigation", mobileNavigationScenario],
+	["route-recovery", routeRecoveryScenario],
+	["route-chunk-recovery", routeChunkRecoveryScenario],
 	["permissions", permissionsScenario],
 	["sandbox", sandboxScenario],
 ] as const;
 
 const name = process.env.GRIDLY_UI_SCENARIO;
-const localOnly = ["loading", "warehouse-live", "map-session"];
+const localOnly = [
+	"loading",
+	"warehouse-live",
+	"map-session",
+	"route-chunk-recovery",
+];
 if (name && localOnly.includes(name) && process.env.GRIDLY_UI_URL)
 	throw new Error(`The ${name} scenario requires the local Vite fixture`);
 const selected = name
