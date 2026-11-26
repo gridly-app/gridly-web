@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { act } from "react";
-import { mountDom } from "../../../../../tests/support/dom";
-import { shipment } from "../../../../../tests/support/shipment";
+import { mountDom } from "../../../../../../tests/support/dom";
+import { shipment } from "../../../../../../tests/support/shipment";
 import { useShipmentCalendar } from "./useShipmentCalendar";
 
 test("weekly grouping gives the table and CSV the same date column label", async () => {

@@ -5,10 +5,10 @@ import type {
 	CalendarField,
 	CalendarRow,
 	CalendarSort,
-} from "../../model/shipmentCalendarView";
+} from "../../../model/shipmentCalendarView";
 import { ActualAmount } from "../ActualAmount/ActualAmount";
 
-import styles from "../../shared.module.css";
+import styles from "../../../shared.module.css";
 
 type CalendarTableProps = {
 	rows: CalendarRow[];

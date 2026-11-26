@@ -2,10 +2,10 @@ import type { ChangeEvent } from "react";
 import { transports } from "@/domain/shipment";
 import { Input } from "@/shared/ui/controls";
 import { Field, Select } from "@/shared/ui/forms";
-import type { CalendarFilters as CalendarFilterValues } from "../../model/shipmentCalendar";
-import type { CalendarItem } from "../../model/shipmentCalendarView";
+import type { CalendarFilters as CalendarFilterValues } from "../../../model/calendar/shipmentCalendar";
+import type { CalendarItem } from "../../../model/shipmentCalendarView";
 
-import styles from "../../shared.module.css";
+import styles from "../../../shared.module.css";
 
 export function CalendarFilters({
 	filters,

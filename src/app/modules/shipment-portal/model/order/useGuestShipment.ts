@@ -2,8 +2,8 @@ import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import {
 	isGuestAccessDenied,
 	type ReadGuestShipments,
-} from "../api/guestShipmentApi";
-import type { GuestShipments } from "../api/guestShipment.dto";
+} from "../../api/guestShipmentApi";
+import type { GuestShipments } from "../../api/guestShipment.dto";
 
 type State = {
 	snapshot: { data: GuestShipments; checkedAt: number } | null;

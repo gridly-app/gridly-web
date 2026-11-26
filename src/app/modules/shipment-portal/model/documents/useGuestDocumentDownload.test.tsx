@@ -1,8 +1,8 @@
 import { expect, spyOn, test } from "bun:test";
 import { act } from "react";
 import { ApiError } from "@/shared/http";
-import { mountDom } from "../../../../../tests/support/dom";
-import type { DownloadGuestDocument } from "../api/guestShipmentApi";
+import { mountDom } from "../../../../../../tests/support/dom";
+import type { DownloadGuestDocument } from "../../api/guestShipmentApi";
 import { useGuestDocumentDownload } from "./useGuestDocumentDownload";
 
 function mountDownload(downloadFile: DownloadGuestDocument) {

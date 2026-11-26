@@ -9,12 +9,12 @@ import { Feedback, Skeleton } from "@/shared/ui/feedback";
 import { Select } from "@/shared/ui/forms";
 
 import { GuestShipmentApi } from "./api/guestShipmentApi";
-import { guestShipmentView } from "./model/guestShipmentView";
-import { useGuestShipment } from "./model/useGuestShipment";
-import { ShipmentCalendar } from "./ui/ShipmentCalendar/ShipmentCalendar";
-import { ShipmentDocuments } from "./ui/ShipmentDocuments/ShipmentDocuments";
-import { ShipmentItems } from "./ui/ShipmentItems/ShipmentItems";
-import { ShipmentSummary } from "./ui/ShipmentSummary/ShipmentSummary";
+import { guestShipmentView } from "./model/order/guestShipmentView";
+import { useGuestShipment } from "./model/order/useGuestShipment";
+import { ShipmentCalendar } from "./ui/calendar/ShipmentCalendar/ShipmentCalendar";
+import { ShipmentDocuments } from "./ui/documents/ShipmentDocuments/ShipmentDocuments";
+import { ShipmentItems } from "./ui/order/ShipmentItems/ShipmentItems";
+import { ShipmentSummary } from "./ui/summary/ShipmentSummary/ShipmentSummary";
 
 import styles from "./shared.module.css";
 

@@ -11,7 +11,7 @@ import {
 	type CalendarSort,
 	type CalendarSelection,
 	type ShipmentCalendarOptions,
-} from "./shipmentCalendarView";
+} from "../shipmentCalendarView";
 
 export function useShipmentCalendar(options: ShipmentCalendarOptions) {
 	const [filters, setFilters] = useState<CalendarFilters>({

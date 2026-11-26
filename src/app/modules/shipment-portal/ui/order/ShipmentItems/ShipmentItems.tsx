@@ -1,6 +1,6 @@
 import { formatUnit, type Shipment } from "@/domain/shipment";
 
-import styles from "../../shared.module.css";
+import styles from "../../../shared.module.css";
 
 export function ShipmentItems({ items }: { items: Shipment["items"] }) {
 	return (

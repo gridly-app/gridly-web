@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test";
 import { act } from "react";
 import { ApiError } from "@/shared/http";
-import { mountDom } from "../../../../../tests/support/dom";
-import { shipment } from "../../../../../tests/support/shipment";
-import type { ReadGuestShipments } from "../api/guestShipmentApi";
-import type { GuestShipments } from "../api/guestShipment.dto";
+import { mountDom } from "../../../../../../tests/support/dom";
+import { shipment } from "../../../../../../tests/support/shipment";
+import type { ReadGuestShipments } from "../../api/guestShipmentApi";
+import type { GuestShipments } from "../../api/guestShipment.dto";
 import { useGuestShipment } from "./useGuestShipment";
 
 function snapshot(number: string): GuestShipments {

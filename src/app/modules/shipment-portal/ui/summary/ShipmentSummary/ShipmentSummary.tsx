@@ -9,9 +9,9 @@ import { Button } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Feedback } from "@/shared/ui/feedback";
 
-import { orderStates } from "../../model/shipmentLabels";
+import { orderStates } from "../../../config/shipmentLabels";
 
-import styles from "../../shared.module.css";
+import styles from "../../../shared.module.css";
 
 export function ShipmentSummary({
 	order,

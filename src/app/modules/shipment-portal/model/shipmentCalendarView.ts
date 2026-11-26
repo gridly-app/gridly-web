@@ -3,8 +3,8 @@ import {
 	shipmentCalendar,
 	transportSummary,
 	type CalendarFilters,
-} from "./shipmentCalendar";
-import { orderStates } from "./shipmentLabels";
+} from "./calendar/shipmentCalendar";
+import { orderStates } from "../config/shipmentLabels";
 
 export const calendarColumns = [
 	["date", "Дата"],

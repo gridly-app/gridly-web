@@ -2,10 +2,10 @@ import { categories, formatMoment, type Shipment } from "@/domain/shipment";
 import { Button } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 
-import type { DownloadGuestDocument } from "../../api/guestShipmentApi";
-import { useGuestDocumentDownload } from "../../model/useGuestDocumentDownload";
+import type { DownloadGuestDocument } from "../../../api/guestShipmentApi";
+import { useGuestDocumentDownload } from "../../../model/documents/useGuestDocumentDownload";
 
-import styles from "../../shared.module.css";
+import styles from "../../../shared.module.css";
 
 export function ShipmentDocuments({
 	documents,

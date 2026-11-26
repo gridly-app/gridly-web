@@ -5,9 +5,9 @@ import {
 	type Actual,
 	type Shipment,
 } from "@/domain/shipment";
-import type { CalendarItem } from "../../model/shipmentCalendarView";
+import type { CalendarItem } from "../../../model/shipmentCalendarView";
 
-import styles from "../../shared.module.css";
+import styles from "../../../shared.module.css";
 
 export function FactDetails({
 	items,

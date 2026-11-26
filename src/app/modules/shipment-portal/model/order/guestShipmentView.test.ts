@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
-import { shipment } from "../../../../../tests/support/shipment";
-import { FactDetails } from "../ui/FactDetails/FactDetails";
+import { shipment } from "../../../../../../tests/support/shipment";
+import { FactDetails } from "../../ui/calendar/FactDetails/FactDetails";
 import { guestShipmentView } from "./guestShipmentView";
 
 test("calendar-only access shows the permitted item name without its hidden grade", () => {

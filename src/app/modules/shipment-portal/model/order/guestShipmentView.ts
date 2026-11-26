@@ -1,4 +1,4 @@
-import type { GuestShipment } from "../api/guestShipment.dto";
+import type { GuestShipment } from "../../api/guestShipment.dto";
 
 export function guestShipmentView(access: GuestShipment) {
 	const sections = new Set(access.sections);

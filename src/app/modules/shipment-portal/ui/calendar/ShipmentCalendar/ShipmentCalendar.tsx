@@ -1,15 +1,15 @@
 import { formatUnit } from "@/domain/shipment";
 import { Button } from "@/shared/ui/controls";
 import { Modal } from "@/shared/ui/overlays";
-import type { ShipmentCalendarOptions } from "../../model/shipmentCalendarView";
-import { useShipmentCalendar } from "../../model/useShipmentCalendar";
+import type { ShipmentCalendarOptions } from "../../../model/shipmentCalendarView";
+import { useShipmentCalendar } from "../../../model/calendar/useShipmentCalendar";
 import { CalendarFilters } from "../CalendarFilters/CalendarFilters";
 import { CalendarOptions } from "../CalendarOptions/CalendarOptions";
 import { CalendarTable } from "../CalendarTable/CalendarTable";
 import { FactDetails } from "../FactDetails/FactDetails";
 import { ActualAmount } from "../ActualAmount/ActualAmount";
 
-import styles from "../../shared.module.css";
+import styles from "../../../shared.module.css";
 
 export function ShipmentCalendar(props: ShipmentCalendarOptions) {
 	const model = useShipmentCalendar(props);

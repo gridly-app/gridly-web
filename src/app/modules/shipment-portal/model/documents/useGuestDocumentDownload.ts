@@ -3,7 +3,7 @@ import { saveResponseFile } from "@/shared/http";
 import {
 	isGuestAccessDenied,
 	type DownloadGuestDocument,
-} from "../api/guestShipmentApi";
+} from "../../api/guestShipmentApi";
 
 const downloadTimeoutMs = 60_000;
 
