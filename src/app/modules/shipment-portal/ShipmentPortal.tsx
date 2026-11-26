@@ -154,7 +154,7 @@ function GuestShipmentSections({
 				warehouse={warehouse}
 				plan={calendar?.plan ?? null}
 				checkedAt={checkedAt}
-				retry={retry}
+				onRefresh={retry}
 				isLoading={isLoading}
 			/>
 			{milestones && (
