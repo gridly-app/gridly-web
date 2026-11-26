@@ -1,8 +1,8 @@
 import {
-	type Cell,
+	reservedQuantity,
 	type Stock,
 	stockZoneNames,
-	reservedQuantity,
+	type Warehouse,
 } from "@/domain/warehouse";
 import {
 	ListFilters,
@@ -13,6 +13,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui/dataDisplay";
+import { isAccessDenied } from "@/shared/http";
+import { useWarehouseResources } from "@/ports/warehouse";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { Select } from "@/shared/ui/forms";
 
 interface ProductStockFilters {
@@ -21,65 +24,117 @@ interface ProductStockFilters {
 	status: string;
 }
 
-interface ProductStockPanelProps {
-	stock: Stock[];
-	cells: Cell[];
-	filters: ProductStockFilters;
-	onChange: (filters: ProductStockFilters) => void;
-}
+const numberFormat = new Intl.NumberFormat("ru-RU");
+const statusOptions = [
+	{ value: "all", label: "Все партии" },
+	{ value: "reserved", label: "В резерве" },
+	{ value: "expired", label: "Просрочено" },
+];
 
-const number = new Intl.NumberFormat("ru-RU");
+function matchesStockStatus(item: Stock, status: string) {
+	if (status === "all") return true;
+	if (status === "reserved") return reservedQuantity(item) > 0;
+
+	return item.isExpired === true;
+}
 
 export function ProductStockPanel({
 	stock,
-	cells,
+	warehouse,
 	filters,
 	onChange,
-}: ProductStockPanelProps) {
-	const { search: stockSearch, zone, status: stockFilter } = filters;
-	const zoneName = stockZoneNames(cells);
-	const zones = [...new Set(stock.map(zoneName))];
-	const visibleStock = stock.filter(
-		(item) =>
-			(zone === "all" || zoneName(item) === zone) &&
-			(stockFilter === "all" ||
-				(stockFilter === "reserved"
-					? reservedQuantity(item) > 0
-					: item.isExpired === true)) &&
-			`${zoneName(item)} ${item.batchId ?? item.id} ${item.expires}`
-				.toLowerCase()
-				.includes(stockSearch.trim().toLowerCase()),
-	);
+}: {
+	stock: Stock[];
+	warehouse: Warehouse;
+	filters: ProductStockFilters;
+	onChange: (filters: ProductStockFilters) => void;
+}) {
+	const map = useWarehouseResources(warehouse, ["map"]);
+	const cells = isAccessDenied(map.error) ? undefined : map.data?.cells;
+	const namedZone = cells && stockZoneNames(cells);
+	const { search, status } = filters;
+	const zone = cells ? filters.zone : "all";
+	const showMapError = stock.length > 0 && !cells && Boolean(map.error);
+	const loadingZones = stock.length > 0 && !cells && !map.error;
+
+	function zoneName(item: Stock) {
+		if (namedZone) return namedZone(item);
+
+		return item.cell.startsWith("robot:") ? "На роботе" : `Ячейка ${item.cell}`;
+	}
+
+	const searchQuery = search.trim().toLowerCase();
+	const zoneOptions = [
+		{ value: "all", label: "Все зоны" },
+		...[...new Set(stock.map(zoneName))].map((name) => ({
+			value: name,
+			label: name,
+		})),
+	];
+	const activeCount = Number(zone !== "all") + Number(status !== "all");
+	const emptyMessage = stock.length
+		? "Нет партий по выбранным фильтрам и поиску."
+		: "Партий этого товара на складе нет.";
+	const searchField = {
+		"aria-label": "Поиск по партиям",
+		value: search,
+		onChange: (value: string) => onChange({ ...filters, search: value }),
+	};
+
+	function matchesFilters(item: Stock) {
+		const text =
+			`${zoneName(item)} ${item.batchId ?? item.id} ${item.expires}`.toLowerCase();
+		const matchesZone = zone === "all" || zoneName(item) === zone;
+
+		return (
+			matchesZone &&
+			matchesStockStatus(item, status) &&
+			text.includes(searchQuery)
+		);
+	}
+
+	const visibleStock = stock.filter(matchesFilters);
+
+	function handleZoneChange(value: string) {
+		onChange({ ...filters, zone: value });
+	}
+
+	function handleStatusChange(value: string) {
+		onChange({ ...filters, status: value });
+	}
+
+	function handleReset() {
+		onChange({ ...filters, zone: "all", status: "all" });
+	}
+
 	return (
 		<>
+			{showMapError && (
+				<Feedback tone="warning" action={<RetryButton onRetry={map.retry} />}>
+					Не удалось загрузить названия зон.
+				</Feedback>
+			)}
+			{loadingZones && (
+				<Feedback tone="loading">Загружаем названия зон…</Feedback>
+			)}
 			{stock.length > 0 && (
 				<ListFilters
-					search={{
-						"aria-label": "Поиск по партиям",
-						value: stockSearch,
-						onChange: (search) => onChange({ ...filters, search }),
-					}}
-					count={Number(zone !== "all") + Number(stockFilter !== "all")}
-					onReset={() => onChange({ ...filters, zone: "all", status: "all" })}
+					search={searchField}
+					count={activeCount}
+					onReset={handleReset}
 				>
 					<Select
 						aria-label="Зона партии"
+						disabled={!cells}
 						value={zone}
-						onValueChange={(zone) => onChange({ ...filters, zone })}
-						options={[
-							{ value: "all", label: "Все зоны" },
-							...zones.map((name) => ({ value: name, label: name })),
-						]}
+						onValueChange={handleZoneChange}
+						options={zoneOptions}
 					/>
 					<Select
 						aria-label="Состояние партии"
-						value={stockFilter}
-						onValueChange={(status) => onChange({ ...filters, status })}
-						options={[
-							{ value: "all", label: "Все партии" },
-							{ value: "reserved", label: "В резерве" },
-							{ value: "expired", label: "Просрочено" },
-						]}
+						value={status}
+						onValueChange={handleStatusChange}
+						options={statusOptions}
 					/>
 				</ListFilters>
 			)}
@@ -97,9 +152,9 @@ export function ProductStockPanel({
 						{visibleStock.map((item) => (
 							<TableRow key={item.id}>
 								<TableCell>{zoneName(item)}</TableCell>
-								<TableCell>{number.format(item.quantity)} шт.</TableCell>
+								<TableCell>{numberFormat.format(item.quantity)} шт.</TableCell>
 								<TableCell>
-									{number.format(reservedQuantity(item))} шт.
+									{numberFormat.format(reservedQuantity(item))} шт.
 								</TableCell>
 								<TableCell>{item.expires || "Без срока"}</TableCell>
 							</TableRow>
@@ -107,11 +162,7 @@ export function ProductStockPanel({
 					</TableBody>
 				</Table>
 			) : (
-				<p>
-					{stock.length
-						? "Нет партий по выбранным фильтрам и поиску."
-						: "Партий этого товара на складе нет."}
-				</p>
+				<p>{emptyMessage}</p>
 			)}
 		</>
 	);

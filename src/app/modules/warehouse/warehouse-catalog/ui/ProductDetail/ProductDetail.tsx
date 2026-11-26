@@ -29,7 +29,6 @@ type ProductTab = "stock" | "orders" | "movements";
 
 const orderResources = ["orders"] as const;
 const movementResources = ["orders", "history"] as const;
-const stockResources = ["map"] as const;
 
 export function ProductDetail({
 	product,
@@ -120,16 +119,12 @@ export function ProductDetail({
 				items={tabItems}
 			/>
 			{tab === "stock" && (
-				<ProductTabResources warehouse={warehouse} resources={stockResources}>
-					{(details) => (
-						<ProductStockPanel
-							stock={stock}
-							cells={details.cells}
-							filters={stockFilters}
-							onChange={setStockFilters}
-						/>
-					)}
-				</ProductTabResources>
+				<ProductStockPanel
+					warehouse={warehouse}
+					stock={stock}
+					filters={stockFilters}
+					onChange={setStockFilters}
+				/>
 			)}
 			{tab === "orders" && (
 				<ProductTabResources warehouse={warehouse} resources={orderResources}>
