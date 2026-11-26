@@ -38,5 +38,11 @@ export {
 	clearOperationAttempts,
 	operationAttemptKey,
 } from "./operationAttempts";
+export {
+	applySearchParamChanges,
+	type SearchParamChanges,
+	useUpdateSearchParams,
+} from "./searchParams";
 export { textSearch, createTextIndex, textSearchQuery } from "./textSearch";
+export { useSingleFlight } from "./useSingleFlight";
 export { zonedDayBoundary } from "./zonedDayBoundary";
