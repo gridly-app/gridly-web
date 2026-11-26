@@ -27,6 +27,8 @@ export function Table({
 			className={clsx(css.container, containerClassName)}
 			data-slot="table-container"
 			data-variant={variant}
+			scrollbarGutter
+			overscrollContain
 		>
 			<table
 				className={clsx(css.root, className)}

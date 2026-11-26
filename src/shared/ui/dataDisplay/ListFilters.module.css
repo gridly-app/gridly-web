@@ -1,3 +1,8 @@
+.trigger[data-slot="button"]:not(:disabled, [aria-disabled="true"]) {
+	background: transparent;
+	box-shadow: none;
+}
+
 .positioner {
 	z-index: 50;
 }

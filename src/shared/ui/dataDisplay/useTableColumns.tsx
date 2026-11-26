@@ -46,7 +46,7 @@ export function useTableColumnVisibility<Key extends string>(
 		visibleColumns,
 		button: (
 			<Menu>
-				<MenuTrigger render={<Button variant="secondary" size="sm" />}>
+				<MenuTrigger render={<Button variant="ghost" size="sm" />}>
 					<IconColumns size={16} /> Столбцы
 				</MenuTrigger>
 				<MenuPopup align="end">

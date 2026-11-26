@@ -71,11 +71,7 @@ function SortableHeading({
 	}
 
 	return (
-		<TableHead
-			scope="col"
-			className={adminTableStyles.cell}
-			aria-sort={direction}
-		>
+		<TableHead scope="col" aria-sort={direction}>
 			<Button
 				variant="ghost"
 				size="sm"
@@ -106,15 +102,12 @@ export function SortableTable<Row>({
 
 	if (!rows.length) return <Feedback tone="empty">Ничего не найдено</Feedback>;
 
-	const columnWidth = columns.some(({ width }) => width)
-		? undefined
-		: `${100 / columns.length}%`;
 	const direction = sort.descending ? "descending" : "ascending";
 
 	function renderHeading({ id, label, value }: TableColumn<Row>) {
 		if (!value) {
 			return (
-				<TableHead key={id} className={adminTableStyles.cell} scope="col">
+				<TableHead key={id} data-column={id} scope="col">
 					{label}
 				</TableHead>
 			);
@@ -134,17 +127,13 @@ export function SortableTable<Row>({
 	}
 
 	return (
-		<Table
-			className={adminTableStyles.table}
-			containerClassName={adminTableStyles.tableContainer}
-			aria-labelledby={captionId}
-		>
+		<Table className={adminTableStyles.table} aria-labelledby={captionId}>
 			<caption id={captionId} className={adminTableStyles.caption}>
 				{label}
 			</caption>
 			<colgroup>
 				{columns.map(({ id, width }) => (
-					<col key={id} style={{ width: width ?? columnWidth }} />
+					<col key={id} style={{ width }} />
 				))}
 			</colgroup>
 			<TableHeader className={adminTableStyles.header}>

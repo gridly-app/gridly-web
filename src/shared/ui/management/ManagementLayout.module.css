@@ -33,6 +33,15 @@
 	color: var(--muted-foreground);
 }
 
+td .subtle {
+	display: inline;
+	margin-inline-start: var(--space-1);
+}
+
+td .actions {
+	flex-wrap: nowrap;
+}
+
 .detailsSummary {
 	font-weight: 600;
 

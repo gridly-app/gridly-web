@@ -5,12 +5,9 @@
 }
 
 .note {
-	display: block;
-	max-width: 240px;
-	margin-top: var(--space-1);
+	display: inline;
+	margin-inline-start: var(--space-1);
 	color: var(--muted-foreground);
 	font-size: var(--text-caption);
 	line-height: 18px;
-	white-space: normal;
-	overflow-wrap: anywhere;
 }

@@ -22,7 +22,9 @@ export function ListFilters({
 			actions={
 				<Popover.Root>
 					<Popover.Trigger
-						render={<Button variant="ghost" size="sm" />}
+						render={
+							<Button className={styles.trigger} variant="ghost" size="sm" />
+						}
 						aria-label={count ? `Фильтры, активно: ${count}` : "Фильтры"}
 					>
 						<IconAdjustmentsHorizontal size={16} />
