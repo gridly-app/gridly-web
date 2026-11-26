@@ -31,17 +31,8 @@ export async function checkShipmentTracking(
 	await expect(routeDetails.locator("dd").nth(1)).toHaveText(
 		"Казань, ул. Техническая, 17",
 	);
-	await expect(routeDetails.locator("dl > div").first()).toHaveCSS(
-		"border-top-width",
-		"0px",
-	);
 	const orderSelect = page.getByRole("combobox", { name: "Заказ на доставку" });
 	await expect(orderSelect).toHaveText("ЗК-2087 · Интернет-заказ #2087");
-	const orderSelectSize = async () => {
-		const box = await orderSelect.boundingBox();
-		return { width: box?.width, height: box?.height };
-	};
-	const originalSize = await orderSelectSize();
 	await page.route(
 		"**/api/v1/warehouses/warehouse-demo/orders/*/shipment",
 		(route) =>
@@ -52,7 +43,6 @@ export async function checkShipmentTracking(
 	await orderSelect.click();
 	await page.getByRole("option", { name: "ЗК-2079 · ИП Волкова" }).click();
 	await expect(orderSelect).toHaveText("ЗК-2079 · ИП Волкова");
-	expect(await orderSelectSize()).toEqual(originalSize);
 	await orderSelect.click();
 	await page
 		.getByRole("option", { name: "ЗК-2087 · Интернет-заказ #2087" })

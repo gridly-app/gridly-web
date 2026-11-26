@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 
+import { shipmentSchema } from "../../../src/domain/shipment";
 import type { UiScenario } from "../uiBrowserFixture";
 import { shipmentExample } from "./shipmentExamples";
 
@@ -74,4 +75,79 @@ export async function checkGuestShipment({
 	await expect(
 		page.getByRole("heading", { name: "Заказ ЗК-2087" }),
 	).toHaveCount(0);
+}
+
+export async function guestTokenSwitchScenario({ page, base }: UiScenario) {
+	const first = shipmentSchema.parse(shipmentExample("Снимок отгрузки"));
+	const second = {
+		...first,
+		order: { ...first.order, number: "SECOND-ORDER" },
+		documents: [],
+	};
+	const path = "**/api/v1/public/shipments";
+	const downloadPath = "**/api/v1/public/shipments/documents/**";
+	const downloadReply = Promise.withResolvers<void>();
+	const downloads: string[] = [];
+
+	page.on("download", (download) =>
+		downloads.push(download.suggestedFilename()),
+	);
+
+	await page.route(path, (route) => {
+		const token = route.request().headers().authorization;
+
+		expect(["Bearer first-token", "Bearer second-token"]).toContain(token);
+
+		return route.fulfill({
+			json: token === "Bearer first-token" ? first : second,
+		});
+	});
+	await page.route(downloadPath, async (route) => {
+		await downloadReply.promise;
+		await route
+			.fulfill({
+				body: "Late first account document",
+				headers: {
+					"Content-Type": "text/plain",
+					"Content-Disposition": "attachment; filename=late.txt",
+				},
+			})
+			.catch(() => undefined);
+	});
+
+	await page.goto(`${base}/shipments#token=first-token`);
+
+	const oldHeading = page.getByRole("heading", {
+		name: `Заказ ${first.order.number}`,
+		exact: true,
+	});
+	const download = page.getByRole("button", {
+		name: "Скачать Накладная",
+		exact: true,
+	});
+
+	await expect(oldHeading).toBeVisible();
+
+	const cancelled = page.waitForEvent("requestfailed", {
+		predicate: (request) =>
+			request.url().includes("/public/shipments/documents/"),
+	});
+
+	try {
+		await Promise.all([page.waitForRequest(downloadPath), download.click()]);
+		await page.evaluate(() => {
+			location.hash = "token=second-token";
+		});
+
+		await expect(
+			page.getByRole("heading", { name: "Заказ SECOND-ORDER", exact: true }),
+		).toBeVisible();
+		await expect(oldHeading).toHaveCount(0);
+		const request = await cancelled;
+
+		expect(request.failure()?.errorText).toContain("ERR_ABORTED");
+		expect(downloads).toEqual([]);
+	} finally {
+		downloadReply.resolve();
+	}
 }

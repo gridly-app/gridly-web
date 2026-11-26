@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { expect } from "@playwright/test";
 
 import type { UiScenario } from "../uiBrowserFixture";
@@ -64,12 +65,65 @@ export async function checkShipmentEditor(
 			await route.fulfill({ json: document });
 		},
 	);
-	await page.goto(
-		`${base}/warehouses/warehouse-demo/outbound/order-out-2087/shipment`,
-	);
+	await page.goto(`${base}/warehouses/warehouse-demo/outbound`);
+	const order = page.getByRole("row").filter({ hasText: "ЗК-2087" });
+	await order.getByRole("link", { name: "Управление отгрузкой" }).click();
 	await expect(
 		page.getByRole("heading", { name: "Отгрузка · ЗК-2087" }),
 	).toBeVisible();
+	const documents = page.getByRole("region", { name: "Документы заказа" });
+	await page.context().grantPermissions(["clipboard-read", "clipboard-write"], {
+		origin: base,
+	});
+	await documents.getByRole("button", { name: "Скопировать сводку" }).click();
+	await expect(documents.getByRole("status")).toHaveText("Сводка скопирована.");
+	const summary = await page.evaluate(() => navigator.clipboard.readText());
+	expect(summary).toContain("Заказ ЗК-2087 · Интернет-заказ #2087");
+	expect(summary).toContain("Кофе в зёрнах — 1 шт.");
+
+	const downloadEvent = page.waitForEvent("download");
+	await documents
+		.getByRole("button", { name: "Скачать ведомость CSV" })
+		.click();
+	const download = await downloadEvent;
+	expect(download.suggestedFilename()).toBe("отгрузка-ЗК-2087.csv");
+	const csv = await readFile(await download.path(), "utf8");
+	expect(csv.startsWith('\uFEFF"Заказ";"Получатель"')).toBe(true);
+	expect(csv).toContain('"FOOD-001";"Кофе в зёрнах";"1";"шт."');
+	expect(csv).toContain('"ТН-2087"');
+
+	const reconciliation = page.getByRole("region", { name: "Сверка отгрузки" });
+	const date = reconciliation.getByLabel("Дата проверки просрочки");
+	await date.fill("2026-11-12");
+	await expect(reconciliation.getByText(/С просрочкой: 0/)).toBeVisible();
+	await date.fill("2026-11-13");
+	await expect(reconciliation.getByText(/С просрочкой: 1/)).toBeVisible();
+	await reconciliation
+		.getByRole("combobox", { name: "Показать позиции" })
+		.click();
+	await page
+		.getByRole("option", { name: "С расхождениями", exact: true })
+		.click();
+	await expect(
+		reconciliation.getByRole("row", { name: /Кофе в зёрнах/ }),
+	).toBeVisible();
+	await expect(
+		reconciliation.getByRole("row", { name: /Лампа настольная/ }),
+	).toHaveCount(0);
+	const discrepancyEvent = page.waitForEvent("download");
+	await reconciliation
+		.getByRole("button", { name: "Скачать расхождения CSV" })
+		.click();
+	const discrepancy = await discrepancyEvent;
+	expect(discrepancy.suggestedFilename()).toBe(
+		"расхождения-ЗК-2087-2026-11-13.csv",
+	);
+	const discrepancyCsv = await readFile(await discrepancy.path(), "utf8");
+	expect(discrepancyCsv).toContain(
+		'"FOOD-001";"Кофе в зёрнах";"шт.";"2";"1";"1";"0";"1"',
+	);
+	expect(discrepancyCsv).not.toContain("HOME-014");
+
 	await page.getByRole("combobox", { name: "Складской приоритет" }).click();
 	await page.getByRole("option", { name: "Обычный", exact: true }).click();
 	const reason = page.getByLabel("Публичная причина задержки");
