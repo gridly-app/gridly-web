@@ -1,5 +1,5 @@
 import type { AuthMode, Credentials } from "@/ports/session";
-import { ApiError, type HttpClient } from "@/shared/http";
+import { ApiError, type SessionHttpClient } from "@/shared/http";
 import {
 	createSnapshotStore,
 	errorMessage,
@@ -40,7 +40,7 @@ export class BrowserSessionRepository {
 	private revocation: Promise<void> | null = null;
 
 	constructor(
-		private readonly http: HttpClient,
+		private readonly http: SessionHttpClient,
 		storage: KeyValueStorage,
 		private readonly clearData: () => void = () => undefined,
 		private readonly lock = browserAccountLock,
@@ -265,7 +265,7 @@ export class BrowserSessionRepository {
 	private end(error = "") {
 		this.account = null;
 		this.generation++;
-		this.http.clearSession?.();
+		this.http.clearSession();
 		this.clearData();
 		this.store.publish({
 			user: "",
