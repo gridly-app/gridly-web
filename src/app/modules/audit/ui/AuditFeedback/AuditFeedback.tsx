@@ -18,7 +18,7 @@ export function AuditFeedback({
 }) {
 	const retry = <RetryButton onRetry={onRetry} />;
 	const canShowLoading = !rangeError && isPending;
-	const canShowReadError = !rangeError && readError;
+	const canShowReadError = !rangeError && Boolean(readError);
 	const readMessage = isForbidden
 		? "У аккаунта нет доступа к журналу аудита."
 		: errorMessage(readError);

@@ -1,7 +1,8 @@
 import { encodeCsv } from "@/shared/lib";
 
-import { changeLabel, changeValue } from "../auditChanges";
-import type { AuditRow } from "../auditPresentation";
+import { changeLabel } from "../changes/auditChangeLabel";
+import { changeValue } from "../changes/auditChangeValue";
+import type { AuditRow } from "../events/auditRow";
 
 const columns: { heading: string; value: (row: AuditRow) => string }[] = [
 	{ heading: "Дата и время", value: ({ summary }) => summary.date },

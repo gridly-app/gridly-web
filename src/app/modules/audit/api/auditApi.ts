@@ -8,6 +8,18 @@ import type { HttpClient } from "@/shared/http";
 
 import { readAuditPage } from "./auditPageApi";
 
+const firstCursor: string | null = null;
+
+function uniqueById(events: AuditEvent[]) {
+	const byId = new Map<string, AuditEvent>();
+
+	for (const event of events) {
+		if (!byId.has(event.id)) byId.set(event.id, event);
+	}
+
+	return [...byId.values()];
+}
+
 export function useAuditEvents(
 	http: HttpClient,
 	path: string,
@@ -16,7 +28,7 @@ export function useAuditEvents(
 	const scopeId = useWarehouseScopeId();
 	const query = useInfiniteQuery({
 		queryKey: [...adminQueryKey(scopeId, path), filters],
-		initialPageParam: null as string | null,
+		initialPageParam: firstCursor,
 		queryFn: ({ pageParam, signal }) =>
 			readAuditPage(http, path, filters, pageParam, signal),
 		getNextPageParam: (page, _pages, _cursor, cursors) => {
@@ -31,19 +43,10 @@ export function useAuditEvents(
 		gcTime: 0,
 	});
 	const { data } = query;
-	const events = useMemo(() => {
-		if (!data) return;
-
-		const byId = new Map<string, AuditEvent>();
-
-		for (const page of data.pages) {
-			for (const event of page.items) {
-				if (!byId.has(event.id)) byId.set(event.id, event);
-			}
-		}
-
-		return [...byId.values()];
-	}, [data]);
+	const events = useMemo(
+		() => data && uniqueById(data.pages.flatMap((page) => page.items)),
+		[data],
+	);
 
 	return {
 		query,

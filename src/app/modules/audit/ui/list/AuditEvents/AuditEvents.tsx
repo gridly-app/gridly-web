@@ -2,13 +2,15 @@ import { useMemo, useState } from "react";
 
 import type { AuditEvent } from "@/domain/shipment";
 import { useWorkspaceMode } from "@/ports/session";
-
 import { SortedTable } from "@/shared/ui/management";
 
-import { defaultAuditFilters, filterAuditRows } from "../../../model/filters/auditFilters";
-import { auditRow } from "../../../model/auditPresentation";
-import { AuditEventDialog } from "../../details/AuditEventDialog/AuditEventDialog";
 import { auditColumns } from "../../../config/auditColumns";
+import {
+	defaultAuditFilters,
+	filterAuditRows,
+} from "../../../model/filters/auditFilters";
+import { auditRow } from "../../../model/events/auditRow";
+import { AuditEventDialog } from "../../details/AuditEventDialog/AuditEventDialog";
 
 export function AuditEvents({
 	items,
@@ -23,24 +25,26 @@ export function AuditEvents({
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const selectedEvent = items.find(({ id }) => id === selectedId);
 	const allRows = useMemo(() => items.map(auditRow), [items]);
+	const columns = useMemo(() => auditColumns(mode, setSelectedId), [mode]);
 	const rows = search
 		? filterAuditRows(allRows, { ...defaultAuditFilters, search })
 		: allRows;
+
+	function handleCloseEvent() {
+		setSelectedId(null);
+	}
 
 	return (
 		<>
 			<SortedTable
 				label={label}
-				columns={auditColumns(mode, setSelectedId)}
+				columns={columns}
 				rows={rows}
 				rowKey={({ event }) => event.id}
 				descending
 			/>
 			{selectedEvent && (
-				<AuditEventDialog
-					event={selectedEvent}
-					onClose={() => setSelectedId(null)}
-				/>
+				<AuditEventDialog event={selectedEvent} onClose={handleCloseEvent} />
 			)}
 		</>
 	);

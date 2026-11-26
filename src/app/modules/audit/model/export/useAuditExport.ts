@@ -1,27 +1,29 @@
 import { useLayoutEffect, useRef, useState } from "react";
 
+import type { WorkspaceMode } from "@/ports/session";
 import { useWarehouseScopeId } from "@/ports/warehouse";
-import {
-	ApiError,
-	type FetchHttpClient,
-	saveResponseFile,
-} from "@/shared/http";
+import { ApiError, type FileHttpClient, saveResponseFile } from "@/shared/http";
 
 type ExportStatus =
 	| { type: "idle" }
 	| { type: "pending" }
-	| { type: "failed"; error: Error; forbidden: boolean };
+	| { type: "failed"; error: Error; isForbidden: boolean };
+
+const exportFileNames: Record<WorkspaceMode, string> = {
+	standard: "gridly-shipment-audit.csv",
+	sandbox: "sandbox-shipment-audit.csv",
+};
 
 export function useAuditExport(
-	http: Pick<FetchHttpClient, "requestFile">,
-	path: string,
+	http: Pick<FileHttpClient, "requestFile">,
+	{ path, mode }: { path: string; mode: WorkspaceMode },
 	filters: string,
 	enabled: boolean,
 ) {
 	const scopeId = useWarehouseScopeId();
 	const controller = useRef<AbortController | null>(null);
 	const [status, setStatus] = useState<ExportStatus>({ type: "idle" });
-	const isForbidden = status.type === "failed" && status.forbidden;
+	const isForbidden = status.type === "failed" && status.isForbidden;
 
 	useLayoutEffect(() => {
 		setStatus({ type: "idle" });
@@ -30,7 +32,7 @@ export function useAuditExport(
 			controller.current?.abort();
 			controller.current = null;
 		};
-	}, [http, path, scopeId, filters, enabled]);
+	}, [http, path, mode, scopeId, filters, enabled]);
 
 	async function handleExport() {
 		if (!enabled || isForbidden || controller.current) return;
@@ -54,26 +56,21 @@ export function useAuditExport(
 				throw new Error("Сервер вернул файл в неожиданном формате.");
 			}
 
-			const namespace = path.startsWith("/sandbox/") ? "sandbox" : "gridly";
+			await saveResponseFile(response, exportFileNames[mode], signal);
 
-			await saveResponseFile(
-				response,
-				`${namespace}-shipment-audit.csv`,
-				signal,
-			);
 			if (controller.current === active) setStatus({ type: "idle" });
 		} catch (error) {
 			if (signal.aborted) return;
 
-			const forbidden = error instanceof ApiError && error.status === 403;
-			const message = forbidden
+			const isDenied = error instanceof ApiError && error.status === 403;
+			const message = isDenied
 				? "У аккаунта нет доступа к экспорту журнала аудита."
 				: "Не удалось скачать журнал аудита. Повторите экспорт.";
 
 			setStatus({
 				type: "failed",
 				error: new Error(message, { cause: error }),
-				forbidden,
+				isForbidden: isDenied,
 			});
 		} finally {
 			if (controller.current === active) controller.current = null;

@@ -11,3 +11,7 @@
 	overflow-wrap: anywhere;
 	white-space: pre-wrap;
 }
+
+.changeLabel {
+	font-weight: 600;
+}

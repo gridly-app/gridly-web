@@ -2,10 +2,8 @@ import type { AuditEvent } from "../src/domain/shipment";
 
 import { auditArea } from "../src/app/modules/audit/model/events/auditArea";
 import { auditCsv } from "../src/app/modules/audit/model/export/auditCsv";
-import {
-	auditRow,
-	auditSearchFields,
-} from "../src/app/modules/audit/model/auditPresentation";
+import { auditRow } from "../src/app/modules/audit/model/events/auditRow";
+import { auditSearchFields } from "../src/app/modules/audit/model/events/auditSearchFields";
 import { createTextIndex, textSearchQuery } from "../src/shared/lib";
 
 const exactFilters = [

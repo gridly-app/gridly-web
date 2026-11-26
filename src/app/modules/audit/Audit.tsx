@@ -1,29 +1,27 @@
 import { useMemo, useState } from "react";
 
-import { useWarehouses } from "@/ports/warehouse";
 import { useWorkspaceMode } from "@/ports/session";
+import { useWarehouses } from "@/ports/warehouse";
+import { type FileHttpClient, isAccessDenied } from "@/shared/http";
+import { dateRangeError } from "@/shared/lib";
 
-import { ApiError, type FetchHttpClient } from "@/shared/http";
 import { useAuditEvents } from "./api/auditApi";
-
-import { useAuditExport } from "./model/export/useAuditExport";
+import { auditColumns } from "./config/auditColumns";
 import { defaultAuditFilters } from "./model/filters/auditFilters";
 import { auditQueryParams } from "./model/filters/auditQueryParams";
-import { auditRow } from "./model/auditPresentation";
-import { dateRangeError } from "@/shared/lib";
-import { Button } from "@/shared/ui/controls";
-
+import { auditRow } from "./model/events/auditRow";
+import { useAuditExport } from "./model/export/useAuditExport";
+import { AuditEventDialog } from "./ui/details/AuditEventDialog/AuditEventDialog";
 import { AuditFeedback } from "./ui/AuditFeedback/AuditFeedback";
-
 import { AuditToolbar } from "./ui/list/AuditToolbar/AuditToolbar";
+
+import { Button } from "@/shared/ui/controls";
 import {
 	SortedTable,
 	managementStyles as styles,
 } from "@/shared/ui/management";
-import { AuditEventDialog } from "./ui/details/AuditEventDialog/AuditEventDialog";
-import { auditColumns } from "./config/auditColumns";
 
-export function Audit({ http, path }: { http: FetchHttpClient; path: string }) {
+export function Audit({ http, path }: { http: FileHttpClient; path: string }) {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const mode = useWorkspaceMode();
 	const [filters, setFilters] = useState(defaultAuditFilters);
@@ -40,22 +38,21 @@ export function Audit({ http, path }: { http: FetchHttpClient; path: string }) {
 	const columns = useMemo(() => auditColumns(mode, setSelectedId), [mode]);
 	const rows = useMemo(() => events?.map(auditRow) ?? [], [events]);
 	const selectedEvent = events?.find(({ id }) => id === selectedId);
-	const denied =
-		query.error instanceof ApiError && [401, 403].includes(query.error.status);
+	const isDenied = isAccessDenied(query.error);
 	const { canExport, handleExport, exportError, isForbidden } = useAuditExport(
 		http,
-		path,
+		{ path, mode },
 		params,
-		!rangeError && !denied,
+		!rangeError && !isDenied,
 	);
-
 	const canShowEvents = Boolean(
-		!rangeError && events && !denied && !isForbidden,
+		!rangeError && events && !isDenied && !isForbidden,
 	);
 
 	function handleRetry() {
 		if (query.isFetchNextPageError) {
 			void query.fetchNextPage();
+
 			return;
 		}
 
@@ -88,7 +85,7 @@ export function Audit({ http, path }: { http: FetchHttpClient; path: string }) {
 				exportError={exportError}
 				readError={query.error}
 				isPending={query.isLoading}
-				isForbidden={denied}
+				isForbidden={isDenied}
 				onRetry={handleRetry}
 			/>
 			{canShowEvents && (

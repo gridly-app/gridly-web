@@ -3,11 +3,12 @@ import { act, createElement } from "react";
 
 import { mountDom } from "../../../../../../tests/support/dom";
 import { WarehouseDataProvider, type WarehouseData } from "@/ports/warehouse";
-import { ApiError, type FetchHttpClient } from "@/shared/http";
+import { ApiError, type FileHttpClient } from "@/shared/http";
 
 import { useAuditExport } from "./useAuditExport";
+import { warehouseData } from "../../../warehouse-data/model/warehouseData";
 
-function mountExport(requestFile: FetchHttpClient["requestFile"]) {
+function mountExport(requestFile: FileHttpClient["requestFile"]) {
 	const { root, close } = mountDom();
 	const downloads: string[] = [];
 	const createUrl = spyOn(URL, "createObjectURL").mockReturnValue(
@@ -24,7 +25,7 @@ function mountExport(requestFile: FetchHttpClient["requestFile"]) {
 	function Export({ filters }: { filters: string }) {
 		current = useAuditExport(
 			http,
-			"/sandbox/admin/shipment-audit",
+			{ path: "/sandbox/admin/shipment-audit", mode: "sandbox" },
 			filters,
 			true,
 		);
@@ -33,7 +34,10 @@ function mountExport(requestFile: FetchHttpClient["requestFile"]) {
 	}
 
 	function render(filters: string) {
-		const value = { useScopeId: () => "sandbox-1" } as WarehouseData;
+		const value: WarehouseData = {
+			...warehouseData,
+			useScopeId: () => "sandbox-1",
+		};
 		const children = createElement(Export, { filters });
 
 		act(() =>
@@ -103,6 +107,7 @@ test("export rejects unexpected files and server permission errors", async () =>
 				headers: { "Content-Type": "text/csv-invalid" },
 			});
 		}
+
 		throw new ApiError("Forbidden", 403, "FORBIDDEN");
 	});
 
