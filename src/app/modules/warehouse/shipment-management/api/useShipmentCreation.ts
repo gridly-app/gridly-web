@@ -10,7 +10,7 @@ import {
 	type ShipmentCreation,
 } from "./shipmentCreationStorage";
 
-const terminalCreationStatuses = new Set([400, 401, 403, 404, 413, 422]);
+const terminalCreationStatuses = new Set([400, 401, 403, 404, 409, 413, 422]);
 
 export function useShipmentCreation(
 	queryKey: readonly string[],
