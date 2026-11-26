@@ -1,7 +1,10 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Outlet, Link as RouterLink, useNavigate } from "react-router-dom";
-import { useNavigationConfirmation } from "@/ports/navigation";
+import {
+	useNavigationConfirmation,
+	sandboxEntryPath,
+} from "@/ports/navigation";
 import { useSandboxAccess } from "@/ports/session";
 import { errorMessage } from "@/shared/lib";
 import { Button, StableLabel } from "@/shared/ui/controls";
@@ -29,7 +32,8 @@ function SandboxWorkspace() {
 	const { controller } = useSandboxAccess();
 	useNavigationConfirmation((_currentPath, nextPath) => {
 		const path = nextPath.toLowerCase();
-		if (path === "/sandbox" || path.startsWith("/sandbox/")) return;
+		if (path === sandboxEntryPath || path.startsWith(`${sandboxEntryPath}/`))
+			return;
 
 		return {
 			title: "Предупреждение",
@@ -82,7 +86,7 @@ export function SandboxRoute() {
 			await controller.start();
 			const current = controller.getSnapshot();
 			if (current.status === "active" && current.access) {
-				await navigate("/sandbox", { replace: true });
+				await navigate(sandboxEntryPath, { replace: true });
 			}
 		} catch (failure) {
 			setActionError(controller.getSnapshot().error || errorMessage(failure));

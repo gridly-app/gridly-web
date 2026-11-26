@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { warehousePath } from "@/ports/navigation";
+import { warehousePath, newWarehouseId } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouse, useWarehouses } from "@/ports/warehouse";
 import { ApiError } from "@/shared/http";
@@ -41,7 +41,12 @@ function WarehouseSectionContent({
 		list !== undefined &&
 		!list.some(({ id }) => id === warehouseId);
 	if (missingFromSandbox) {
-		return <Navigate replace to={warehousePath(mode, list[0]?.id ?? "new")} />;
+		return (
+			<Navigate
+				replace
+				to={warehousePath(mode, list[0]?.id ?? newWarehouseId)}
+			/>
+		);
 	}
 
 	const error = snapshot.error ?? snapshot.failureReason;
@@ -114,7 +119,7 @@ function WorkspaceOutlet({
 	route: WarehouseRoute | undefined;
 }) {
 	if (!route) return <Outlet />;
-	if (warehouseId === "new") return <NewWarehouse />;
+	if (warehouseId === newWarehouseId) return <NewWarehouse />;
 	return (
 		<WarehouseSectionContent
 			key={warehouseId}

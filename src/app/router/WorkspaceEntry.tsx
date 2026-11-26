@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { warehousePath } from "@/ports/navigation";
+import { warehousePath, newWarehouseId } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouses } from "@/ports/warehouse";
 import { errorMessage } from "@/shared/lib";
@@ -34,5 +34,10 @@ export function WorkspaceEntry({
 	const selected =
 		warehouses.data.find(({ id }) => id === preferredWarehouse) ??
 		warehouses.data[0];
-	return <Navigate replace to={warehousePath(mode, selected?.id ?? "new")} />;
+	return (
+		<Navigate
+			replace
+			to={warehousePath(mode, selected?.id ?? newWarehouseId)}
+		/>
+	);
 }

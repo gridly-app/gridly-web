@@ -9,7 +9,11 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { shipmentAdminPath } from "@/ports/navigation";
+import {
+	accountEntryPath,
+	shipmentAdminPath,
+	signInPath,
+} from "@/ports/navigation";
 import { useSession, useWorkspaceMode } from "@/ports/session";
 import { errorMessage, useTheme } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
@@ -42,7 +46,7 @@ export function ProfileMenu() {
 		setOpen(false);
 		try {
 			if (!isSandbox) await endSession();
-			await navigate(isSandbox ? "/" : "/auth", { replace: true });
+			await navigate(isSandbox ? "/" : signInPath, { replace: true });
 		} catch (error) {
 			notify(errorMessage(error));
 		}
@@ -118,7 +122,7 @@ export function ProfileMenu() {
 					<MenuItem
 						onClick={() => {
 							setOpen(false);
-							void navigate("/app");
+							void navigate(accountEntryPath);
 						}}
 					>
 						Мои склады

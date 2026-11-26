@@ -33,7 +33,6 @@
 	margin-inline: auto;
 	justify-content: center;
 	flex-shrink: 0;
-	border-color: transparent;
 	background: var(--card);
 	box-shadow: none;
 	gap: 0;

@@ -1,4 +1,5 @@
 import { IconBuildingWarehouse } from "@tabler/icons-react";
+import { newWarehouseId } from "@/ports/navigation";
 import { Skeleton } from "@/shared/ui/feedback";
 import { Select } from "@/shared/ui/forms";
 import styles from "./WorkspaceSelector.module.css";
@@ -20,7 +21,7 @@ export function WorkspaceSelector({
 		return <Skeleton className={styles.loading} label="Загружаем склады…" />;
 
 	const items = [
-		{ value: "new", label: "+ Создать склад" },
+		{ value: newWarehouseId, label: "+ Создать склад" },
 		...warehouses.map((warehouse) => ({
 			value: warehouse.id,
 			label: warehouse.name,

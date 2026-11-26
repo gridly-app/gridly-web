@@ -1,4 +1,8 @@
 .profileTrigger {
+	--button-background: transparent;
+	--button-foreground: var(--sidebar-foreground);
+	--button-hover: var(--sidebar-accent);
+
 	min-width: 0;
 	overflow: hidden;
 	justify-content: flex-start;

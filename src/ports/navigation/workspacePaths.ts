@@ -13,20 +13,38 @@ export const warehousePaths = {
 
 export const shipmentManagementRoute = `${warehousePaths.outbound}/:orderId/shipment`;
 
+export const newWarehouseId = "new";
+
+export const accountEntryPath = "/app";
+
+export const sandboxEntryPath = "/sandbox";
+
+export const signInPath = "/auth";
+
+export const registrationPath = `${signInPath}?mode=register`;
+
+type PathMode = "standard" | "sandbox";
+
+export function workspaceEntryPath(mode: PathMode) {
+	return mode === "sandbox" ? sandboxEntryPath : accountEntryPath;
+}
+
+export function workspacePathPrefix(mode: PathMode) {
+	return mode === "sandbox" ? sandboxEntryPath : "";
+}
+
 export function warehousePath(
-	mode: "standard" | "sandbox",
+	mode: PathMode,
 	id: string,
 	page: string = warehousePaths.map,
 ) {
-	return `${mode === "sandbox" ? "/sandbox" : ""}/warehouses/${encodeURIComponent(id)}/${page}`;
+	return `${workspacePathPrefix(mode)}/warehouses/${encodeURIComponent(id)}/${page}`;
 }
 
 export const shipmentAdministrationPath = "/admin/shipments";
 
-export function shipmentAdminPath(mode: "standard" | "sandbox") {
-	return mode === "sandbox"
-		? `/sandbox${shipmentAdministrationPath}`
-		: shipmentAdministrationPath;
+export function shipmentAdminPath(mode: PathMode) {
+	return `${workspacePathPrefix(mode)}${shipmentAdministrationPath}`;
 }
 
 export function shipmentManagementPath(warehouseId: string, orderId: string) {
