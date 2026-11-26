@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { AnonymousSandboxAccess } from "@/app/modules/session/model/sandbox/AnonymousSandboxAccess";
+import { AnonymousSandboxAccess } from "../modules/session";
 import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 
 const base = "http://gridly-sandbox.test/api/v1";
@@ -112,7 +112,9 @@ function serverWorkspace(empty = false) {
 				expect(request.method).toBe("POST");
 				expect(request.headers.get("Authorization")).toBeNull();
 				expect(await request.text()).toBe("");
-				expect(request.headers.get("Idempotency-Key")).toBeTruthy();
+				expect(request.headers.get("Idempotency-Key")).toMatch(
+					/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+				);
 				if (failure?.path === path) return failure.response();
 				return Response.json({
 					access_id: "server-access",
@@ -136,7 +138,9 @@ function serverWorkspace(empty = false) {
 				});
 			if (path === `/warehouses/${warehouse.id}`) {
 				if (request.method === "PATCH") {
-					expect(request.headers.get("Idempotency-Key")).toBeTruthy();
+					expect(request.headers.get("Idempotency-Key")).toMatch(
+						/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+					);
 					const body = (await request.json()) as {
 						name: string;
 						revision: number;

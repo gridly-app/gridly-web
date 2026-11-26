@@ -1,17 +1,28 @@
-import { AnonymousSandboxAccess } from "@/app/modules/session/model/sandbox/AnonymousSandboxAccess";
+import { AnonymousSandboxAccess } from "./AnonymousSandboxAccess";
+
+export type Transport = (
+	input: RequestInfo | URL,
+	init?: RequestInit,
+) => Promise<Response>;
+
 export const base = "http://gridly-sandbox.test/api/v1";
 
-export const credentials = (id = "first") => ({
-	access_id: id,
-	access_token: `sandbox-${id}`,
-	initial_warehouse_id: `warehouse-${id}`,
-});
+export const sessions: AnonymousSandboxAccess[] = [];
+
+export function credentials(id = "first") {
+	return {
+		access_id: id,
+		access_token: `sandbox-${id}`,
+		initial_warehouse_id: `warehouse-${id}`,
+	};
+}
 
 export function memory() {
 	const data = new Map<string, string>([
 		["gridly.user", "operator"],
 		["gridly.last", "personal"],
 	]);
+
 	return {
 		data,
 		getItem: (key: string) => data.get(key) ?? null,
@@ -24,13 +35,7 @@ export function memory() {
 	};
 }
 
-export const sessions: AnonymousSandboxAccess[] = [];
-export function setup(
-	transport: (
-		input: RequestInfo | URL,
-		init?: RequestInit,
-	) => Promise<Response> = fetch,
-) {
+export function setup(transport: Transport = fetch) {
 	const storage = memory();
 	let clears = 0;
 	const session = new AnonymousSandboxAccess(
@@ -41,7 +46,9 @@ export function setup(
 		},
 		transport,
 	);
+
 	sessions.push(session);
+
 	return { storage, session, clears: () => clears };
 }
 

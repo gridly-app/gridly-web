@@ -10,6 +10,7 @@ import { ApiError, FetchHttpClient } from "@/shared/http";
 import {
 	availableStorage,
 	browserStorage,
+	clearOperationAttempts,
 	runtimeNotices,
 } from "@/shared/lib";
 
@@ -82,20 +83,8 @@ export function createDependencies() {
 }
 
 function clearSandboxAttempts(accessId: string) {
-	const quotedId = JSON.stringify(accessId);
-	const prefixes = [
-		`gridly.guest-link-attempt:["sandbox",${quotedId},`,
-		`gridly.shipment-attempt:["sandbox",${quotedId},`,
-	];
-
 	try {
-		const storage = window.sessionStorage;
-		const keys = Object.keys(storage);
-
-		for (const key of keys) {
-			if (prefixes.some((prefix) => key.startsWith(prefix)))
-				storage.removeItem(key);
-		}
+		clearOperationAttempts(window.sessionStorage, ["sandbox", accessId]);
 	} catch {
 		runtimeNotices.report(
 			"sandbox.attempts",

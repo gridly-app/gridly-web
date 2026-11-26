@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { AnonymousSandboxAccess } from "@/app/modules/session/model/sandbox/AnonymousSandboxAccess";
 
+import { AnonymousSandboxAccess } from "./AnonymousSandboxAccess";
 import {
 	base,
 	credentials,
@@ -20,35 +20,45 @@ describe("sandbox session cleanup", () => {
 			memory(),
 			base,
 			() => undefined,
-			(async (_url, options) => {
+			async (_url, options) => {
 				if (options?.method === "DELETE") {
 					revoked.push(new Headers(options.headers).get("Authorization") ?? "");
+
 					return new Response(null, { status: 204 });
 				}
+
 				return Response.json(credentials(String(++created)));
-			}) as (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
+			},
 		);
+
 		sessions.push(session);
 		await session.start();
 		await session.start(true);
 		await Promise.resolve();
+
 		expect(revoked).toEqual(["Bearer sandbox-1"]);
+
 		session.expire();
 		await session.start();
 		session.end();
 		await Promise.resolve();
+
 		expect(revoked).toEqual(["Bearer sandbox-1", "Bearer sandbox-3"]);
 	});
+
 	test("explicit exit clears local access even when DELETE fails, and preserves account session", async () => {
 		const requests: string[] = [];
-		const { session, storage } = setup((async (url, options) => {
+		const { session, storage } = setup(async (url, options) => {
 			requests.push(String(url));
+
 			return options?.method === "DELETE"
 				? Response.error()
 				: Response.json(credentials());
-		}) as (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>);
+		});
+
 		await session.start();
 		session.end();
+
 		expect(session.getSnapshot()).toMatchObject({
 			status: "idle",
 			access: null,
@@ -70,15 +80,20 @@ test("sandbox ends locally despite failed storage removal and revocation", async
 		},
 		async (_url, options) => {
 			if (options?.method === "DELETE") throw new TypeError("offline");
+
 			return Response.json(credentials());
 		},
 	);
+
 	await session.start();
 	storage.removeItem = () => {
 		throw new Error("denied");
 	};
+
 	const old = session.http.request("/warehouses");
+
 	session.end();
+
 	expect(session.getSnapshot()).toMatchObject({
 		status: "idle",
 		access: null,
