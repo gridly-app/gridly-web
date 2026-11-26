@@ -12,17 +12,6 @@ export const cellLabels: Record<CellType, string> = {
 	wall: "Стена",
 };
 
-export const cellColors: Record<CellType, string> = {
-	empty: "#f8fbf9",
-	aisle: "#e6efea",
-	storage: "#acd6bc",
-	cold: "#acd6bc",
-	unload: "#f3c6a1",
-	load: "#d6cbe5",
-	charge: "#b9decc",
-	wall: "#567564",
-};
-
 export const statuses: Record<string, string> = {
 	active: "В работе",
 	completed: "Завершён",

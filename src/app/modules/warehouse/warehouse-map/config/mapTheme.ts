@@ -1,9 +1,17 @@
 import type { CellType } from "@/domain/warehouse";
-import { cellColors } from "@/domain/warehouse";
 
 export const mapThemes = {
 	light: {
-		cells: cellColors,
+		cells: {
+			empty: "#f8fbf9",
+			aisle: "#e6efea",
+			storage: "#acd6bc",
+			cold: "#acd6bc",
+			unload: "#f3c6a1",
+			load: "#d6cbe5",
+			charge: "#b9decc",
+			wall: "#567564",
+		} satisfies Record<CellType, string>,
 		wallBorder: "#345642",
 		perimeter: "#7b8e83",
 		coordinates: "#435f4d",

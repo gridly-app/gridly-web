@@ -13,7 +13,6 @@ export * from "./robotAssignment";
 export * from "./statusTone";
 export * from "./warehouse";
 export {
-	cellColors,
 	cellLabels,
 	confirmationLabels,
 	robotRoleLabels,
