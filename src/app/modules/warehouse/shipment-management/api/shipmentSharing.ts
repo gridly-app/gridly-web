@@ -69,8 +69,12 @@ export function shipmentSharing({
 			const latest = await rereadShipment();
 			signal.throwIfAborted();
 
-			if (latest?.share_link?.id !== attempt.linkId) {
-				if (!latest?.share_link || latest.share_link.id) creation.clear();
+			const currentLink = latest?.share_link;
+			const isAnotherLink =
+				currentLink?.id !== undefined && currentLink.id !== attempt.linkId;
+
+			if (!currentLink || isAnotherLink) {
+				creation.clear();
 
 				throw new UserError(
 					"Ссылка этой попытки больше не является текущей. Обновите данные.",
