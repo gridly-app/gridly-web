@@ -1,6 +1,6 @@
-import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 import type { CommandExecutor } from "@/domain/warehouse";
-import { errorMessage } from "@/shared/lib";
+import { errorMessage, useSingleFlight } from "@/shared/lib";
 import { Button, Input } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 import { Field, Form, FormActions } from "@/shared/ui/forms";
@@ -9,24 +9,23 @@ import type { SettingsWarehouse } from "../../model/warehouseFields";
 import styles from "../../shared.module.css";
 
 export function CabinetSettings({
-	w,
+	warehouse,
 	execute,
 	pending,
 	retrySettings,
 }: {
-	w: SettingsWarehouse;
+	warehouse: SettingsWarehouse;
 	execute: CommandExecutor;
 	pending: boolean;
 	retrySettings: () => Promise<unknown>;
 }) {
-	const [saving, setSaving] = useState(false);
+	const flight = useSingleFlight();
 	const [message, setMessage] = useState<{
 		text: string;
 		tone: "success" | "error";
 	} | null>(null);
-	const settings = w.settings;
-	const inFlight = useRef(false);
-	const canEdit = !!w.allowedActions?.includes("edit-settings");
+	const settings = warehouse.settings;
+	const canEdit = !!warehouse.allowedActions?.includes("edit-settings");
 	const draft = useSettingsDraft(
 		settings ? String(settings.lowStockThreshold) : "",
 		settings?.revision,
@@ -34,7 +33,7 @@ export function CabinetSettings({
 	const { value: threshold, revision } = draft;
 	const lowStockThreshold = Number(threshold);
 	const hasConflict = draft.dirty && revision !== settings?.revision;
-	const isBusy = saving || pending;
+	const isBusy = flight.isRunning || pending;
 	const canEditThreshold = canEdit && !!settings && !isBusy;
 	const canSave =
 		canEditThreshold && lowStockThreshold !== settings.lowStockThreshold;
@@ -42,10 +41,12 @@ export function CabinetSettings({
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
-		if (!canSave || inFlight.current || revision === undefined) return;
+		if (!canSave || revision === undefined) return;
 
-		inFlight.current = true;
-		setSaving(true);
+		await flight.run(() => saveThreshold(revision));
+	}
+
+	async function saveThreshold(revision: number) {
 		setMessage(null);
 
 		try {
@@ -57,9 +58,6 @@ export function CabinetSettings({
 			setMessage({ text: "Настройки сохранены", tone: "success" });
 		} catch (error) {
 			setMessage({ text: errorMessage(error), tone: "error" });
-		} finally {
-			inFlight.current = false;
-			setSaving(false);
 		}
 	}
 	function handleThresholdChange(event: ChangeEvent<HTMLInputElement>) {
