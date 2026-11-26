@@ -3,8 +3,7 @@ import type { WorkspaceMode } from "@/ports/session";
 import { Badge } from "@/shared/ui/dataDisplay";
 import type { TableColumns } from "@/shared/ui/management";
 
-import type { AuditRow } from "../model/auditPresentation";
-
+import type { AuditRow } from "../model/events/auditRow";
 import { AuditEventButton } from "../ui/list/AuditEventButton/AuditEventButton";
 import { auditContextColumns } from "./auditContextColumns";
 

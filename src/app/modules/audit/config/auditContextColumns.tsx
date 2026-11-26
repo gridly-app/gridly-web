@@ -1,23 +1,13 @@
 import { adminLocation, warehousePath } from "@/ports/navigation";
 import type { WorkspaceMode } from "@/ports/session";
-
-import { Link } from "@/shared/ui/navigation";
 import {
-	type TableColumns,
 	managementStyles as styles,
+	type TableColumns,
 } from "@/shared/ui/management";
+import { Link } from "@/shared/ui/navigation";
 
-import type { AuditRow } from "../model/auditPresentation";
-
-function auditUserSelection(
-	user: string,
-	source: string,
-): { user: string; user_kind?: "account" | "guest" } {
-	if (source === "account" || source === "guest")
-		return { user, user_kind: source };
-
-	return { user };
-}
+import type { AuditRow } from "../model/events/auditRow";
+import { AuditUserCell } from "../ui/list/AuditUserCell/AuditUserCell";
 
 export function auditContextColumns(
 	mode: WorkspaceMode,
@@ -27,26 +17,7 @@ export function auditContextColumns(
 			id: "user",
 			label: "Пользователь",
 			value: ({ summary }) => summary.actor,
-			cell: ({ event, summary }) => (
-				<>
-					{event.actor_id ? (
-						<Link
-							className={styles.link}
-							to={adminLocation(
-								"users",
-								auditUserSelection(event.actor_id, event.source),
-							)}
-						>
-							{summary.actor}
-						</Link>
-					) : (
-						summary.actor
-					)}
-					{event.actor_id && (
-						<small className={styles.subtle}>{summary.source}</small>
-					)}
-				</>
-			),
+			cell: (row) => <AuditUserCell {...row} />,
 		},
 		{
 			id: "warehouse",
