@@ -8,7 +8,7 @@ import type {
 	Stock,
 	Warehouse,
 } from "@/domain/warehouse";
-import { cellTypeSchema } from "@/domain/warehouse/layout";
+import { cellKey, cellTypeSchema } from "@/domain/warehouse/layout";
 import { ApiError } from "@/shared/http";
 import type { CategoryDto, ProductDto } from "../catalog/catalogDto";
 import { policyFromDto, wireKinds } from "../contracts/contractMappers";
@@ -30,14 +30,12 @@ function requireValue<T>(value: T | undefined, field: string): T {
 }
 
 export function cellsFromDto(layout: LayoutDto): Cell[] {
-	const cells = new Map(
-		layout.cells.map((cell) => [`${cell.x},${cell.y}`, cell]),
-	);
+	const cells = new Map(layout.cells.map((cell) => [cellKey(cell), cell]));
 
 	return Array.from({ length: layout.width * layout.height }, (_, index) => {
 		const x = index % layout.width;
 		const y = Math.floor(index / layout.width);
-		const cell = cells.get(`${x},${y}`);
+		const cell = cells.get(cellKey({ x, y }));
 
 		return {
 			x,
@@ -51,36 +49,36 @@ export function cellsFromDto(layout: LayoutDto): Cell[] {
 	});
 }
 
-export function warehouseFromDto(d: WarehouseDto): Warehouse {
+export function warehouseFromDto(dto: WarehouseDto): Warehouse {
 	return {
-		id: d.id,
-		cabinet: d.cabinet_settings,
-		writeOffs: d.write_offs,
-		allowedActions: d.allowed_actions,
-		summary: d.summary,
-		name: d.name,
+		id: dto.id,
+		cabinet: dto.cabinet_settings,
+		writeOffs: dto.write_offs,
+		allowedActions: dto.allowed_actions,
+		summary: dto.summary,
+		name: dto.name,
 		location: "",
-		width: d.width,
-		height: d.height,
-		timezone: d.time_zone,
-		revision: d.revision,
-		version: d.published_version || 0,
-		published: !!d.published_version,
-		running: d.simulation_mode === "running",
-		workerHealth: d.worker_health,
-		stateVersion: String(d.state_version),
-		asOf: d.as_of,
-		lastTickAt: d.last_tick_at,
-		tick: String(d.tick),
-		policy: d.workflow_policy
-			? policyFromDto(d.workflow_policy)
+		width: dto.width,
+		height: dto.height,
+		timezone: dto.time_zone,
+		revision: dto.revision,
+		version: dto.published_version || 0,
+		published: !!dto.published_version,
+		running: dto.simulation_mode === "running",
+		workerHealth: dto.worker_health,
+		stateVersion: String(dto.state_version),
+		asOf: dto.as_of,
+		lastTickAt: dto.last_tick_at,
+		tick: String(dto.tick),
+		policy: dto.workflow_policy
+			? policyFromDto(dto.workflow_policy)
 			: {
 					confirmUnload: false,
 					confirmPick: false,
 					confirmPutaway: false,
 					confirmLoad: false,
 				},
-		policyRevision: d.workflow_policy?.revision,
+		policyRevision: dto.workflow_policy?.revision,
 		cells: [],
 		draft: null,
 		robots: [],
@@ -92,118 +90,130 @@ export function warehouseFromDto(d: WarehouseDto): Warehouse {
 	};
 }
 
-export function orderFromDto(o: OrderDto): Order {
+export function orderFromDto(dto: OrderDto): Order {
 	return {
-		id: o.id,
-		revision: o.revision,
-		number: o.number,
-		quantity: o.quantity,
-		kind: o.kind,
-		party: o.counterparty_text,
-		status: o.status,
-		created: o.created_at,
-		manual: policyFromDto(o.confirmations || o),
-		allowedActions: o.allowed_actions,
-		blockedReason: o.blocked_reason,
-		tasks: o.tasks,
-		stage: o.stage,
-		lines: o.lines.map((l) => ({
-			id: l.id,
-			product: l.product_id,
-			quantity: l.quantity,
-			expires: l.expires_on || "",
-			putaway: l.placed_quantity ?? l.putaway_quantity,
-			writtenOff: l.lost_quantity ?? l.written_off_quantity,
+		id: dto.id,
+		revision: dto.revision,
+		number: dto.number,
+		quantity: dto.quantity,
+		kind: dto.kind,
+		party: dto.counterparty_text,
+		status: dto.status,
+		created: dto.created_at,
+		manual: policyFromDto(dto.confirmations || dto),
+		allowedActions: dto.allowed_actions,
+		blockedReason: dto.blocked_reason,
+		tasks: dto.tasks,
+		stage: dto.stage,
+		lines: dto.lines.map((line) => ({
+			id: line.id,
+			product: line.product_id,
+			quantity: line.quantity,
+			expires: line.expires_on || "",
+			putaway: line.placed_quantity ?? line.putaway_quantity,
+			writtenOff: line.lost_quantity ?? line.written_off_quantity,
 		})),
 	};
 }
 
 export function robotFromDto(
-	r: RobotDto,
+	dto: RobotDto,
 	position?: MapStateDto["robots"][number] | undefined,
 ): Robot {
 	return {
-		id: r.id,
-		allowedActions: r.allowed_actions,
-		blockedReason: r.blocked_reason,
-		currentTask: r.current_task,
-		returnRoute: r.return_route,
-		motionPath: position?.motion_path ?? r.motion_path,
-		revision: r.revision,
-		name: r.name,
-		roles: requireValue(r.roles ?? r.specializations, "roles"),
-		x: position?.x ?? r.x,
-		y: position?.y ?? r.y,
-		speed: requireValue(r.speed ?? r.speed_cells_per_tick, "speed"),
-		duration: r.action_ticks,
-		capacity: String(r.capacity_volume),
-		status: position?.status || r.status,
+		id: dto.id,
+		allowedActions: dto.allowed_actions,
+		blockedReason: dto.blocked_reason,
+		currentTask: dto.current_task,
+		returnRoute: dto.return_route,
+		motionPath: position?.motion_path ?? dto.motion_path,
+		revision: dto.revision,
+		name: dto.name,
+		roles: requireValue(dto.roles ?? dto.specializations, "roles"),
+		x: position?.x ?? dto.x,
+		y: position?.y ?? dto.y,
+		speed: requireValue(dto.speed ?? dto.speed_cells_per_tick, "speed"),
+		duration: dto.action_ticks,
+		capacity: String(dto.capacity_volume),
+		status: position?.status || dto.status,
 	};
 }
 
-export function categoryFromDto(c: CategoryDto): Category {
+export function categoryFromDto(dto: CategoryDto): Category {
 	return {
-		id: c.id,
-		allowedActions: c.allowed_actions,
-		productCount: c.product_count,
-		revision: c.revision,
-		name: c.name,
-		cold: c.storage_kind === "cold",
-		archived: c.is_archived || !!c.archived_at,
+		id: dto.id,
+		allowedActions: dto.allowed_actions,
+		productCount: dto.product_count,
+		revision: dto.revision,
+		name: dto.name,
+		cold: dto.storage_kind === "cold",
+		archived: dto.is_archived || !!dto.archived_at,
 	};
 }
 
-export function productFromDto(p: ProductDto): Product {
+export function productFromDto(dto: ProductDto): Product {
 	return {
-		id: p.id,
-		allowedActions: p.allowed_actions,
-		revision: p.revision,
-		name: p.name,
-		sku: p.sku,
-		category: p.category_id,
+		id: dto.id,
+		allowedActions: dto.allowed_actions,
+		revision: dto.revision,
+		name: dto.name,
+		sku: dto.sku,
+		category: dto.category_id,
 		volume: String(
-			requireValue(p.unit_volume ?? p.volume_per_unit, "unit_volume"),
+			requireValue(dto.unit_volume ?? dto.volume_per_unit, "unit_volume"),
 		),
-		price: p.price === null ? "" : String(p.price),
+		price: dto.price === null ? "" : String(dto.price),
 		shelf:
 			requireValue(
-				p.default_shelf_life_days !== undefined
-					? p.default_shelf_life_days
-					: p.standard_shelf_life_days,
+				dto.default_shelf_life_days !== undefined
+					? dto.default_shelf_life_days
+					: dto.standard_shelf_life_days,
 				"default_shelf_life_days",
 			) ?? 0,
-		archived: p.is_archived || !!p.archived_at,
+		archived: dto.is_archived || !!dto.archived_at,
 	};
 }
 
-export function stockFromDto(s: StockDto): Stock {
+export function stockFromDto(dto: StockDto): Stock {
+	const source = dto.source_order;
+
 	return {
-		availableQuantity: s.available_quantity,
-		writeOffBlockedReason: s.write_off_blocked_reason,
-		isExpired: s.is_expired,
-		canWriteOff: s.can_write_off,
-		id: s.id,
-		revision: s.revision,
-		batchId: s.batch_id,
-		cellId: s.cell_id,
-		product: s.product_id,
-		quantity: s.quantity,
-		reserved: s.reserved_quantity,
-		expires: s.expires_on || "",
-		cell: s.robot_id ? `robot:${s.robot_id}` : `${s.cell_x},${s.cell_y}`,
+		availableQuantity: dto.available_quantity,
+		writeOffBlockedReason: dto.write_off_blocked_reason,
+		isExpired: dto.is_expired,
+		canWriteOff: dto.can_write_off,
+		id: dto.id,
+		revision: dto.revision,
+		batchId: dto.batch_id,
+		sourceOrderId: source?.id ?? dto.source_order_id ?? undefined,
+		sourceOrder: source
+			? {
+					id: source.id,
+					number: source.number,
+					party: source.counterparty_text,
+				}
+			: undefined,
+		cellId: dto.cell_id,
+		product: dto.product_id,
+		quantity: dto.quantity,
+		reserved: dto.reserved_quantity,
+		expires: dto.expires_on || "",
+		cell: dto.robot_id
+			? `robot:${dto.robot_id}`
+			: `${dto.cell_x},${dto.cell_y}`,
 	};
 }
 
-export function eventFromDto(e: EventDto): Event {
+export function eventFromDto(dto: EventDto): Event {
 	return {
-		id: String(e.id),
+		id: String(dto.id),
 		warehouseId:
-			e.warehouse_id ??
-			/^warehouses?[:/]([^/]+)$/.exec(e.entity_locator ?? "")?.[1],
-		type: e.event_type,
-		entity: e.entity_locator,
-		time: e.created_at,
-		title: e.message || e.event_type || "Событие",
-		detail: e.detail || e.entity_locator || "",
+			dto.warehouse_id ??
+			/^warehouses?[:/]([^/]+)$/.exec(dto.entity_locator ?? "")?.[1],
+		type: dto.event_type,
+		entity: dto.entity_locator,
+		time: dto.created_at,
+		title: dto.message || dto.event_type || "Событие",
+		detail: dto.detail || dto.entity_locator || "",
 	};
 }

@@ -1,6 +1,7 @@
 import type { WarehouseCommand } from "@/domain/warehouse";
 import { UserError } from "@/shared/lib";
 import type { RestCommandContext } from "../commands/context";
+import { writeOffLimit } from "@/domain/warehouse";
 
 export async function writeOffStock(
 	context: RestCommandContext,
@@ -12,10 +13,7 @@ export async function writeOffStock(
 	if (!stock) {
 		throw new UserError("Остаток не найден.");
 	}
-	if (
-		!stock.canWriteOff ||
-		command.value.quantity > (stock.availableQuantity ?? 0)
-	) {
+	if (!stock.canWriteOff || command.value.quantity > writeOffLimit(stock)) {
 		throw new UserError("Количество превышает доступный для списания остаток.");
 	}
 	await send("/inventory/write-offs", {

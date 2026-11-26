@@ -8,6 +8,14 @@ export const stockDto = z.object({
 	can_write_off: z.boolean().optional(),
 	...identity,
 	batch_id: z.string(),
+	source_order_id: z.string().min(1).nullish(),
+	source_order: z
+		.object({
+			id: z.string().min(1),
+			number: z.string().min(1),
+			counterparty_text: z.string(),
+		})
+		.nullish(),
 	product_id: z.string(),
 	quantity: z.number(),
 	reserved_quantity: z.number().optional(),

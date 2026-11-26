@@ -28,4 +28,33 @@ test("inventory does not infer statuses omitted by the backend", () => {
 	const mapped = stockFromDto(stockDto.parse(stock));
 	expect(mapped.isExpired).toBeUndefined();
 	expect(mapped.canWriteOff).toBeUndefined();
+	expect(mapped.sourceOrderId).toBeUndefined();
+});
+
+test("inventory keeps the source order supplied by the backend", () => {
+	const mapped = stockFromDto(
+		stockDto.parse({ ...stock, source_order_id: "order-in-1042" }),
+	);
+
+	expect(mapped.sourceOrderId).toBe("order-in-1042");
+});
+
+test("inventory keeps source order metadata when it is embedded in the response", () => {
+	const mapped = stockFromDto(
+		stockDto.parse({
+			...stock,
+			source_order: {
+				id: "receipt-1",
+				number: "ПР-6000",
+				counterparty_text: "Поставщик",
+			},
+		}),
+	);
+
+	expect(mapped.sourceOrderId).toBe("receipt-1");
+	expect(mapped.sourceOrder).toEqual({
+		id: "receipt-1",
+		number: "ПР-6000",
+		party: "Поставщик",
+	});
 });
