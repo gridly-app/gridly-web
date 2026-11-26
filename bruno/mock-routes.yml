@@ -69,8 +69,6 @@
 - file: products/Создать товар (Центральный).yml
 - file: products/Изменить товар (Центральный).yml
   path: /api/v1/warehouses/warehouse-demo/products/:id
-- file: products/Удалить товар (Центральный).yml
-  path: /api/v1/warehouses/warehouse-demo/products/:id
 - file: orders/Создать заказ (Центральный).yml
 - file: orders/Изменить заказ (Центральный).yml
   path: /api/v1/warehouses/warehouse-demo/orders/:id
@@ -103,16 +101,8 @@
 - file: orders/Заказ ПР-2201 (Северный).yml
 - file: settings/Обновить настройки склада (Центральный).yml
 - file: warehouses/Удалить склад (Центральный).yml
-- file: inventory/Изменить остаток (Центральный).yml
-  path: /api/v1/warehouses/warehouse-demo/inventory/:id
-- file: inventory/Удалить остаток (Центральный).yml
-  path: /api/v1/warehouses/warehouse-demo/inventory/:id
 - file: settings/Обновить настройки склада (Северный).yml
 - file: warehouses/Удалить склад (Северный).yml
-- file: inventory/Изменить остаток (Северный).yml
-  path: /api/v1/warehouses/warehouse-north/inventory/:id
-- file: inventory/Удалить остаток (Северный).yml
-  path: /api/v1/warehouses/warehouse-north/inventory/:id
 - file: settings/Настройки склада (Центральный).yml
 - file: settings/Настройки склада (Северный).yml
 - file: shipments/guest/Снимок отгрузки (API недоступен).yml

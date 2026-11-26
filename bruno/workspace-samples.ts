@@ -7,7 +7,7 @@ import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-man
 import { seedUsers } from "./admin-user-samples";
 import { base, type MockStore } from "./mock-http";
 import { seedMonitoring } from "./monitoring-samples";
-import { recentOrders } from "./order-samples";
+import { recentOrders, sampleStockReceipts } from "./order-samples";
 import { collection } from "./sample-collection";
 import { sampleShipment } from "./shipment-samples";
 import { sampleWarehouseInventory } from "./warehouse-inventory-samples";
@@ -100,6 +100,7 @@ export function seedWorkspaceSamples(store: MockStore, now = Date.now()) {
 		const orders = [
 			...originalOrders,
 			...recentOrders(warehouseIndex, products, warehouse.time_zone, now),
+			...sampleStockReceipts(stock, warehouseIndex, warehouse.time_zone, now),
 		];
 		const history = collection(eventDto, store, `${path}/events`);
 		const createdEvent = history.find(

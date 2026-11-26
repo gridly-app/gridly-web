@@ -1,5 +1,6 @@
 import type { ProductDto } from "../src/app/modules/warehouse-data/api/catalog/catalogDto";
 import type { OrderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
+import type { StockDto } from "../src/app/modules/warehouse-data/api/inventory/inventoryDto";
 import {
 	shiftDay,
 	warehouseDay,
@@ -7,6 +8,91 @@ import {
 import { counterparties } from "./shipment-samples";
 
 const hours = 3600000;
+
+export function sampleStockReceipts(
+	stock: StockDto[],
+	warehouseIndex: number,
+	timeZone: string,
+	now: number,
+): OrderDto[] {
+	const today = warehouseDay(now, timeZone);
+	const receipts: OrderDto[] = [];
+	const first: StockDto[] = [];
+	const second: StockDto[] = [];
+
+	for (const [index, item] of [...stock].entries()) {
+		if (item.quantity <= 0) continue;
+
+		const batches = index % 2 ? second : first;
+		batches.push(item);
+
+		if (
+			item.product_id !== "prod-lamp" ||
+			item.quantity < 3 ||
+			item.reserved_quantity !== 0
+		)
+			continue;
+
+		const quantity = Math.floor(item.quantity / 3);
+		const split = {
+			...item,
+			id: `${item.id}-second-receipt`,
+			batch_id: `${item.batch_id}-second-receipt`,
+			quantity,
+			...(item.available_quantity !== undefined && {
+				available_quantity: quantity,
+			}),
+		};
+		item.quantity -= quantity;
+
+		if (item.available_quantity !== undefined)
+			item.available_quantity -= quantity;
+
+		stock.push(split);
+		const otherBatches = index % 2 ? first : second;
+		otherBatches.push(split);
+	}
+
+	for (const [index, batches] of [first, second].entries()) {
+		const party = counterparties[index];
+
+		if (!party || !batches.length) continue;
+
+		const number = 6000 + warehouseIndex * 10 + index;
+		const id = `order-sample-inbound-${number}`;
+		const orderNumber = `ПР-${number}`;
+		const source = { id, number: orderNumber, counterparty_text: party.name };
+
+		const lines = batches.map((item) => {
+			item.source_order_id = id;
+			item.source_order = source;
+
+			return {
+				id: `${id}-${item.id}`,
+				product_id: item.product_id,
+				quantity: item.quantity,
+				putaway_quantity: item.quantity,
+				expires_on: item.expires_on,
+			};
+		});
+		const receivedDay = shiftDay(today, -6 - index * 6);
+
+		receipts.push({
+			id,
+			number: orderNumber,
+			kind: "inbound",
+			counterparty_text: party.name,
+			created_at: `${receivedDay}T08:00:00.000Z`,
+			status: "received",
+			quantity: lines.reduce((sum, line) => sum + line.quantity, 0),
+			allowed_actions: [],
+			revision: 1,
+			lines,
+		});
+	}
+
+	return receipts;
+}
 
 export function recentOrders(
 	warehouseIndex: number,
