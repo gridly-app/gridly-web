@@ -8,6 +8,7 @@ import {
 	useMatches,
 } from "react-router-dom";
 import type { RouteDescription, WorkspaceAccess } from "@/ports/navigation";
+import { environment } from "@/shared/config";
 import { Skeleton } from "@/shared/ui/feedback";
 import { administrationRoute } from "./modules/administration";
 import { useWorkspaceHttp } from "./composition/workspace-providers.compose";
@@ -27,6 +28,11 @@ import {
 	warehouseWorkspaceRoute,
 } from "./modules/warehouse";
 import { warehouseSettingsRoute } from "./modules/warehouse-settings";
+import {
+	accountEntryPath,
+	sandboxEntryPath,
+	workspacePathPrefix,
+} from "@/ports/navigation";
 
 const WorkspaceShell = lazy(warehouseWorkspaceRoute.load);
 const LandingPage = lazy(landingRoute.load);
@@ -81,7 +87,7 @@ function administrationRoutes(mode: WorkspaceAccess): RouteObject[] {
 	const route: RouteDescription = administrationRoute;
 	if (route.access === "public" || !route.access.includes(mode)) return [];
 
-	const prefix = mode === "sandbox" ? "/sandbox" : "";
+	const prefix = workspacePathPrefix(mode);
 
 	return [{ path: prefix + route.path, element: <AdminRoute /> }];
 }
@@ -113,27 +119,32 @@ const router = createBrowserRouter([
 		errorElement: <RouteFailure />,
 		children: [
 			publicRoute(landingRoute, <LandingPage />),
-			publicRoute(signInRoute, <AuthRoute signIn={<SignInPage />} />),
+			publicRoute(
+				signInRoute,
+				<AuthRoute
+					signIn={<SignInPage isExtendedLogin={environment.extendedLogin} />}
+				/>,
+			),
 			publicRoute(
 				shipmentPortalRoute,
 				<ShipmentPortal progress={ShipmentProgress} />,
 			),
 			{
-				element: <AccountRoute signIn={<SignInPage />} />,
+				element: <AccountRoute />,
 				children: [
 					...administrationRoutes("standard"),
-					{ path: "/app", element: <AccountEntry /> },
+					{ path: accountEntryPath, element: <AccountEntry /> },
 					...workspaceRoutes("standard"),
 				],
 			},
 			{
-				path: "/sandbox",
+				path: sandboxEntryPath,
 				element: <SandboxRoute />,
 				children: [
 					{ index: true, element: <SandboxEntry /> },
 					...administrationRoutes("sandbox"),
 					...workspaceRoutes("sandbox"),
-					{ path: "*", element: <Navigate replace to="/sandbox" /> },
+					{ path: "*", element: <Navigate replace to="/" /> },
 				],
 			},
 			{ path: "*", element: <Navigate replace to="/" /> },

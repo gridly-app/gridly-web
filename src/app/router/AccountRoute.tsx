@@ -1,5 +1,6 @@
 import { type ReactNode, Suspense } from "react";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { signInPath } from "@/ports/navigation";
 import { useSession } from "@/ports/session";
 import { useOnlineStatus } from "@/shared/lib";
 import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
@@ -18,7 +19,8 @@ export function AuthRoute({ signIn }: { signIn: ReactNode }) {
 	return <Suspense fallback={<Skeleton layout="form" />}>{signIn}</Suspense>;
 }
 
-export function AccountRoute({ signIn }: { signIn: ReactNode }) {
+export function AccountRoute() {
+	const { pathname, search, hash } = useLocation();
 	const { user, status, error, restore, scopeId } = useSession();
 	const warehouse = useWarehouseRuntime("account");
 	if (status === "restoring")
@@ -34,7 +36,14 @@ export function AccountRoute({ signIn }: { signIn: ReactNode }) {
 			</Feedback>
 		);
 
-	if (!user) return <AuthRoute signIn={signIn} />;
+	if (!user)
+		return (
+			<Navigate
+				to={signInPath}
+				replace
+				state={{ returnTo: pathname + search + hash }}
+			/>
+		);
 
 	return (
 		<WorkspaceProviders key={scopeId} mode="standard" warehouse={warehouse}>

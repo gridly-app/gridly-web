@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { type AuthMode, type Credentials, useSession } from "@/ports/session";
+import type { AuthMode, Credentials, SessionState } from "@/ports/session";
 import { ApiError } from "@/shared/http";
 import { errorMessage } from "@/shared/lib";
 
-export function useAuthenticate(mode: AuthMode) {
-	const { authenticate } = useSession();
+export function useAuthenticate(
+	mode: AuthMode,
+	authenticate: SessionState["authenticate"],
+) {
 	const [error, setError] = useState("");
 	const [isPending, setIsPending] = useState(false);
 	const isSubmitting = useRef(false);
@@ -30,14 +32,14 @@ export function useAuthenticate(mode: AuthMode) {
 
 			return isMounted.current;
 		} catch (reason) {
-			if (isMounted.current) {
-				const taken =
-					reason instanceof ApiError &&
-					reason.status === 409 &&
-					reason.code === "LOGIN_TAKEN";
+			if (!isMounted.current) return false;
 
-				setError(taken ? "Этот логин уже занят." : errorMessage(reason));
-			}
+			const isLoginTaken =
+				reason instanceof ApiError &&
+				reason.status === 409 &&
+				reason.code === "LOGIN_TAKEN";
+
+			setError(isLoginTaken ? "Этот логин уже занят." : errorMessage(reason));
 
 			return false;
 		} finally {

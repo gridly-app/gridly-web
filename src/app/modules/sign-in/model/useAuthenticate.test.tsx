@@ -1,37 +1,20 @@
 import { expect, test } from "bun:test";
 import { act } from "react";
 import { ApiError } from "@/shared/http";
-import { SessionContext, type SessionState } from "@/ports/session";
+import type { SessionState } from "@/ports/session";
 import { mountDom } from "../../../../../tests/support/dom";
 import { useAuthenticate } from "./useAuthenticate";
 
 function mountAuthentication(authenticate: SessionState["authenticate"]) {
 	const dom = mountDom();
 	let current: ReturnType<typeof useAuthenticate> | undefined;
-	const session: SessionState = {
-		scopeId: 1,
-		sessionId: null,
-		user: "",
-		status: "ended",
-		error: "",
-		restore: async () => undefined,
-		logout: async () => undefined,
-		authenticate,
-	};
-
 	function ReadAuthentication() {
-		current = useAuthenticate("login");
+		current = useAuthenticate("login", authenticate);
 
 		return null;
 	}
 
-	act(() =>
-		dom.root.render(
-			<SessionContext value={session}>
-				<ReadAuthentication />
-			</SessionContext>,
-		),
-	);
+	act(() => dom.root.render(<ReadAuthentication />));
 
 	function read() {
 		if (!current) throw new Error("Authentication did not render");
