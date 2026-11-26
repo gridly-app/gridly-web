@@ -46,7 +46,11 @@ export const landingScenarios = {
 
 export type LandingScenarioId = keyof typeof landingScenarios;
 
-const scenarioIds = Object.keys(landingScenarios) as LandingScenarioId[];
+const scenarioIds: readonly LandingScenarioId[] = [
+	"inbound",
+	"storage",
+	"outbound",
+];
 
 export const scenarioOptions = scenarioIds.map((value) => ({
 	value,

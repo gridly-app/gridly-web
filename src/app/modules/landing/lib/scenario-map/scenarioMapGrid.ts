@@ -1,14 +1,23 @@
 import type { CSSProperties } from "react";
 
 const columnCount = 8;
+
 const rowCount = 6;
+
 export const cellSize = 94;
+
 const cellGap = 6;
+
 export const shelfLift = 6;
+
 const cellPitch = cellSize + cellGap;
+
 const cellCenter = cellSize / 2;
+
 export const shelfEdgeOffset = cellCenter + cellGap;
+
 export const width = columnCount * cellPitch - cellGap;
+
 export const height = rowCount * cellPitch - cellGap;
 
 const shelfColumns = [1, 2, 3, 4];

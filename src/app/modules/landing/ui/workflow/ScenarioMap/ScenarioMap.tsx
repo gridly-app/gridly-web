@@ -8,9 +8,13 @@ import {
 	type LandingScenario,
 	landingScenarios,
 	type LandingScenarioId,
-} from "../../config/landingScenarios";
-import { routeGeometry } from "../../model/scenarioMapGeometry";
-import { cells, gridStyle, viewBox } from "../../model/scenarioMapGrid";
+} from "../../../config/landingScenarios";
+import { routeGeometry } from "../../../lib/scenario-map/scenarioMapGeometry";
+import {
+	cells,
+	gridStyle,
+	viewBox,
+} from "../../../lib/scenario-map/scenarioMapGrid";
 
 import styles from "./ScenarioMap.module.css";
 

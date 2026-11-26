@@ -3,7 +3,7 @@ import { IconArrowRight, IconCheck } from "@tabler/icons-react";
 import {
 	landingScenarios,
 	type LandingScenarioId,
-} from "../../config/landingScenarios";
+} from "../../../config/landingScenarios";
 import { ScenarioMap } from "../ScenarioMap/ScenarioMap";
 
 import styles from "./ScenarioPreview.module.css";

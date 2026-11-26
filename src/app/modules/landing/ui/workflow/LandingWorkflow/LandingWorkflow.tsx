@@ -6,7 +6,7 @@ import {
 	landingScenarios,
 	type LandingScenarioId,
 	scenarioOptions,
-} from "../../config/landingScenarios";
+} from "../../../config/landingScenarios";
 import { ScenarioPreview } from "../ScenarioPreview/ScenarioPreview";
 
 import landingStyles from "./LandingWorkflow.module.css";

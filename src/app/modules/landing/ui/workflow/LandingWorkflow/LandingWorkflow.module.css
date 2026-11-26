@@ -1,0 +1,102 @@
+.landingWorkflow {
+	width: min(1200px, calc(100% - var(--space-12)));
+	margin: 0 auto;
+	padding: var(--space-16) 0;
+}
+
+@media (width <= 700px) {
+	.landingWorkflow {
+		width: calc(100% - var(--space-8));
+		padding: var(--space-10) 0;
+	}
+}
+
+.workflowHeading {
+	margin-bottom: var(--space-12);
+
+	text-align: center;
+}
+
+@media (width <= 700px) {
+	.workflowHeading {
+		margin-bottom: var(--space-8);
+
+		text-align: start;
+	}
+}
+
+.workflowHeading h2 {
+	margin: 0;
+
+	font-size: clamp(28px, 3.5vw, 40px);
+	font-weight: 600;
+	letter-spacing: -0.04em;
+	line-height: 1.2;
+}
+
+.workflowHeadingMuted {
+	color: var(--muted-foreground);
+}
+
+.workflowBody {
+	display: grid;
+	grid-template-columns: 0.85fr 1.15fr;
+	align-items: center;
+	gap: var(--space-16);
+}
+
+@media (width <= 1000px) {
+	.workflowBody {
+		gap: var(--space-8);
+	}
+}
+
+@media (width <= 700px) {
+	.workflowBody {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.scenarioControls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1);
+	width: fit-content;
+	margin-bottom: var(--space-8);
+	padding: 0;
+}
+
+@media (width <= 700px) {
+	.scenarioControls {
+		margin-bottom: var(--space-6);
+	}
+}
+
+.scenarioDescription {
+	min-height: 192px;
+}
+
+@media (width <= 700px) {
+	.scenarioDescription {
+		min-height: 160px;
+	}
+}
+
+.scenarioDescription h3 {
+	margin: 0 0 var(--space-4);
+
+	font-size: var(--text-title);
+	font-weight: 600;
+	letter-spacing: -0.025em;
+	line-height: 32px;
+}
+
+.scenarioDescription p {
+	max-width: 42ch;
+	margin: 0;
+
+	font-size: var(--text-body);
+	line-height: 24px;
+
+	color: var(--muted-foreground);
+}
