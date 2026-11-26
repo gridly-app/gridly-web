@@ -1,0 +1,7 @@
+.change {
+	min-inline-size: 0;
+	padding: var(--space-3);
+
+	border-radius: var(--radius-control);
+	background: var(--muted);
+}
