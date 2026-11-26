@@ -1,4 +1,5 @@
-import { categories, formatMoment } from "@/domain/shipment";
+import { categories } from "@/domain/shipment";
+import { formatMoment } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 
 import type { WorkingShipment } from "../../model/shipment.dto";
@@ -24,7 +25,11 @@ export function ShipmentDocumentList({
 	if (!documents.length) return <p>Документы ещё не загружены.</p>;
 
 	return (
-		<div className={styles.scroll}>
+		<section
+			className={styles.scroll}
+			aria-label="Список документов заказа"
+			tabIndex={0}
+		>
 			<table className={styles.table} aria-label="Документы заказа">
 				<thead>
 					<tr>
@@ -33,7 +38,7 @@ export function ShipmentDocumentList({
 						<th>Версия</th>
 						<th>Загружен</th>
 						<th>Видимость</th>
-						<th>Действия</th>
+						<th data-column="actions">Действия</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -49,7 +54,7 @@ export function ShipmentDocumentList({
 					))}
 				</tbody>
 			</table>
-		</div>
+		</section>
 	);
 }
 

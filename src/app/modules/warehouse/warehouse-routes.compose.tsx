@@ -8,7 +8,7 @@ import type {
 } from "@/ports/navigation";
 import type { ShipmentProgressSlot } from "@/ports/shipment";
 import { useWarehouseScope } from "@/ports/warehouse";
-import type { HttpClient } from "@/shared/http";
+import type { FileHttpClient } from "@/shared/http";
 import { PageNotFound } from "@/shared/ui/feedback";
 import { deliveriesRoute, shipmentRoute } from "./shipment-management";
 import { catalogRoute } from "./warehouse-catalog";
@@ -63,7 +63,7 @@ export function warehouseChildren({
 	renderSettings: (warehouse: Warehouse) => ReactNode;
 	settingsRoute: WarehouseScreenRoute;
 	progress: ShipmentProgressSlot;
-	useHttp: () => HttpClient;
+	useHttp: () => FileHttpClient;
 	mode: WorkspaceAccess;
 }): RouteObject[] {
 	function DeliveriesRoute() {

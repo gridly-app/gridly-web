@@ -10,6 +10,7 @@ import type { RunShipmentAction } from "../../model/useShipmentActions";
 
 import { documentAccept } from "../../model/shipmentDocument";
 import { ShipmentDocumentList } from "../ShipmentDocumentList/ShipmentDocumentList";
+import { ShipmentFactExport } from "../ShipmentFactExport/ShipmentFactExport";
 
 import styles from "../../shared.module.css";
 
@@ -21,8 +22,7 @@ const documentCategories = categoryEntries.map(([value, label]) => ({
 }));
 
 export function ShipmentDocumentsEditor({
-	documents,
-	timeZone,
+	shipment,
 	uploadDocument,
 	publishDocument,
 	downloadDocument,
@@ -33,8 +33,7 @@ export function ShipmentDocumentsEditor({
 	run,
 	busy,
 }: {
-	documents: WorkingShipment["documents"];
-	timeZone: WorkingShipment["order"]["time_zone"];
+	shipment: WorkingShipment;
 	uploadDocument: ShipmentResource["uploadDocument"];
 	publishDocument: ShipmentResource["publishDocument"];
 	downloadDocument: ShipmentResource["downloadDocument"];
@@ -46,7 +45,9 @@ export function ShipmentDocumentsEditor({
 	busy: boolean;
 }) {
 	const uploadForm = useRef<HTMLFormElement>(null);
+	const headingId = useId();
 	const limitsId = useId();
+	const { documents, order } = shipment;
 	const isUploadBlocked = busy || creationBlocked;
 	const retryLabel = hasUploadFile
 		? "Проверить и повторить загрузку"
@@ -99,8 +100,9 @@ export function ShipmentDocumentsEditor({
 	}
 
 	return (
-		<section className={styles.panel}>
-			<h2>Документы заказа</h2>
+		<section className={styles.panel} aria-labelledby={headingId}>
+			<h2 id={headingId}>Документы заказа</h2>
+			<ShipmentFactExport key={shipment.revision} shipment={shipment} />
 			<form ref={uploadForm} onSubmit={handleUpload} className={styles.row}>
 				<fieldset disabled={isUploadBlocked} className={styles.fields}>
 					<legend>Загрузка документа</legend>
@@ -150,7 +152,7 @@ export function ShipmentDocumentsEditor({
 			)}
 			<ShipmentDocumentList
 				documents={documents}
-				timeZone={timeZone}
+				timeZone={order.time_zone}
 				busy={busy}
 				onDownload={handleDownload}
 				onPublish={handlePublish}

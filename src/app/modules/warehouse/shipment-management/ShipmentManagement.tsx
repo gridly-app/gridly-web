@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { formatMoment } from "@/domain/shipment";
 import { warehousePath } from "@/ports/navigation";
 import { useOrder, useWarehouseScopeId } from "@/ports/warehouse";
-import { ApiError, type HttpClient } from "@/shared/http";
-import { errorMessage } from "@/shared/lib";
+import { ApiError, type FileHttpClient } from "@/shared/http";
+import { errorMessage, formatMoment } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
@@ -21,7 +20,7 @@ import { ShipmentSharing } from "./ui/ShipmentSharing/ShipmentSharing";
 
 import styles from "./shared.module.css";
 
-export function ShipmentManagement({ http }: { http: HttpClient }) {
+export function ShipmentManagement({ http }: { http: FileHttpClient }) {
 	const { warehouseId = "", orderId = "" } = useParams();
 	const order = useOrder(warehouseId, orderId);
 
@@ -60,7 +59,7 @@ function OutboundManagement({
 	orderId,
 	canIssueLink,
 }: {
-	http: HttpClient;
+	http: FileHttpClient;
 	warehouseId: string;
 	orderId: string;
 	canIssueLink: boolean;
@@ -174,8 +173,7 @@ function ManagementContent({
 				retryLink={resource.retryLink}
 			/>
 			<ShipmentDocumentsEditor
-				documents={shipment.documents}
-				timeZone={shipment.order.time_zone}
+				shipment={shipment}
 				uploadDocument={resource.uploadDocument}
 				publishDocument={resource.publishDocument}
 				run={run}

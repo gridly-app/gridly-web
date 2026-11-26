@@ -1,4 +1,4 @@
-import { ApiError, type HttpClient, saveResponseFile } from "@/shared/http";
+import { ApiError, type FileHttpClient, saveResponseFile } from "@/shared/http";
 import { UserError } from "@/shared/lib";
 
 import type { WorkingShipment } from "../model/shipment.dto";
@@ -33,7 +33,7 @@ export function shipmentDocuments({
 	readShipment,
 	replaceShipment,
 }: {
-	http: Pick<HttpClient, "request" | "requestFile">;
+	http: Pick<FileHttpClient, "request" | "requestFile">;
 	path: string;
 	creation: Pick<
 		ShipmentCreationAccess,
@@ -133,8 +133,6 @@ export function shipmentDocuments({
 		name: string,
 		signal: AbortSignal,
 	) {
-		if (!http.requestFile) throw new UserError("Скачивание недоступно.");
-
 		const response = await http.requestFile(
 			`${path}/documents/${encodeURIComponent(id)}/download`,
 			{ signal },

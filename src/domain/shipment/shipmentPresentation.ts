@@ -24,14 +24,6 @@ export const transports = {
 	road: "Автомобильный",
 } as const;
 
-export function formatMoment(value: string | number | null, timeZone?: string) {
-	if (value === null) return "Не указано";
-	return new Date(value).toLocaleString("ru-RU", {
-		dateStyle: "short",
-		timeStyle: "short",
-		timeZone,
-	});
-}
 export function formatUnit(unit: string) {
 	return (
 		({ pcs: "шт.", pack: "упак.", pallet: "пал." } as Record<string, string>)[

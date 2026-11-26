@@ -12,8 +12,9 @@ export function validateShipmentDocument(file: FormDataEntryValue | null) {
 	if (file.size > sizeLimit)
 		throw new UserError("Размер файла превышает 20 МиБ.");
 
-	const suffix = file.name.slice(file.name.lastIndexOf(".") + 1);
-	const extension = suffix.toLowerCase();
+	const separator = file.name.lastIndexOf(".");
+	const extension =
+		separator > 0 ? file.name.slice(separator + 1).toLowerCase() : "";
 
 	if (!extension || !extensions.includes(extension)) {
 		throw new UserError("Поддерживаются PDF, PNG, JPEG, XLSX, DOCX и CSV.");

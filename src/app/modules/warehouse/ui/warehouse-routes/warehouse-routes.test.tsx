@@ -14,7 +14,10 @@ test("the management route is available in the account workspace while shared se
 			resources: [],
 		} as const,
 		progress: () => null,
-		useHttp: () => ({ request: () => Promise.resolve(undefined) }),
+		useHttp: () => ({
+			request: () => Promise.resolve(undefined),
+			requestFile: () => Promise.resolve(new Response()),
+		}),
 	};
 	const shipmentPath = "/outbound/order-1/shipment";
 	const standard = warehouseChildren({ ...options, mode: "standard" });
