@@ -1,6 +1,8 @@
 import { Button } from "@/shared/ui/controls";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
+import { guestLinkRecoveryMessage } from "../../../model/creation/guestLinkRecoveryMessage";
+
 export function GuestLinkCreationRecovery({
 	name,
 	linkId,
@@ -22,7 +24,7 @@ export function GuestLinkCreationRecovery({
 	onRefresh: () => Promise<void>;
 	onRetry: () => void;
 }) {
-	const text = recoveryMessage(name, linkId, mismatch);
+	const text = guestLinkRecoveryMessage(name, linkId, mismatch);
 
 	return (
 		<>
@@ -54,17 +56,5 @@ export function GuestLinkCreationRecovery({
 				</Button>
 			)}
 		</>
-	);
-}
-
-function recoveryMessage(name: string, linkId?: string, mismatch?: boolean) {
-	if (linkId)
-		return `Ссылка ${linkId} создана, но её URL больше недоступен. Отзовите её перед новым выпуском.`;
-	if (mismatch)
-		return "Сервер отклонил повтор с этим ключом. Проверьте список ссылок.";
-
-	return (
-		`Сервер мог выпустить ссылку «${name}». Обновление списка не подтверждает исход этой попытки. ` +
-		"Новый выпуск заблокирован до сверки операции с сервером."
 	);
 }

@@ -1,4 +1,5 @@
 export { type AuditEvent, auditEventSchema } from "./auditEvent";
+export { isRefusedCreation } from "./creationRefusal";
 export { guestLinkStatuses } from "./guestLinkStatuses";
 export { guestLinkReplayOutcome, isReplayAvailable } from "./guestLinkReplay";
 export {

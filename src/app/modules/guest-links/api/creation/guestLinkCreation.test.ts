@@ -4,6 +4,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { adminQueryKey } from "@/ports/administration";
 import { ApiError, type HttpClient } from "@/shared/http";
 
+import { mountDom } from "../../../../../../tests/support/dom";
 import { createGuestLinkCreation } from "./guestLinkCreation";
 
 const input = {
@@ -21,7 +22,10 @@ const issuedLink = {
 	url: "https://example.test/shipments",
 };
 
-function setup(request: HttpClient["request"]) {
+function setup(
+	request: HttpClient["request"],
+	storageKey: string | null = null,
+) {
 	const client = new QueryClient();
 	const http = { request };
 	const path = "/admin/warehouses/warehouse-1/shipment-links";
@@ -30,7 +34,7 @@ function setup(request: HttpClient["request"]) {
 	const { store, creation, recovery } = createGuestLinkCreation(client, http, {
 		scopeId,
 		path,
-		storageKey: null,
+		storageKey,
 		canRetry: true,
 	});
 
@@ -124,4 +128,72 @@ test("an expired secret identifies the one link to revoke before issuing again",
 
 	attempt.forgetIssuedLink("link-from-receipt");
 	expect(attempt.read()).toBeNull();
+});
+
+test("a reload restores the original issue key without exposing its URL in storage", async () => {
+	const dom = mountDom();
+	const keys: (string | undefined)[] = [];
+	const request: HttpClient["request"] = async (_path, options) => {
+		keys.push(options?.idempotencyKey);
+
+		if (keys.length === 1) throw new TypeError("Connection lost");
+
+		return issuedLink;
+	};
+	const first = setup(request, "first-account:warehouse-1");
+	const restored = setup(request, "first-account:warehouse-1");
+	const otherAccount = setup(request, "second-account:warehouse-1");
+	const otherWarehouse = setup(request, "first-account:warehouse-2");
+
+	try {
+		expect(await first.creation.start(input)).toBe(false);
+
+		restored.attempt.restore();
+		otherAccount.attempt.restore();
+		otherWarehouse.attempt.restore();
+
+		expect(restored.attempt.read()).toMatchObject({
+			status: "unknown",
+			key: keys[0],
+		});
+		expect(otherAccount.attempt.read()).toBeUndefined();
+		expect(otherWarehouse.attempt.read()).toBeUndefined();
+		expect(sessionStorage.getItem("first-account:warehouse-1")).not.toContain(
+			issuedLink.url,
+		);
+		expect(await restored.creation.start(input)).toBe(false);
+		expect(await restored.creation.retry()).toBe(true);
+		expect(keys).toEqual([expect.any(String), keys[0]]);
+		expect(sessionStorage.getItem("first-account:warehouse-1")).toBeNull();
+	} finally {
+		for (const fixture of [first, restored, otherAccount, otherWarehouse])
+			fixture.client.clear();
+
+		await dom.close();
+	}
+});
+
+test("a damaged recovery record blocks a new issue and preserves the record", async () => {
+	const dom = mountDom();
+	const key = "damaged-attempt";
+	const writes: unknown[] = [];
+	const { client, attempt, creation } = setup(async (_path, options) => {
+		writes.push(options);
+
+		return issuedLink;
+	}, key);
+
+	try {
+		sessionStorage.setItem(key, "{damaged");
+
+		attempt.restore();
+
+		expect(await creation.start(input)).toBe(false);
+		expect(await creation.retry()).toBe(false);
+		expect(writes).toEqual([]);
+		expect(sessionStorage.getItem(key)).toBe("{damaged");
+	} finally {
+		client.clear();
+		await dom.close();
+	}
 });

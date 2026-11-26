@@ -1,16 +1,18 @@
-import { guestLinkReplayOutcome, isReplayAvailable } from "@/domain/shipment";
-import { ApiError, type HttpClient } from "@/shared/http";
+import {
+	guestLinkReplayOutcome,
+	isRefusedCreation,
+	isReplayAvailable,
+} from "@/domain/shipment";
+import type { HttpClient } from "@/shared/http";
 import { errorMessage, UserError } from "@/shared/lib";
 
 import type { CreatedGuestLink, GuestLinkInput } from "../guestLink.dto";
 import type { createGuestLinkCreationAttempt } from "./guestLinkCreationAttempt";
 import type { StoredCreationAttempt } from "./guestLinkCreationStorage";
-import { createGuestLink } from "../guestLinksApi";
+import { createGuestLink } from "../guestLinkRequests";
 import type { createGuestLinksCache } from "../guestLinksCache";
 
 type SubmissionKind = "new" | "retry";
-
-const rejectedStatuses = new Set([400, 401, 403, 404, 412, 422]);
 
 export function createGuestLinkCreationResource(
 	http: HttpClient,
@@ -27,11 +29,10 @@ export function createGuestLinkCreationResource(
 		if (!attempt.isPending(submission.key)) return;
 
 		const outcome = guestLinkReplayOutcome(error);
+		const isUnresolvedReplay =
+			outcome?.status === "secret-expired" || outcome?.status === "mismatch";
 
-		if (
-			outcome?.status === "secret-expired" ||
-			outcome?.status === "mismatch"
-		) {
+		if (isUnresolvedReplay) {
 			attempt.resolve(submission, outcome);
 			void list.invalidate();
 
@@ -48,10 +49,7 @@ export function createGuestLinkCreationResource(
 			return;
 		}
 
-		const isRejected =
-			error instanceof ApiError && rejectedStatuses.has(error.status);
-
-		if (isRejected && kind === "new") {
+		if (isRefusedCreation(error) && kind === "new") {
 			attempt.finish({ status: "rejected", error });
 
 			return;
@@ -104,10 +102,12 @@ export function createGuestLinkCreationResource(
 		attempt.restore();
 
 		const state = attempt.read();
+		const isAttemptOpen =
+			state?.status === "pending" ||
+			state?.status === "unknown" ||
+			state?.status === "storage-error";
 
-		if (state?.status === "pending" || state?.status === "unknown") {
-			return false;
-		}
+		if (isAttemptOpen) return false;
 
 		return submit(
 			{ key: crypto.randomUUID(), input, startedAt: Date.now() },
@@ -120,6 +120,7 @@ export function createGuestLinkCreationResource(
 
 		if (!canRetry || state?.status !== "unknown" || state.resolution)
 			return false;
+
 		if (!isReplayAvailable(state.startedAt)) {
 			attempt.set({ ...state, message: "Срок безопасного повтора истёк." });
 

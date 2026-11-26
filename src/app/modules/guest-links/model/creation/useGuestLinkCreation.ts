@@ -7,9 +7,9 @@ import { environment } from "@/shared/config";
 import type { HttpClient } from "@/shared/http";
 
 import { createGuestLinkCreation } from "../../api/creation/guestLinkCreation";
-import type { GuestLinkCreationState } from "../../api/creation/guestLinkCreationAttempt";
-import { useCreationStorageKey } from "../../api/creation/guestLinkCreationStorage";
+import type { GuestLinkCreationState } from "../../api/creation/guestLinkCreationState";
 import { guestLinkCreationView } from "./guestLinkCreationView";
+import { useCreationStorageKey } from "./useCreationStorageKey";
 
 export function useGuestLinkCreation(http: HttpClient, path: string) {
 	const client = useQueryClient();

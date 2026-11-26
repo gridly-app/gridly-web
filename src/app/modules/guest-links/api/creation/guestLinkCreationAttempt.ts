@@ -1,32 +1,21 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import type { adminQueryKey } from "@/ports/administration";
+import { UserError } from "@/shared/lib";
 
-import type { CreatedGuestLink } from "../guestLink.dto";
+import type {
+	GuestLinkCreationState,
+	IssuedCreation,
+	RejectedCreation,
+} from "./guestLinkCreationState";
 import {
-	readCreationAttempt,
-	removeCreationAttempt,
+	CreationAttemptStorage,
 	type StoredCreationAttempt,
-	storeCreationAttempt,
 } from "./guestLinkCreationStorage";
 
-type UnconfirmedCreation = StoredCreationAttempt & {
-	status: "unknown";
-	message?: string;
-};
-
-type RejectedCreation = { status: "rejected"; error: unknown };
-type IssuedCreation = {
-	status: "issued";
-	link: Pick<CreatedGuestLink, "id" | "url">;
-};
-
-export type GuestLinkCreationState =
-	| (StoredCreationAttempt & { status: "pending" })
-	| UnconfirmedCreation
-	| RejectedCreation
-	| IssuedCreation
-	| null;
+const damagedAttemptMessage =
+	"Не удалось восстановить незавершённый выпуск. " +
+	"Проверьте список ссылок и восстановите запись об операции перед новым выпуском.";
 
 export function createGuestLinkCreationAttempt(
 	client: QueryClient,
@@ -34,6 +23,7 @@ export function createGuestLinkCreationAttempt(
 	storageKey: string | null,
 ) {
 	const stateKey = [...listKey, "creation-attempt"];
+	const storage = new CreationAttemptStorage(storageKey);
 
 	function read() {
 		return client.getQueryData<GuestLinkCreationState>(stateKey);
@@ -46,13 +36,22 @@ export function createGuestLinkCreationAttempt(
 	function restore() {
 		if (read()) return;
 
-		const saved = readCreationAttempt(storageKey);
+		const saved = storage.read();
+
+		if (saved === "damaged") {
+			set({
+				status: "storage-error",
+				error: new UserError(damagedAttemptMessage),
+			});
+
+			return;
+		}
 
 		if (saved) set({ ...saved, status: "unknown" });
 	}
 
 	function begin(attempt: StoredCreationAttempt) {
-		storeCreationAttempt(storageKey, attempt);
+		storage.store(attempt);
 		set({ ...attempt, status: "pending" });
 	}
 
@@ -62,12 +61,12 @@ export function createGuestLinkCreationAttempt(
 	) {
 		const retained = { ...submission, resolution };
 
-		storeCreationAttempt(storageKey, retained);
+		storage.store(retained);
 		set({ ...retained, status: "unknown" });
 	}
 
 	function finish(state: RejectedCreation | IssuedCreation | null) {
-		removeCreationAttempt(storageKey);
+		storage.remove();
 		set(state);
 	}
 
@@ -79,14 +78,15 @@ export function createGuestLinkCreationAttempt(
 
 	function forgetIssuedLink(id: string) {
 		const state = read();
-
-		if (state?.status === "issued" && state.link.id === id) set(null);
-		if (
+		const isIssuedLink = state?.status === "issued" && state.link.id === id;
+		const isExpiredLink =
 			state?.status === "unknown" &&
 			state.resolution?.status === "secret-expired" &&
-			state.resolution.linkId === id
-		)
-			finish(null);
+			state.resolution.linkId === id;
+
+		if (isIssuedLink) set(null);
+
+		if (isExpiredLink) finish(null);
 	}
 
 	function resetError() {

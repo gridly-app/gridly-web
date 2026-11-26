@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-import {
-	useSandboxAccess,
-	useSession,
-	useWorkspaceMode,
-} from "@/ports/session";
 import { availableStorage } from "@/shared/lib";
 
 import { guestLinkInputSchema } from "../guestLink.dto";
@@ -26,55 +21,37 @@ const attemptSchema = z.object({
 
 export type StoredCreationAttempt = z.infer<typeof attemptSchema>;
 
-export function useCreationStorageKey(path: string) {
-	const mode = useWorkspaceMode();
-	const session = useSession();
-	const { access } = useSandboxAccess();
-	const accountSessionId =
-		session.status === "active" ? session.sessionId : null;
-	const sessionId = mode === "sandbox" ? access?.access_id : accountSessionId;
+export class CreationAttemptStorage {
+	constructor(private readonly storageKey: string | null) {}
 
-	if (!sessionId) return null;
+	read(): StoredCreationAttempt | "damaged" | null {
+		if (!this.storageKey) return null;
 
-	return `gridly.guest-link-attempt:${JSON.stringify([mode, sessionId, path])}`;
-}
+		const saved = this.storage.getItem(this.storageKey);
 
-export function readCreationAttempt(storageKey: string | null) {
-	if (!storageKey) return null;
+		if (!saved) return null;
 
-	const { storage } = availableStorage("sessionStorage");
-	const saved = storage.getItem(storageKey);
+		try {
+			const attempt = attemptSchema.safeParse(JSON.parse(saved));
 
-	if (!saved) return null;
+			if (attempt.success) return attempt.data;
+		} catch (error) {
+			if (!(error instanceof SyntaxError)) throw error;
+		}
 
-	try {
-		const attempt = attemptSchema.safeParse(JSON.parse(saved));
-
-		if (attempt.success) return attempt.data;
-	} catch (error) {
-		if (!(error instanceof SyntaxError)) throw error;
+		return "damaged";
 	}
 
-	storage.removeItem(storageKey);
+	store(attempt: StoredCreationAttempt) {
+		if (this.storageKey)
+			this.storage.setItem(this.storageKey, JSON.stringify(attempt));
+	}
 
-	return null;
-}
+	remove() {
+		if (this.storageKey) this.storage.removeItem(this.storageKey);
+	}
 
-export function storeCreationAttempt(
-	storageKey: string | null,
-	attempt: StoredCreationAttempt,
-) {
-	if (!storageKey) return;
-
-	const { storage } = availableStorage("sessionStorage");
-
-	storage.setItem(storageKey, JSON.stringify(attempt));
-}
-
-export function removeCreationAttempt(storageKey: string | null) {
-	if (!storageKey) return;
-
-	const { storage } = availableStorage("sessionStorage");
-
-	storage.removeItem(storageKey);
+	private get storage() {
+		return availableStorage("sessionStorage").storage;
+	}
 }
