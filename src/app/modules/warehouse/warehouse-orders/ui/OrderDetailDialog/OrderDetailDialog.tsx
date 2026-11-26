@@ -7,7 +7,18 @@ import { OrderForm } from "../OrderForm/OrderForm";
 import { OrderDetail } from "../OrderDetail/OrderDetail";
 
 export interface OrderDetailDialogProps {
-	model: Omit<ReturnType<typeof useOrderSelection>, "setDetail">;
+	model: Pick<
+		ReturnType<typeof useOrderSelection>,
+		| "selected"
+		| "editing"
+		| "closeOrder"
+		| "saveDraft"
+		| "fetching"
+		| "editSelected"
+		| "detailOpen"
+		| "detailError"
+		| "retryDetail"
+	>;
 	warehouse: OrderScreenWarehouse;
 	pending: boolean;
 	execute: CommandExecutor;

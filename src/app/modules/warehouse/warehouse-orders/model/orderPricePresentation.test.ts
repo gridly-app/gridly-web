@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { getOrderPresentation } from "@/app/modules/warehouse/warehouse-orders/model/getOrderPresentation";
 import { requiredAt } from "@/shared/invariants";
 
-import { reportWarehouse as base } from "../../../../../../tests/integration/warehouse/reportWarehouse";
+import { reportWarehouse as base } from "../../../../../../tests/support/reportWarehouse";
 
 test("order detail marks only products whose catalogue price is missing, preserving their category", () => {
 	const product = requiredAt(base.products, 0);

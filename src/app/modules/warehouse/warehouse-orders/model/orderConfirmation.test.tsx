@@ -44,7 +44,7 @@ test("a generic confirmation replaces only its directional alias", () => {
 	renderToStaticMarkup(<Card />);
 
 	expect(actions).toEqual(["abort"]);
-	expect(confirm).toBeDefined();
+	expect(typeof confirm).toBe("function");
 	void confirm?.();
 	expect(calls).toEqual([
 		["orderAction", { id: "o", action: "confirm", revision: 5 }],

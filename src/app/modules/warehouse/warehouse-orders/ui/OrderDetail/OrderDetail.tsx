@@ -1,9 +1,10 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import type { Order } from "@/domain/warehouse";
 import { orderValue } from "@/domain/warehouse";
 import { shipmentManagementPath, warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { StatusBadge as Badge } from "@/ports/warehouse";
+import { useUpdateSearchParams } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { DetailFact, DetailFacts } from "@/shared/ui/dataDisplay";
 import { ErrorNotice, Feedback } from "@/shared/ui/feedback";
@@ -20,9 +21,13 @@ export type OrderDetailProps = OrderDetailOptions;
 export function OrderDetail(props: OrderDetailProps) {
 	const model = useOrderDetail(props);
 	const mode = useWorkspaceMode();
-	const [, setParams] = useSearchParams();
+	const updateSearchParams = useUpdateSearchParams();
 	const cost = orderValue(props.o, props.w.products);
 	const presentation = getOrderPresentation(props.o, props.w);
+
+	function handleShowUnpriced() {
+		updateSearchParams({ highlight: "unpriced" });
+	}
 
 	return (
 		<>
@@ -34,16 +39,7 @@ export function OrderDetail(props: OrderDetailProps) {
 							className={styles.costLink}
 							variant="text"
 							size="sm"
-							onClick={() =>
-								setParams(
-									(current) => {
-										const next = new URLSearchParams(current);
-										next.set("highlight", "unpriced");
-										return next;
-									},
-									{ replace: true },
-								)
-							}
+							onClick={handleShowUnpriced}
 						>
 							{cost.label} · без цены: {cost.unknown} шт. →
 						</Button>

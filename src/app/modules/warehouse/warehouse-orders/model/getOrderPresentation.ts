@@ -1,5 +1,5 @@
 import type { Order, Warehouse } from "@/domain/warehouse";
-import { productPrice } from "@/domain/warehouse";
+import { productPrice, processedQuantity } from "@/domain/warehouse";
 
 export function getOrderPresentation(
 	order: Order,
@@ -17,7 +17,7 @@ export function getOrderPresentation(
 			order.status === "received"
 				? line.quantity
 				: line.putaway !== undefined || line.writtenOff !== undefined
-					? (line.putaway ?? 0) + (line.writtenOff ?? 0)
+					? processedQuantity(line)
 					: ["draft", "created"].includes(order.status)
 						? 0
 						: null;

@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { CommandExecutor, Order } from "@/domain/warehouse";
-import { errorMessage, formText } from "@/shared/lib";
+import { errorMessage, formText, useSingleFlight } from "@/shared/lib";
 import { actionLabels } from "../config/orderActions";
 import type { OrderScreenWarehouse } from "./warehouseFields";
 
@@ -20,23 +20,20 @@ export function useOrderDetail({
 }: OrderDetailOptions) {
 	const [reasonAction, setReasonAction] = useState("");
 	const [error, setError] = useState("");
-	const [saving, setSaving] = useState(false);
-	const inFlight = useRef(false);
+	const flight = useSingleFlight();
+	const saving = flight.isRunning;
 	const executeAction: CommandExecutor = async (action, ...args) => {
-		if (pending || inFlight.current) return;
+		if (pending) return;
 
-		inFlight.current = true;
-		setSaving(true);
-
-		try {
+		await flight.run(async () => {
 			setError("");
-			await command(action, ...args);
-		} catch (e) {
-			setError(errorMessage(e));
-		} finally {
-			inFlight.current = false;
-			setSaving(false);
-		}
+
+			try {
+				await command(action, ...args);
+			} catch (error) {
+				setError(errorMessage(error));
+			}
+		});
 	};
 	const actions = order.allowedActions || [];
 	const canEdit = actions.includes("edit");
