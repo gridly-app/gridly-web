@@ -19,7 +19,15 @@ export function GuestLinkDialogs({
 	dialog: GuestLinkDialog | null;
 	initialOrder: string | null;
 	data: WarehouseGuestLinkData;
-	actions: ReturnType<typeof useGuestLinkActions>;
+	actions: Pick<
+		ReturnType<typeof useGuestLinkActions>,
+		| "creation"
+		| "changeError"
+		| "isBusy"
+		| "isRevoking"
+		| "revokeLink"
+		| "saveLink"
+	>;
 	onClose: () => void;
 	onRestart: (link: GuestLink) => void;
 }) {

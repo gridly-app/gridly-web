@@ -22,22 +22,24 @@ export function useGuestLinkActions(
 		tone: "success" | "error";
 	} | null>(null);
 
+	const creation = useGuestLinkCreation(http, path);
+	const changes = useGuestLinkChanges(http, path, handleChanged);
+
 	function showSaved(text: string) {
 		onSaved();
 		setNotice({ text, tone: "success" });
 	}
 
-	const creation = useGuestLinkCreation(http, path);
-	const changes = useGuestLinkChanges(http, path, (change) => {
-		if (change.type === "revoke") {
-			creation.forgetIssuedLink(change.id);
-			showSaved("Ссылка отозвана.");
+	function handleChanged(change: { type: "update" | "revoke"; id: string }) {
+		if (change.type === "update") {
+			showSaved("Доступ сохранён.");
 
 			return;
 		}
 
-		showSaved("Доступ сохранён.");
-	});
+		creation.forgetIssuedLink(change.id);
+		showSaved("Ссылка отозвана.");
+	}
 
 	function saveLink(editor: GuestLinkEditor, input: GuestLinkInput) {
 		if (editor.type === "update") {

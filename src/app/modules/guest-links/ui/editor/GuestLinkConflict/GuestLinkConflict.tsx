@@ -5,7 +5,7 @@ import { errorMessage, formatMoment } from "@/shared/lib";
 import { Feedback } from "@/shared/ui/feedback";
 import { RevisionConflict } from "@/shared/ui/management";
 
-import type { GuestLink } from "../../../api/guestLink.dto.ts";
+import type { GuestLink } from "../../../api/guestLink.dto";
 import { guestLinkOrders } from "../../../model/guestLinkOrders";
 
 export function GuestLinkConflict({
@@ -39,9 +39,8 @@ export function GuestLinkConflict({
 		return <RevisionConflict details={details} onRefresh={onRefresh} />;
 	}
 
-	if (latestLink.revision === editedLink.revision) {
+	if (latestLink.revision === editedLink.revision)
 		return <RevisionConflict onRefresh={onRefresh} />;
-	}
 
 	const { name, expires_at, sections } = latestLink;
 	const expires = formatMoment(expires_at, timezone);
@@ -61,7 +60,9 @@ export function GuestLinkConflict({
 		</div>
 	);
 
-	const handleRestart = () => onRestart(latestLink);
+	function handleRestart() {
+		if (latestLink) onRestart(latestLink);
+	}
 
 	return (
 		<RevisionConflict

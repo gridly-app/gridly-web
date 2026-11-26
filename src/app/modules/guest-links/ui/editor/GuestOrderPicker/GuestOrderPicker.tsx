@@ -7,7 +7,7 @@ import { textSearch } from "@/shared/lib";
 import { Checkbox } from "@/shared/ui/controls";
 import { SearchField } from "@/shared/ui/forms";
 
-import { managementStyles as shared } from "@/shared/ui/management";
+import { managementStyles } from "@/shared/ui/management";
 import styles from "./GuestOrderPicker.module.css";
 
 type GuestOrder = Pick<Order, "id" | "number" | "party">;
@@ -31,8 +31,8 @@ export function GuestOrderPicker({
 	);
 
 	return (
-		<fieldset className={shared.fieldset} disabled={disabled}>
-			<legend className={shared.legend}>
+		<fieldset className={managementStyles.fieldset} disabled={disabled}>
+			<legend className={managementStyles.legend}>
 				Заказы на отгрузку · {selectedIds.size}
 			</legend>
 			<SearchField
@@ -49,7 +49,11 @@ export function GuestOrderPicker({
 					}
 
 					return (
-						<label key={order.id} className={shared.checkRow} htmlFor={id}>
+						<label
+							key={order.id}
+							className={managementStyles.checkRow}
+							htmlFor={id}
+						>
 							<Checkbox
 								id={id}
 								disabled={disabled}
@@ -61,7 +65,7 @@ export function GuestOrderPicker({
 					);
 				})}
 				{!visibleOrders.length && (
-					<p className={shared.subtle}>Заказы не найдены</p>
+					<p className={managementStyles.subtle}>Заказы не найдены</p>
 				)}
 			</div>
 		</fieldset>

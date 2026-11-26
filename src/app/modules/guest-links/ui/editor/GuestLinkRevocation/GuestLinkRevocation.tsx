@@ -36,9 +36,9 @@ export function GuestLinkRevocation({
 
 	return (
 		<DeleteConfirmation
-			title="Удалить гостевую ссылку?"
+			title="Отозвать гостевую ссылку?"
 			description={description}
-			confirmLabel="Удалить ссылку"
+			confirmLabel="Отозвать ссылку"
 			isPending={isPending}
 			error={error}
 			onClose={onClose}

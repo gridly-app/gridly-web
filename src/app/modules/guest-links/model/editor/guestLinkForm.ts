@@ -59,18 +59,15 @@ export function readGuestLinkForm(
 			result.error.issues.map(({ path }) => path[0]),
 		);
 
+		const hasNoOrders = !selection.orderIds.length;
+		const hasInvalidOrders = !errors.orders && invalidFields.has("order_ids");
+
 		if (invalidFields.has("name")) errors.name = "Укажите название ссылки.";
 		if (invalidFields.has("expires_at")) errors.expires = expiryError;
-		if (invalidFields.has("sections"))
-			errors.sections = "Проверьте выбранные разделы.";
+		if (invalidFields.has("sections")) errors.sections = "Проверьте разделы.";
 
-		if (!selection.orderIds.length) {
-			errors.orders = "Выберите хотя бы один заказ.";
-		}
-
-		if (!errors.orders && invalidFields.has("order_ids")) {
-			errors.orders = "Проверьте выбранные заказы.";
-		}
+		if (hasNoOrders) errors.orders = "Выберите хотя бы один заказ.";
+		else if (hasInvalidOrders) errors.orders = "Проверьте выбранные заказы.";
 
 		return { errors };
 	}

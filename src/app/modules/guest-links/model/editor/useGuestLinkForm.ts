@@ -9,7 +9,16 @@ import {
 	guestLinkExpiration,
 	readGuestLinkForm,
 } from "./guestLinkForm";
-import { guestLinkOrderOptions } from "../guestLinkOrders";
+import { guestLinkOrderOptions } from "./guestLinkOrderOptions";
+
+function initialOrderIds(
+	link: GuestLink | undefined,
+	initialOrder: string | null,
+) {
+	if (link) return [...new Set(link.order_ids)];
+
+	return initialOrder ? [initialOrder] : [];
+}
 
 export function useGuestLinkForm({
 	link,
@@ -24,9 +33,9 @@ export function useGuestLinkForm({
 	isSaveDisabled: boolean;
 	onSave: (input: GuestLinkInput) => void;
 }) {
-	const [orderIds, setOrderIds] = useState<string[]>(() => [
-		...new Set(link?.order_ids ?? (initialOrder ? [initialOrder] : [])),
-	]);
+	const [orderIds, setOrderIds] = useState<string[]>(() =>
+		initialOrderIds(link, initialOrder),
+	);
 	const [sections, setSections] = useState<GuestSection[]>(() => [
 		...new Set(link?.sections),
 	]);
@@ -75,9 +84,13 @@ export function useGuestLinkForm({
 
 		setValidation(errors);
 
-		if (errors.orders)
-			requestAnimationFrame(() => validationRef.current?.focus());
+		if (errors.orders) requestAnimationFrame(focusValidation);
+
 		if (input) onSave(input);
+	}
+
+	function focusValidation() {
+		validationRef.current?.focus();
 	}
 
 	return {

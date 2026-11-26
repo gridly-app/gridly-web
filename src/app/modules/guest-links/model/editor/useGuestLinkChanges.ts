@@ -7,11 +7,8 @@ import type {
 	GuestLinkInput,
 	GuestLinkList,
 } from "../../api/guestLink.dto";
-import {
-	revokeGuestLink,
-	updateGuestLink,
-	useGuestLinksQueryKey,
-} from "../../api/guestLinksApi";
+import { revokeGuestLink, updateGuestLink } from "../../api/guestLinkRequests";
+import { useGuestLinksQueryKey } from "../../api/guestLinksQuery";
 
 type Change =
 	| { type: "update"; id: string; revision: number; input: GuestLinkInput }
@@ -37,20 +34,22 @@ export function useGuestLinkChanges(
 		);
 	}
 
+	async function markRevoked(id: string) {
+		await client.cancelQueries({ queryKey, exact: true });
+
+		client.setQueryData<GuestLinkList>(queryKey, (current) => {
+			if (!current) return;
+
+			const items = current.items.map<GuestLink>((link) =>
+				link.id === id ? { ...link, status: "revoked" } : link,
+			);
+
+			return { items };
+		});
+	}
+
 	async function handleSuccess(_result: void, change: Change) {
-		if (change.type === "revoke") {
-			await client.cancelQueries({ queryKey, exact: true });
-
-			client.setQueryData<GuestLinkList>(queryKey, (current) => {
-				if (!current) return;
-
-				const items = current.items.map<GuestLink>((link) =>
-					link.id === change.id ? { ...link, status: "revoked" } : link,
-				);
-
-				return { items };
-			});
-		}
+		if (change.type === "revoke") await markRevoked(change.id);
 
 		onChanged(change);
 

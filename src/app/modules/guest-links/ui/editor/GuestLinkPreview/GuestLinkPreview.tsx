@@ -10,7 +10,7 @@ import type { Order } from "@/domain/warehouse";
 
 import { Combobox } from "@/shared/ui/forms";
 
-import { managementStyles as shared } from "@/shared/ui/management";
+import { managementStyles } from "@/shared/ui/management";
 import styles from "./GuestLinkPreview.module.css";
 
 export function GuestLinkPreview({
@@ -35,7 +35,7 @@ export function GuestLinkPreview({
 
 	return (
 		<section className={styles.preview} aria-label="Предпросмотр доступа">
-			<h3 className={`${shared.actions} ${styles.title}`}>
+			<h3 className={`${managementStyles.actions} ${styles.title}`}>
 				<IconLink size={16} aria-hidden="true" /> Что увидит гость
 			</h3>
 			{selectedOrders.length > 1 && (
@@ -47,14 +47,14 @@ export function GuestLinkPreview({
 				/>
 			)}
 			{hasUnavailableOrders && (
-				<p className={shared.subtle}>
+				<p className={managementStyles.subtle}>
 					Недоступные заказы исключены из предпросмотра.
 				</p>
 			)}
 			{preview ? (
 				<>
 					<strong>Заказ {preview.number}</strong>
-					<span className={shared.subtle}>{preview.party}</span>
+					<span className={managementStyles.subtle}>{preview.party}</span>
 					<ul className={styles.sections}>
 						<li className={styles.section}>Сведения о заказе и статус</li>
 						{previewSections.map((section) => (
@@ -65,7 +65,7 @@ export function GuestLinkPreview({
 					</ul>
 				</>
 			) : (
-				<p className={shared.subtle}>
+				<p className={managementStyles.subtle}>
 					Выберите заказ, чтобы увидеть доступные разделы.
 				</p>
 			)}

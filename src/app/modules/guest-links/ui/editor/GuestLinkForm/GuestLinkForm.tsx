@@ -4,16 +4,14 @@ import type { Order } from "@/domain/warehouse";
 
 import type { GuestLink, GuestLinkInput } from "../../../api/guestLink.dto";
 import { useGuestLinkForm } from "../../../model/editor/useGuestLinkForm";
-
-import { Button } from "@/shared/ui/controls";
-import { Modal } from "@/shared/ui/overlays";
-
 import { GuestLinkFields } from "../GuestLinkFields/GuestLinkFields";
+import { GuestLinkPreview } from "../GuestLinkPreview/GuestLinkPreview";
 import { GuestLinkSectionPicker } from "../GuestLinkSectionPicker/GuestLinkSectionPicker";
 import { GuestOrderPicker } from "../GuestOrderPicker/GuestOrderPicker";
-import { GuestLinkPreview } from "../GuestLinkPreview/GuestLinkPreview";
 
+import { Button } from "@/shared/ui/controls";
 import { managementStyles as styles } from "@/shared/ui/management";
+import { Modal } from "@/shared/ui/overlays";
 
 export function GuestLinkForm({
 	link,
