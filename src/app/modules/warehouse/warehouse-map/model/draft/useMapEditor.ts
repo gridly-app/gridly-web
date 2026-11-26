@@ -10,7 +10,11 @@ import { blocksLayoutWrite, type LayoutOperation } from "@/ports/warehouse";
 import { errorMessage } from "@/shared/lib";
 import { useCellSelection } from "../editor/useCellSelection";
 import type { MapWarehouse } from "../warehouseFields";
-import { editorReducer, initialEditorState } from "./editorState";
+import {
+	type EditorOperation,
+	editorReducer,
+	initialEditorState,
+} from "./editorState";
 import {
 	createLayoutDraft,
 	fromPublishedLayout,
@@ -62,138 +66,181 @@ export function useMapEditor(
 	const cells = editing ? draft.cells : warehouse.cells;
 	const routes = editing ? draft.routes : (warehouse.routePlans ?? []);
 	const selection = useCellSelection({ cells, editing, mode });
-	function apply(next: LayoutDraft) {
-		if (inFlight.current || writeBlocked) return;
-		history.record(draft);
+	function isLocked() {
+		return inFlight.current || writeBlocked;
+	}
+
+	function changeDraft(next: LayoutDraft) {
 		setDraft(next);
 		setDirty(true);
 		setErrors(null);
 	}
+
+	function resetDraft(next: LayoutDraft) {
+		setDraft(next);
+		history.reset();
+		setDirty(false);
+	}
+
+	async function runOperation(
+		operation: Exclude<EditorOperation, "idle">,
+		work: () => Promise<void>,
+	) {
+		inFlight.current = true;
+		dispatch({ type: "operation", operation });
+
+		try {
+			await work();
+		} finally {
+			inFlight.current = false;
+			dispatch({ type: "operation", operation: "idle" });
+		}
+	}
+
+	function apply(next: LayoutDraft) {
+		if (isLocked()) return;
+
+		history.record(draft);
+		changeDraft(next);
+	}
+
 	function applyCells(next: Cell[]) {
 		apply({ ...draft, cells: next });
 	}
+
 	function addCategory(category: Category) {
 		apply({ ...draft, categories: [...draft.categories, category] });
 	}
+
 	function setRoutes(next: BlockRoutePlan[]) {
 		apply({ ...draft, routes: next });
 	}
+
 	function applyType(type: CellType) {
-		if (inFlight.current || writeBlocked) return;
+		if (isLocked()) return;
+
 		setBrush(type);
+
 		if (!editing || !selection.selectionKeys.length) return;
+
 		applyCells(paintCellType(cells, new Set(selection.selectionKeys), type));
 	}
+
 	function applyCategory(category: Category) {
-		if (inFlight.current || writeBlocked) return;
+		if (isLocked()) return;
+
 		setCategoryId(category.id);
 		setBrush(category.cold ? "cold" : "storage");
+
 		const keys = new Set(selection.selectionKeys);
+
 		if (!keys.size) return;
+
 		applyCells(paintCategoryZone(cells, keys, category));
 	}
+
 	function startMode(next: typeof mode) {
-		if (inFlight.current || writeBlocked) return;
-		if (!editing) {
-			setDraft(createLayoutDraft(warehouse));
-			history.reset();
-			setDirty(false);
-		}
+		if (isLocked()) return;
+		if (!editing) resetDraft(createLayoutDraft(warehouse));
+
 		dispatch({ type: "open", mode: next });
 		selection.clearSelection();
 	}
+
 	function closeEditor() {
-		if (inFlight.current || writeBlocked) return;
+		if (isLocked()) return;
+
 		if (dirty) {
 			setErrors(["Сохраните или отмените изменения перед закрытием редактора"]);
+
 			return;
 		}
+
 		dispatch({ type: "close" });
 		selection.clearSelection();
 	}
+
 	function undo() {
-		if (inFlight.current || writeBlocked) return;
+		if (isLocked()) return;
+
 		const next = history.undo(draft);
-		if (next) {
-			setDraft(next);
-			setDirty(true);
-			setErrors(null);
-		}
+
+		if (next) changeDraft(next);
 	}
+
 	function redo() {
-		if (inFlight.current || writeBlocked) return;
+		if (isLocked()) return;
+
 		const next = history.redo(draft);
-		if (next) {
-			setDraft(next);
-			setDirty(true);
-			setErrors(null);
-		}
+
+		if (next) changeDraft(next);
 	}
+
 	async function save() {
 		if (inFlight.current || saveUnavailableReason) return;
-		inFlight.current = true;
-		dispatch({ type: "operation", operation: "saving" });
+
 		setErrors(null);
-		try {
-			await command("saveMap", draft);
-			setDirty(false);
-			history.reset();
-			dispatch({ type: "operation", operation: "idle" });
-			dispatch({ type: "close" });
-			selection.clearSelection();
-		} catch (e) {
-			setErrors([errorMessage(e)]);
-		} finally {
-			inFlight.current = false;
-			dispatch({ type: "operation", operation: "idle" });
-		}
+		await runOperation("saving", async () => {
+			try {
+				await command("saveMap", draft);
+				setDirty(false);
+				history.reset();
+				dispatch({ type: "operation", operation: "idle" });
+				dispatch({ type: "close" });
+				selection.clearSelection();
+			} catch (error) {
+				setErrors([errorMessage(error)]);
+			}
+		});
 	}
+
 	async function optimizeRoutes(
 		propose: (cells: Cell[]) => Promise<BlockRoutePlan[]>,
 	) {
-		if (inFlight.current || writeBlocked || !editing) return;
-		inFlight.current = true;
-		dispatch({ type: "operation", operation: "optimizing" });
-		try {
+		if (isLocked() || !editing) return;
+
+		await runOperation("optimizing", async () => {
 			const next = await propose(draft.cells);
+
 			history.record(draft);
-			setDraft({ ...draft, routes: next });
-			setDirty(true);
-			setErrors(null);
-		} finally {
-			inFlight.current = false;
-			dispatch({ type: "operation", operation: "idle" });
-		}
+			changeDraft({ ...draft, routes: next });
+		});
 	}
+
 	async function confirmDiscard() {
-		if (inFlight.current || writeBlocked) return;
-		inFlight.current = true;
-		dispatch({ type: "operation", operation: "discarding" });
-		try {
-			const localOnly = versionChanged || hasConflict;
+		if (isLocked()) return;
 
-			if (!localOnly && draft.draftRevision !== undefined) {
-				await command("discard", { draftRevision: draft.draftRevision });
+		const isLocalOnly = versionChanged || hasConflict;
+
+		await runOperation("discarding", async () => {
+			try {
+				if (!isLocalOnly && draft.draftRevision !== undefined) {
+					await command("discard", { draftRevision: draft.draftRevision });
+				}
+
+				discardRejected();
+				resetDraft(
+					isLocalOnly
+						? createLayoutDraft(warehouse)
+						: fromPublishedLayout(warehouse),
+				);
+				setErrors(null);
+				setDiscardOpen(false);
+				selection.clearSelection();
+			} catch (error) {
+				setErrors([errorMessage(error)]);
 			}
-
-			discardRejected();
-			setDraft(
-				localOnly
-					? createLayoutDraft(warehouse)
-					: fromPublishedLayout(warehouse),
-			);
-			setDirty(false);
-			history.reset();
-			setErrors(null);
-			setDiscardOpen(false);
-			selection.clearSelection();
-		} catch (e) {
-			setErrors([errorMessage(e)]);
-		} finally {
-			inFlight.current = false;
-			dispatch({ type: "operation", operation: "idle" });
-		}
+		});
 	}
+
+	function openDiscard() {
+		if (!isLocked()) setDiscardOpen(true);
+	}
+
+	function cancelDiscard() {
+		if (!resetting) setDiscardOpen(false);
+	}
+
 	const recoveredPending = useRef(
 		!!recovered && operation?.status === "sending",
 	);
@@ -248,12 +295,8 @@ export function useMapEditor(
 			history.canRedo && !writeBlocked && !saving && !resetting && !optimizing,
 		save,
 		zoneSaved: applyCells,
-		discard: () => {
-			if (!inFlight.current && !writeBlocked) setDiscardOpen(true);
-		},
-		cancelDiscard: () => {
-			if (!resetting) setDiscardOpen(false);
-		},
+		discard: openDiscard,
+		cancelDiscard,
 		confirmDiscard,
 		canSave: !saveUnavailableReason,
 		saveUnavailableReason,
