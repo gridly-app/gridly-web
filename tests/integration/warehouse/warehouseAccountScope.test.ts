@@ -54,6 +54,7 @@ test("a new account opening the same warehouse ignores the old read and write an
 	);
 	const session = new BrowserSessionRepository(
 		{
+			clearSession() {},
 			async request() {
 				return { user: { login: account } };
 			},

@@ -1,39 +1,44 @@
 import type { AuthMode, Credentials } from "@/ports/session";
 import { ApiError, type HttpClient } from "@/shared/http";
 import {
+	createSnapshotStore,
 	errorMessage,
 	type KeyValueStorage,
 	runtimeNotices,
+	type SnapshotStore,
 } from "@/shared/lib";
-import {
-	isInvalidCredentials,
-	loginAccount,
-	refreshMatchesAccount,
-} from "./accountLogin";
-import {
-	type Account,
-	AccountPersistence,
-	browserAccountLock,
-} from "./accountPersistence";
 
-export interface AccountSnapshot {
-	scopeId: number;
-	sessionId: string | null;
-	status: "restoring" | "active" | "ended" | "error";
-	user: string;
-	error: string;
-}
+import { refreshMatchesAccount } from "./accountIdentity";
+import { type AccountLock, browserAccountLock } from "./accountLock";
+import { isInvalidCredentials, loginAccount } from "./accountLogin";
+import { logoutAccount } from "./accountLogout";
+import {
+	changedSessionMessage,
+	expiredSessionMessage,
+	sessionChangedError,
+	unconfirmedLogoutMessage,
+	unconfirmedLogoutNotice,
+} from "./accountMessages";
+import { type Account, AccountPersistence } from "./accountPersistence";
+import { registerAccount } from "./accountRegistration";
+import type { AccountSnapshot } from "./accountSnapshot";
+import { accountAuthEndpoints } from "./authEndpoints";
 
-const changedSessionMessage = "Аккаунт в браузере изменился. Войдите снова.";
+const authTimeoutMs = 15_000;
 
 export class BrowserSessionRepository {
-	private snapshot: AccountSnapshot;
-	private account: Account | null;
+	private readonly store: SnapshotStore<AccountSnapshot>;
+
 	private readonly persistence: AccountPersistence;
-	private listeners = new Set<() => void>();
+
+	private account: Account | null;
+
 	private generation = 0;
+
 	private restoration: Promise<void> | null = null;
+
 	private revocation: Promise<void> | null = null;
+
 	constructor(
 		private readonly http: HttpClient,
 		storage: KeyValueStorage,
@@ -43,133 +48,150 @@ export class BrowserSessionRepository {
 	) {
 		this.persistence = new AccountPersistence(storage, tabStorage);
 		this.account = lock ? this.persistence.restore() : null;
+
 		const user = this.account?.login ?? "";
-		this.snapshot = {
-			user,
-			status: user ? "restoring" : "ended",
-			error: "",
-			scopeId: this.generation,
-			sessionId: this.account?.id ?? null,
-		};
+
+		this.store = createSnapshotStore<AccountSnapshot>(
+			{
+				user,
+				status: user ? "restoring" : "ended",
+				error: "",
+				scopeId: this.generation,
+				sessionId: this.account?.id ?? null,
+			},
+			{
+				onFirstSubscribe: () => {
+					if (typeof window !== "undefined")
+						window.addEventListener("storage", this.handleStorage);
+				},
+				onLastUnsubscribe: () => {
+					if (typeof window !== "undefined")
+						window.removeEventListener("storage", this.handleStorage);
+				},
+			},
+		);
 	}
-	getSnapshot = () => this.snapshot;
-	private onStorage = (event: StorageEvent) => {
-		if (
-			this.persistence.isChange(event) &&
-			this.account &&
-			!this.persistence.matches(this.account)
-		) {
-			this.end(changedSessionMessage);
-		}
-	};
-	subscribe = (listener: () => void) => {
-		if (!this.listeners.size && typeof window !== "undefined") {
-			window.addEventListener("storage", this.onStorage);
-		}
-		this.listeners.add(listener);
-		return () => {
-			this.listeners.delete(listener);
-			if (!this.listeners.size && typeof window !== "undefined") {
-				window.removeEventListener("storage", this.onStorage);
-			}
-		};
-	};
+
+	getSnapshot = () => this.store.getSnapshot();
+
+	subscribe = (listener: () => void) => this.store.subscribe(listener);
+
+	current() {
+		return this.snapshot.status === "active" ? this.snapshot.user : "";
+	}
+
 	withRefresh = (
 		refresh: (validate: (data: unknown) => void) => Promise<unknown>,
 		signal: AbortSignal,
 	) => {
 		const account = this.account;
+
 		const refreshAccount = () => {
 			signal.throwIfAborted();
-			if (
-				!account ||
-				account !== this.account ||
-				!this.persistence.matches(account)
-			) {
+
+			const isCurrentAccount = !!account && account === this.account;
+
+			if (!isCurrentAccount || !this.persistence.matches(account)) {
 				if (account === this.account) this.end(changedSessionMessage);
-				throw new ApiError(changedSessionMessage, 401, "SESSION_CHANGED");
+
+				throw sessionChangedError();
 			}
+
 			return refresh((data) => {
 				if (refreshMatchesAccount(data, account.login)) return;
+
 				this.expire(changedSessionMessage);
-				throw new ApiError(changedSessionMessage, 401, "SESSION_CHANGED");
+
+				throw sessionChangedError();
 			});
 		};
+
 		return this.lock
 			? this.lock(refreshAccount, signal)
 			: Promise.resolve().then(refreshAccount);
 	};
-	private publish(snapshot: AccountSnapshot) {
-		this.snapshot = snapshot;
-		for (const listener of this.listeners) listener();
-	}
-	current() {
-		return this.snapshot.status === "active" ? this.snapshot.user : "";
-	}
+
 	restore = (): Promise<void> => {
 		if (this.restoration) return this.restoration;
+
 		if (!this.snapshot.user || this.snapshot.status === "active")
 			return Promise.resolve();
+
 		const generation = this.generation;
-		this.publish({ ...this.snapshot, status: "restoring", error: "" });
+
+		this.store.publish({ ...this.snapshot, status: "restoring", error: "" });
+
 		const work = this.http
-			.request("/auth/refresh", { method: "POST" })
+			.request(accountAuthEndpoints.refresh, { method: "POST" })
 			.then(() => {
 				if (generation === this.generation)
-					this.publish({ ...this.snapshot, status: "active" });
+					this.store.publish({ ...this.snapshot, status: "active" });
 			})
 			.catch((error: unknown) => {
 				if (generation !== this.generation) return;
-				if (error instanceof ApiError && error.status === 401) this.expire();
-				else
-					this.publish({
-						...this.snapshot,
-						status: "error",
-						error: errorMessage(error),
-					});
+
+				if (error instanceof ApiError && error.status === 401) {
+					this.expire();
+
+					return;
+				}
+
+				this.store.publish({
+					...this.snapshot,
+					status: "error",
+					error: errorMessage(error),
+				});
 			})
 			.finally(() => {
 				if (this.restoration === work) this.restoration = null;
 			});
+
 		this.restoration = work;
+
 		return work;
 	};
+
 	async authenticate(mode: AuthMode, credentials: Credentials) {
 		await this.revocation;
+
 		const generation = ++this.generation;
-		const signal = AbortSignal.timeout(15000);
+		const signal = AbortSignal.timeout(authTimeoutMs);
+
 		const assertActive = () => {
 			signal.throwIfAborted();
+
 			if (generation !== this.generation)
 				throw new DOMException("Сессия изменилась", "AbortError");
 		};
+
 		const signIn = async () => {
 			assertActive();
+
 			if (mode === "register") {
-				await this.http.request("/auth/register", {
-					method: "POST",
-					body: credentials,
-					signal,
-					credentials: "omit",
-				});
+				await registerAccount(this.http, credentials, signal);
 				assertActive();
 			}
+
 			const { user, canRemember } = await loginAccount(
 				this.http,
 				this.persistence,
-				credentials,
-				signal,
-				Boolean(this.lock),
-				assertActive,
+				{
+					credentials,
+					signal,
+					canUseCookie: Boolean(this.lock),
+					assertActive,
+				},
 			).catch((error: unknown) => {
 				if (!isInvalidCredentials(error) && generation === this.generation)
 					this.end();
+
 				throw error;
 			});
+
 			assertActive();
 			this.clearData();
 			this.account = canRemember ? this.persistence.remember(user) : null;
-			this.publish({
+			this.store.publish({
 				user,
 				status: "active",
 				error: "",
@@ -179,7 +201,65 @@ export class BrowserSessionRepository {
 
 			return user;
 		};
+
 		return this.lock ? this.lock(signIn, signal) : signIn();
+	}
+
+	expire = (message = expiredSessionMessage) => {
+		const account = this.account;
+
+		this.end(message);
+
+		if (!account || !this.lock) return;
+
+		void this.lock(async () => {
+			if (this.persistence.matches(account)) this.persistence.clear();
+		}).catch(() => undefined);
+	};
+
+	clear() {
+		const account = this.account;
+
+		if (account) this.persistence.endInTab(account);
+
+		this.end();
+
+		if (!account || !this.lock) return;
+
+		const revoke = this.revokeOnServer(account, this.lock).finally(() => {
+			if (this.revocation === revoke) this.revocation = null;
+		});
+
+		this.revocation = revoke;
+
+		return revoke;
+	}
+
+	private get snapshot() {
+		return this.store.getSnapshot();
+	}
+
+	private handleStorage = (event: StorageEvent) => {
+		const isOtherAccount =
+			!!this.account && !this.persistence.matches(this.account);
+
+		if (this.persistence.isChange(event) && isOtherAccount)
+			this.end(changedSessionMessage);
+	};
+
+	private revokeOnServer(account: Account, lock: AccountLock) {
+		const generation = this.generation;
+		const signal = AbortSignal.timeout(authTimeoutMs);
+
+		return logoutAccount(this.http, this.persistence, lock, {
+			account,
+			signal,
+		}).catch(() => {
+			if (generation !== this.generation) return;
+
+			runtimeNotices.report("account.revoke", unconfirmedLogoutNotice);
+			this.store.publish({ ...this.snapshot, error: unconfirmedLogoutMessage });
+		});
 	}
 
 	private end(error = "") {
@@ -187,56 +267,12 @@ export class BrowserSessionRepository {
 		this.generation++;
 		this.http.clearSession?.();
 		this.clearData();
-		this.publish({
+		this.store.publish({
 			user: "",
 			status: "ended",
 			error,
 			scopeId: this.generation,
 			sessionId: null,
 		});
-	}
-	expire = (message = "Сеанс завершён. Войдите снова.") => {
-		const account = this.account;
-		this.end(message);
-		if (account && this.lock) {
-			void this.lock(async () => {
-				if (this.persistence.matches(account)) this.persistence.clear();
-			}).catch(() => undefined);
-		}
-	};
-	clear() {
-		const account = this.account;
-		if (account) this.persistence.endInTab(account);
-		this.end();
-		if (!account || !this.lock) return;
-		const generation = this.generation;
-		const signal = AbortSignal.timeout(15000);
-		const revoke = this.lock(async () => {
-			if (!this.persistence.matches(account)) return;
-			this.persistence.clear();
-			await this.http.request("/auth/logout", {
-				method: "POST",
-				detached: true,
-				signal,
-			});
-		}, signal)
-			.catch(() => {
-				if (generation === this.generation) {
-					runtimeNotices.report(
-						"account.revoke",
-						"Локальный выход выполнен. Сервер не подтвердил завершение сессии. Проверьте подключение и повторите выход после входа.",
-					);
-					this.publish({
-						...this.snapshot,
-						error:
-							"Локальный выход выполнен. Серверное завершение не подтверждено.",
-					});
-				}
-			})
-			.finally(() => {
-				if (this.revocation === revoke) this.revocation = null;
-			});
-		this.revocation = revoke;
-		return revoke;
 	}
 }

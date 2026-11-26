@@ -1,27 +1,16 @@
 import { z } from "zod";
-import type { KeyValueStorage } from "@/shared/lib";
-import { runtimeNotices } from "@/shared/lib";
+
+import { type KeyValueStorage, runtimeNotices } from "@/shared/lib";
 
 const accountKey = "gridly.user";
+
 const tabLogoutKey = "gridly.account.logged-out";
+
 const accountTransition = "null";
+
 const accountSchema = z.object({ login: z.string().min(1), id: z.uuid() });
+
 export type Account = z.infer<typeof accountSchema>;
-
-type AccountLock = <T>(
-	operation: () => Promise<T>,
-	signal?: AbortSignal,
-) => Promise<T>;
-
-export const browserAccountLock: AccountLock | undefined =
-	typeof navigator !== "undefined" && navigator.locks
-		? async (operation, signal) =>
-				navigator.locks.request(
-					"gridly.account",
-					signal ? { signal } : {},
-					operation,
-				)
-		: undefined;
 
 export class AccountPersistence {
 	constructor(
@@ -32,17 +21,23 @@ export class AccountPersistence {
 	restore(): Account | null {
 		try {
 			const stored = this.storage.getItem(accountKey);
+
 			if (!stored) return null;
+
 			const account = accountSchema.safeParse(JSON.parse(stored));
+
 			if (!account.success) return null;
-			return this.tabStorage?.getItem(tabLogoutKey) === account.data.id
-				? null
-				: account.data;
+
+			const isLoggedOutInTab =
+				this.tabStorage?.getItem(tabLogoutKey) === account.data.id;
+
+			return isLoggedOutInTab ? null : account.data;
 		} catch {
 			runtimeNotices.report(
 				"account.read",
 				"Не удалось восстановить сохранённый вход. Войдите в аккаунт снова.",
 			);
+
 			return null;
 		}
 	}
@@ -59,10 +54,9 @@ export class AccountPersistence {
 	}
 
 	isChange(event: StorageEvent) {
-		return (
-			(event.key === accountKey || event.key === null) &&
-			event.newValue !== accountTransition
-		);
+		const isAccountKey = event.key === accountKey || event.key === null;
+
+		return isAccountKey && event.newValue !== accountTransition;
 	}
 
 	matches(account: Account) {
@@ -83,18 +77,21 @@ export class AccountPersistence {
 
 	remember(login: string): Account | null {
 		const account = { login, id: crypto.randomUUID() };
+
 		return this.write(JSON.stringify(account)) ? account : null;
 	}
 
 	write(value: string) {
 		try {
 			this.storage.setItem(accountKey, value);
+
 			return true;
 		} catch {
 			runtimeNotices.report(
 				"account.write",
 				"Не удалось сохранить вход в браузере. После перезагрузки войдите снова.",
 			);
+
 			return false;
 		}
 	}

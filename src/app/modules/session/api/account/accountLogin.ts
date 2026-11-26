@@ -1,18 +1,15 @@
-import { z } from "zod";
 import type { Credentials } from "@/ports/session";
 import { ApiError, type HttpClient, parseResponse } from "@/shared/http";
+
+import { accountIdentitySchema } from "./accountIdentity";
 import type { AccountPersistence } from "./accountPersistence";
+import { accountAuthEndpoints } from "./authEndpoints";
 
-const accountIdentitySchema = z.object({
-	user: z.object({ login: z.string().min(1) }),
-});
-
-export function refreshMatchesAccount(data: unknown, login: string) {
-	// shortcut: opaque tokens rely on same-origin coordination until refresh supplies identity.
-	if (typeof data !== "object" || data === null || !("user" in data))
-		return true;
-	const response = accountIdentitySchema.safeParse(data);
-	return response.success && response.data.user.login === login;
+interface LoginAttempt {
+	credentials: Credentials;
+	signal: AbortSignal;
+	canUseCookie: boolean;
+	assertActive: () => void;
 }
 
 export function isInvalidCredentials(error: unknown) {
@@ -26,30 +23,31 @@ export function isInvalidCredentials(error: unknown) {
 export async function loginAccount(
 	http: HttpClient,
 	persistence: AccountPersistence,
-	credentials: Credentials,
-	signal: AbortSignal,
-	canUseCookie: boolean,
-	assertActive: () => void,
+	{ credentials, signal, canUseCookie, assertActive }: LoginAttempt,
 ) {
-	// A tab closed during login must leave no usable association.
 	const previous = persistence.read();
 	const canRemember = canUseCookie && persistence.beginLogin();
+
 	try {
-		const response = await http.request("/auth/login", {
+		const response = await http.request(accountAuthEndpoints.login, {
 			method: "POST",
 			body: credentials,
 			signal,
 			credentials: canRemember ? "include" : "omit",
 		});
+
 		assertActive();
+
 		const user = parseResponse(accountIdentitySchema, response).user.login;
+
 		return { user, canRemember };
 	} catch (error) {
-		if (canRemember && previous && isInvalidCredentials(error)) {
-			persistence.write(previous);
-		} else if (canRemember) {
-			persistence.clear();
-		}
+		const shouldRestorePrevious =
+			canRemember && previous && isInvalidCredentials(error);
+
+		if (shouldRestorePrevious) persistence.write(previous);
+		else if (canRemember) persistence.clear();
+
 		throw error;
 	}
 }

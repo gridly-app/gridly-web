@@ -1,12 +1,17 @@
 import { QueryClient } from "@tanstack/react-query";
 import {
 	AnonymousSandboxAccess,
+	accountAuthEndpoints,
 	BrowserSessionRepository,
 } from "@/app/modules/session";
 import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 import { environment } from "@/shared/config";
 import { ApiError, FetchHttpClient } from "@/shared/http";
-import { availableStorage, browserStorage, runtimeNotices } from "@/shared/lib";
+import {
+	availableStorage,
+	browserStorage,
+	runtimeNotices,
+} from "@/shared/lib";
 
 export type AppDependencies = ReturnType<typeof createDependencies>;
 
@@ -39,6 +44,7 @@ function createWarehouseRuntime(http: FetchHttpClient) {
 
 function createAccountRuntime() {
 	const http = new FetchHttpClient(environment.apiBaseUrl, undefined, {
+		auth: accountAuthEndpoints,
 		onUnauthorized: () => session.expire(),
 		withRefresh: (refresh, signal) => session.withRefresh(refresh, signal),
 	});
