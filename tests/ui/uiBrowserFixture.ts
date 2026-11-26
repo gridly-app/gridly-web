@@ -1,5 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { type Browser, chromium, expect, type Page } from "@playwright/test";
+import { browserCoverage } from "./browserCoverage";
 import { installUiApi } from "./uiApiFixture";
 import { startUiTestServer } from "./uiTestServer";
 
@@ -88,6 +89,14 @@ export async function runScenarios(
 	>,
 ) {
 	await mkdir(output, { recursive: true });
+	const coverage =
+		process.env.GRIDLY_BROWSER_COVERAGE === "1" ? browserCoverage() : null;
+	if (coverage && process.env.GRIDLY_UI_URL) {
+		throw new Error(
+			"Chromium source coverage requires the local Vite fixture.",
+		);
+	}
+
 	const testServer = await startUiTestServer();
 	try {
 		await expect
@@ -112,7 +121,13 @@ export async function runScenarios(
 			for (const [name, run] of scenarios) {
 				const scenario = await newScenario(browser, testServer);
 				try {
+					if (coverage)
+						await scenario.page.coverage.startJSCoverage({
+							resetOnNavigation: false,
+						});
+
 					await run(scenario);
+					if (coverage) await coverage.collect(scenario.page);
 					expect(scenario.errors).toEqual([]);
 					console.log(`PASS ${name}`);
 				} catch (error) {
@@ -129,6 +144,7 @@ export async function runScenarios(
 					await scenario.context.close();
 				}
 			}
+			await coverage?.report();
 		} finally {
 			await browser.close();
 		}
