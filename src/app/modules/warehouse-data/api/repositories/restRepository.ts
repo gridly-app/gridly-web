@@ -6,7 +6,7 @@ import {
 	type WarehouseInput,
 } from "@/domain/warehouse";
 import type { WarehouseResource } from "@/ports/warehouse";
-import type { HttpClient } from "@/shared/http";
+import type { StreamHttpClient } from "@/shared/http";
 import { proposeRoutes, readSelectionSummary } from "../layout/layoutRequests";
 import { LayoutResource } from "../../model/layout/layoutResource";
 import { WarehouseLiveSubscriptions } from "../live/warehouseLiveSubscriptions";
@@ -24,7 +24,7 @@ import { RestWarehouseSnapshots } from "./restWarehouseSnapshots";
 import { WarehouseMutationRequests } from "./warehouseMutationRequests";
 
 export class RestWarehouseRepository implements WarehouseRepository {
-	private readonly http: HttpClient;
+	private readonly http: StreamHttpClient;
 	private readonly live: WarehouseLiveSubscriptions;
 	private readonly snapshots: RestWarehouseSnapshots;
 	private readonly mutations: WarehouseMutationRequests;
@@ -38,7 +38,7 @@ export class RestWarehouseRepository implements WarehouseRepository {
 	}
 
 	constructor(
-		http: HttpClient,
+		http: StreamHttpClient,
 		private readonly cache = new QueryClient(),
 		readTimeoutMs = 15_000,
 	) {

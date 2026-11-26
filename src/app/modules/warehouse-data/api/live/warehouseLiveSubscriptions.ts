@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
-import type { HttpClient } from "@/shared/http";
+import type { StreamHttpClient } from "@/shared/http";
 import type { WarehouseKeys } from "../../model/queries/queryKeys";
 import { WarehouseLiveStream } from "./liveStream";
 
@@ -18,7 +18,7 @@ export class WarehouseLiveSubscriptions {
 	>();
 
 	constructor(
-		private readonly http: HttpClient,
+		private readonly http: StreamHttpClient,
 		private readonly cache: QueryClient,
 		private readonly getKeys: () => WarehouseKeys,
 		private readonly snapshots: LiveSnapshots,

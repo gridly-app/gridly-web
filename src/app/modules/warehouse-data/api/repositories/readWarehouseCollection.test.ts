@@ -54,3 +54,39 @@ test("explains a server order cap without returning a partial list", async () =>
 		readWarehouseCollection(http, "/orders", z.string()),
 	).rejects.toThrow("1001 при лимите 1000");
 });
+
+test.each([
+	{ next: { items: [{ id: "other" }], total: 3 }, message: "Список изменился" },
+	{ next: { items: [], total: 2 }, message: "неполный список" },
+	{ next: { items: [{ id: "first" }], total: 2 }, message: "повторяющиеся" },
+	{
+		next: { items: [{ missing: "id" }], total: 2 },
+		message: "некорректные данные",
+	},
+])(
+	"rejects an inconsistent inventory page: $message",
+	async ({ next, message }) => {
+		const paths: string[] = [];
+		const requests = {
+			request: async (path: string) => {
+				paths.push(path);
+
+				return paths.length === 1
+					? { items: [{ id: "first" }], total: 2 }
+					: next;
+			},
+		};
+
+		await expect(
+			readWarehouseCollection(
+				requests,
+				"/inventory?store=active",
+				z.object({ id: z.string() }),
+			),
+		).rejects.toThrow(message);
+		expect(paths).toEqual([
+			"/inventory?store=active&limit=100&offset=0",
+			"/inventory?store=active&limit=100&offset=1",
+		]);
+	},
+);

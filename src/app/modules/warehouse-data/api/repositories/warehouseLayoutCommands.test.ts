@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
+import { httpDouble } from "../../../../../../tests/support/http";
+
+import { RestWarehouseRepository } from "./restRepository";
 
 import { ApiError, type RequestOptions } from "@/shared/http";
 
@@ -15,9 +17,9 @@ describe("REST warehouse layout commands", () => {
 		const cache = new QueryClient();
 		let writes = 0;
 		const repository = new RestWarehouseRepository(
-			{
+			httpDouble({
 				request: async (path, options) => {
-					if (path === "/warehouses/w1")
+					if (path === "/warehouses/w1?include_summary=true")
 						return { ...warehouseDto, allowed_actions: ["save-map"] };
 					if (path.endsWith("/layout/commit")) {
 						writes++;
@@ -29,7 +31,7 @@ describe("REST warehouse layout commands", () => {
 
 					return base.http.request(path, options);
 				},
-			},
+			}),
 			cache,
 		);
 
@@ -63,21 +65,23 @@ describe("REST warehouse layout commands", () => {
 	test("an interrupted commit replays the exact captured request, then only rereads", async () => {
 		const base = warehouseRepositoryFixture();
 		const writes: RequestOptions[] = [];
-		const repository = new RestWarehouseRepository({
-			request: async (path, options) => {
-				if (path === "/warehouses/w1")
-					return { ...warehouseDto, allowed_actions: ["save-map"] };
-				if (path.endsWith("/layout/commit") && options) {
-					writes.push(options);
+		const repository = new RestWarehouseRepository(
+			httpDouble({
+				request: async (path, options) => {
+					if (path === "/warehouses/w1?include_summary=true")
+						return { ...warehouseDto, allowed_actions: ["save-map"] };
+					if (path.endsWith("/layout/commit") && options) {
+						writes.push(options);
 
-					if (writes.length === 1) throw new TypeError("Lost response");
+						if (writes.length === 1) throw new TypeError("Lost response");
 
-					return {};
-				}
+						return {};
+					}
 
-				return base.http.request(path, options);
-			},
-		});
+					return base.http.request(path, options);
+				},
+			}),
+		);
 		const command = {
 			action: "saveMap" as const,
 			value: { baseVersion: 1, cells: [], routes: [] },
@@ -92,7 +96,9 @@ describe("REST warehouse layout commands", () => {
 			await repository.retryLayoutRead("w1");
 
 			expect(writes).toHaveLength(2);
-			expect(writes[0]?.idempotencyKey).toBeTruthy();
+			expect(writes[0]?.idempotencyKey).toMatch(
+				/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+			);
 			expect(writes[1]?.idempotencyKey).toBe(writes[0]?.idempotencyKey);
 			expect(writes[1]?.body).toEqual(writes[0]?.body);
 		} finally {
@@ -105,9 +111,9 @@ describe("REST warehouse layout commands", () => {
 		const cache = new QueryClient();
 		const writes: Array<{ path: string; options: RequestOptions }> = [];
 		const repository = new RestWarehouseRepository(
-			{
+			httpDouble({
 				async request(path, options) {
-					if (path === "/warehouses/w1")
+					if (path === "/warehouses/w1?include_summary=true")
 						return { ...warehouseDto, allowed_actions: ["save-map"] };
 					if (options?.method === "POST" && path.endsWith("/layout/commit")) {
 						writes.push({ path, options });
@@ -117,7 +123,7 @@ describe("REST warehouse layout commands", () => {
 
 					return base.http.request(path, options);
 				},
-			},
+			}),
 			cache,
 		);
 
@@ -162,11 +168,11 @@ describe("REST warehouse layout commands", () => {
 		const started = Promise.withResolvers<void>();
 		const release = Promise.withResolvers<void>();
 		let version = 1;
-		let holdOldDraft = false;
+		let holdOldRead = false;
 		const repository = new RestWarehouseRepository(
-			{
+			httpDouble({
 				async request(path, options) {
-					if (path === "/warehouses/w1") {
+					if (path === "/warehouses/w1?include_summary=true") {
 						return {
 							...warehouseDto,
 							published_version: version,
@@ -175,6 +181,18 @@ describe("REST warehouse layout commands", () => {
 					}
 					if (path.endsWith("/layout"))
 						return { version, width: 3, height: 3, cells: [], routes: [] };
+					if (path.endsWith("/map/state") && holdOldRead) {
+						holdOldRead = false;
+						started.resolve();
+						await release.promise;
+						return {
+							warehouse_id: "w1",
+							layout_version: 1,
+							state_version: "1",
+							tick: "1",
+							robots: [],
+						};
+					}
 					if (path.endsWith("/map/state")) {
 						return {
 							warehouse_id: "w1",
@@ -188,27 +206,14 @@ describe("REST warehouse layout commands", () => {
 						version = 2;
 						return undefined;
 					}
-					if (path.endsWith("/layout/draft") && holdOldDraft) {
-						holdOldDraft = false;
-						started.resolve();
-						await release.promise;
-						return {
-							version: 1,
-							revision: 3,
-							width: 3,
-							height: 3,
-							cells: [],
-							routes: [],
-						};
-					}
 					return base.http.request(path, options);
 				},
-			},
+			}),
 			cache,
 		);
 
 		await repository.get("w1");
-		holdOldDraft = true;
+		holdOldRead = true;
 		const oldRead = repository
 			.get("w1", undefined, "map")
 			.catch((error: unknown) => error);
@@ -243,9 +248,9 @@ describe("REST warehouse layout commands", () => {
 		let publishedVersion = 1;
 
 		const repository = new RestWarehouseRepository(
-			{
+			httpDouble({
 				async request(path, options) {
-					if (path === "/warehouses/w1") {
+					if (path === "/warehouses/w1?include_summary=true") {
 						return {
 							...warehouseDto,
 							published_version: publishedVersion,
@@ -253,12 +258,26 @@ describe("REST warehouse layout commands", () => {
 						};
 					}
 
-					if (path === "/warehouses/w2") {
+					if (path === "/warehouses/w2?include_summary=true") {
 						return {
 							...warehouseDto,
 							id: "w2",
 							name: "Second warehouse",
 							published_version: 7,
+						};
+					}
+
+					if (path === "/warehouses/w1/map/state" && delayRead) {
+						delayRead = false;
+						reading.resolve();
+						await releaseRead.promise;
+
+						return {
+							warehouse_id: "w1",
+							layout_version: 1,
+							state_version: "1",
+							tick: "1",
+							robots: [],
 						};
 					}
 
@@ -296,21 +315,6 @@ describe("REST warehouse layout commands", () => {
 						};
 					}
 
-					if (path === "/warehouses/w1/layout/draft" && delayRead) {
-						delayRead = false;
-						reading.resolve();
-						await releaseRead.promise;
-
-						return {
-							version: 1,
-							revision: 3,
-							width: 3,
-							height: 3,
-							cells: [],
-							routes: [],
-						};
-					}
-
 					if (path === "/warehouses/w1/layout/commit") {
 						writing.resolve();
 						await releaseWrite.promise;
@@ -321,7 +325,7 @@ describe("REST warehouse layout commands", () => {
 
 					return base.http.request(path, options);
 				},
-			},
+			}),
 			cache,
 		);
 
@@ -369,18 +373,20 @@ describe("REST warehouse layout commands", () => {
 		const base = warehouseRepositoryFixture();
 		const lostResponse = new TypeError("Connection closed before the response");
 		const writes: unknown[] = [];
-		const repository = new RestWarehouseRepository({
-			async request(path, options) {
-				if (path === "/warehouses/w1")
-					return { ...warehouseDto, allowed_actions: ["resize"] };
-				if (options?.method === "POST" && path.endsWith("/layout/resize")) {
-					writes.push(options.body);
-					throw lostResponse;
-				}
+		const repository = new RestWarehouseRepository(
+			httpDouble({
+				async request(path, options) {
+					if (path === "/warehouses/w1?include_summary=true")
+						return { ...warehouseDto, allowed_actions: ["resize"] };
+					if (options?.method === "POST" && path.endsWith("/layout/resize")) {
+						writes.push(options.body);
+						throw lostResponse;
+					}
 
-				return base.http.request(path, options);
-			},
-		});
+					return base.http.request(path, options);
+				},
+			}),
+		);
 
 		await repository.get("w1");
 		await expect(
@@ -396,25 +402,27 @@ describe("REST warehouse layout commands", () => {
 	test("discard sends the revision of the draft opened by the operator", async () => {
 		const base = warehouseRepositoryFixture();
 		let deleted: RequestOptions | undefined;
-		const repository = new RestWarehouseRepository({
-			async request(path, options) {
-				if (path.endsWith("/layout/draft")) {
-					if (options?.method === "DELETE") {
-						deleted = options;
-						throw new ApiError("Draft has changed", 409);
+		const repository = new RestWarehouseRepository(
+			httpDouble({
+				async request(path, options) {
+					if (path.endsWith("/layout/draft")) {
+						if (options?.method === "DELETE") {
+							deleted = options;
+							throw new ApiError("Draft has changed", 409);
+						}
+						return {
+							version: 1,
+							revision: 5,
+							width: 3,
+							height: 3,
+							cells: [],
+							routes: [],
+						};
 					}
-					return {
-						version: 1,
-						revision: 5,
-						width: 3,
-						height: 3,
-						cells: [],
-						routes: [],
-					};
-				}
-				return base.http.request(path, options);
-			},
-		});
+					return base.http.request(path, options);
+				},
+			}),
+		);
 		expect((await repository.get("w1")).draftRevision).toBe(5);
 		await expect(
 			repository.execute("w1", {
@@ -427,12 +435,14 @@ describe("REST warehouse layout commands", () => {
 
 	test("route proposals preserve zone boundaries including new zones", async () => {
 		let body: unknown;
-		const repository = new RestWarehouseRepository({
-			async request(_path, options) {
-				body = options?.body;
-				return [];
-			},
-		});
+		const repository = new RestWarehouseRepository(
+			httpDouble({
+				async request(_path, options) {
+					body = options?.body;
+					return [];
+				},
+			}),
+		);
 		await repository.proposeRoutes("w1", [
 			{
 				x: 0,

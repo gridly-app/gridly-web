@@ -1,6 +1,8 @@
-import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
-
 import { ApiError, type RequestOptions } from "@/shared/http";
+
+import { httpDouble } from "../../../../../../tests/support/http";
+
+import { RestWarehouseRepository } from "./restRepository";
 
 export const warehouseDto = {
 	id: "w1",
@@ -67,7 +69,7 @@ export function warehouseRepositoryFixture() {
 	};
 	return {
 		http,
-		repository: new RestWarehouseRepository(http),
+		repository: new RestWarehouseRepository(httpDouble(http)),
 		calls,
 		setVersion: (value: string) => {
 			stateVersion = value;

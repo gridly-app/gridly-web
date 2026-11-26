@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
+import { httpDouble } from "../../../../../../tests/support/http";
+
+import { RestWarehouseRepository } from "./restRepository";
 
 import { ApiError } from "@/shared/http";
 
@@ -25,7 +27,7 @@ describe("REST warehouse recovery", () => {
 		const cache = new QueryClient();
 		let firstRobotsRead = true;
 		const repository = new RestWarehouseRepository(
-			{
+			httpDouble({
 				async request(path, options) {
 					if (path.includes("/robots") && firstRobotsRead) {
 						firstRobotsRead = false;
@@ -33,7 +35,7 @@ describe("REST warehouse recovery", () => {
 					}
 					return base.http.request(path, options);
 				},
-			},
+			}),
 			cache,
 			25,
 		);
@@ -159,7 +161,7 @@ describe("REST warehouse recovery", () => {
 							tick: String(publishedVersion),
 							robots: [],
 						};
-					if (path.endsWith("/w1"))
+					if (path === "/warehouses/w1?include_summary=true")
 						return { ...warehouseDto, published_version: publishedVersion };
 					if (path.endsWith("/orders")) return { items: [], total: 0 };
 					return [];

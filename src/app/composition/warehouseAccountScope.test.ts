@@ -3,7 +3,12 @@ import { QueryClient } from "@tanstack/react-query";
 import { BrowserSessionRepository } from "@/app/modules/session";
 import { RestWarehouseRepository } from "@/app/modules/warehouse-data";
 import { memoryStorage } from "@/shared/browser";
-import { channel, until } from "../modules/warehouse-data/api/live/liveStream.test-support";
+import { httpDouble } from "../../../tests/support/http";
+
+import {
+	channel,
+	until,
+} from "../modules/warehouse-data/api/live/liveStream.test-support";
 import {
 	warehouseDto,
 	warehouseRepositoryFixture,
@@ -23,7 +28,7 @@ test("a new account opening the same warehouse ignores the old read and write an
 	const repository = new RestWarehouseRepository(
 		{
 			async request(path, options) {
-				if (path === "/warehouses/w1") {
+				if (path === "/warehouses/w1?include_summary=true") {
 					const name = account;
 					if (holdRead) {
 						holdRead = false;
@@ -53,12 +58,11 @@ test("a new account opening the same warehouse ignores the old read and write an
 		cache,
 	);
 	const session = new BrowserSessionRepository(
-		{
-			clearSession() {},
+		httpDouble({
 			async request() {
 				return { user: { login: account } };
 			},
-		},
+		}),
 		memoryStorage(),
 		() => repository.clear(),
 	);

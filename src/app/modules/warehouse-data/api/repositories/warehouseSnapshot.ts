@@ -39,26 +39,32 @@ export async function readSnapshotParts(
 	const needs = (name: WarehouseResource) =>
 		resource === "all" || resource === name;
 	const withMap = needs("map");
-	const layoutPromise =
-		withMap && warehouse.published
-			? cachedLayout
-				? Promise.resolve(cachedLayout)
-				: http
-						.request(`${base}/layout`, { signal })
-						.then((data) => parseResponse(layoutDto, data))
-			: Promise.resolve(null);
-	const draftPromise =
-		!withMap || skipDraft
-			? Promise.resolve(null)
-			: http
-					.request(`${base}/layout/draft`, { signal })
-					.then((data) => parseResponse(layoutDto, data))
-					.catch((e) => {
-						if (e instanceof ApiError && e.status === 404) {
-							return null;
-						}
-						throw e;
-					});
+	const layoutPromise = readPublishedLayout();
+	const draftPromise = readDraftLayout();
+
+	async function readPublishedLayout() {
+		if (!withMap || !warehouse.published) return null;
+		if (cachedLayout) return cachedLayout;
+
+		const data = await http.request(`${base}/layout`, { signal });
+
+		return parseResponse(layoutDto, data);
+	}
+
+	async function readDraftLayout() {
+		if (!withMap || skipDraft) return null;
+
+		try {
+			const data = await http.request(`${base}/layout/draft`, { signal });
+
+			return parseResponse(layoutDto, data);
+		} catch (error) {
+			if (error instanceof ApiError && error.status === 404) return null;
+
+			throw error;
+		}
+	}
+
 	const [
 		layout,
 		draft,

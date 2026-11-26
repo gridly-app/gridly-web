@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
 import { QueryClient } from "@tanstack/react-query";
-import { RestWarehouseRepository } from "@/app/modules/warehouse-data/api/repositories/restRepository";
+import { httpDouble } from "../../../../../../tests/support/http";
+
+import { RestWarehouseRepository } from "./restRepository";
 import { ApiError } from "@/shared/http";
 
 const metadata = {
@@ -24,9 +26,9 @@ const metadata = {
 test("REST rejects an unknown warehouse time zone before caching metadata", async () => {
 	const cache = new QueryClient();
 	const repository = new RestWarehouseRepository(
-		{
+		httpDouble({
 			request: async () => ({ ...metadata, time_zone: "Mars/Olympus" }),
-		},
+		}),
 		cache,
 	);
 
@@ -43,9 +45,9 @@ test("a full REST snapshot preserves the published trajectory at an equal numeri
 	const cache = new QueryClient();
 	let restVersion = "1";
 	const repository = new RestWarehouseRepository(
-		{
+		httpDouble({
 			async request(path) {
-				if (path === "/warehouses/w") return metadata;
+				if (path === "/warehouses/w?include_summary=true") return metadata;
 				if (path.endsWith("/layout/draft")) throw new ApiError("No draft", 404);
 				if (path.includes("/robots"))
 					return [
@@ -71,7 +73,7 @@ test("a full REST snapshot preserves the published trajectory at an equal numeri
 					};
 				throw new Error(`Unexpected request: ${path}`);
 			},
-		},
+		}),
 		cache,
 	);
 	const snapshot = await repository.get("w", undefined, "map");

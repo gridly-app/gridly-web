@@ -1,9 +1,9 @@
-import type { HttpClient, RequestOptions } from "@/shared/http";
+import type { RequestOptions, StreamHttpClient } from "@/shared/http";
 
 export function warehouseSessionHttp(
-	http: HttpClient,
+	http: StreamHttpClient,
 	getSessionSignal: () => AbortSignal,
-): HttpClient {
+): StreamHttpClient {
 	function withSession(options: RequestOptions) {
 		const session = getSessionSignal();
 		const signal = options.signal
@@ -12,8 +12,6 @@ export function warehouseSessionHttp(
 
 		return { ...options, signal };
 	}
-
-	const openStream = http.openStream?.bind(http);
 
 	return {
 		request: async (path, options = {}) => {
@@ -24,15 +22,13 @@ export function warehouseSessionHttp(
 
 			return result;
 		},
-		...(openStream && {
-			openStream: async (path: string, options: RequestOptions = {}) => {
-				const request = withSession(options);
-				const stream = await openStream(path, request);
+		openStream: async (path, options = {}) => {
+			const request = withSession(options);
+			const stream = await http.openStream(path, request);
 
-				request.signal.throwIfAborted();
+			request.signal.throwIfAborted();
 
-				return stream;
-			},
-		}),
+			return stream;
+		},
 	};
 }

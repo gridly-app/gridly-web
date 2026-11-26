@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { Warehouse, WarehouseLiveState } from "@/domain/warehouse";
 import { toLiveState } from "@/domain/warehouse";
-import { ApiError, type HttpClient } from "@/shared/http";
+import { ApiError, type StreamHttpClient } from "@/shared/http";
 import { readSse, type ServerEvent } from "@/shared/realtime";
 import type { WarehouseKeys } from "../../model/queries/queryKeys";
 import { type LiveRefresh, liveRefreshes, nextLiveSnapshot } from "./livePatch";
@@ -16,7 +16,7 @@ interface LiveStreamOptions {
 	keys: WarehouseKeys;
 	id: string;
 	timing?: { heartbeatMs: number; fallbackMs: number; retryMs: number[] };
-	http: HttpClient;
+	http: StreamHttpClient;
 	cache: QueryClient;
 	snapshotReady: () => boolean;
 	resync: (signal: AbortSignal) => Promise<Warehouse>;
@@ -150,8 +150,6 @@ export class WarehouseLiveStream {
 				this.layoutVersion = warehouse.version;
 				cache.setQueryData(this.options.keys.live(id), toLiveState(warehouse));
 				activity();
-				if (!http.openStream) throw new Error("Потоковый транспорт недоступен");
-
 				const stream = await http.openStream(
 					`/warehouses/${encodeURIComponent(id)}/stream?since_version=${encodeURIComponent(warehouse.stateVersion ?? "0")}`,
 					{ signal },
