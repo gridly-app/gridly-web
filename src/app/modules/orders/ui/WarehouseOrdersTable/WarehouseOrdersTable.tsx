@@ -1,17 +1,15 @@
 import type { Order, Warehouse } from "@/domain/warehouse";
-import { StatusBadge } from "@/ports/warehouse";
-
-import { formatMoment } from "@/shared/lib";
 import { adminLocation } from "@/ports/navigation";
-import { orderKinds, orderStatusLabel } from "../../model/orderLabels";
-
+import { StatusBadge } from "@/ports/warehouse";
+import { formatMoment } from "@/shared/lib";
+import {
+	managementStyles as styles,
+	SortedTable,
+	type TableColumns,
+} from "@/shared/ui/management";
 import { Link } from "@/shared/ui/navigation";
 
-import {
-	type TableColumns,
-	SortedTable,
-	managementStyles as styles,
-} from "@/shared/ui/management";
+import { orderKinds, orderStatusLabel } from "../../model/orderLabels";
 
 export function WarehouseOrdersTable({
 	warehouse,

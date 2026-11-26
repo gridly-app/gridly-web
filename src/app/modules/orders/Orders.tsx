@@ -1,54 +1,40 @@
 import { useState } from "react";
 
-import type { Order, Warehouse } from "@/domain/warehouse";
+import type { Warehouse } from "@/domain/warehouse";
 import { useWarehouseResources } from "@/ports/warehouse";
-
-import { textSearch, errorMessage } from "@/shared/lib";
-import { orderKinds, orderStatusLabel } from "./model/orderLabels";
-
+import { isAccessDenied } from "@/shared/http";
+import { errorMessage } from "@/shared/lib";
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { Select } from "@/shared/ui/forms";
-
-import { WarehouseOrdersTable } from "./ui/WarehouseOrdersTable/WarehouseOrdersTable";
-
 import { managementStyles as styles } from "@/shared/ui/management";
 
-const kindOptions = [
-	{ value: "all", label: "Все типы" },
-	...Object.entries(orderKinds).map(([value, label]) => ({ value, label })),
-];
+import {
+	activeFilterCount,
+	filterOrders,
+	isKindFilter,
+	type KindFilter,
+	kindOptions,
+	orderStatusOptions,
+} from "./model/orderFilters";
+import { WarehouseOrdersTable } from "./ui/WarehouseOrdersTable/WarehouseOrdersTable";
 
 export function Orders({ warehouse }: { warehouse: Warehouse }) {
 	const query = useWarehouseResources(warehouse, ["orders"]);
 	const [search, setSearch] = useState("");
-	const [kind, setKind] = useState<"all" | Order["kind"]>("all");
+	const [kind, setKind] = useState<KindFilter>("all");
 	const [status, setStatus] = useState("all");
-	const matches = textSearch(search);
 	const orders = query.warehouse.orders;
-	const statuses = [...new Set(orders.map((order) => order.status))];
-	const statusOptions = [
-		{ value: "all", label: "Все статусы" },
-		...statuses.map((value) => ({ value, label: orderStatusLabel(value) })),
-	];
-	const filterCount = Number(kind !== "all") + Number(status !== "all");
-	const rows = orders.filter(
-		(order) =>
-			(kind === "all" || order.kind === kind) &&
-			(status === "all" || order.status === status) &&
-			matches([
-				order.number,
-				order.party,
-				orderStatusLabel(order.status),
-				orderKinds[order.kind],
-			]),
-	);
-
-	const canShowOrders = query.hasData && !query.error;
+	const filters = { search, kind, status };
+	const statusOptions = orderStatusOptions(orders);
+	const filterCount = activeFilterCount(filters);
+	const rows = filterOrders(orders, filters);
+	const isDenied = isAccessDenied(query.error);
+	const canShowOrders = query.hasData && !isDenied;
+	const hasRefreshError = canShowOrders && !!query.error;
 
 	function handleKindChange(value: string) {
-		if (value === "all" || value === "inbound" || value === "outbound")
-			setKind(value);
+		if (isKindFilter(value)) setKind(value);
 	}
 
 	function handleReset() {
@@ -81,9 +67,14 @@ export function Orders({ warehouse }: { warehouse: Warehouse }) {
 				/>
 			</ListFilters>
 			{query.loading && <Feedback tone="loading">Загружаем заказы…</Feedback>}
-			{query.error && (
+			{query.error && !hasRefreshError && (
 				<Feedback tone="error" action={<RetryButton onRetry={query.retry} />}>
 					{errorMessage(query.error)}
+				</Feedback>
+			)}
+			{hasRefreshError && (
+				<Feedback tone="warning" action={<RetryButton onRetry={query.retry} />}>
+					Не удалось обновить заказы. Показаны последние загруженные данные.
 				</Feedback>
 			)}
 			{canShowOrders && (
