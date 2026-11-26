@@ -1,32 +1,26 @@
 import { useState } from "react";
+
 import { saveFile } from "@/shared/http";
-import { shipmentCsv, type CalendarFilters } from "./shipmentCalendar";
+
 import {
-	calendarColumns,
-	calendarRows,
-	calendarTotals,
-	calendarDetail,
-	type CalendarField,
 	type CalendarColumn,
-	type CalendarSort,
-	type CalendarSelection,
-	type ShipmentCalendarOptions,
-} from "../shipmentCalendarView";
+	type CalendarField,
+	calendarColumns,
+	fixedCalendarColumns,
+} from "../../config/calendarColumns";
+import { type CalendarSelection, calendarDetail } from "./calendarDetail";
+import { hasInvalidDateRange, initialCalendarFilters } from "./calendarFilters";
+import { calendarRows } from "./calendarRows";
+import { defaultCalendarSort } from "./calendarSort";
+import { calendarTotals } from "./calendarTotals";
+import type { ShipmentCalendarOptions } from "./shipmentCalendarOptions";
+import { shipmentCsv } from "./shipmentCsv";
 
 export function useShipmentCalendar(options: ShipmentCalendarOptions) {
-	const [filters, setFilters] = useState<CalendarFilters>({
-		from: "",
-		to: "",
-		item: null,
-		transport: "",
-		weekly: false,
-	});
+	const [filters, setFilters] = useState(initialCalendarFilters);
 	const [showZeroActual, setShowZeroActual] = useState(true);
 	const [hiddenColumns, setHiddenColumns] = useState<CalendarField[]>([]);
-	const [sort, setSort] = useState<CalendarSort>({
-		field: "date",
-		ascending: true,
-	});
+	const [sort, setSort] = useState(defaultCalendarSort);
 	const [selection, setSelection] = useState<CalendarSelection>(null);
 	const rows = calendarRows(options, filters, sort);
 	const totals = calendarTotals(rows);
@@ -44,10 +38,9 @@ export function useShipmentCalendar(options: ShipmentCalendarOptions) {
 		([field]) => !hiddenColumns.includes(field),
 	);
 	const configurableColumns = availableColumns.filter(
-		([field]) => field !== "date" && field !== "actual",
+		([field]) => !fixedCalendarColumns.includes(field),
 	);
-	const hasInvalidDates =
-		!!filters.from && !!filters.to && filters.from > filters.to;
+	const hasInvalidDates = hasInvalidDateRange(filters);
 	const detail = calendarDetail(rows, selection);
 
 	function changeColumn(field: CalendarField, checked: boolean) {
@@ -55,8 +48,7 @@ export function useShipmentCalendar(options: ShipmentCalendarOptions) {
 			checked ? current.filter((name) => name !== field) : [...current, field],
 		);
 
-		if (!checked && sort.field === field)
-			setSort({ field: "date", ascending: true });
+		if (!checked && sort.field === field) setSort(defaultCalendarSort);
 	}
 
 	function changeSort(field: CalendarField) {

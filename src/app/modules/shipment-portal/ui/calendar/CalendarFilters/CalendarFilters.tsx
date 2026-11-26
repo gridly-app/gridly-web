@@ -1,11 +1,27 @@
 import type { ChangeEvent } from "react";
+
 import { transports } from "@/domain/shipment";
 import { Input } from "@/shared/ui/controls";
 import { Field, Select } from "@/shared/ui/forms";
-import type { CalendarFilters as CalendarFilterValues } from "../../../model/calendar/shipmentCalendar";
-import type { CalendarItem } from "../../../model/shipmentCalendarView";
+
+import type { CalendarFilters as CalendarFilterValues } from "../../../model/calendar/calendarFilters";
+import type { CalendarItem } from "../../../model/calendar/shipmentCalendarOptions";
 
 import styles from "../../../shared.module.css";
+
+const allOption = "all";
+
+const itemPrefix = "item:";
+
+const groupingOptions = [
+	{ value: "day", label: "По дням" },
+	{ value: "week", label: "По неделям" },
+];
+
+const transportOptions = [
+	{ value: allOption, label: "Весь транспорт" },
+	...Object.entries(transports).map(([value, label]) => ({ value, label })),
+];
 
 export function CalendarFilters({
 	filters,
@@ -17,19 +33,15 @@ export function CalendarFilters({
 	items: CalendarItem[];
 }) {
 	const groupingValue = filters.weekly ? "week" : "day";
-	const itemValue = filters.item === null ? "all" : `item:${filters.item}`;
-	const transportValue = filters.transport || "all";
+	const itemValue =
+		filters.item === null ? allOption : `${itemPrefix}${filters.item}`;
+	const transportValue = filters.transport || allOption;
 	const itemOptions = [
-		{ value: "all", label: "Все позиции" },
+		{ value: allOption, label: "Все позиции" },
 		...items.map((item) => ({
-			value: `item:${item.order_line_id}`,
+			value: `${itemPrefix}${item.order_line_id}`,
 			label: item.sku ? `${item.sku} · ${item.name}` : item.name,
 		})),
-	];
-	const transportEntries = Object.entries(transports);
-	const transportOptions = [
-		{ value: "all", label: "Весь транспорт" },
-		...transportEntries.map(([value, label]) => ({ value, label })),
 	];
 
 	function handleFromChange(event: ChangeEvent<HTMLInputElement>) {
@@ -45,13 +57,13 @@ export function CalendarFilters({
 	}
 
 	function handleItemChange(value: string) {
-		const item = value === "all" ? null : value.slice("item:".length);
+		const item = value === allOption ? null : value.slice(itemPrefix.length);
 
 		onChange({ ...filters, item });
 	}
 
 	function handleTransportChange(value: string) {
-		const transport = value === "all" ? "" : value;
+		const transport = value === allOption ? "" : value;
 
 		onChange({ ...filters, transport });
 	}
@@ -70,10 +82,7 @@ export function CalendarFilters({
 					aria-label="Группировка"
 					value={groupingValue}
 					onValueChange={handleGroupingChange}
-					options={[
-						{ value: "day", label: "По дням" },
-						{ value: "week", label: "По неделям" },
-					]}
+					options={groupingOptions}
 				/>
 			</div>
 			<div>

@@ -1,8 +1,10 @@
 import type { ChangeEvent } from "react";
+
 import type {
 	CalendarColumn,
 	CalendarField,
-} from "../../../model/shipmentCalendarView";
+} from "../../../config/calendarColumns";
+import { ColumnToggle } from "../ColumnToggle/ColumnToggle";
 
 import styles from "../../../shared.module.css";
 
@@ -48,28 +50,5 @@ export function CalendarOptions({
 				</div>
 			</details>
 		</div>
-	);
-}
-
-function ColumnToggle({
-	field,
-	label,
-	checked,
-	onChange,
-}: {
-	field: CalendarField;
-	label: string;
-	checked: boolean;
-	onChange: (field: CalendarField, checked: boolean) => void;
-}) {
-	function handleChange(event: ChangeEvent<HTMLInputElement>) {
-		onChange(field, event.target.checked);
-	}
-
-	return (
-		<label>
-			<input type="checkbox" checked={checked} onChange={handleChange} />{" "}
-			{label}
-		</label>
 	);
 }

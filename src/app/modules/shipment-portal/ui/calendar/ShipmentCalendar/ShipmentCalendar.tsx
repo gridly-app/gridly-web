@@ -1,13 +1,13 @@
-import { formatUnit } from "@/domain/shipment";
 import { Button } from "@/shared/ui/controls";
 import { Modal } from "@/shared/ui/overlays";
-import type { ShipmentCalendarOptions } from "../../../model/shipmentCalendarView";
+
+import type { ShipmentCalendarOptions } from "../../../model/calendar/shipmentCalendarOptions";
 import { useShipmentCalendar } from "../../../model/calendar/useShipmentCalendar";
 import { CalendarFilters } from "../CalendarFilters/CalendarFilters";
 import { CalendarOptions } from "../CalendarOptions/CalendarOptions";
 import { CalendarTable } from "../CalendarTable/CalendarTable";
+import { CalendarTotal } from "../CalendarTotal/CalendarTotal";
 import { FactDetails } from "../FactDetails/FactDetails";
-import { ActualAmount } from "../ActualAmount/ActualAmount";
 
 import styles from "../../../shared.module.css";
 
@@ -72,34 +72,5 @@ export function ShipmentCalendar(props: ShipmentCalendarOptions) {
 				</Modal>
 			)}
 		</section>
-	);
-}
-
-function CalendarTotal({
-	total,
-	showZeroActual,
-	onSelect,
-}: {
-	total: { unit: string; plan: number | null; actual: number };
-	showZeroActual: boolean;
-	onSelect: (unit: string) => void;
-}) {
-	const unitLabel = formatUnit(total.unit);
-	const factLabel = `Весь факт, ${unitLabel}`;
-
-	function handleSelect() {
-		onSelect(total.unit);
-	}
-
-	return (
-		<li>
-			<strong>{unitLabel}</strong> · План {total.plan ?? "—"} · Факт{" "}
-			<ActualAmount
-				quantity={total.actual}
-				showZeroActual={showZeroActual}
-				label={factLabel}
-				onClick={handleSelect}
-			/>
-		</li>
 	);
 }

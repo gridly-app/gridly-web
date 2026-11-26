@@ -1,11 +1,12 @@
 import {
-	formatMoment,
 	formatUnit,
 	transports,
 	type Actual,
 	type Shipment,
 } from "@/domain/shipment";
-import type { CalendarItem } from "../../../model/shipmentCalendarView";
+import { formatMoment } from "@/shared/lib";
+
+import type { CalendarItem } from "../../../model/calendar/shipmentCalendarOptions";
 
 import styles from "../../../shared.module.css";
 
@@ -21,7 +22,11 @@ export function FactDetails({
 	const itemsById = new Map(items.map((item) => [item.order_line_id, item]));
 
 	return (
-		<div className={styles.scroll}>
+		<section
+			className={styles.scroll}
+			aria-label="Факт отгрузки по позициям"
+			tabIndex={0}
+		>
 			<table className={styles.table}>
 				<thead>
 					<tr>
@@ -62,6 +67,6 @@ export function FactDetails({
 					})}
 				</tbody>
 			</table>
-		</div>
+		</section>
 	);
 }
