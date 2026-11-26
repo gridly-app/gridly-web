@@ -122,9 +122,7 @@
 
 table :is(th, td) {
 	padding: var(--table-cell-padding);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	overflow-wrap: anywhere;
+	white-space: nowrap;
 }
 
 table :is(th, td) :where(*) {
@@ -134,8 +132,17 @@ table :is(th, td) :where(*) {
 }
 
 table {
-	width: 100%;
-	table-layout: fixed;
+	inline-size: max-content;
+	min-inline-size: 100%;
+	table-layout: auto;
 	border-collapse: separate;
 	border-spacing: 0;
+}
+
+table th[data-column="actions"] {
+	inline-size: 1%;
+}
+
+table [data-slot="toolbar"] {
+	flex-wrap: nowrap;
 }

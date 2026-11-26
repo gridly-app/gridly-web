@@ -199,211 +199,50 @@
 			}
 		}
 	}
-	.variantDefault {
-		border-color: var(--primary);
-		background-color: var(--primary);
-		color: var(--primary-foreground);
-		@media (hover: hover) {
-			&:hover {
-				background-color: color-mix(
-					in oklab,
-					var(--primary) 90%,
-					var(--foreground)
-				);
-			}
-		}
-		&[data-pressed] {
-			background-color: color-mix(
-				in oklab,
-				var(--primary) 90%,
-				var(--foreground)
-			);
-		}
-		:is(& > *)[data-slot="button-loading-indicator"] {
-			color: var(--primary-foreground);
-		}
-		&:is(:disabled, :active, [data-pressed]) {
-			box-shadow: none;
-		}
-	}
-	.variantDestructive {
-		border-color: var(--destructive);
-		background-color: var(--destructive);
-		color: #fff;
-		@media (hover: hover) {
-			&:hover {
-				background-color: color-mix(
-					in oklab,
-					var(--destructive) 90%,
-					var(--popover)
-				);
-			}
-		}
-		&[data-pressed] {
-			background-color: color-mix(
-				in oklab,
-				var(--destructive) 90%,
-				var(--popover)
-			);
-		}
-		:is(& > *)[data-slot="button-loading-indicator"] {
-			color: #fff;
-		}
-		&:is(:disabled, :active, [data-pressed]) {
-			box-shadow: none;
-		}
-	}
-	.variantDestructiveOutline {
-		border-color: var(--input);
-		background-color: var(--popover);
-		color: var(--destructive-foreground);
-		&:not(
-			:where([data-theme="dark"] *):not(
-				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-			)
-		) {
-			background-clip: padding-box;
-		}
-		@media (hover: hover) {
-			&:hover {
-				border-color: color-mix(in oklab, var(--destructive) 32%, transparent);
-				background-color: color-mix(
-					in oklab,
-					var(--destructive) 4%,
-					var(--popover)
-				);
-			}
-		}
-		&[data-pressed] {
-			border-color: color-mix(in oklab, var(--destructive) 32%, transparent);
-			background-color: color-mix(
-				in oklab,
-				var(--destructive) 4%,
-				var(--popover)
-			);
-		}
-		:is(& > *)[data-slot="button-loading-indicator"] {
-			color: var(--foreground);
-		}
-		&:where([data-theme="dark"] *):not(
-				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-			) {
-			background-color: var(--secondary);
-		}
-		&:is(:disabled, :active, [data-pressed]) {
-			box-shadow: none;
-		}
-	}
-	.variantGhost {
-		background-color: var(--secondary);
-		border-color: transparent;
-		color: var(--foreground);
-		@media (hover: hover) {
-			&:hover {
-				background-color: var(--accent-bg);
-			}
-		}
-		&[data-pressed] {
-			background-color: var(--accent-bg);
-		}
-		:is(& > *)[data-slot="button-loading-indicator"] {
-			color: var(--foreground);
-		}
-	}
-	.variantLink {
-		background-color: var(--secondary);
-		border-color: transparent;
-		color: var(--foreground);
-		text-underline-offset: 4px;
-		@media (hover: hover) {
-			&:hover {
-				text-decoration-line: underline;
-			}
-		}
-		&[data-pressed] {
-			text-decoration-line: underline;
-		}
-		:is(& > *)[data-slot="button-loading-indicator"] {
-			color: var(--foreground);
-		}
-	}
-	.variantOutline {
-		border-color: var(--input);
-		background-color: var(--popover);
-		color: var(--foreground);
-		&:not(
-			:where([data-theme="dark"] *):not(
-				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-			)
-		) {
-			background-clip: padding-box;
-		}
-		@media (hover: hover) {
-			&:hover {
-				background-color: color-mix(
-					in oklab,
-					var(--accent-bg) 50%,
-					var(--popover)
-				);
-			}
-		}
-		&[data-pressed] {
-			background-color: color-mix(
-				in oklab,
-				var(--accent-bg) 50%,
-				var(--popover)
-			);
-		}
-		:is(& > *)[data-slot="button-loading-indicator"] {
-			color: var(--foreground);
-		}
-		&:where([data-theme="dark"] *):not(
-				:where([data-fixed-theme="light"], [data-fixed-theme="light"] *)
-			) {
-			background-color: var(--secondary);
-			@media (hover: hover) {
-				&:hover {
-					background-color: var(--accent-bg);
-				}
-			}
-			&[data-pressed] {
-				background-color: var(--accent-bg);
-			}
-		}
-		&:is(:disabled, :active, [data-pressed]) {
-			box-shadow: none;
-		}
-	}
+	.variantDefault,
 	.variantSecondary {
-		border-color: transparent;
-		background-color: var(--secondary);
-		color: var(--secondary-foreground);
-		@media (hover: hover) {
-			&:hover {
-				background-color: color-mix(
-					in oklab,
-					var(--secondary) 90%,
-					var(--popover)
-				);
-			}
-		}
-		&[data-pressed] {
-			background-color: color-mix(
-				in oklab,
-				var(--secondary) 90%,
-				var(--popover)
-			);
-		}
-		:is(& > *)[data-slot="button-loading-indicator"] {
-			color: var(--secondary-foreground);
-		}
-		&:is(:active, [data-pressed]) {
-			background-color: color-mix(
-				in oklab,
-				var(--secondary) 80%,
-				var(--foreground)
-			);
-		}
+		--button-background: var(--action-primary-bg);
+		--button-foreground: var(--action-primary-fg);
+		--button-hover: var(--action-primary-hover);
+	}
+
+	.variantGhost,
+	.variantOutline,
+	.variantDestructiveOutline {
+		--button-background: var(--secondary);
+		--button-foreground: var(--secondary-foreground);
+		--button-hover: color-mix(
+			in oklab,
+			var(--secondary) 92%,
+			var(--foreground)
+		);
+	}
+
+	.variantDestructive {
+		--button-background: var(--destructive);
+		--button-foreground: #fff;
+		--button-hover: color-mix(
+			in oklab,
+			var(--destructive) 90%,
+			var(--background)
+		);
+	}
+
+	.variantOutline,
+	.variantDestructiveOutline {
+		box-shadow: inset 0 0 0 1px var(--border);
+	}
+
+	.variantDestructiveOutline {
+		--button-foreground: var(--destructive-foreground);
+	}
+
+	.variantLink {
+		--button-background: transparent;
+		--button-foreground: var(--foreground);
+		--button-hover: var(--secondary);
+
+		text-underline-offset: 4px;
 	}
 	.loadingIndicator {
 		pointer-events: none;
@@ -415,6 +254,28 @@
 		border-radius: var(--radius-control);
 		font-size: var(--text-control);
 		line-height: 20px;
+
+		background-color: var(--button-background);
+		color: var(--button-foreground);
+
+		@media (hover: hover) {
+			&:hover:not(:disabled, [aria-disabled="true"]) {
+				background-color: var(--button-hover);
+			}
+		}
+
+		&[data-pressed]:not(:disabled, [aria-disabled="true"]) {
+			background-color: var(--button-hover);
+		}
+
+		&[data-loading] {
+			color: transparent;
+		}
+
+		& > [data-slot="button-loading-indicator"] {
+			color: var(--button-foreground);
+		}
+
 		@media (prefers-reduced-motion: no-preference) {
 			transition:
 				background-color var(--duration-control),
@@ -424,10 +285,25 @@
 		}
 	}
 	.root[aria-pressed="true"] {
-		background: var(--accent-bg);
-		color: var(--accent-foreground);
-		border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+		--button-background: var(--action-primary-bg);
+		--button-foreground: var(--action-primary-fg);
+		--button-hover: var(--action-primary-hover);
+
 		box-shadow: inset 0 1px 2px #00000008;
+	}
+
+	table .root {
+		--button-background: var(--secondary);
+		--button-foreground: var(--secondary-foreground);
+		--button-hover: color-mix(
+			in oklab,
+			var(--secondary) 92%,
+			var(--foreground)
+		);
+	}
+
+	table .root[aria-pressed="true"] {
+		--button-background: var(--button-hover);
 	}
 	.root:active:not(:disabled, [aria-disabled="true"]) {
 		transform: translateY(1px);
@@ -438,23 +314,18 @@
 		}
 	}
 
-	.root[data-variant="default"][aria-disabled="true"]:not([data-loading]),
-	.root[data-variant="secondary"][aria-disabled="true"]:not([data-loading]) {
-		background: var(--muted);
-		color: var(--muted-foreground);
-		border-color: var(--border);
+	.root[aria-disabled="true"]:not([data-loading]) {
+		opacity: 0.64;
 		box-shadow: none;
-		opacity: 1;
 	}
 
-	.root[data-variant="default"] {
-		box-shadow: var(--shadow-control);
-	}
-	.root[data-variant="default"]:hover:not(:disabled, [aria-disabled="true"]),
-	.root[data-variant="default"][data-pressed]:not(
+	.root:is(.variantDefault, .variantSecondary):is(
 			:disabled,
 			[aria-disabled="true"]
-		) {
-		background: var(--accent-hover);
+		):not([data-loading]) {
+		--button-background: var(--muted);
+		--button-foreground: var(--muted-foreground);
+
+		opacity: 1;
 	}
 }

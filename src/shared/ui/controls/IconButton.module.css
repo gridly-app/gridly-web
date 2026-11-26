@@ -15,6 +15,8 @@
 
 @media (pointer: coarse) {
 	.icon[data-action-icon] {
+		width: 44px;
+		height: 44px;
 		min-width: 44px;
 		min-height: 44px;
 		flex-basis: 44px;

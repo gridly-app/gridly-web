@@ -60,10 +60,9 @@
 	--shadow-panel: 0 2px 4px #18181b05, 0 12px 32px -20px #18181b1a;
 	--shadow-floating: 0 2px 6px #18181b0d, 0 16px 40px -12px #18181b26;
 
-	--action-secondary-bg: #e7f3eb;
-	--action-secondary-hover: #d4eada;
-	--action-secondary-fg: #205d3c;
-	--action-secondary-border: #b6d7c2;
+	--action-primary-bg: #197344;
+	--action-primary-hover: #145c37;
+	--action-primary-fg: #fff;
 }
 
 :root {
@@ -170,10 +169,9 @@
 	--shadow-panel: 0 2px 4px #00000014, 0 12px 32px -20px #00000066;
 	--shadow-floating: 0 2px 6px #00000024, 0 16px 40px -12px #00000080;
 
-	--action-secondary-bg: var(--secondary);
-	--action-secondary-hover: var(--accent-bg);
-	--action-secondary-fg: var(--secondary-foreground);
-	--action-secondary-border: var(--border);
+	--action-primary-bg: #86efac;
+	--action-primary-hover: #a7f3c1;
+	--action-primary-fg: #142b1d;
 }
 
 @media (width <= 580px) {

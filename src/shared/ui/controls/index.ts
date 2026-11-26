@@ -4,5 +4,5 @@ export { Switch } from "../spaceui/switch";
 export { Textarea } from "../spaceui/textarea";
 export { Toolbar, ToolbarGroup } from "../spaceui/toolbar";
 export { Button } from "./Button";
-export { IconButton } from "./IconButton";
+export { IconButton, IconLink } from "./IconButton";
 export { StableLabel } from "./StableLabel";
