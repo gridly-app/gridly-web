@@ -32,3 +32,9 @@ test-results
 *.local
 
 .artifacts/
+
+/docs/*
+!/docs/cities-source.md
+!/docs/react-bits-LICENSE.md
+!/docs/react-bits-sources.json
+!/docs/spaceui-sources.json
