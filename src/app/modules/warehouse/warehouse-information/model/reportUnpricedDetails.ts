@@ -6,6 +6,7 @@ import {
 	stockZoneNames,
 	type WarehouseView,
 } from "@/domain/warehouse";
+
 import { warehouseDay } from "./reportPeriod";
 
 export interface UnpricedDetail {
@@ -14,6 +15,7 @@ export interface UnpricedDetail {
 	quantity: number;
 	source: string;
 }
+
 export type UnpricedSection = "inbound" | "outbound" | "stock" | "writeOffs";
 
 export function reportUnpricedDetails(
@@ -23,48 +25,54 @@ export function reportUnpricedDetails(
 	stock: Stock[],
 	writeOffs: WarehouseView<"history">["writeOffs"],
 ): Record<UnpricedSection, UnpricedDetail[]> {
-	const productName = (id: string) => products.get(id)?.name ?? `Товар ${id}`;
-	const orderDetails = (kind: Order["kind"]): UnpricedDetail[] =>
-		orders
+	const zoneName = stockZoneNames(warehouse.cells);
+
+	function productName(id: string) {
+		return products.get(id)?.name ?? `Товар ${id}`;
+	}
+
+	function isUnpriced(item: { product: string; quantity: number }) {
+		return (
+			productPrice(products.get(item.product)?.price) === null &&
+			item.quantity > 0
+		);
+	}
+
+	function orderDetails(kind: Order["kind"]): UnpricedDetail[] {
+		return orders
 			.filter((order) => order.kind === kind)
 			.flatMap((order) =>
-				order.lines.flatMap((line, index) =>
-					productPrice(products.get(line.product)?.price) === null &&
-					line.quantity > 0
-						? [
-								{
-									id: `${order.id}:${index}`,
-									productName: productName(line.product),
-									quantity: line.quantity,
-									source: `Заказ ${order.number}`,
-								},
-							]
-						: [],
-				),
+				order.lines
+					.map((line, index) => ({ line, id: `${order.id}:${index}` }))
+					.filter(({ line }) => isUnpriced(line))
+					.map(({ line, id }) => ({
+						id,
+						productName: productName(line.product),
+						quantity: line.quantity,
+						source: `Заказ ${order.number}`,
+					})),
 			);
-	const zoneName = stockZoneNames(warehouse.cells);
+	}
+
+	const stockDetails = stock.filter(isUnpriced).map((item) => ({
+		id: item.id,
+		productName: productName(item.product),
+		quantity: item.quantity,
+		source: `Партия ${item.id} · ${zoneName(item)}`,
+	}));
+	const writeOffDetails = (writeOffs ?? [])
+		.filter((item) => item.price === null && item.quantity > 0)
+		.map((item) => ({
+			id: item.id,
+			productName: productName(item.product),
+			quantity: item.quantity,
+			source: `${warehouseDay(item.time, warehouse.timezone)} · ${item.reason}`,
+		}));
+
 	return {
 		inbound: orderDetails("inbound"),
 		outbound: orderDetails("outbound"),
-		stock: stock
-			.filter(
-				(item) =>
-					productPrice(products.get(item.product)?.price) === null &&
-					item.quantity > 0,
-			)
-			.map((item) => ({
-				id: item.id,
-				productName: productName(item.product),
-				quantity: item.quantity,
-				source: `Партия ${item.id} · ${zoneName(item)}`,
-			})),
-		writeOffs: (writeOffs ?? [])
-			.filter((item) => item.price === null && item.quantity > 0)
-			.map((item) => ({
-				id: item.id,
-				productName: productName(item.product),
-				quantity: item.quantity,
-				source: `${warehouseDay(item.time, warehouse.timezone)} · ${item.reason}`,
-			})),
+		stock: stockDetails,
+		writeOffs: writeOffDetails,
 	};
 }

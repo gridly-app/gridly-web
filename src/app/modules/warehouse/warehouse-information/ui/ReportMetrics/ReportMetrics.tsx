@@ -7,7 +7,7 @@ import {
 } from "@tabler/icons-react";
 import { Card } from "@/shared/ui/dataDisplay";
 import { WarmTooltip } from "@/shared/ui/overlays";
-import type { WarehouseReport } from "../../model/chartData";
+import type { WarehouseReport } from "../../model/report";
 import styles from "./ReportMetrics.module.css";
 
 export function ReportMetrics({

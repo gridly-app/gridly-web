@@ -1,32 +1,46 @@
+import type { WarehouseReport } from "./report";
 import {
-	type buildReport,
+	dayMs,
+	periodDays,
 	type ReportFilters,
 	shiftDay,
 	warehouseDay,
-} from "./report";
+} from "./reportPeriod";
 import type { ReportWarehouse } from "./warehouseResources";
 
-export type WarehouseReport = ReturnType<typeof buildReport>;
+export type TrafficMetric = "quantity" | "orders";
+
+export type TrafficGranularity = "day" | "week";
+
 export interface TrafficBucket {
 	from: string;
 	to: string;
 	inbound: number;
 	outbound: number;
 }
+
+const maxBuckets = 90;
+const weekDays = 7;
+
+function bucketStep(totalDays: number, granularity: TrafficGranularity) {
+	const minimumStep = granularity === "week" ? weekDays : 1;
+
+	return Math.max(minimumStep, Math.ceil(totalDays / maxBuckets));
+}
+
 export function trafficBuckets(
 	orders: WarehouseReport["orders"],
 	filters: ReportFilters,
-	metric: "quantity" | "orders",
-	granularity: "day" | "week",
+	metric: TrafficMetric,
+	granularity: TrafficGranularity,
 	timezone: string,
 ): TrafficBucket[] {
 	const start = Date.parse(filters.from);
-	const totalDays = Math.floor((Date.parse(filters.to) - start) / 86400000) + 1;
+	const totalDays = periodDays(filters);
+
 	if (!Number.isFinite(totalDays) || totalDays < 1) return [];
-	const step = Math.max(
-		granularity === "week" ? 7 : 1,
-		Math.ceil(totalDays / 90),
-	);
+
+	const step = bucketStep(totalDays, granularity);
 	const buckets = Array.from(
 		{ length: Math.ceil(totalDays / step) },
 		(_, index) => ({
@@ -39,45 +53,46 @@ export function trafficBuckets(
 			outbound: 0,
 		}),
 	);
+
 	for (const order of orders) {
 		const offset = Math.floor(
-			(Date.parse(warehouseDay(order.created, timezone)) - start) / 86400000,
+			(Date.parse(warehouseDay(order.created, timezone)) - start) / dayMs,
 		);
 		const bucket = buckets[Math.floor(offset / step)];
-		if (bucket)
-			bucket[order.kind] +=
-				metric === "orders"
-					? 1
-					: order.lines.reduce((sum, line) => sum + line.quantity, 0);
+		const amount =
+			metric === "orders"
+				? 1
+				: order.lines.reduce((sum, line) => sum + line.quantity, 0);
+
+		if (bucket) bucket[order.kind] += amount;
 	}
+
 	return buckets;
 }
+
 export function stockCategories(warehouse: ReportWarehouse) {
 	const products = new Map(
 		warehouse.products.map((product) => [product.id, product]),
 	);
-	const categories = new Map(
+	const categoryNames = new Map(
 		warehouse.categories.map((category) => [category.id, category.name]),
 	);
 	const totals = new Map<
 		string,
 		{ id: string; label: string; quantity: number }
 	>();
+
 	for (const stock of warehouse.stock) {
 		const id = products.get(stock.product)?.category ?? "";
 		const item = totals.get(id) ?? {
 			id,
-			label: categories.get(id) ?? "Без категории",
+			label: categoryNames.get(id) ?? "Без категории",
 			quantity: 0,
 		};
+
 		item.quantity += stock.quantity;
 		totals.set(id, item);
 	}
+
 	return [...totals.values()].sort((a, b) => b.quantity - a.quantity);
 }
-export const shortDay = (day: string) =>
-	new Date(`${day}T00:00:00Z`).toLocaleDateString("ru-RU", {
-		day: "numeric",
-		month: "short",
-		timeZone: "UTC",
-	});

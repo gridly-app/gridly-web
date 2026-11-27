@@ -1,7 +1,7 @@
 import { statusLabels } from "@/domain/warehouse";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
-import type { WarehouseReport } from "../../model/chartData";
+import type { WarehouseReport } from "../../model/report";
 import chartStyles from "../../shared.module.css";
 import { Donut } from "../Donut/Donut";
 

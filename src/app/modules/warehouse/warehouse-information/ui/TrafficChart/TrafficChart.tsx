@@ -3,8 +3,9 @@ import { Button } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
 import { SegmentedControl } from "@/shared/ui/navigation";
-import { trafficBuckets, type WarehouseReport } from "../../model/chartData";
-import { previousPeriod, type ReportFilters } from "../../model/report";
+import { trafficBuckets } from "../../model/chartData";
+import { type WarehouseReport } from "../../model/report";
+import { previousPeriod, type ReportFilters } from "../../model/reportPeriod";
 import chartStyles from "../../shared.module.css";
 import { TrafficPlot } from "../TrafficPlot/TrafficPlot";
 

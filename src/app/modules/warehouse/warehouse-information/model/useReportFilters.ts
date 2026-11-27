@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { WarehouseView } from "@/domain/warehouse";
-import { type ReportFilters, shiftDay, warehouseDay } from "./report";
+import { type ReportFilters, shiftDay, warehouseDay } from "./reportPeriod";
 
 export type ReportRange = Pick<ReportFilters, "from" | "to">;
 export const reportOrderPageSize = 8;

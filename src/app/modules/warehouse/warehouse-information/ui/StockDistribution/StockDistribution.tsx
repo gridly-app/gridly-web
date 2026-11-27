@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Badge } from "@/shared/ui/dataDisplay";
-import type { WarehouseReport } from "../../model/chartData";
+import type { WarehouseReport } from "../../model/report";
 import chartStyles from "../../shared.module.css";
 import { Donut } from "../Donut/Donut";
 

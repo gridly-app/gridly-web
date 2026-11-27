@@ -12,8 +12,9 @@ import {
 	useTableColumns,
 } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
-import { shortDay, type WarehouseReport } from "../../model/chartData";
-import { warehouseDay } from "../../model/report";
+import { formatShortDay as shortDay } from "../../model/reportPeriod";
+import { type WarehouseReport } from "../../model/report";
+import { warehouseDay } from "../../model/reportPeriod";
 import {
 	type ReportRange,
 	reportOrderPageSize,

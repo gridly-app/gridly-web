@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/shared/ui/navigation";
-import { shortDay, type TrafficBucket } from "../../model/chartData";
+import { formatShortDay as shortDay } from "../../model/reportPeriod";
+import { type TrafficBucket } from "../../model/chartData";
 import {
 	BOTTOM,
 	LEFT,

@@ -1,51 +1,70 @@
 import { productPrice } from "@/domain/warehouse";
 import { encodeCsv } from "@/shared/lib";
-import { buildReport, previousPeriod, type ReportFilters } from "./report";
+
+import { buildReport } from "./report";
+import { previousPeriod, type ReportFilters } from "./reportPeriod";
 import type { ReportWarehouse } from "./warehouseResources";
+
+type CsvRow = (string | number | null)[];
+
+const orderHeader = [
+	"Номер",
+	"Тип",
+	"Статус",
+	"Создан",
+	"Количество",
+	"Стоимость известных цен",
+	"Без цены, шт.",
+];
 
 export function reportCsv(warehouse: ReportWarehouse, filters: ReportFilters) {
 	const report = buildReport(warehouse, filters);
-	const rows: (string | number | null)[][] = [
+	const prices = new Map(
+		warehouse.products.map((product) => [
+			product.id,
+			productPrice(product.price),
+		]),
+	);
+	const rows: CsvRow[] = [
 		["Склад", warehouse.name],
 		["Период", filters.from, filters.to],
 		["Тип", filters.kind],
 		["Статус", filters.status],
 		["Категория", filters.category],
 		["Оценка по текущим ценам каталога"],
-		[
-			"Номер",
-			"Тип",
-			"Статус",
-			"Создан",
-			"Количество",
-			"Стоимость известных цен",
-			"Без цены, шт.",
-		],
+		orderHeader,
 	];
 
-	const prices = new Map(
-		warehouse.products.map((p) => [p.id, productPrice(p.price)]),
-	);
-	for (const o of report.orders) {
-		const money = o.lines.reduce(
-			(sum, line) => {
-				const price = prices.get(line.product);
-				if (price == null) sum.unknown += line.quantity;
-				else sum.value += price * line.quantity;
-				return sum;
-			},
-			{ value: 0, unknown: 0 },
-		);
+	for (const order of report.orders) {
+		let value = 0;
+		let unpriced = 0;
+		let quantity = 0;
+
+		for (const line of order.lines) {
+			const price = prices.get(line.product);
+
+			quantity += line.quantity;
+
+			if (price == null) {
+				unpriced += line.quantity;
+
+				continue;
+			}
+
+			value += price * line.quantity;
+		}
+
 		rows.push([
-			o.number,
-			o.kind,
-			o.status,
-			o.created,
-			o.lines.reduce((n, l) => n + l.quantity, 0),
-			money.value,
-			money.unknown,
+			order.number,
+			order.kind,
+			order.status,
+			order.created,
+			quantity,
+			value,
+			unpriced,
 		]);
 	}
+
 	rows.push(
 		["Текущие остатки, шт.", report.stockQuantity],
 		["Стоимость текущих остатков", report.stockValue],
@@ -53,15 +72,23 @@ export function reportCsv(warehouse: ReportWarehouse, filters: ReportFilters) {
 		["Списано, шт.", report.writeOffQuantity ?? "Нет данных"],
 		["Стоимость списаний", report.writeOffValue ?? "Нет данных"],
 	);
-	if (filters.compare) {
-		const previous = previousPeriod(filters);
-		const result = buildReport(warehouse, previous);
-		rows.push(
-			["Предыдущий период", previous.from, previous.to],
-			["Заказов в предыдущем периоде", result.orders.length],
-			["Оценка поставок", result.inbound.value],
-			["Оценка отгрузок", result.outbound.value],
-		);
-	}
+
+	if (filters.compare) rows.push(...previousPeriodRows(warehouse, filters));
+
 	return encodeCsv(rows, { separator: ";", includeBom: true });
+}
+
+function previousPeriodRows(
+	warehouse: ReportWarehouse,
+	filters: ReportFilters,
+): CsvRow[] {
+	const previous = previousPeriod(filters);
+	const report = buildReport(warehouse, previous);
+
+	return [
+		["Предыдущий период", previous.from, previous.to],
+		["Заказов в предыдущем периоде", report.orders.length],
+		["Оценка поставок", report.inbound.value],
+		["Оценка отгрузок", report.outbound.value],
+	];
 }

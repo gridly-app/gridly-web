@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import type { Order } from "@/domain/warehouse";
 
 import { trafficBuckets } from "./chartData";
-import type { ReportFilters } from "./report";
+import type { ReportFilters } from "./reportPeriod";
 
 test("weekly chart includes both warehouse date boundaries and counts orders or units", () => {
 	const filters: ReportFilters = {

@@ -1,6 +1,7 @@
 import { Button } from "@/shared/ui/controls";
 import { WarmTooltip } from "@/shared/ui/overlays";
-import { shortDay, type TrafficBucket } from "../../model/chartData";
+import { formatShortDay as shortDay } from "../../model/reportPeriod";
+import { type TrafficBucket } from "../../model/chartData";
 import {
 	BOTTOM,
 	TOP,

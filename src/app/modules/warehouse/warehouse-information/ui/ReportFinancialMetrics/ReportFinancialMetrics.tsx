@@ -4,8 +4,9 @@ import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { Button } from "@/shared/ui/controls";
 import { Card, CardPanel } from "@/shared/ui/dataDisplay";
-import type { WarehouseReport } from "../../model/chartData";
-import type { ReportFilters, UnpricedSection } from "../../model/report";
+import type { WarehouseReport } from "../../model/report";
+import type { ReportFilters } from "../../model/reportPeriod";
+import type { UnpricedSection } from "../../model/reportUnpricedDetails";
 import styles from "./ReportFinancialMetrics.module.css";
 
 interface ReportFinancialMetricsProps {
