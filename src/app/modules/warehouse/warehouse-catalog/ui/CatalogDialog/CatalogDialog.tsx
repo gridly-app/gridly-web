@@ -38,7 +38,7 @@ export function CatalogDialog({
 					) : (
 						<CategoryForm
 							category={dialog.item}
-							pending={pending}
+							isPending={pending}
 							onSave={onSaveCategory}
 						/>
 					)}

@@ -1,43 +1,72 @@
 import { useState } from "react";
-import type {
-	Category,
-	CommandExecutor,
-	WarehouseLayout,
-} from "@/domain/warehouse";
+
+import type { Category, CommandExecutor } from "@/domain/warehouse";
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { Feedback } from "@/shared/ui/feedback";
 import { FormShell, Select } from "@/shared/ui/forms";
+
 import {
 	assignedStorageCells,
 	categoryStorageRows,
 	categoryStorageZones,
+	type StorageZoneRow,
 } from "../../model/categoryStorage";
-import type { CatalogWarehouse } from "../../model/warehouseResources";
+import type { CatalogLayoutWarehouse } from "../../model/warehouseResources";
 import { StorageZoneFields } from "../StorageZoneFields/StorageZoneFields";
+
+const assignmentOptions = [
+	{ value: "all", label: "Все зоны" },
+	{ value: "assigned", label: "Закреплены за категорией" },
+	{ value: "unassigned", label: "Без категории" },
+];
 
 export function CategoryStorage({
 	category,
 	warehouse,
 	execute,
-	pending,
+	isPending,
 }: {
 	category: Category;
-	warehouse: CatalogWarehouse & WarehouseLayout;
+	warehouse: CatalogLayoutWarehouse;
 	execute: CommandExecutor;
-	pending: boolean;
+	isPending: boolean;
 }) {
 	const [search, setSearch] = useState("");
 	const [assignment, setAssignment] = useState("all");
 	const zones = categoryStorageZones(category.id, warehouse.cells);
-	const hasDraft = !!warehouse.draft;
+	const hasDraft = Boolean(warehouse.draft);
 	const canEdit =
-		!!warehouse.allowedActions?.includes("save-map") &&
+		Boolean(warehouse.allowedActions?.includes("save-map")) &&
 		!hasDraft &&
 		!category.archived;
+	const rows = categoryStorageRows(
+		zones,
+		warehouse.stock,
+		category.id,
+		canEdit,
+	);
+	const searchQuery = search.trim().toLowerCase();
+	const isEditable = canEdit && zones.size > 0;
+	const searchField = {
+		"aria-label": "Поиск по зонам хранения",
+		value: search,
+		onChange: setSearch,
+	};
 
-	async function save(data: FormData) {
+	function matchesFilters(row: StorageZoneRow) {
+		const matchesAssignment =
+			assignment === "all" || row.isAssigned === (assignment === "assigned");
+
+		return matchesAssignment && row.name.toLowerCase().includes(searchQuery);
+	}
+
+	const hasNoResults = !rows.some(matchesFilters);
+
+	async function handleSave(data: FormData) {
 		const cells = assignedStorageCells(data, warehouse.cells, zones, category);
+
 		if (!cells) return;
+
 		await execute("saveMap", {
 			cells,
 			routes: warehouse.routePlans ?? [],
@@ -45,31 +74,30 @@ export function CategoryStorage({
 		});
 	}
 
-	const rows = categoryStorageRows(
-		zones,
-		warehouse.stock,
-		category.id,
-		canEdit,
+	function handleResetAssignment() {
+		setAssignment("all");
+	}
+
+	function handleInvalidZone() {
+		setSearch("");
+		setAssignment("all");
+	}
+
+	const zoneFields = (
+		<>
+			{rows.map((row) => (
+				<StorageZoneFields
+					key={row.id}
+					row={row}
+					isVisible={matchesFilters(row)}
+					canEdit={canEdit}
+					isPending={isPending}
+					onInvalid={handleInvalidZone}
+				/>
+			))}
+			{hasNoResults && <p>Нет зон по выбранным фильтрам и поиску.</p>}
+		</>
 	);
-	const query = search.trim().toLowerCase();
-	const matchesFilters = (row: (typeof rows)[number]) =>
-		(assignment === "all" || row.assigned === (assignment === "assigned")) &&
-		row.name.toLowerCase().includes(query);
-	const zoneElements = rows.map((row) => (
-		<StorageZoneFields
-			key={row.id}
-			row={row}
-			visible={matchesFilters(row)}
-			canEdit={canEdit}
-			pending={pending}
-			onInvalid={() => {
-				setSearch("");
-				setAssignment("all");
-			}}
-		/>
-	));
-	const noResults = !rows.some(matchesFilters);
-	const emptyMessage = <p>Нет зон по выбранным фильтрам и поиску.</p>;
 
 	return (
 		<>
@@ -80,45 +108,33 @@ export function CategoryStorage({
 			)}
 			{rows.length > 0 && (
 				<ListFilters
-					search={{
-						"aria-label": "Поиск по зонам хранения",
-						value: search,
-						onChange: setSearch,
-					}}
+					search={searchField}
 					count={Number(assignment !== "all")}
-					onReset={() => setAssignment("all")}
+					onReset={handleResetAssignment}
 				>
 					<Select
 						aria-label="Закрепление зоны"
 						value={assignment}
 						onValueChange={setAssignment}
-						options={[
-							{ value: "all", label: "Все зоны" },
-							{ value: "assigned", label: "Закреплены за категорией" },
-							{ value: "unassigned", label: "Без категории" },
-						]}
+						options={assignmentOptions}
 					/>
 				</ListFilters>
 			)}
-			{canEdit && zones.size > 0 ? (
+			{isEditable && (
 				<FormShell
-					onSubmit={save}
-					pending={pending}
+					onSubmit={handleSave}
+					pending={isPending}
 					submitLabel="Сохранить правила хранения"
 				>
 					<p>
 						Отметьте зоны для этой категории. Указанный лимит применяется к
 						каждой клетке выбранной зоны.
 					</p>
-					{zoneElements}
-					{noResults && emptyMessage}
+					{zoneFields}
 				</FormShell>
-			) : rows.length > 0 ? (
-				<>
-					{zoneElements}
-					{noResults && emptyMessage}
-				</>
-			) : (
+			)}
+			{!isEditable && rows.length > 0 && zoneFields}
+			{!isEditable && rows.length === 0 && (
 				<p>Для категории пока нет зон хранения.</p>
 			)}
 		</>

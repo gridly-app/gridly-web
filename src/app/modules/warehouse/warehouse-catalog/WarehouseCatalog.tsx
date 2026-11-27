@@ -136,7 +136,7 @@ export function WarehouseCatalog() {
 					category={currentCategory}
 					warehouse={warehouse}
 					execute={execute}
-					pending={pending}
+					isPending={pending}
 					onSave={saveCategory}
 					onClose={close}
 				/>

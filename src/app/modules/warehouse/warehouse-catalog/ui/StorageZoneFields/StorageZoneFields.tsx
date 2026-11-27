@@ -1,42 +1,45 @@
 import { Checkbox, Input } from "@/shared/ui/controls";
 import { Field, Label } from "@/shared/ui/forms";
+
 import type { StorageZoneRow } from "../../model/categoryStorage";
+
 import styles from "./StorageZoneFields.module.css";
 
-const number = new Intl.NumberFormat("ru-RU");
+const numberFormat = new Intl.NumberFormat("ru-RU");
 
 export function StorageZoneFields({
 	row,
-	visible,
+	isVisible,
 	canEdit,
-	pending,
+	isPending,
 	onInvalid,
 }: {
 	row: StorageZoneRow;
-	visible: boolean;
+	isVisible: boolean;
 	canEdit: boolean;
-	pending: boolean;
+	isPending: boolean;
 	onInvalid: () => void;
 }) {
 	const {
 		id,
 		name,
-		assigned,
+		isAssigned,
 		cellCount,
 		capacity,
 		quantity,
-		uniform,
+		isUniform,
 		firstCapacity,
 	} = row;
+
 	return (
-		<section className={styles.zone} hidden={!visible}>
+		<section className={styles.zone} hidden={!isVisible}>
 			{canEdit ? (
 				<Label>
 					<Checkbox
 						name="zone"
 						value={id}
-						defaultChecked={assigned}
-						disabled={pending}
+						defaultChecked={isAssigned}
+						disabled={isPending}
 					/>
 					{name}
 				</Label>
@@ -44,8 +47,8 @@ export function StorageZoneFields({
 				<strong>{name}</strong>
 			)}
 			<p>
-				{cellCount} кл. · вместимость {number.format(capacity)} м³ · на хранении{" "}
-				{number.format(quantity)} шт.
+				{cellCount} кл. · вместимость {numberFormat.format(capacity)} м³ · на
+				хранении {numberFormat.format(quantity)} шт.
 			</p>
 			{canEdit && (
 				<Field label={`Лимит на клетку, м³ · ${name}`}>
@@ -54,9 +57,9 @@ export function StorageZoneFields({
 						min={0}
 						step="any"
 						name={`capacity:${id}`}
-						defaultValue={uniform ? firstCapacity : undefined}
-						placeholder={uniform ? undefined : "Разные лимиты в клетках"}
-						disabled={pending}
+						defaultValue={isUniform ? firstCapacity : undefined}
+						placeholder={isUniform ? undefined : "Разные лимиты в клетках"}
+						disabled={isPending}
 						onInvalid={onInvalid}
 					/>
 				</Field>
