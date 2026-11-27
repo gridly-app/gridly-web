@@ -1,37 +1,35 @@
 import { useState } from "react";
 
-import { useWorkspaceMode } from "@/ports/session";
-
-import { type HttpClient, isAccessDenied } from "@/shared/http";
-import { useAdminUsers } from "./api/usersApi";
-
 import { adminLocation } from "@/ports/navigation";
+import { useWorkspaceMode } from "@/ports/session";
+import { type HttpClient, isAccessDenied } from "@/shared/http";
+import { errorMessage } from "@/shared/lib";
+import { Button } from "@/shared/ui/controls";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { managementStyles as styles } from "@/shared/ui/management";
+import { Link } from "@/shared/ui/navigation";
+
 import {
-	type EditableAccount,
 	type AuditUser,
-	type Permission,
 	isEditableAccount,
+	type Permission,
 } from "./api/users.dto";
+import { useAdminUsers } from "./api/usersApi";
+import { canEditAccount } from "./model/accountActions";
+import { useUserActions } from "./model/useUserActions";
 import {
 	defaultUserFilters,
 	filterAdminUsers,
 	userWarehouseOptions,
 } from "./model/userFilters";
-
-import { errorMessage } from "@/shared/lib";
-import { Button } from "@/shared/ui/controls";
 import { AddWarehouseMember } from "./ui/AddWarehouseMember/AddWarehouseMember";
-import { Feedback, RetryButton } from "@/shared/ui/feedback";
-import { Link } from "@/shared/ui/navigation";
-
-import { UsersFilters } from "./ui/UsersFilters/UsersFilters";
-import { managementStyles as styles } from "@/shared/ui/management";
-import { UsersTable } from "./ui/UsersTable/UsersTable";
-import localStyles from "./Users.module.css";
-import { UserAccessEditor } from "./ui/UserAccessEditor/UserAccessEditor";
-
 import { UserAccessConflict } from "./ui/UserAccessConflict/UserAccessConflict";
+import { UserAccessEditor } from "./ui/UserAccessEditor/UserAccessEditor";
 import { UserRemovalDialog } from "./ui/UserRemovalDialog/UserRemovalDialog";
+import { UsersFilters } from "./ui/UsersFilters/UsersFilters";
+import { UsersTable } from "./ui/UsersTable/UsersTable";
+
+import localStyles from "./Users.module.css";
 
 const emptyPermissions: Permission[] = [];
 const emptyUsers: AuditUser[] = [];
@@ -45,57 +43,56 @@ export function Users({
 	userId: string | null;
 	userKind: AuditUser["kind"] | undefined;
 }) {
-	const [action, setAction] = useState<{
-		type: "edit" | "delete";
-		user: EditableAccount;
-		warehouseId?: string | undefined;
-	} | null>(null);
-	const [adding, setAdding] = useState(false);
-	const editing = action?.type === "edit" ? action.user : null;
-	const deleting = action?.type === "delete" ? action.user : null;
-	const warehouseId =
-		action?.type === "delete" ? action.warehouseId : undefined;
-	const [notice, setNotice] = useState<{
-		text: string;
-		tone: "success" | "info";
-	} | null>(null);
 	const [filters, setFilters] = useState(defaultUserFilters);
+	const actions = useUserActions();
 	const mode = useWorkspaceMode();
 	const query = useAdminUsers(http, mode);
-	const isDenied = isAccessDenied(query.error);
-	const data = isDenied ? undefined : query.data;
+	const data = isAccessDenied(query.error) ? undefined : query.data;
 	const users = data?.items ?? emptyUsers;
 	const catalog = data?.permission_catalog;
-	const permissions = catalog ?? emptyPermissions;
 	const canAdd =
-		!!catalog && !!data?.allowed_actions.includes("add-warehouse-member");
-	const hasRefreshError = !!data && !!query.error;
-	const rows = filterAdminUsers(users, filters, permissions, userId, userKind);
-	const locations = userWarehouseOptions(users);
-	const latest = users.find(
-		(user) => editing?.id === user.id && isEditableAccount(user),
+		Boolean(catalog) &&
+		Boolean(data?.allowed_actions.includes("add-warehouse-member"));
+	const hasRefreshError = Boolean(data) && Boolean(query.error);
+	const hasLoadError = Boolean(query.error) && !hasRefreshError;
+	const rows = filterAdminUsers(
+		users,
+		filters,
+		catalog ?? emptyPermissions,
+		userId,
+		userKind,
 	);
+	const { editing, deleting } = actions;
+	const latest = users
+		.filter(isEditableAccount)
+		.find((user) => user.id === editing?.id);
 	const replacement =
-		latest && isEditableAccount(latest) && latest.revision !== editing?.revision
-			? latest
-			: null;
-
-	function handleEdit(user: EditableAccount) {
-		setNotice(null);
-		setAction({ type: "edit", user });
-	}
-
-	function handleDelete(user: EditableAccount, warehouseId?: string) {
-		setNotice(null);
-		setAction({ type: "delete", user, warehouseId });
-	}
-
-	function handleCloseEditor() {
-		setAction(null);
-	}
+		latest && latest.revision !== editing?.revision ? latest : null;
+	const latestActions = latest?.allowed_actions ?? [];
 
 	function handleRestartEdit() {
-		if (replacement) setAction({ type: "edit", user: replacement });
+		if (replacement) actions.startEdit(replacement);
+	}
+
+	function handleRemoved(warehouseId: string | undefined) {
+		actions.finish(
+			warehouseId ? "Доступ к складу отозван." : "Аккаунт деактивирован.",
+		);
+	}
+
+	function handleRemovalUnavailable() {
+		actions.finish(
+			"Действие для этого пользователя больше недоступно.",
+			"info",
+		);
+	}
+
+	function handleSave() {
+		actions.finish("Данные пользователя сохранены.");
+	}
+
+	function handleAdded() {
+		actions.finish("Участник добавлен на склад.");
 	}
 
 	function renderConflict() {
@@ -110,71 +107,26 @@ export function Users({
 		);
 	}
 
-	function handleRemoved(warehouseId: string | undefined) {
-		setAction(null);
-		setNotice({
-			text: warehouseId ? "Доступ к складу отозван." : "Аккаунт деактивирован.",
-			tone: "success",
-		});
-	}
-
-	function handleReplaceRemoval(user: EditableAccount) {
-		setAction({ type: "delete", user, warehouseId });
-	}
-
-	function handleRemovalUnavailable() {
-		setAction(null);
-		setNotice({
-			text: "Действие для этого пользователя больше недоступно.",
-			tone: "info",
-		});
-	}
-
-	function handleSave() {
-		setAction(null);
-		setNotice({ text: "Данные пользователя сохранены.", tone: "success" });
-	}
-
-	function handleOpenAdd() {
-		setNotice(null);
-		setAdding(true);
-	}
-
-	function handleCloseAdd() {
-		setAdding(false);
-	}
-
-	function handleAdded() {
-		setAdding(false);
-		setNotice({ text: "Участник добавлен на склад.", tone: "success" });
-	}
-
-	const latestActions =
-		latest && isEditableAccount(latest) ? latest.allowed_actions : [];
-	const canEditLatest = latestActions.some((permission) =>
-		["edit-profile", "edit-memberships"].includes(permission),
-	);
-
 	return (
 		<section className={styles.panel} aria-label="Пользователи">
 			<div className={`${styles.toolbar} ${localStyles.toolbar}`}>
 				<UsersFilters
 					filters={filters}
-					locations={locations}
+					locations={userWarehouseOptions(users)}
 					onChange={setFilters}
 				/>
 				{canAdd && (
-					<Button className={localStyles.add} onClick={handleOpenAdd}>
+					<Button className={localStyles.add} onClick={actions.openAdd}>
 						Добавить участника на склад
 					</Button>
 				)}
 			</div>
-			{adding && canAdd && catalog && (
+			{actions.isAdding && canAdd && catalog && (
 				<AddWarehouseMember
 					http={http}
 					permissions={catalog}
 					warehouseIds={data?.manageable_warehouse_ids}
-					onClose={handleCloseAdd}
+					onClose={actions.closeAdd}
 					onAdded={handleAdded}
 				/>
 			)}
@@ -186,7 +138,7 @@ export function Users({
 			{query.isPending && (
 				<Feedback tone="loading">Загружаем пользователей…</Feedback>
 			)}
-			{query.error && !hasRefreshError && (
+			{hasLoadError && (
 				<Feedback tone="error" action={<RetryButton onRetry={query.refetch} />}>
 					{errorMessage(query.error)}
 				</Feedback>
@@ -199,15 +151,17 @@ export function Users({
 					Не удалось обновить список. Показаны последние загруженные данные.
 				</Feedback>
 			)}
-			{notice && <Feedback tone={notice.tone}>{notice.text}</Feedback>}
-			{editing && canEditLatest && (
+			{actions.notice && (
+				<Feedback tone={actions.notice.tone}>{actions.notice.text}</Feedback>
+			)}
+			{editing && canEditAccount(latestActions) && (
 				<UserAccessEditor
 					key={editing.revision}
 					http={http}
 					user={{ ...editing, allowed_actions: latestActions }}
 					permissions={catalog}
 					manageableWarehouseIds={data?.manageable_warehouse_ids}
-					onClose={handleCloseEditor}
+					onClose={actions.closeAction}
 					onSave={handleSave}
 					renderConflict={renderConflict}
 				/>
@@ -217,13 +171,13 @@ export function Users({
 					http={http}
 					mode={mode}
 					user={deleting}
-					warehouseId={warehouseId}
+					warehouseId={actions.deletingWarehouseId}
 					refreshUsers={query.refetch}
 					isFetching={query.isFetching}
 					readError={query.error}
-					onClose={handleCloseEditor}
+					onClose={actions.closeAction}
 					onRemoved={handleRemoved}
-					onReplace={handleReplaceRemoval}
+					onReplace={actions.replaceDelete}
 					onUnavailable={handleRemovalUnavailable}
 				/>
 			)}
@@ -234,8 +188,8 @@ export function Users({
 					</p>
 					<UsersTable
 						users={rows}
-						onEdit={handleEdit}
-						onDelete={handleDelete}
+						onEdit={actions.startEdit}
+						onDelete={actions.startDelete}
 					/>
 				</>
 			)}

@@ -2,7 +2,6 @@ import { type FormEvent, useState } from "react";
 
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouses } from "@/ports/warehouse";
-
 import type { HttpClient } from "@/shared/http";
 import { Button, Input } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
@@ -11,12 +10,12 @@ import { managementStyles as styles } from "@/shared/ui/management";
 import { Modal } from "@/shared/ui/overlays";
 
 import {
+	assignmentSchema,
 	type EditableAccount,
 	type Permission,
-	assignmentSchema,
 	userLoginMaxLength,
 } from "../../api/users.dto";
-import { useAddWarehouseMember, isForbidden } from "../../api/usersApi";
+import { isForbidden, useAddWarehouseMember } from "../../api/usersApi";
 import { userActionError } from "../../model/userActionError";
 import { WarehousePermissions } from "../WarehousePermissions/WarehousePermissions";
 
@@ -45,7 +44,7 @@ export function AddWarehouseMember({
 	const assigned = new Map(access ? [[access.warehouse_id, access]] : []);
 	const isSubmitting = mutation.isPending;
 	const canEdit = !isSubmitting && !isForbidden(mutation.error);
-	const canSubmit = canEdit && !!access && access.permissions.length > 0;
+	const canSubmit = canEdit && Boolean(access?.permissions.length);
 	const submitError =
 		error || (mutation.error ? userActionError(mutation.error) : "");
 

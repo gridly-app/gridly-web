@@ -1,26 +1,25 @@
-import { warehousePath, adminLocation } from "@/ports/navigation";
-import { useWorkspaceMode } from "@/ports/session";
-
 import { guestLinkStatuses } from "@/domain/shipment";
-import { userKinds } from "../../config/accessLabels";
+import { adminLocation, warehousePath } from "@/ports/navigation";
+import { useWorkspaceMode } from "@/ports/session";
 import { formatMoment } from "@/shared/lib";
+import { Badge } from "@/shared/ui/dataDisplay";
+import {
+	DeleteRowAction,
+	EditRowAction,
+	managementStyles as styles,
+	SortedTable,
+	type TableColumns,
+} from "@/shared/ui/management";
+import { Link } from "@/shared/ui/navigation";
+
 import {
 	type AuditUser,
 	type EditableAccount,
 	isEditableAccount,
 	userRowKey,
 } from "../../api/users.dto";
-
-import { Badge } from "@/shared/ui/dataDisplay";
-import { Link } from "@/shared/ui/navigation";
-
-import {
-	DeleteRowAction,
-	EditRowAction,
-	type TableColumns,
-	SortedTable,
-	managementStyles as styles,
-} from "@/shared/ui/management";
+import { userKinds } from "../../config/accessLabels";
+import { canEditAccount } from "../../model/accountActions";
 
 import userTableStyles from "./UsersTable.module.css";
 
@@ -94,47 +93,10 @@ export function UsersTable({
 		{
 			id: "actions",
 			label: "Действия",
-			cell: (user) => {
-				if (!isEditableAccount(user)) return null;
-
-				const account = user;
-				const identity = `${account.name} (${account.login})`;
-
-				function handleEdit() {
-					onEdit(account);
-				}
-
-				function handleDelete() {
-					onDelete(account);
-				}
-
-				return (
-					<div className={userTableStyles.actions}>
-						{account.allowed_actions.some((permission) =>
-							["edit-profile", "edit-memberships"].includes(permission),
-						) && (
-							<EditRowAction
-								label={`Изменить доступ: ${identity}`}
-								onClick={handleEdit}
-							/>
-						)}
-						{account.allowed_actions.includes("revoke-warehouse-access") &&
-							account.warehouses.map((entry) => (
-								<DeleteRowAction
-									key={entry.warehouse_id}
-									label={`Отозвать доступ к складу «${entry.warehouse_name}»: ${account.name}`}
-									onClick={() => onDelete(account, entry.warehouse_id)}
-								/>
-							))}
-						{account.allowed_actions.includes("deactivate-account") && (
-							<DeleteRowAction
-								label={`Деактивировать аккаунт: ${identity}`}
-								onClick={handleDelete}
-							/>
-						)}
-					</div>
-				);
-			},
+			cell: (user) =>
+				isEditableAccount(user) ? (
+					<AccountActions account={user} onEdit={onEdit} onDelete={onDelete} />
+				) : null,
 		},
 	];
 
@@ -148,10 +110,58 @@ export function UsersTable({
 	);
 }
 
+function AccountActions({
+	account,
+	onEdit,
+	onDelete,
+}: {
+	account: EditableAccount;
+	onEdit: (user: EditableAccount) => void;
+	onDelete: (user: EditableAccount, warehouseId?: string) => void;
+}) {
+	const identity = `${account.name} (${account.login})`;
+	const actions = account.allowed_actions;
+
+	function handleEdit() {
+		onEdit(account);
+	}
+
+	function handleDeactivate() {
+		onDelete(account);
+	}
+
+	return (
+		<div className={userTableStyles.actions}>
+			{canEditAccount(actions) && (
+				<EditRowAction
+					label={`Изменить доступ: ${identity}`}
+					onClick={handleEdit}
+				/>
+			)}
+			{actions.includes("revoke-warehouse-access") &&
+				account.warehouses.map((entry) => (
+					<DeleteRowAction
+						key={entry.warehouse_id}
+						label={`Отозвать доступ к складу «${entry.warehouse_name}»: ${account.name}`}
+						onClick={() => onDelete(account, entry.warehouse_id)}
+					/>
+				))}
+			{actions.includes("deactivate-account") && (
+				<DeleteRowAction
+					label={`Деактивировать аккаунт: ${identity}`}
+					onClick={handleDeactivate}
+				/>
+			)}
+		</div>
+	);
+}
+
 function WarehouseAccessCell({ user }: { user: AuditUser }) {
 	const mode = useWorkspaceMode();
 
-	return user.kind === "account" ? (
+	if (user.kind !== "account") return <GuestAccessCell user={user} />;
+
+	return (
 		<ul className={userTableStyles.accessList}>
 			{user.warehouses.map((entry) => (
 				<li key={entry.warehouse_id}>
@@ -170,20 +180,28 @@ function WarehouseAccessCell({ user }: { user: AuditUser }) {
 			))}
 			{!user.warehouses.length && <li>Нет доступа к складам</li>}
 		</ul>
-	) : (
+	);
+}
+
+function GuestAccessCell({
+	user,
+}: {
+	user: Extract<AuditUser, { kind: "guest" }>;
+}) {
+	const mode = useWorkspaceMode();
+	const orderLink = adminLocation("system", {
+		warehouse_id: user.warehouse_id,
+		order_id: user.order_id,
+	});
+
+	return (
 		<>
 			<Link className={styles.link} to={warehousePath(mode, user.warehouse_id)}>
 				{user.warehouse_name}
 			</Link>
 			<small className={styles.subtle}>
 				Заказ{" "}
-				<Link
-					className={styles.link}
-					to={adminLocation("system", {
-						warehouse_id: user.warehouse_id,
-						order_id: user.order_id,
-					})}
-				>
+				<Link className={styles.link} to={orderLink}>
 					{user.order_number}
 				</Link>
 			</small>

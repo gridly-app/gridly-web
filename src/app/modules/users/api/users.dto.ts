@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { loginMaxLength, loginSchema, newLoginSchema } from "@/domain/account";
 
+import { loginMaxLength, loginSchema, newLoginSchema } from "@/domain/account";
 import { environment } from "@/shared/config";
 
 const text = z.string();
@@ -15,40 +15,44 @@ export function validWarehousePermissions(codes: string[]) {
 	return codes.length === 0 || codes.includes(warehouseView);
 }
 
+function isUnique(values: string[]) {
+	return new Set(values).size === values.length;
+}
+
+function hasUniqueWarehouses(items: { warehouse_id: string }[]) {
+	return isUnique(items.map(({ warehouse_id }) => warehouse_id));
+}
+
 const warehouseAccess = z.object({
 	warehouse_id: text.min(1),
 	warehouse_name: text,
-	permissions: z
-		.array(text.min(1))
-		.refine((codes) => new Set(codes).size === codes.length),
+	permissions: z.array(text.min(1)).refine(isUnique),
 });
 
 const subject = z.object({ id: text.min(1), name: text });
+
 export const accountUserSchema = subject.extend({
 	kind: z.literal("account"),
 	login: text,
-	warehouses: z
-		.array(warehouseAccess)
-		.refine(
-			(items) =>
-				new Set(items.map(({ warehouse_id }) => warehouse_id)).size ===
-				items.length,
-		),
+	warehouses: z.array(warehouseAccess).refine(hasUniqueWarehouses),
 	revision: z.number().int().nonnegative().optional(),
 	allowed_actions: z.array(text).default([]),
 });
+
 export const userProfileSchema = z.object({
 	name: text.trim().min(1).max(userNameMaxLength),
 	login: environment.extendedLogin ? newLoginSchema : loginSchema,
 });
+
 const permissionsUpdate = z
 	.array(text.min(1))
 	.min(1)
-	.refine((codes) => new Set(codes).size === codes.length)
+	.refine(isUnique)
 	.refine(
 		validWarehousePermissions,
 		"Для дополнительных разрешений нужен доступ к просмотру склада.",
 	);
+
 const membershipUpdate = z.object({
 	warehouse_id: text.min(1),
 	permissions: permissionsUpdate,
@@ -61,11 +65,7 @@ export const accountUserUpdateSchema = userProfileSchema
 	.extend({
 		warehouses: z
 			.array(membershipUpdate)
-			.refine(
-				(items) =>
-					new Set(items.map(({ warehouse_id }) => warehouse_id)).size ===
-					items.length,
-			)
+			.refine(hasUniqueWarehouses)
 			.optional(),
 		revision: z.number().int().nonnegative(),
 	})
@@ -74,6 +74,7 @@ export const accountUserUpdateSchema = userProfileSchema
 			(name !== undefined) === (login !== undefined) &&
 			(name !== undefined || warehouses !== undefined),
 	);
+
 export type AccountUserUpdate = z.input<typeof accountUserUpdateSchema>;
 
 type AccountUser = z.infer<typeof accountUserSchema>;
@@ -83,7 +84,9 @@ const permissionSchema = z.object({
 	label: text,
 	group: text,
 });
+
 export type Permission = z.infer<typeof permissionSchema>;
+
 export type EditableAccount = AccountUser & { revision: number };
 
 export const usersSchema = z.object({
@@ -91,11 +94,10 @@ export const usersSchema = z.object({
 	manageable_warehouse_ids: z.array(text.min(1)).optional(),
 	permission_catalog: z
 		.array(permissionSchema)
-		.refine((catalog) => {
-			const codes = new Set(catalog.map(({ code }) => code));
-
-			return codes.size === catalog.length;
-		}, "Коды разрешений должны быть уникальны.")
+		.refine(
+			(catalog) => isUnique(catalog.map(({ code }) => code)),
+			"Коды разрешений должны быть уникальны.",
+		)
 		.optional(),
 	items: z
 		.array(
@@ -113,8 +115,9 @@ export const usersSchema = z.object({
 				}),
 			]),
 		)
-		.refine((items) => new Set(items.map(userRowKey)).size === items.length),
+		.refine((items) => isUnique(items.map(userRowKey))),
 });
+
 export type AuditUser = z.infer<typeof usersSchema>["items"][number];
 
 export function userRowKey(user: {

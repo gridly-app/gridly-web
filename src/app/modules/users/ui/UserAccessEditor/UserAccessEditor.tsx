@@ -1,29 +1,25 @@
 import { type FormEvent, type ReactNode, useState } from "react";
 
-import { useWarehouses } from "@/ports/warehouse";
 import { useWorkspaceMode } from "@/ports/session";
-
+import { useWarehouses } from "@/ports/warehouse";
 import { type HttpClient, isStaleRevision } from "@/shared/http";
-import { isForbidden, useUpdateAdminUser } from "../../api/usersApi";
+import { Button, Input } from "@/shared/ui/controls";
+import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { Field } from "@/shared/ui/forms";
+import { managementStyles as styles } from "@/shared/ui/management";
+import { Modal } from "@/shared/ui/overlays";
 
 import {
-	userProfileSchema,
 	type EditableAccount,
 	type Permission,
 	userLoginMaxLength,
 	userNameMaxLength,
+	userProfileSchema,
 } from "../../api/users.dto";
-
+import { isForbidden, useUpdateAdminUser } from "../../api/usersApi";
 import { userActionError } from "../../model/userActionError";
 import { useWarehouseAccessDraft } from "../../model/useWarehouseAccessDraft";
-import { Button, Input } from "@/shared/ui/controls";
-import { Feedback, RetryButton } from "@/shared/ui/feedback";
-import { Field } from "@/shared/ui/forms";
-import { Modal } from "@/shared/ui/overlays";
-
 import { WarehousePermissions } from "../WarehousePermissions/WarehousePermissions";
-
-import { managementStyles as styles } from "@/shared/ui/management";
 
 export function UserAccessEditor({
 	http,

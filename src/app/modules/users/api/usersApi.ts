@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { adminApiPath, adminQueryKey } from "@/ports/administration";
 import type { WorkspaceMode } from "@/ports/session";
 import { useWarehouseScopeId } from "@/ports/warehouse";
-
 import { ApiError, type HttpClient, parseResponse } from "@/shared/http";
-import { adminApiPath, adminQueryKey } from "@/ports/administration";
 
 import {
 	accountUserSchema,
@@ -14,6 +13,28 @@ import {
 	type EditableAccount,
 	usersSchema,
 } from "./users.dto";
+
+export function isForbidden(error: unknown) {
+	return (
+		error instanceof ApiError &&
+		error.status === 403 &&
+		error.code === "FORBIDDEN"
+	);
+}
+
+function useUsersCache(mode: WorkspaceMode) {
+	const client = useQueryClient();
+	const scopeId = useWarehouseScopeId();
+	const path = adminApiPath(mode, "users");
+
+	function invalidate(resource = path) {
+		return client.invalidateQueries({
+			queryKey: adminQueryKey(scopeId, resource),
+		});
+	}
+
+	return { path, invalidate };
+}
 
 export function useAdminUsers(http: HttpClient, mode: WorkspaceMode) {
 	const scopeId = useWarehouseScopeId();
@@ -35,9 +56,7 @@ export function useRemoveAdminUser(
 	mode: WorkspaceMode,
 	onRemoved: () => void,
 ) {
-	const client = useQueryClient();
-	const scopeId = useWarehouseScopeId();
-	const path = adminApiPath(mode, "users");
+	const { path, invalidate } = useUsersCache(mode);
 
 	return useMutation({
 		mutationFn: ({
@@ -48,9 +67,8 @@ export function useRemoveAdminUser(
 			const scope = warehouseId
 				? `/warehouses/${encodeURIComponent(warehouseId)}`
 				: "";
-			const target = `${path}/${encodeURIComponent(id)}${scope}`;
 
-			return http.request(target, {
+			return http.request(`${path}/${encodeURIComponent(id)}${scope}`, {
 				method: "DELETE",
 				headers: { "If-Match": `"${revision}"` },
 			});
@@ -58,9 +76,7 @@ export function useRemoveAdminUser(
 		onSettled: async (_result, error) => {
 			if (error && !isForbidden(error)) return;
 
-			await client.invalidateQueries({
-				queryKey: adminQueryKey(scopeId, path),
-			});
+			await invalidate();
 
 			if (!error) onRemoved();
 		},
@@ -73,40 +89,26 @@ export function useUpdateAdminUser(
 	userId: string,
 	onSaved: () => void,
 ) {
-	const client = useQueryClient();
-	const scopeId = useWarehouseScopeId();
-	const path = adminApiPath(mode, "users");
+	const { path, invalidate } = useUsersCache(mode);
 
 	return useMutation({
 		mutationFn: async (input: AccountUserUpdate) => {
 			const body = accountUserUpdateSchema.parse(input);
 			const response = await http.request(
 				`${path}/${encodeURIComponent(userId)}`,
-				{
-					method: "PATCH",
-					body,
-				},
+				{ method: "PATCH", body },
 			);
 
 			return parseResponse(accountUserSchema, response);
 		},
 		onError: async (error) => {
-			if (isForbidden(error))
-				await client.invalidateQueries({
-					queryKey: adminQueryKey(scopeId, path),
-				});
+			if (isForbidden(error)) await invalidate();
 		},
 		onSuccess: async () => {
-			const auditEndpoint = adminApiPath(mode, "audit");
-
-			await Promise.all(
-				[path, auditEndpoint].map((resource) =>
-					client.invalidateQueries({
-						queryKey: adminQueryKey(scopeId, resource),
-					}),
-				),
-			);
-
+			await Promise.all([
+				invalidate(),
+				invalidate(adminApiPath(mode, "audit")),
+			]);
 			onSaved();
 		},
 	});
@@ -117,9 +119,7 @@ export function useAddWarehouseMember(
 	mode: WorkspaceMode,
 	onAdded: () => void,
 ) {
-	const client = useQueryClient();
-	const scopeId = useWarehouseScopeId();
-	const path = adminApiPath(mode, "users");
+	const { path, invalidate } = useUsersCache(mode);
 
 	return useMutation({
 		mutationFn: (input: Parameters<typeof assignmentSchema.parse>[0]) =>
@@ -130,19 +130,9 @@ export function useAddWarehouseMember(
 		onSettled: async (_result, error) => {
 			if (error && !isForbidden(error)) return;
 
-			await client.invalidateQueries({
-				queryKey: adminQueryKey(scopeId, path),
-			});
+			await invalidate();
 
 			if (!error) onAdded();
 		},
 	});
-}
-
-export function isForbidden(error: unknown) {
-	return (
-		error instanceof ApiError &&
-		error.status === 403 &&
-		error.code === "FORBIDDEN"
-	);
 }

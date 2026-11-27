@@ -1,7 +1,8 @@
 import { guestLinkStatuses } from "@/domain/shipment";
-import { userKinds } from "../config/accessLabels";
 import { formatMoment, textSearch } from "@/shared/lib";
+
 import type { AuditUser, Permission } from "../api/users.dto";
+import { userKinds } from "../config/accessLabels";
 
 export type UserFilters = {
 	search: string;
@@ -39,21 +40,33 @@ export function filterAdminUsers(
 	userKind?: AuditUser["kind"],
 ) {
 	const labels = new Map(permissions.map(({ code, label }) => [code, label]));
-	const permissionLabel = (code: string) => labels.get(code) ?? code;
 	const matches = textSearch(search);
 
+	function permissionLabel(code: string) {
+		return labels.get(code) ?? code;
+	}
+
+	function isSelectedUser(user: AuditUser) {
+		if (!userId) return true;
+
+		return user.id === userId && (!userKind || user.kind === userKind);
+	}
+
+	function matchesStatus(user: AuditUser) {
+		return (
+			status === "all" || (user.kind === "guest" && user.status === status)
+		);
+	}
+
 	return users.filter((user) => {
-		if (userId && (user.id !== userId || (userKind && user.kind !== userKind)))
-			return false;
-		if (kind !== "all" && kind !== user.kind) return false;
-		if (status !== "all" && (user.kind !== "guest" || user.status !== status))
-			return false;
 		const access = user.kind === "account" ? user.warehouses : [user];
-		if (
-			warehouse !== "all" &&
-			!access.some((entry) => entry.warehouse_id === warehouse)
-		)
-			return false;
+		const matchesWarehouse =
+			warehouse === "all" ||
+			access.some((entry) => entry.warehouse_id === warehouse);
+
+		if (!isSelectedUser(user)) return false;
+		if (kind !== "all" && kind !== user.kind) return false;
+		if (!matchesStatus(user) || !matchesWarehouse) return false;
 		if (!search) return true;
 
 		return matches(userSearchFields(user, access, permissionLabel));
@@ -65,21 +78,24 @@ function userSearchFields(
 	access: { warehouse_name: string }[],
 	permissionLabel: (code: string) => string,
 ) {
-	return [
+	const common = [
 		user.name,
 		userKinds[user.kind],
 		...access.map((entry) => entry.warehouse_name),
-		...(user.kind === "account"
-			? [
-					user.login,
-					...user.warehouses.flatMap((entry) =>
-						entry.permissions.map(permissionLabel),
-					),
-				]
-			: [
-					user.order_number,
-					guestLinkStatuses[user.status],
-					formatMoment(user.expires_at, user.time_zone),
-				]),
+	];
+
+	if (user.kind === "account") {
+		const permissionLabels = user.warehouses.flatMap((entry) =>
+			entry.permissions.map(permissionLabel),
+		);
+
+		return [...common, user.login, ...permissionLabels];
+	}
+
+	return [
+		...common,
+		user.order_number,
+		guestLinkStatuses[user.status],
+		formatMoment(user.expires_at, user.time_zone),
 	];
 }

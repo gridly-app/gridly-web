@@ -1,26 +1,18 @@
+import type { ReactNode } from "react";
+
 import { errorMessage } from "@/shared/lib";
 import { Feedback } from "@/shared/ui/feedback";
 import { RevisionConflict } from "@/shared/ui/management";
 
 import type { EditableAccount } from "../../api/users.dto";
 
-export function UserAccessConflict({
-	replacement,
-	readError,
-	isUnavailable,
-	onRefresh,
-	onRestart,
-}: {
-	replacement: EditableAccount | null;
-	readError: Error | null;
-	isUnavailable: boolean;
-	onRefresh: () => Promise<unknown>;
-	onRestart: () => void;
-}) {
-	let details;
-
+function conflictDetails(
+	replacement: EditableAccount | null,
+	readError: Error | null,
+	isUnavailable: boolean,
+): ReactNode {
 	if (replacement) {
-		details = (
+		return (
 			<div>
 				<p>
 					Сохранено на сервере: {replacement.name} ({replacement.login})
@@ -35,15 +27,32 @@ export function UserAccessConflict({
 				</ul>
 			</div>
 		);
-	} else if (readError) {
-		details = <Feedback tone="error">{errorMessage(readError)}</Feedback>;
-	} else if (isUnavailable) {
-		details = <p>Пользователь больше недоступен для редактирования.</p>;
 	}
 
+	if (readError)
+		return <Feedback tone="error">{errorMessage(readError)}</Feedback>;
+	if (isUnavailable)
+		return <p>Пользователь больше недоступен для редактирования.</p>;
+
+	return undefined;
+}
+
+export function UserAccessConflict({
+	replacement,
+	readError,
+	isUnavailable,
+	onRefresh,
+	onRestart,
+}: {
+	replacement: EditableAccount | null;
+	readError: Error | null;
+	isUnavailable: boolean;
+	onRefresh: () => Promise<unknown>;
+	onRestart: () => void;
+}) {
 	return (
 		<RevisionConflict
-			details={details}
+			details={conflictDetails(replacement, readError, isUnavailable)}
 			onRefresh={onRefresh}
 			onRestart={replacement ? onRestart : undefined}
 		/>

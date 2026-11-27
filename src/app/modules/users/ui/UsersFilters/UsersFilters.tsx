@@ -1,9 +1,9 @@
 import { guestLinkStatuses } from "@/domain/shipment";
-import { userKinds } from "../../config/accessLabels";
-import { defaultUserFilters, type UserFilters } from "../../model/userFilters";
-
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { Select } from "@/shared/ui/forms";
+
+import { userKinds } from "../../config/accessLabels";
+import { defaultUserFilters, type UserFilters } from "../../model/userFilters";
 
 const kindLabels = {
 	account: "Аккаунты",
@@ -37,11 +37,15 @@ export function UsersFilters({
 		Number(kind !== "all") +
 		Number(warehouse !== "all") +
 		Number(status !== "all");
-
 	const warehouseOptions = [
 		{ value: "all", label: "Все склады" },
 		...locations,
 	];
+	const searchField = {
+		"aria-label": "Поиск по пользователям",
+		value: search,
+		onChange: handleSearch,
+	};
 
 	function handleSearch(search: string) {
 		onChange({ ...filters, search });
@@ -61,21 +65,12 @@ export function UsersFilters({
 	}
 
 	function handleStatus(status: string) {
-		if (status === "all" || isOption(status, guestLinkStatuses)) {
+		if (status === "all" || isOption(status, guestLinkStatuses))
 			onChange({ ...filters, status });
-		}
 	}
 
 	return (
-		<ListFilters
-			search={{
-				"aria-label": "Поиск по пользователям",
-				value: search,
-				onChange: handleSearch,
-			}}
-			count={count}
-			onReset={handleReset}
-		>
+		<ListFilters search={searchField} count={count} onReset={handleReset}>
 			<Select
 				aria-label="Тип доступа"
 				value={kind}

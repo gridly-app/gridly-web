@@ -8,6 +8,7 @@ import {
 	type useAdminUsers,
 	useRemoveAdminUser,
 } from "../../api/usersApi";
+import { canStillRemove } from "../../model/accountActions";
 import { userActionError } from "../../model/userActionError";
 
 export function UserRemovalDialog({
@@ -38,24 +39,36 @@ export function UserRemovalDialog({
 	const removeUser = useRemoveAdminUser(http, mode, () =>
 		onRemoved(warehouseId),
 	);
-	const staleRevision = isStaleRevision(removeUser.error);
-	const isRefreshingRemoval = staleRevision && isFetching;
+	const isStale = isStaleRevision(removeUser.error);
+	const isRefreshingRemoval = isStale && isFetching;
 	const removedWarehouse = deleting.warehouses.find(
 		({ warehouse_id }) => warehouse_id === warehouseId,
 	);
-	const deleteError = staleRevision && readError ? readError : removeUser.error;
+	const deleteError = isStale && readError ? readError : removeUser.error;
 	const removalMessage =
-		deleteError && !staleRevision
+		deleteError && !isStale
 			? new Error(userActionError(deleteError))
 			: deleteError;
-	const refreshDelete = staleRevision ? handleRefreshForDelete : undefined;
+	const refreshDelete = isStale ? handleRefreshForDelete : undefined;
+	const warehouseName = removedWarehouse?.warehouse_name ?? warehouseId;
+	const texts = warehouseId
+		? {
+				title: "Отозвать доступ к складу?",
+				description: `Пользователь «${deleting.name}» потеряет доступ к складу «${warehouseName}».`,
+				confirm: "Отозвать доступ к складу",
+			}
+		: {
+				title: "Деактивировать аккаунт?",
+				description: `У аккаунта «${deleting.name}» будут отозваны все сессии и доступы ко всем складам.`,
+				confirm: "Деактивировать аккаунт",
+			};
 
 	function handleCloseDelete() {
 		if (!removeUser.isPending && !isRefreshingRemoval) onClose();
 	}
 
 	function handleConfirmDelete() {
-		if (staleRevision || isForbidden(removeUser.error)) return;
+		if (isStale || isForbidden(removeUser.error)) return;
 
 		const input = warehouseId ? { ...deleting, warehouseId } : deleting;
 
@@ -67,24 +80,13 @@ export function UserRemovalDialog({
 
 		if (!refreshed.isSuccess) return;
 
-		const current = refreshed.data.items.find(
-			(user) => user.id === deleting.id && isEditableAccount(user),
-		);
+		const current = refreshed.data.items
+			.filter(isEditableAccount)
+			.find((user) => user.id === deleting.id);
+
 		removeUser.reset();
 
-		const required = warehouseId
-			? "revoke-warehouse-access"
-			: "deactivate-account";
-
-		if (
-			current &&
-			isEditableAccount(current) &&
-			current.allowed_actions.includes(required) &&
-			(!warehouseId ||
-				current.warehouses.some(
-					({ warehouse_id }) => warehouse_id === warehouseId,
-				))
-		) {
+		if (current && canStillRemove(current, warehouseId)) {
 			onReplace(current);
 
 			return;
@@ -95,17 +97,9 @@ export function UserRemovalDialog({
 
 	return (
 		<DeleteConfirmation
-			title={
-				warehouseId ? "Отозвать доступ к складу?" : "Деактивировать аккаунт?"
-			}
-			description={
-				warehouseId
-					? `Пользователь «${deleting.name}» потеряет доступ к складу «${removedWarehouse?.warehouse_name ?? warehouseId}».`
-					: `У аккаунта «${deleting.name}» будут отозваны все сессии и доступы ко всем складам.`
-			}
-			confirmLabel={
-				warehouseId ? "Отозвать доступ к складу" : "Деактивировать аккаунт"
-			}
+			title={texts.title}
+			description={texts.description}
+			confirmLabel={texts.confirm}
 			refreshLabel="Обновить данные пользователя"
 			isPending={removeUser.isPending || isRefreshingRemoval}
 			error={removalMessage}

@@ -1,18 +1,16 @@
 import { useId, useMemo, useState } from "react";
 
 import type { Warehouse } from "@/domain/warehouse";
+import { Checkbox } from "@/shared/ui/controls";
+import { Badge } from "@/shared/ui/dataDisplay";
+import { Combobox } from "@/shared/ui/forms";
+import { managementStyles as styles } from "@/shared/ui/management";
 
 import {
 	type EditableAccount,
 	type Permission,
 	warehouseView,
 } from "../../api/users.dto";
-
-import { Checkbox } from "@/shared/ui/controls";
-import { Badge } from "@/shared/ui/dataDisplay";
-import { Combobox } from "@/shared/ui/forms";
-
-import { managementStyles as styles } from "@/shared/ui/management";
 
 export function WarehousePermissions({
 	warehouses,
@@ -56,7 +54,8 @@ export function WarehousePermissions({
 	const count = codes.length;
 	const hasExtraPermissions = codes.some((code) => !catalogCodes.has(code));
 	const selectedCodes = new Set(codes);
-	const viewRequired = codes.some((code) => code !== warehouseView);
+	const isViewRequired = codes.some((code) => code !== warehouseView);
+	const isViewLocked = isViewRequired || Boolean(access);
 
 	function handleWarehouseChange(id: string) {
 		setWarehouseId(id);
@@ -64,10 +63,16 @@ export function WarehousePermissions({
 	}
 
 	function handlePermissionCheck(code: string, checked: boolean) {
-		if (checked) selectedCodes.add(code);
-		else selectedCodes.delete(code);
+		if (!checked) {
+			selectedCodes.delete(code);
+			onChange(activeWarehouseId, warehouseName, [...selectedCodes]);
 
-		if (checked && code !== warehouseView) selectedCodes.add(warehouseView);
+			return;
+		}
+
+		selectedCodes.add(code);
+
+		if (code !== warehouseView) selectedCodes.add(warehouseView);
 
 		onChange(activeWarehouseId, warehouseName, [...selectedCodes]);
 	}
@@ -95,8 +100,6 @@ export function WarehousePermissions({
 							<strong className={styles.subtle}>{group}</strong>
 							{permissions.map(({ code, label }) => {
 								const id = `${fieldId}-${code}`;
-								const handleCheck = (checked: boolean) =>
-									handlePermissionCheck(code, checked);
 
 								return (
 									<label key={code} className={styles.checkRow} htmlFor={id}>
@@ -104,10 +107,11 @@ export function WarehousePermissions({
 											id={id}
 											checked={selectedCodes.has(code)}
 											disabled={
-												disabled ||
-												(code === warehouseView && (viewRequired || !!access))
+												disabled || (code === warehouseView && isViewLocked)
 											}
-											onCheckedChange={handleCheck}
+											onCheckedChange={(checked) =>
+												handlePermissionCheck(code, checked)
+											}
 										/>
 										{label}
 									</label>
@@ -134,6 +138,7 @@ function groupPermissions(permissions: Permission[]) {
 
 	for (const permission of permissions) {
 		const group = groups.get(permission.group) ?? [];
+
 		group.push(permission);
 		groups.set(permission.group, group);
 	}
