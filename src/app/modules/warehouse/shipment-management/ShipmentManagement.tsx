@@ -13,7 +13,7 @@ import {
 	type ShipmentResource,
 	useShipmentResource,
 } from "./api/useShipmentResource";
-import type { WorkingShipment } from "./model/shipment.dto";
+import type { WorkingShipment } from "./api/shipment.dto";
 import { useShipmentActions } from "./model/useShipmentActions";
 import { SandboxShipment } from "./ui/SandboxShipment/SandboxShipment";
 import { ShipmentDocumentsEditor } from "./ui/ShipmentDocumentsEditor/ShipmentDocumentsEditor";

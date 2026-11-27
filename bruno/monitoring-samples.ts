@@ -4,7 +4,7 @@ import { auditCollectionSchema } from "../src/app/modules/audit/api/audit.dto";
 import { systemSchema } from "../src/app/modules/system/api/system.dto";
 import type { orderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
 import type { warehouseDto } from "../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
-import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 import type { AuditEvent } from "../src/domain/shipment";
 
 import { base, type MockStore } from "./mock-http";

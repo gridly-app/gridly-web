@@ -5,7 +5,7 @@ import { warehouseDay } from "../src/app/modules/warehouse/warehouse-information
 import {
 	type WorkingShipment,
 	workingShipmentSchema,
-} from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+} from "../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 
 export const counterparties = [
 	{ name: "ООО «Северный путь»", address: "Тверь, Промышленный проезд, 8" },

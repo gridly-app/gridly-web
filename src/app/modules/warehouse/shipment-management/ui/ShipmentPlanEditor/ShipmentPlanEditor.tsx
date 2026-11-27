@@ -2,7 +2,7 @@ import type { Plan } from "@/domain/shipment";
 import { Button, Input } from "@/shared/ui/controls";
 import { Field } from "@/shared/ui/forms";
 
-import type { WorkingShipment } from "../../model/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto.ts";
 import type { ShipmentPlanRow } from "../../model/shipmentEditor";
 import {
 	ItemPicker,

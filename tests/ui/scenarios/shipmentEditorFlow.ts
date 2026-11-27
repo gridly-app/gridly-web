@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { expect } from "@playwright/test";
 
 import type { UiScenario } from "../uiBrowserFixture";
-import type { WorkingShipment } from "../../../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+import type { WorkingShipment } from "../../../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 
 export async function checkShipmentEditor(
 	{ page, base }: Pick<UiScenario, "page" | "base">,

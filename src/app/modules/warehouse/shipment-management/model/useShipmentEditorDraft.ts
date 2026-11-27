@@ -3,7 +3,7 @@ import { type FormEvent, useState } from "react";
 import type { Actual, Milestone, Plan } from "@/domain/shipment";
 import { errorMessage } from "@/shared/lib";
 
-import type { WorkingShipment } from "./shipment.dto";
+import type { WorkingShipment } from "../api/shipment.dto";
 import {
 	editableMilestones,
 	shipmentDraft,

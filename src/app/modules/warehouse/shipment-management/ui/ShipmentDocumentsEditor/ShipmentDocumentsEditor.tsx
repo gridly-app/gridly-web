@@ -5,7 +5,7 @@ import { Button, Input } from "@/shared/ui/controls";
 import { Combobox, Field } from "@/shared/ui/forms";
 
 import type { ShipmentResource } from "../../api/useShipmentResource";
-import type { WorkingShipment } from "../../model/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto.ts";
 import type { RunShipmentAction } from "../../model/useShipmentActions";
 
 import { documentAccept } from "../../model/shipmentDocument";

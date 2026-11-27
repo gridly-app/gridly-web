@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { WorkingShipment } from "./shipment.dto";
+import type { WorkingShipment } from "../api/shipment.dto";
 import { shipmentDraft } from "./shipmentEditor";
 
 const shipment: WorkingShipment = {

@@ -21,7 +21,7 @@ import {
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 import { Select } from "@/shared/ui/forms";
 import { Link } from "@/shared/ui/navigation";
-import { type WorkingShipment } from "../../model/shipment.dto.ts";
+import { type WorkingShipment } from "../../api/shipment.dto.ts";
 import styles from "../../shared.module.css";
 
 const quantity = new Intl.NumberFormat("ru-RU");

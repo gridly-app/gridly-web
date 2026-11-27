@@ -2,7 +2,7 @@ import { z } from "zod";
 import { eventDto } from "../src/app/modules/warehouse-data/api/history/historyDto";
 import { orderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
 import { warehouseDto } from "../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
-import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 
 import { seedUsers } from "./admin-user-samples";
 import { base, type MockStore } from "./mock-http";

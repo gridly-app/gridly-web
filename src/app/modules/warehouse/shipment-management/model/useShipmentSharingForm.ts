@@ -8,7 +8,7 @@ import {
 import { parseUtcDateTimeInput, toUtcDateTimeInput } from "@/shared/lib";
 
 import type { ShipmentResource } from "../api/useShipmentResource";
-import type { WorkingShipment } from "./shipment.dto";
+import type { WorkingShipment } from "../api/shipment.dto";
 import type { RunShipmentAction } from "./useShipmentActions";
 
 const defaultLinkLifetimeMs = 7 * 86_400_000;

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { WorkingShipment } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+import type { WorkingShipment } from "../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 import {
 	documentAccept,
 	documentVersionLimit,

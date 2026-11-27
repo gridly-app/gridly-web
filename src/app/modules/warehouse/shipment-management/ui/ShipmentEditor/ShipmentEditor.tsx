@@ -3,7 +3,7 @@ import { Button, Textarea } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 import { Field, Select } from "@/shared/ui/forms";
 
-import type { WorkingShipment } from "../../model/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto.ts";
 import type { shipmentDraft } from "../../model/shipmentEditor";
 import { useShipmentEditorDraft } from "../../model/useShipmentEditorDraft";
 import { ShipmentActualEditor } from "../ShipmentActualEditor/ShipmentActualEditor";

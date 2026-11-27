@@ -3,7 +3,7 @@ import { z } from "zod";
 import { productDto } from "../src/app/modules/warehouse-data/api/catalog/catalogDto";
 import { orderDto } from "../src/app/modules/warehouse-data/api/orders/orderDto";
 import { warehouseDto } from "../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
-import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+import { workingShipmentSchema } from "../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 import { base, type MockStore } from "./mock-http";
 import { sampleShipment } from "./shipment-samples";
 

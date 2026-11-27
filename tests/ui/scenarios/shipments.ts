@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 
 import type { UiScenario } from "../uiBrowserFixture";
-import { workingShipmentSchema } from "../../../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+import { workingShipmentSchema } from "../../../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 import { checkShipmentAudit } from "./shipmentAuditFlow";
 import { checkShipmentEditor } from "./shipmentEditorFlow";
 import { shipmentExample } from "./shipmentExamples";

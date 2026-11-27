@@ -2,7 +2,7 @@ import { type Actual, transports } from "@/domain/shipment";
 import { Button, Input } from "@/shared/ui/controls";
 import { Field, Select } from "@/shared/ui/forms";
 
-import type { WorkingShipment } from "../../model/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto.ts";
 import {
 	DateTime,
 	ItemPicker,

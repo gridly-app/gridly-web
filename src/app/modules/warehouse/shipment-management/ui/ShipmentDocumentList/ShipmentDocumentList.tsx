@@ -2,7 +2,7 @@ import { categories } from "@/domain/shipment";
 import { formatMoment } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 
-import type { WorkingShipment } from "../../model/shipment.dto";
+import type { WorkingShipment } from "../../api/shipment.dto";
 
 import styles from "../../shared.module.css";
 

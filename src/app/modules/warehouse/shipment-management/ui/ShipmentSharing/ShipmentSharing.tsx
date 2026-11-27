@@ -10,7 +10,7 @@ import { Feedback } from "@/shared/ui/feedback";
 import { Field } from "@/shared/ui/forms";
 import { Modal } from "@/shared/ui/overlays";
 import type { ShipmentCreation } from "../../api/shipmentCreationStorage";
-import type { WorkingShipment } from "../../model/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto.ts";
 import type { ShipmentResource } from "../../api/useShipmentResource";
 import { useShipmentSharingForm } from "../../model/useShipmentSharingForm";
 import type { RunShipmentAction } from "../../model/useShipmentActions";

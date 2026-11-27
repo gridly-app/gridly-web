@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
 import { shipment } from "../../../../../../tests/support/shipment";
-import type { WorkingShipment } from "../model/shipment.dto";
+import type { WorkingShipment } from "./shipment.dto";
 import type { ShipmentCreation } from "./shipmentCreationStorage";
 import { shipmentSharing } from "./shipmentSharing";
 

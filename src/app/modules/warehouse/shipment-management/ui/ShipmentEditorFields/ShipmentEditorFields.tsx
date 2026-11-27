@@ -3,7 +3,7 @@ import { parseUtcDateTimeInput, toUtcDateTimeInput } from "@/shared/lib";
 import { Input } from "@/shared/ui/controls";
 import { Field, Select } from "@/shared/ui/forms";
 
-import type { WorkingShipment } from "../../model/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto.ts";
 
 export function ItemPicker({
 	busy,

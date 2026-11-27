@@ -8,7 +8,7 @@ import {
 	stages,
 } from "@/domain/shipment";
 import { UserError } from "@/shared/lib";
-import type { WorkingShipment } from "./shipment.dto";
+import type { WorkingShipment } from "../api/shipment.dto";
 
 export type ShipmentPlanRow = { clientId: string; entry: Plan };
 

@@ -1,7 +1,7 @@
 import { ApiError, type FileHttpClient, saveResponseFile } from "@/shared/http";
 import { UserError } from "@/shared/lib";
 
-import type { WorkingShipment } from "../model/shipment.dto";
+import type { WorkingShipment } from "./shipment.dto";
 import {
 	documentVersionLimit,
 	validateShipmentDocument,

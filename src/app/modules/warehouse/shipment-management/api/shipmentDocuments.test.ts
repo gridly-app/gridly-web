@@ -4,7 +4,7 @@ import { act, createElement } from "react";
 
 import { mountDom } from "../../../../../../tests/support/dom";
 import { shipment } from "../../../../../../tests/support/shipment";
-import type { WorkingShipment } from "../model/shipment.dto";
+import type { WorkingShipment } from "./shipment.dto";
 import { shipmentDocuments } from "./shipmentDocuments";
 import { useShipmentCreation } from "./useShipmentCreation";
 

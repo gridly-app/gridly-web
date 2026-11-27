@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 
 import type { UiScenario } from "../uiBrowserFixture";
 import { loadWorkspaceSamples } from "../../../bruno/mock-fixture";
-import type { WorkingShipment } from "../../../src/app/modules/warehouse/shipment-management/model/shipment.dto";
+import type { WorkingShipment } from "../../../src/app/modules/warehouse/shipment-management/api/shipment.dto";
 
 export async function checkShipmentTracking(
 	{ page, base }: Pick<UiScenario, "page" | "base">,

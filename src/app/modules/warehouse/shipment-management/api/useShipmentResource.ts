@@ -8,7 +8,7 @@ import { operationAttemptKey } from "@/shared/lib";
 import {
 	type WorkingShipment,
 	workingShipmentSchema,
-} from "../model/shipment.dto";
+} from "./shipment.dto";
 import type { shipmentDraft } from "../model/shipmentEditor";
 import { shipmentDocuments } from "./shipmentDocuments";
 import { shipmentSharing } from "./shipmentSharing";

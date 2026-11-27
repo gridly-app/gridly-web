@@ -3,7 +3,7 @@ import { environment } from "@/shared/config";
 import { type HttpClient, parseResponse } from "@/shared/http";
 import { UserError } from "@/shared/lib";
 
-import type { WorkingShipment } from "../model/shipment.dto";
+import type { WorkingShipment } from "./shipment.dto";
 import type { ShipmentCreation } from "./shipmentCreationStorage";
 import type { ShipmentCreationAccess } from "./useShipmentCreation";
 
