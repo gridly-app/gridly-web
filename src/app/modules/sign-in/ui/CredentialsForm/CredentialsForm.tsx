@@ -11,15 +11,6 @@ import {
 } from "../../model/credentialsForm";
 import { PasswordFields } from "../PasswordFields/PasswordFields";
 
-interface CredentialsFormProps {
-	rules: CredentialsFormRules;
-	actionLabel: string;
-	isPending: boolean;
-	error: string;
-	onSubmit: (credentials: Credentials) => Promise<void>;
-	onClearError: () => void;
-}
-
 export function CredentialsForm({
 	rules,
 	actionLabel,
@@ -27,17 +18,24 @@ export function CredentialsForm({
 	error,
 	onSubmit,
 	onClearError,
-}: CredentialsFormProps) {
+}: {
+	rules: CredentialsFormRules;
+	actionLabel: string;
+	isPending: boolean;
+	error: string;
+	onSubmit: (credentials: Credentials) => Promise<void>;
+	onClearError: () => void;
+}) {
 	const [validationError, setValidationError] = useState("");
 	const submitLabel = isPending ? "Подождите…" : actionLabel;
 	const displayedError = validationError || error;
 
 	function handleChange(event: ChangeEvent<HTMLFormElement>) {
-		if (
-			!(event.target instanceof HTMLInputElement) ||
-			event.target.type === "checkbox"
-		)
-			return;
+		const isTextInput =
+			event.target instanceof HTMLInputElement &&
+			event.target.type !== "checkbox";
+
+		if (!isTextInput) return;
 
 		const confirmation = event.currentTarget.elements.namedItem(
 			"passwordConfirmation",
@@ -62,11 +60,9 @@ export function CredentialsForm({
 			setValidationError(result.message);
 
 			const confirmation = form.elements.namedItem(result.field);
+			const isConfirmationError = result.field === "passwordConfirmation";
 
-			if (
-				result.field === "passwordConfirmation" &&
-				confirmation instanceof HTMLInputElement
-			) {
+			if (isConfirmationError && confirmation instanceof HTMLInputElement) {
 				confirmation.setCustomValidity("Пароли не совпадают");
 				confirmation.reportValidity();
 				confirmation.focus();

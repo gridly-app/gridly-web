@@ -102,8 +102,12 @@ test("an unmounted authentication screen does not request navigation after a lat
 			.read()
 			.submit({ login: "operator", password: "password" });
 	});
-	await model.close();
+	act(() => model.root.unmount());
 	response.resolve();
 
-	expect(await submission).toBe(false);
+	try {
+		expect(await submission).toBe(false);
+	} finally {
+		await model.close();
+	}
 });

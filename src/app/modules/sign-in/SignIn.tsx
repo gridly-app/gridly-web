@@ -1,4 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+
 import { type AuthMode, type Credentials, useSession } from "@/ports/session";
 import { Button } from "@/shared/ui/controls";
 import {
@@ -17,7 +18,7 @@ import { signInDestination } from "./model/signInDestination";
 import { useAuthenticate } from "./model/useAuthenticate";
 import { CredentialsForm } from "./ui/CredentialsForm/CredentialsForm";
 
-import authStyles from "./SignIn.module.css";
+import styles from "./SignIn.module.css";
 
 const modes = {
 	login: {
@@ -97,25 +98,21 @@ function SignInScreen({
 	}
 
 	return (
-		<div className={`public-page ${authStyles.auth}`} data-fixed-theme="light">
-			<ShapeBackdrop className={authStyles.backdrop} />
-			<Link className={authStyles.authBack} to="/">
+		<div className={`public-page ${styles.auth}`} data-fixed-theme="light">
+			<ShapeBackdrop className={styles.backdrop} />
+			<Link className={styles.authBack} to="/">
 				На главную
 			</Link>
-			<div className={authStyles.authForm}>
-				<Link
-					className={authStyles.authBrand}
-					to="/"
-					aria-label="Gridly — главная"
-				>
+			<div className={styles.authForm}>
+				<Link className={styles.authBrand} to="/" aria-label="Gridly — главная">
 					Gridly
 				</Link>
-				<Card className={authStyles.card}>
-					<CardHeader className={authStyles.header}>
-						<CardTitle className={authStyles.title}>{copy.title}</CardTitle>
+				<Card className={styles.card}>
+					<CardHeader className={styles.header}>
+						<CardTitle className={styles.title}>{copy.title}</CardTitle>
 						<CardDescription>{copy.description}</CardDescription>
 					</CardHeader>
-					<CardPanel className={authStyles.body}>
+					<CardPanel className={styles.body}>
 						<CredentialsForm
 							rules={rules}
 							actionLabel={copy.submitLabel}
@@ -125,8 +122,8 @@ function SignInScreen({
 							onClearError={model.clearError}
 						/>
 					</CardPanel>
-					<CardFooter className={authStyles.footer}>
-						<div className={authStyles.modeSwitch}>
+					<CardFooter className={styles.footer}>
+						<div className={styles.modeSwitch}>
 							<span>{copy.prompt}</span>
 							<Button
 								variant="text"

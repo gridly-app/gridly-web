@@ -6,11 +6,17 @@
 	grid-template-columns: 1fr;
 	place-items: center;
 	min-height: 100svh;
-	padding: 80px 24px 56px;
+	padding: 80px var(--space-6) 56px;
 	overflow: clip;
 	contain: paint;
 
 	color: var(--text);
+}
+
+@media (width <= 600px) {
+	.auth {
+		padding: 96px var(--space-6) 50px;
+	}
 }
 
 .backdrop {
@@ -27,47 +33,30 @@
 	font-size: var(--text-control);
 }
 
+@media (width <= 600px) {
+	.authBack {
+		top: 25px;
+		left: 27px;
+	}
+}
+
 .authForm {
-	margin: 0;
 	width: min(100%, 420px);
+	margin: 0;
 	padding: 0;
 }
 
 .authBrand {
 	display: block;
-	margin-bottom: 32px;
+	margin-bottom: var(--space-8);
 
-	text-align: center;
 	font-size: 46px;
 	font-weight: 700;
 	letter-spacing: -3px;
+	text-align: center;
 }
 
-.modeSwitch {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: center;
-	gap: var(--space-1);
-
-	font-size: var(--text-control);
-}
-.modeSwitch > button {
-	padding: 0 4px;
-	min-height: 32px;
-
-	white-space: normal;
-}
 @media (width <= 600px) {
-	.auth {
-		padding: 96px 24px 50px;
-	}
-
-	.authBack {
-		top: 25px;
-		left: 27px;
-	}
-
 	.authBrand {
 		font-size: 42px;
 	}
@@ -111,4 +100,21 @@
 	padding: var(--space-6) var(--panel-inset);
 
 	border-top: 1px solid var(--border);
+}
+
+.modeSwitch {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-1);
+
+	font-size: var(--text-control);
+}
+
+.modeSwitch > button {
+	min-height: 32px;
+	padding: 0 var(--space-1);
+
+	white-space: normal;
 }

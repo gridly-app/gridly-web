@@ -27,25 +27,29 @@ export type CredentialsFormRules = ReturnType<typeof credentialsFormRules>;
 
 export function readCredentials(data: FormData, rules: CredentialsFormRules) {
 	const password = data.get("password");
+	const login = formText(data, "login");
+	const isConfirmationMismatch =
+		Boolean(rules.registration) &&
+		password !== data.get("passwordConfirmation");
+	const isInvalidExtendedLogin =
+		Boolean(rules.registration?.isExtendedLogin) &&
+		!newLoginSchema.safeParse(login).success;
 
-	if (rules.registration && password !== data.get("passwordConfirmation"))
+	if (isConfirmationMismatch) {
 		return {
 			ok: false,
 			field: "passwordConfirmation",
 			message: "Пароли не совпадают. Повторите пароль ещё раз.",
 		} as const;
+	}
 
-	const login = formText(data, "login");
-
-	if (
-		rules.registration?.isExtendedLogin &&
-		!newLoginSchema.safeParse(login).success
-	)
+	if (isInvalidExtendedLogin) {
 		return {
 			ok: false,
 			field: "login",
 			message: `Логин должен содержать от ${newLoginMinLength} до ${loginMaxLength} символов. Используйте латиницу, цифры и символы _ . + - @.`,
 		} as const;
+	}
 
 	return {
 		ok: true,
