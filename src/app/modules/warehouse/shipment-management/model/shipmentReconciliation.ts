@@ -1,6 +1,8 @@
 import { formatUnit, type Shipment } from "@/domain/shipment";
 import { dateKey, encodeCsv } from "@/shared/lib";
 
+import { quantityDifference } from "./quantityDifference";
+
 export const reconciliationStatuses = {
 	complete: "По плану",
 	pending: "К отгрузке",
@@ -9,19 +11,15 @@ export const reconciliationStatuses = {
 } as const;
 
 type Status = keyof typeof reconciliationStatuses;
-type Totals = {
+
+type LineTotals = {
+	lineId: string;
+	unit: string;
 	planned: number;
 	shipped: number;
 	due: number;
 	shippedByDate: number;
 };
-
-function quantityDifference(expected: number, actual: number) {
-	const difference = expected - actual;
-	const tolerance = Number.EPSILON * Math.max(expected, actual) * 8;
-
-	return Math.abs(difference) <= tolerance ? 0 : difference;
-}
 
 function reconciliationStatus(planned: number, difference: number): Status {
 	if (planned === 0) return "unplanned";
@@ -41,10 +39,7 @@ export function shipmentReconciliation(
 	asOf: string,
 ) {
 	const itemsById = new Map(items.map((item) => [item.order_line_id, item]));
-	const totalsByLine = new Map<
-		string,
-		Totals & { lineId: string; unit: string }
-	>();
+	const totalsByLine = new Map<string, LineTotals>();
 
 	function totalsFor(lineId: string, unit: string) {
 		const key = JSON.stringify([lineId, unit]);

@@ -9,11 +9,12 @@ import { errorMessage, formatMoment } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
+import type { WorkingShipment } from "./api/shipment.dto";
 import {
 	type ShipmentResource,
 	useShipmentResource,
 } from "./api/useShipmentResource";
-import type { WorkingShipment } from "./api/shipment.dto";
+import type { ShipmentDraft } from "./model/shipmentEditor";
 import { useShipmentActions } from "./model/useShipmentActions";
 import { SandboxShipment } from "./ui/SandboxShipment/SandboxShipment";
 import { ShipmentDocumentsEditor } from "./ui/ShipmentDocumentsEditor/ShipmentDocumentsEditor";
@@ -23,6 +24,8 @@ import { ShipmentSharing } from "./ui/ShipmentSharing/ShipmentSharing";
 
 import styles from "./shared.module.css";
 
+const lostAccessStatuses = [401, 403, 404];
+
 export function ShipmentManagement({ http }: { http: FileHttpClient }) {
 	const { warehouseId = "", orderId = "" } = useParams();
 	const mode = useWorkspaceMode();
@@ -30,6 +33,7 @@ export function ShipmentManagement({ http }: { http: FileHttpClient }) {
 
 	if (order.isPending)
 		return <Feedback tone="loading">Загружаем заказ…</Feedback>;
+
 	if (order.error) {
 		return (
 			<Feedback tone="error" action={<RetryButton onRetry={order.refetch} />}>
@@ -37,7 +41,8 @@ export function ShipmentManagement({ http }: { http: FileHttpClient }) {
 			</Feedback>
 		);
 	}
-	if (!order.data || order.data.kind !== "outbound") {
+
+	if (order.data?.kind !== "outbound") {
 		return (
 			<Feedback tone="info">
 				Редактор отгрузки доступен только для исходящих заказов.
@@ -82,10 +87,11 @@ function OutboundManagement({
 	const scopeId = useWarehouseScopeId();
 	const resource = useShipmentResource(http, warehouseId, orderId);
 	const { query } = resource;
-	const accessLost =
+	const isAccessLost =
 		query.error instanceof ApiError &&
-		[401, 403, 404].includes(query.error.status);
-	const shipment = accessLost ? undefined : query.data;
+		lostAccessStatuses.includes(query.error.status);
+	const shipment = isAccessLost ? undefined : query.data;
+	const title = shipment ? `Отгрузка · ${shipment.order.number}` : "Отгрузка";
 	const contentKey = JSON.stringify([scopeId, warehouseId, orderId]);
 
 	return (
@@ -93,7 +99,7 @@ function OutboundManagement({
 			<Link to={warehousePath("standard", warehouseId, "outbound")}>
 				← Заказы на отгрузку
 			</Link>
-			<h1>Отгрузка{shipment && ` · ${shipment.order.number}`}</h1>
+			<h1>{title}</h1>
 			{query.isPending && (
 				<Feedback tone="loading">Загружаем отгрузку…</Feedback>
 			)}
@@ -131,7 +137,7 @@ function ManagementContent({
 }) {
 	const [editorVersion, setEditorVersion] = useState(0);
 	const {
-		busy,
+		isBusy,
 		canWrite,
 		notice,
 		writeError,
@@ -139,8 +145,13 @@ function ManagementContent({
 		run,
 		handleRefresh,
 	} = useShipmentActions(resource.refresh);
+	const { order } = shipment;
+	const { creation } = resource;
+	const isOutcomeUnknown = creation?.status === "unknown";
+	const pendingObject = creation?.kind === "link" ? "ссылку" : "документ";
+	const canRetryUpload = isOutcomeUnknown && creation.kind === "document";
 
-	function handleSave(body: Parameters<ShipmentResource["save"]>[0]) {
+	function handleSave(body: ShipmentDraft) {
 		return run(async (signal) => {
 			await resource.save(body, signal);
 
@@ -151,17 +162,15 @@ function ManagementContent({
 	return (
 		<>
 			<p>
-				{shipment.order.recipient} · {shipment.order.warehouse_name} ·{" "}
-				{shipment.order.time_zone}
+				{order.recipient} · {order.warehouse_name} · {order.time_zone}
 			</p>
 			{notice && <Feedback tone="success">{notice}</Feedback>}
 			{writeError && <Feedback tone="error">{writeError}</Feedback>}
-			{resource.creation?.status === "unknown" && (
+			{isOutcomeUnknown && (
 				<Feedback tone="warning">
-					Сервер мог сохранить{" "}
-					{resource.creation.kind === "link" ? "ссылку" : "документ"}. Исход
-					неизвестен. Новая выдача ссылки и загрузка документа заблокированы до
-					сверки операции с сервером.
+					Сервер мог сохранить {pendingObject}. Исход неизвестен. Новая выдача
+					ссылки и загрузка документа заблокированы до сверки операции с
+					сервером.
 				</Feedback>
 			)}
 			{refreshError && (
@@ -172,8 +181,8 @@ function ManagementContent({
 			<ShipmentEditor
 				key={editorVersion}
 				shipment={shipment}
-				busy={!canWrite}
-				save={handleSave}
+				isBusy={!canWrite}
+				onSave={handleSave}
 			/>
 			<ShipmentReconciliation shipment={shipment} />
 			<ShipmentSharing
@@ -181,34 +190,31 @@ function ManagementContent({
 				orderId={orderId}
 				shipment={shipment}
 				canIssueLink={canIssueLink}
+				attempt={creation}
+				isBusy={!canWrite}
+				run={run}
 				issueLink={resource.issueLink}
 				revokeLink={resource.revokeLink}
-				run={run}
-				isBusy={!canWrite}
-				attempt={resource.creation}
 				retryLink={resource.retryLink}
 			/>
 			<ShipmentDocumentsEditor
 				shipment={shipment}
+				isBusy={!canWrite}
+				isCreationBlocked={Boolean(creation)}
+				canRetryUpload={canRetryUpload}
+				hasUploadFile={resource.hasUploadFile}
+				run={run}
 				uploadDocument={resource.uploadDocument}
 				publishDocument={resource.publishDocument}
-				run={run}
-				isBusy={!canWrite}
-				isCreationBlocked={!!resource.creation}
-				canRetryUpload={
-					resource.creation?.kind === "document" &&
-					resource.creation.status === "unknown"
-				}
-				hasUploadFile={resource.hasUploadFile}
 				retryUpload={resource.retryUpload}
 				downloadDocument={resource.downloadDocument}
 			/>
-			<Button variant="default" disabled={busy} onClick={handleRefresh}>
+			<Button variant="default" disabled={isBusy} onClick={handleRefresh}>
 				Обновить данные
 			</Button>
 			<p>
 				Данные заказа обновлены{" "}
-				{formatMoment(shipment.order.updated_at, shipment.order.time_zone)}
+				{formatMoment(order.updated_at, order.time_zone)}
 			</p>
 		</>
 	);

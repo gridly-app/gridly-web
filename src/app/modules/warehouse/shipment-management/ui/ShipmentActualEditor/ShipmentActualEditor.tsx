@@ -1,8 +1,10 @@
+import type { ChangeEvent } from "react";
+
 import { type Actual, transports } from "@/domain/shipment";
 import { Button, Input } from "@/shared/ui/controls";
 import { Field, Select } from "@/shared/ui/forms";
 
-import type { WorkingShipment } from "../../api/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto";
 import {
 	DateTime,
 	ItemPicker,
@@ -11,17 +13,37 @@ import {
 
 import styles from "../../shared.module.css";
 
+type ShipmentItem = WorkingShipment["items"][number];
+type TextField =
+	"packaging" | "vehicle_number" | "reference_number" | "comment";
+
+const textFields = [
+	{ key: "packaging", label: "Упаковка" },
+	{ key: "vehicle_number", label: "Номер вагона / автомобиля" },
+	{ key: "reference_number", label: "Номер рейса / накладной" },
+	{ key: "comment", label: "Публичный комментарий" },
+] as const satisfies ReadonlyArray<{ key: TextField; label: string }>;
+
+const transportOptions = Object.entries(transports).map(([value, label]) => ({
+	value,
+	label,
+}));
+
+function isTransport(value: string): value is Actual["transport_type"] {
+	return Object.hasOwn(transports, value);
+}
+
 export function ShipmentActualEditor({
 	rows,
 	items,
-	busy,
+	isBusy,
 	onEdit,
 	onRemove,
 	onAdd,
 }: {
 	rows: Actual[];
 	items: WorkingShipment["items"];
-	busy: boolean;
+	isBusy: boolean;
 	onEdit: (id: string, patch: Partial<Actual>) => void;
 	onRemove: (id: string) => void;
 	onAdd: () => void;
@@ -35,10 +57,10 @@ export function ShipmentActualEditor({
 					key={row.id}
 					index={index}
 					items={items}
-					busy={busy}
 					row={row}
-					edit={(patch) => onEdit(row.id, patch)}
-					remove={() => onRemove(row.id)}
+					isBusy={isBusy}
+					onEdit={onEdit}
+					onRemove={onRemove}
 				/>
 			))}
 			<Button
@@ -54,82 +76,103 @@ export function ShipmentActualEditor({
 }
 
 function ActualFields({
-	busy,
 	index,
 	items,
 	row,
-	edit,
-	remove,
+	isBusy,
+	onEdit,
+	onRemove,
 }: {
 	index: number;
-	busy: boolean;
 	items: WorkingShipment["items"];
 	row: Actual;
-	edit: (patch: Partial<Actual>) => void;
-	remove: () => void;
+	isBusy: boolean;
+	onEdit: (id: string, patch: Partial<Actual>) => void;
+	onRemove: (id: string) => void;
 }) {
-	const fields = [
-		["packaging", "Упаковка"],
-		["vehicle_number", "Номер вагона / автомобиля"],
-		["reference_number", "Номер рейса / накладной"],
-		["comment", "Публичный комментарий"],
-	] as const;
+	function edit(patch: Partial<Actual>) {
+		onEdit(row.id, patch);
+	}
+
+	function handleItemChange(item: ShipmentItem) {
+		edit({
+			order_line_id: item.order_line_id,
+			unit: item.unit,
+			packaging: item.packaging,
+		});
+	}
+
+	function handleQuantityChange(quantity: number) {
+		edit({ quantity });
+	}
+
+	function handleShippedAtChange(value: string | null) {
+		edit({ shipped_at: value ?? "" });
+	}
+
+	function handleLoadedAtChange(loadedAt: string | null) {
+		edit({ loaded_at: loadedAt });
+	}
+
+	function handleTransportChange(value: string) {
+		if (isTransport(value)) edit({ transport_type: value });
+	}
+
+	function handleTextChange(
+		key: TextField,
+		event: ChangeEvent<HTMLInputElement>,
+	) {
+		edit({ [key]: event.target.value || null });
+	}
+
+	function handleRemove() {
+		onRemove(row.id);
+	}
+
 	return (
 		<fieldset className={styles.row}>
 			<legend>Фактическая строка {index + 1}</legend>
 			<ItemPicker
-				busy={busy}
+				isBusy={isBusy}
 				items={items}
 				value={row.order_line_id}
-				onChange={(item) =>
-					edit({
-						order_line_id: item.order_line_id,
-						unit: item.unit,
-						packaging: item.packaging,
-					})
-				}
+				onChange={handleItemChange}
 			/>
 			<Quantity
 				unit={row.unit}
 				value={row.quantity}
-				change={(quantity) => edit({ quantity })}
+				onChange={handleQuantityChange}
 			/>
 			<DateTime
 				label="Отгружено (UTC)"
-				required
+				isRequired
 				value={row.shipped_at}
-				change={(value) => edit({ shipped_at: value ?? "" })}
+				onChange={handleShippedAtChange}
 			/>
 			<DateTime
 				label="Погружено (UTC)"
 				value={row.loaded_at}
-				change={(loaded_at) => edit({ loaded_at })}
+				onChange={handleLoadedAtChange}
 			/>
 			<div>
 				<span>Тип перевозки</span>
 				<Select
 					aria-label="Тип перевозки"
 					value={row.transport_type}
-					disabled={busy}
-					onValueChange={(value) => {
-						if (value === "road" || value === "rail")
-							edit({ transport_type: value });
-					}}
-					options={Object.entries(transports).map(([value, label]) => ({
-						value,
-						label,
-					}))}
+					disabled={isBusy}
+					onValueChange={handleTransportChange}
+					options={transportOptions}
 				/>
 			</div>
-			{fields.map(([key, label]) => (
+			{textFields.map(({ key, label }) => (
 				<Field key={key} label={label}>
 					<Input
 						value={row[key] ?? ""}
-						onChange={(event) => edit({ [key]: event.target.value || null })}
+						onChange={(event) => handleTextChange(key, event)}
 					/>
 				</Field>
 			))}
-			<Button type="button" variant="ghost" onClick={remove}>
+			<Button type="button" variant="ghost" onClick={handleRemove}>
 				Удалить строку факта
 			</Button>
 		</fieldset>

@@ -1,111 +1,137 @@
 .page {
-	overflow: auto;
+	display: grid;
+	align-content: start;
+	gap: var(--space-4);
+	min-width: 0;
 	min-height: 0;
 	padding: var(--workspace-inset);
-	align-content: start;
-	display: grid;
-	gap: 16px;
-	min-width: 0;
+	overflow: auto;
 }
+
+.page h1 {
+	margin: 0 0 10px;
+}
+
+.page p {
+	margin: 0 0 10px;
+
+	color: var(--text-secondary);
+}
+
 .panel {
 	min-width: 0;
 }
-.page h1,
-.panel h2,
-.panel h3 {
+
+.panel :is(h2, h3) {
 	margin: 0 0 10px;
 }
-.page p {
-	margin: 0 0 10px;
-	color: var(--text-secondary);
-}
+
 .fields,
 .row {
-	margin: 0;
-	min-width: 0;
-	border: 0;
-	padding: 0;
 	display: grid;
-	gap: 12px;
 	justify-items: start;
+	gap: var(--space-3);
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+
+	border: 0;
 }
+
 .row {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: end;
-	margin-bottom: 12px;
+	margin-bottom: var(--space-3);
 }
+
 fieldset.row {
 	width: 100%;
+	padding: 10px;
+
 	border: 1px solid var(--border);
 	border-radius: 8px;
-	padding: 10px;
 }
+
 .row > div,
 .fields > div {
-	min-width: 0;
 	display: grid;
 	gap: 5px;
+	min-width: 0;
+
 	font-size: var(--text-control);
 }
+
 .scroll {
-	overflow: auto;
 	min-inline-size: 0;
 	max-height: 28rem;
+	overflow: auto;
 }
+
 .table {
+	font-size: 0.875rem;
+	text-align: left;
+
 	border-collapse: separate;
 	border-spacing: 0;
-	text-align: left;
-	font-size: 0.875rem;
 }
+
 .table thead th {
 	position: sticky;
 	top: 0;
+
 	background: var(--muted);
 }
 
-.deliveryCard {
-	display: grid;
-	gap: 12px;
-	min-width: 0;
-}
-.deliveryCard h2 {
-	margin: 0;
-	font-size: 1.2rem;
-	font-weight: 650;
-}
-.deliveryAddresses > div {
-	padding: 0;
-	border: 0;
-	overflow-wrap: anywhere;
-}
 .deliverySelect {
+	gap: var(--space-3);
 	width: 23rem;
-	gap: 12px;
 	height: 3.5rem;
-	padding-block: 4px;
+	padding-block: var(--space-1);
+
 	font-size: 1.125rem;
 	font-weight: 600;
 	line-height: 1.25;
 }
+
 .deliverySelect [data-slot="select-value"] {
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
+
 	white-space: normal;
 	overflow-wrap: anywhere;
 }
+
+.deliveryCard,
 .deliveryOrder {
 	display: grid;
-	gap: 12px;
+	gap: var(--space-3);
 	min-width: 0;
 }
+
+.deliveryCard h2 {
+	margin: 0;
+
+	font-size: 1.2rem;
+	font-weight: 650;
+}
+
+.deliveryAddresses > div {
+	padding: 0;
+
+	overflow-wrap: anywhere;
+
+	border: 0;
+}
+
 .deliveryOrder h2 {
 	margin: 0;
+
 	font-size: clamp(1.375rem, 2.6vw, 1.875rem);
 	font-weight: 650;
 }
+
 .deliveryOrder a {
 	justify-self: start;
 }

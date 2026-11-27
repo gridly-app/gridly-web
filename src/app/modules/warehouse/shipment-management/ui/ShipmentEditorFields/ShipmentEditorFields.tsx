@@ -1,36 +1,45 @@
+import type { ChangeEvent } from "react";
+
 import { formatUnit } from "@/domain/shipment";
 import { parseUtcDateTimeInput, toUtcDateTimeInput } from "@/shared/lib";
 import { Input } from "@/shared/ui/controls";
 import { Field, Select } from "@/shared/ui/forms";
 
-import type { WorkingShipment } from "../../api/shipment.dto.ts";
+import type { WorkingShipment } from "../../api/shipment.dto";
+
+type ShipmentItem = WorkingShipment["items"][number];
 
 export function ItemPicker({
-	busy,
 	items,
 	value,
+	isBusy,
 	onChange,
 }: {
 	items: WorkingShipment["items"];
-	busy: boolean;
 	value: string;
-	onChange: (item: WorkingShipment["items"][number]) => void;
+	isBusy: boolean;
+	onChange: (item: ShipmentItem) => void;
 }) {
+	const options = items.map((item) => ({
+		value: item.order_line_id,
+		label: `${item.sku} · ${item.name}`,
+	}));
+
+	function handleValueChange(id: string) {
+		const item = items.find(({ order_line_id }) => order_line_id === id);
+
+		if (item) onChange(item);
+	}
+
 	return (
 		<div>
 			<span>Номенклатура</span>
 			<Select
 				aria-label="Номенклатура"
 				value={value}
-				disabled={busy}
-				onValueChange={(id) => {
-					const item = items.find(({ order_line_id }) => order_line_id === id);
-					if (item) onChange(item);
-				}}
-				options={items.map((item) => ({
-					value: item.order_line_id,
-					label: `${item.sku} · ${item.name}`,
-				}))}
+				disabled={isBusy}
+				onValueChange={handleValueChange}
+				options={options}
 				searchable
 			/>
 		</div>
@@ -40,12 +49,18 @@ export function ItemPicker({
 export function Quantity({
 	unit,
 	value,
-	change,
+	onChange,
 }: {
 	unit: string;
 	value: number;
-	change: (quantity: number) => void;
+	onChange: (quantity: number) => void;
 }) {
+	const inputValue = Number.isNaN(value) ? "" : value;
+
+	function handleChange(event: ChangeEvent<HTMLInputElement>) {
+		onChange(event.target.valueAsNumber);
+	}
+
 	return (
 		<Field label={`Количество (${formatUnit(unit)})`}>
 			<Input
@@ -53,8 +68,8 @@ export function Quantity({
 				type="number"
 				step="any"
 				min="0"
-				value={Number.isNaN(value) ? "" : value}
-				onChange={(event) => change(event.target.valueAsNumber)}
+				value={inputValue}
+				onChange={handleChange}
 			/>
 		</Field>
 	);
@@ -63,25 +78,29 @@ export function Quantity({
 export function DateTime({
 	label,
 	value,
-	change,
-	required,
-	disabled,
+	isRequired,
+	isDisabled,
+	onChange,
 }: {
 	label: string;
 	value: string | null;
-	change: (value: string | null) => void;
-	required?: boolean;
-	disabled?: boolean;
+	isRequired?: boolean;
+	isDisabled?: boolean;
+	onChange: (value: string | null) => void;
 }) {
+	function handleChange(event: ChangeEvent<HTMLInputElement>) {
+		onChange(parseUtcDateTimeInput(event.target.value));
+	}
+
 	return (
 		<Field label={label}>
 			<Input
 				type="datetime-local"
 				step="1"
-				required={required}
-				disabled={disabled}
+				required={isRequired}
+				disabled={isDisabled}
 				value={toUtcDateTimeInput(value)}
-				onChange={(event) => change(parseUtcDateTimeInput(event.target.value))}
+				onChange={handleChange}
 			/>
 		</Field>
 	);

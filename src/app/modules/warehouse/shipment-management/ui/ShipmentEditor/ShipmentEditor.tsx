@@ -1,61 +1,51 @@
+import type { ChangeEvent } from "react";
+
 import { priorities } from "@/domain/shipment";
 import { Button, Textarea } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 import { Field, Select } from "@/shared/ui/forms";
 
-import type { WorkingShipment } from "../../api/shipment.dto.ts";
-import type { shipmentDraft } from "../../model/shipmentEditor";
-import { useShipmentEditorDraft } from "../../model/useShipmentEditorDraft";
+import type { WorkingShipment } from "../../api/shipment.dto";
+import type { ShipmentDraft } from "../../model/shipmentEditor";
+import {
+	noPriority,
+	useShipmentEditorDraft,
+} from "../../model/useShipmentEditorDraft";
 import { ShipmentActualEditor } from "../ShipmentActualEditor/ShipmentActualEditor";
 import { ShipmentMilestoneEditor } from "../ShipmentMilestoneEditor/ShipmentMilestoneEditor";
 import { ShipmentPlanEditor } from "../ShipmentPlanEditor/ShipmentPlanEditor";
 
 import styles from "../../shared.module.css";
 
-const priorityEntries = Object.entries(priorities);
 const priorityOptions = [
-	{ value: "none", label: "Не указан" },
-	...priorityEntries.map(([value, label]) => ({ value, label })),
+	{ value: noPriority, label: "Не указан" },
+	...Object.entries(priorities).map(([value, label]) => ({ value, label })),
 ];
 
 export function ShipmentEditor({
 	shipment,
-	busy,
-	save,
+	isBusy,
+	onSave,
 }: {
 	shipment: WorkingShipment;
-	busy: boolean;
-	save: (body: ReturnType<typeof shipmentDraft>) => Promise<void>;
+	isBusy: boolean;
+	onSave: (body: ShipmentDraft) => Promise<void>;
 }) {
-	const {
-		source,
-		priority,
-		reason,
-		plan,
-		actual,
-		milestones,
-		error,
-		setReason,
-		handleSubmit,
-		handlePriorityChange,
-		handleReplaceDraft,
-		handleEditPlan,
-		handleRemovePlan,
-		handleAddPlan,
-		handleEditActual,
-		handleRemoveActual,
-		handleAddActual,
-		handleEditMilestone,
-	} = useShipmentEditorDraft(shipment, save);
+	const draft = useShipmentEditorDraft(shipment, onSave);
+	const hasNewerVersion = shipment.revision !== draft.source.revision;
+
+	function handleReasonChange(event: ChangeEvent<HTMLTextAreaElement>) {
+		draft.handleReasonChange(event.target.value);
+	}
 
 	return (
-		<form className={styles.panel} onSubmit={handleSubmit}>
+		<form className={styles.panel} onSubmit={draft.handleSubmit}>
 			<h2>План, факт и этапы перевозки</h2>
-			{shipment.revision !== source.revision && (
+			{hasNewerVersion && (
 				<Feedback tone="warning">
 					<p>
 						На сервере версия {shipment.revision}, в вашем черновике{" "}
-						{source.revision}. Правки сохранены.
+						{draft.source.revision}. Правки сохранены.
 					</p>
 					<p>
 						На сервере строк плана {shipment.plan.length}, строк факта{" "}
@@ -65,53 +55,50 @@ export function ShipmentEditor({
 					<Button
 						type="button"
 						variant="secondary"
-						disabled={busy}
-						onClick={handleReplaceDraft}
+						disabled={isBusy}
+						onClick={draft.handleReplaceDraft}
 					>
 						Заменить черновик текущими данными
 					</Button>
 				</Feedback>
 			)}
-			<fieldset disabled={busy} className={styles.fields}>
+			<fieldset disabled={isBusy} className={styles.fields}>
 				<div>
 					<span>Складской приоритет</span>
 					<Select
 						aria-label="Складской приоритет"
-						value={priority ?? "none"}
-						disabled={busy}
-						onValueChange={handlePriorityChange}
+						value={draft.priority ?? noPriority}
+						disabled={isBusy}
+						onValueChange={draft.handlePriorityChange}
 						options={priorityOptions}
 					/>
 				</div>
 				<Field label="Публичная причина задержки">
-					<Textarea
-						value={reason}
-						onChange={(event) => setReason(event.target.value)}
-					/>
+					<Textarea value={draft.reason} onChange={handleReasonChange} />
 				</Field>
 				<ShipmentPlanEditor
-					rows={plan}
+					rows={draft.plan}
 					items={shipment.items}
-					busy={busy}
-					onEdit={handleEditPlan}
-					onRemove={handleRemovePlan}
-					onAdd={handleAddPlan}
+					isBusy={isBusy}
+					onEdit={draft.handleEditPlan}
+					onRemove={draft.handleRemovePlan}
+					onAdd={draft.handleAddPlan}
 				/>
 				<ShipmentActualEditor
-					rows={actual}
+					rows={draft.actual}
 					items={shipment.items}
-					busy={busy}
-					onEdit={handleEditActual}
-					onRemove={handleRemoveActual}
-					onAdd={handleAddActual}
+					isBusy={isBusy}
+					onEdit={draft.handleEditActual}
+					onRemove={draft.handleRemoveActual}
+					onAdd={draft.handleAddActual}
 				/>
 				<ShipmentMilestoneEditor
-					rows={milestones}
-					busy={busy}
-					onEdit={handleEditMilestone}
+					rows={draft.milestones}
+					isBusy={isBusy}
+					onEdit={draft.handleEditMilestone}
 				/>
-				{error && <Feedback tone="error">{error}</Feedback>}
-				<Button type="submit" disabled={busy}>
+				{draft.error && <Feedback tone="error">{draft.error}</Feedback>}
+				<Button type="submit" disabled={isBusy}>
 					Сохранить отгрузку
 				</Button>
 			</fieldset>

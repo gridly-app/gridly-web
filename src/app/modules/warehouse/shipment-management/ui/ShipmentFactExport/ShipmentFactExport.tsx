@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import { saveFile } from "@/shared/http";
 import { Button } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 
+import { fileNamePart, saveCsvFile } from "../../lib/csvFile";
 import {
 	shipmentFactCsv,
 	shipmentFactSummary,
@@ -34,12 +34,10 @@ export function ShipmentFactExport({
 	}
 
 	function handleDownload() {
-		const number = shipment.order.number.replace(/[<>:"/\\|?*\p{Cc}]/gu, "_");
-		const file = new Blob([shipmentFactCsv(shipment)], {
-			type: "text/csv;charset=utf-8",
-		});
-
-		saveFile(file, `отгрузка-${number}.csv`);
+		saveCsvFile(
+			shipmentFactCsv(shipment),
+			`отгрузка-${fileNamePart(shipment.order.number)}.csv`,
+		);
 	}
 
 	return (

@@ -11,12 +11,12 @@ export type RunShipmentAction = (
 ) => Promise<void>;
 
 export function useShipmentActions(reread: () => Promise<void>) {
-	const [busy, setBusy] = useState(false);
+	const [isBusy, setIsBusy] = useState(false);
 	const [notice, setNotice] = useState("");
 	const [writeError, setWriteError] = useState("");
 	const [refreshError, setRefreshError] = useState("");
 	const request = useRef<AbortController | null>(null);
-	const canWrite = !busy && !refreshError;
+	const canWrite = !isBusy && !refreshError;
 
 	useEffect(() => () => request.current?.abort(), []);
 
@@ -43,7 +43,7 @@ export function useShipmentActions(reread: () => Promise<void>) {
 		]);
 
 		request.current = controller;
-		setBusy(true);
+		setIsBusy(true);
 		setWriteError("");
 		setNotice("");
 
@@ -51,9 +51,7 @@ export function useShipmentActions(reread: () => Promise<void>) {
 			await action(signal);
 
 			if (controller.signal.aborted) return;
-
 			if (showSuccess) setNotice("Изменения сохранены.");
-
 			if (refreshAfterWrite) await refresh(controller.signal);
 		} catch (error) {
 			if (controller.signal.aborted) return;
@@ -62,7 +60,7 @@ export function useShipmentActions(reread: () => Promise<void>) {
 		} finally {
 			request.current = null;
 
-			if (!controller.signal.aborted) setBusy(false);
+			if (!controller.signal.aborted) setIsBusy(false);
 		}
 	};
 
@@ -72,19 +70,19 @@ export function useShipmentActions(reread: () => Promise<void>) {
 		const controller = new AbortController();
 
 		request.current = controller;
-		setBusy(true);
+		setIsBusy(true);
 
 		try {
 			await refresh(controller.signal);
 		} finally {
 			request.current = null;
 
-			if (!controller.signal.aborted) setBusy(false);
+			if (!controller.signal.aborted) setIsBusy(false);
 		}
 	}
 
 	return {
-		busy,
+		isBusy,
 		canWrite,
 		notice,
 		writeError,
@@ -98,15 +96,21 @@ function shipmentActionError(error: unknown) {
 	const message = errorMessage(error);
 
 	if (!(error instanceof ApiError)) return message;
-	if (error.status === 412 && error.code === "STALE_REVISION") {
+
+	const isStaleRevision =
+		error.status === 412 && error.code === "STALE_REVISION";
+	const isInvalidState = error.status === 409 && error.code === "INVALID_STATE";
+	const isUnsupportedKind =
+		error.status === 422 && error.code === "UNSUPPORTED_ORDER_KIND";
+
+	if (isStaleRevision) {
 		return "Версия отгрузки изменилась. Ваши правки сохранены. Обновите данные для сравнения.";
 	}
-	if (error.status === 409 && error.code === "INVALID_STATE") {
+
+	if (isInvalidState)
 		return `Запись запрещена в текущем состоянии отгрузки. ${message}`;
-	}
-	if (error.status === 422 && error.code === "UNSUPPORTED_ORDER_KIND") {
+	if (isUnsupportedKind)
 		return "Редактор отгрузки доступен только для исходящих заказов.";
-	}
 
 	return message;
 }

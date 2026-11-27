@@ -1,25 +1,44 @@
 import { type FormEvent, useState } from "react";
 
-import type { Actual, Milestone, Plan } from "@/domain/shipment";
+import {
+	type Actual,
+	type Milestone,
+	type Plan,
+	priorities,
+} from "@/domain/shipment";
 import { errorMessage } from "@/shared/lib";
 
 import type { WorkingShipment } from "../api/shipment.dto";
 import {
 	editableMilestones,
+	type ShipmentDraft,
 	shipmentDraft,
 	type ShipmentPlanRow,
 } from "./shipmentEditor";
 
+type Priority = WorkingShipment["warehouse"]["priority"];
+
+export const noPriority = "none";
+
+function planRows(shipment: WorkingShipment): ShipmentPlanRow[] {
+	return shipment.plan.map((entry) => ({
+		clientId: crypto.randomUUID(),
+		entry,
+	}));
+}
+
+function isPriority(value: string): value is NonNullable<Priority> {
+	return Object.hasOwn(priorities, value);
+}
+
 export function useShipmentEditorDraft(
 	shipment: WorkingShipment,
-	save: (body: ReturnType<typeof shipmentDraft>) => Promise<void>,
+	onSave: (body: ShipmentDraft) => Promise<void>,
 ) {
 	const [source, setSource] = useState(shipment);
 	const [priority, setPriority] = useState(shipment.warehouse.priority);
 	const [reason, setReason] = useState(shipment.order.status_reason ?? "");
-	const [plan, setPlan] = useState<ShipmentPlanRow[]>(() =>
-		shipment.plan.map((entry) => ({ clientId: crypto.randomUUID(), entry })),
-	);
+	const [plan, setPlan] = useState(() => planRows(shipment));
 	const [actual, setActual] = useState(shipment.actual);
 	const [milestones, setMilestones] = useState(() =>
 		editableMilestones(shipment),
@@ -42,25 +61,31 @@ export function useShipmentEditorDraft(
 				milestones,
 			);
 
-			void save(body);
+			void onSave(body);
 		} catch (error) {
 			setError(errorMessage(error));
 		}
 	}
 
 	function handlePriorityChange(value: string) {
-		if (value === "none") setPriority(null);
-		if (value === "low" || value === "normal" || value === "high")
-			setPriority(value);
+		if (value === noPriority) {
+			setPriority(null);
+
+			return;
+		}
+
+		if (isPriority(value)) setPriority(value);
+	}
+
+	function handleReasonChange(value: string) {
+		setReason(value);
 	}
 
 	function handleReplaceDraft() {
 		setSource(shipment);
 		setPriority(shipment.warehouse.priority);
 		setReason(shipment.order.status_reason ?? "");
-		setPlan(
-			shipment.plan.map((entry) => ({ clientId: crypto.randomUUID(), entry })),
-		);
+		setPlan(planRows(shipment));
 		setActual(shipment.actual);
 		setMilestones(editableMilestones(shipment));
 		setError("");
@@ -143,9 +168,9 @@ export function useShipmentEditorDraft(
 		actual,
 		milestones,
 		error,
-		setReason,
 		handleSubmit,
 		handlePriorityChange,
+		handleReasonChange,
 		handleReplaceDraft,
 		handleEditPlan,
 		handleRemovePlan,
