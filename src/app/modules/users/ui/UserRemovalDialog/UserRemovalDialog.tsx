@@ -1,5 +1,6 @@
 import type { WorkspaceMode } from "@/ports/session";
 import { type HttpClient, isStaleRevision } from "@/shared/http";
+import { UserError } from "@/shared/lib";
 import { DeleteConfirmation } from "@/shared/ui/management";
 
 import { type EditableAccount, isEditableAccount } from "../../api/users.dto";
@@ -47,7 +48,7 @@ export function UserRemovalDialog({
 	const deleteError = isStale && readError ? readError : removeUser.error;
 	const removalMessage =
 		deleteError && !isStale
-			? new Error(userActionError(deleteError))
+			? new UserError(userActionError(deleteError))
 			: deleteError;
 	const refreshDelete = isStale ? handleRefreshForDelete : undefined;
 	const warehouseName = removedWarehouse?.warehouse_name ?? warehouseId;
