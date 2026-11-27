@@ -33,13 +33,13 @@ const movementResources = ["orders", "history"] as const;
 export function ProductDetail({
 	product,
 	warehouse,
-	pending,
+	isPending,
 	onSave,
 	onClose,
 }: {
 	product: Product;
 	warehouse: CatalogWarehouse;
-	pending: boolean;
+	isPending: boolean;
 	onSave: (product: ProductInput) => Promise<void>;
 	onClose: () => void;
 }) {
@@ -89,7 +89,7 @@ export function ProductDetail({
 				<ProductForm
 					product={product}
 					categories={warehouse.categories}
-					pending={pending}
+					isPending={isPending}
 					onSave={handleSave}
 				/>
 			</Modal>
@@ -104,7 +104,7 @@ export function ProductDetail({
 				{canEdit && (
 					<Button
 						variant="secondary"
-						disabled={pending}
+						disabled={isPending}
 						onClick={handleStartEditing}
 					>
 						Изменить товар

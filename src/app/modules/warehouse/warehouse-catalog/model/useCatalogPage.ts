@@ -1,11 +1,30 @@
 import { useState } from "react";
+
 import {
 	type CommandExecutor,
 	productOccupancy,
 	type Stock,
 } from "@/domain/warehouse";
-import type { CatalogCategory, CatalogProduct, CatalogTab } from "./catalog";
+
+import type { CatalogProduct, CatalogTab } from "./catalog";
 import type { CatalogWarehouse } from "./warehouseResources";
+
+function matchesStatus(status: string, isArchived: boolean | undefined) {
+	return status === "all" || (status === "archived") === Boolean(isArchived);
+}
+
+function groupStockByProduct(stock: Stock[]) {
+	const stockByProduct = new Map<string, Stock[]>();
+
+	for (const item of stock) {
+		const items = stockByProduct.get(item.product) ?? [];
+
+		items.push(item);
+		stockByProduct.set(item.product, items);
+	}
+
+	return stockByProduct;
+}
 
 export function useCatalogPage(
 	warehouse: CatalogWarehouse,
@@ -17,75 +36,63 @@ export function useCatalogPage(
 	const [tab, setTab] = useState<CatalogTab>("products");
 	const searchQuery = search.trim().toLowerCase();
 	const categoryNames = new Map(
-		warehouse.categories.map((category) => [category.id, category.name]),
+		warehouse.categories.map((item) => [item.id, item.name]),
 	);
+	const stockByProduct = groupStockByProduct(warehouse.stock);
 
 	function toggleProductArchive(productId: string) {
-		const product = warehouse.products.find(
-			(product) => product.id === productId,
-		);
+		const product = warehouse.products.find((item) => item.id === productId);
 
-		if (!product) {
-			return;
-		}
+		if (!product) return;
 
 		return product.archived
 			? command("product", { ...product, archived: false })
 			: command("archiveProduct", product.id);
 	}
 
-	const stockByProduct = new Map<string, Stock[]>();
-	for (const stock of warehouse.stock) {
-		const items = stockByProduct.get(stock.product);
-		if (items) items.push(stock);
-		else stockByProduct.set(stock.product, [stock]);
-	}
-
 	const visibleProducts: CatalogProduct[] = warehouse.products
-		.filter(
-			(p) =>
-				(status === "all" || (status === "archived") === !!p.archived) &&
-				(category === "all" || p.category === category),
-		)
+		.filter((product) => matchesStatus(status, product.archived))
+		.filter((product) => category === "all" || product.category === category)
 		.filter((product) =>
 			(product.name + product.sku).toLowerCase().includes(searchQuery),
 		)
-		.map((product) => ({
-			...product,
-			categoryName: categoryNames.get(product.category),
-			stockQuantity: productOccupancy(
+		.map((product) => {
+			const occupancy = productOccupancy(
 				product,
 				stockByProduct.get(product.id) ?? [],
-			).quantity,
-			occupiedVolume: productOccupancy(
-				product,
-				stockByProduct.get(product.id) ?? [],
-			).volume,
-		}));
+			);
 
-	const visibleCategories: CatalogCategory[] = warehouse.categories
-		.filter((c) => status === "all" || (status === "archived") === !!c.archived)
-		.filter((category) => category.name.toLowerCase().includes(searchQuery))
-		.map((category) => ({
-			...category,
-			productCount: category.productCount,
-		}));
+			return {
+				...product,
+				categoryName: categoryNames.get(product.category),
+				stockQuantity: occupancy.quantity,
+				occupiedVolume: occupancy.volume,
+			};
+		});
+
+	const visibleCategories = warehouse.categories
+		.filter((item) => matchesStatus(status, item.archived))
+		.filter((item) => item.name.toLowerCase().includes(searchQuery));
+
+	const isProductsTab = tab === "products";
+	const isEmpty =
+		(isProductsTab ? warehouse.products : warehouse.categories).length === 0;
+	const hasNoResults =
+		(isProductsTab ? visibleProducts : visibleCategories).length === 0;
 
 	return {
 		status,
 		setStatus,
 		category,
 		setCategory,
-		empty: !(tab === "products" ? warehouse.products : warehouse.categories)
-			.length,
-		noResults:
-			(tab === "products" ? visibleProducts : visibleCategories).length === 0,
-		toggleProductArchive,
-		visibleProducts,
-		visibleCategories,
-		tab,
-		setTab,
 		search,
 		setSearch,
+		tab,
+		setTab,
+		isEmpty,
+		hasNoResults,
+		visibleProducts,
+		visibleCategories,
+		toggleProductArchive,
 	};
 }

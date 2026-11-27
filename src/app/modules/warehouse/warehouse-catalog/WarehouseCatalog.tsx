@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router-dom";
+
 import type { ProductInput } from "@/domain/warehouse";
 import { useWarehouseScreen } from "@/ports/warehouse";
 import { useUpdateSearchParams } from "@/shared/lib";
@@ -9,6 +10,7 @@ import {
 } from "@/shared/ui/dataDisplay";
 import { Feedback } from "@/shared/ui/feedback";
 import { Modal } from "@/shared/ui/overlays";
+
 import { productColumns } from "./model/productColumns";
 import { useCatalogDialog } from "./model/useCatalogDialog";
 import { useCatalogPage } from "./model/useCatalogPage";
@@ -22,18 +24,13 @@ import { ProductDetail } from "./ui/ProductDetail/ProductDetail";
 import { ProductsTable } from "./ui/ProductsTable/ProductsTable";
 
 export function WarehouseCatalog() {
-	const { warehouse, execute, command, pending } =
-		useWarehouseScreen(warehouseResources);
-	const catalog = useCatalogPage(warehouse, command);
 	const {
-		empty,
-		noResults,
-		tab,
-		setTab,
-		visibleProducts,
-		visibleCategories,
-		toggleProductArchive,
-	} = catalog;
+		warehouse,
+		execute,
+		command,
+		pending: isPending,
+	} = useWarehouseScreen(warehouseResources);
+	const catalog = useCatalogPage(warehouse, command);
 	const {
 		dialog,
 		close,
@@ -43,33 +40,32 @@ export function WarehouseCatalog() {
 		saveProduct,
 		saveCategory,
 	} = useCatalogDialog(execute);
-
 	const categoryColumns = useTableColumns("categories", ["Товаров"]);
 	const products = useTableColumnVisibility(
 		"gridly.catalog.columns",
 		productColumns,
 		"visible",
 	);
-
-	const selectedCategory =
-		dialog?.type === "category" ? dialog.item : undefined;
 	const [params] = useSearchParams();
 	const updateSearchParams = useUpdateSearchParams();
+	const { tab } = catalog;
+	const isProductsTab = tab === "products";
 	const productId = params.get("product");
 	const product = warehouse.products.find((item) => item.id === productId);
-	const isProductMissing = !!productId && !product;
-	const createAction =
-		tab === "products" ? "create-product" : "create-category";
-	const canCreate = !!warehouse.allowedActions?.includes(createAction);
-	const emptyMessage = empty
+	const isProductMissing = Boolean(productId) && !product;
+	const createAction = isProductsTab ? "create-product" : "create-category";
+	const canCreate = Boolean(warehouse.allowedActions?.includes(createAction));
+	const emptyMessage = catalog.isEmpty
 		? "В этом разделе каталога пока нет записей."
 		: "Ничего не найдено. Измените поиск.";
+	const selectedCategory =
+		dialog?.type === "category" ? dialog.item : undefined;
 	const currentCategory =
 		selectedCategory &&
 		(warehouse.categories.find((item) => item.id === selectedCategory.id) ??
 			selectedCategory);
 
-	function closeProduct() {
+	function handleCloseProduct() {
 		updateSearchParams({ product: null });
 	}
 
@@ -81,37 +77,39 @@ export function WarehouseCatalog() {
 		await execute("product", input);
 	}
 
+	const toolbar = (
+		<>
+			<CatalogToolbar
+				tab={tab}
+				canCreate={canCreate}
+				onTabChange={catalog.setTab}
+				onCreate={handleCreate}
+			/>
+			{isProductsTab ? products.button : categoryColumns.button}
+			<CatalogFilters model={catalog} categories={warehouse.categories} />
+		</>
+	);
+
 	return (
 		<>
 			<DataPanel
-				empty={noResults}
+				empty={catalog.hasNoResults}
 				emptyMessage={emptyMessage}
-				toolbar={
-					<>
-						<CatalogToolbar
-							tab={tab}
-							canCreate={canCreate}
-							onTabChange={setTab}
-							onCreate={handleCreate}
-						/>
-						{tab === "categories" ? categoryColumns.button : products.button}
-						<CatalogFilters model={catalog} categories={warehouse.categories} />
-					</>
-				}
+				toolbar={toolbar}
 			>
-				{tab === "products" ? (
+				{isProductsTab ? (
 					<ProductsTable
-						items={visibleProducts}
+						items={catalog.visibleProducts}
 						columns={products.visibleColumns}
-						pending={pending}
+						isPending={isPending}
 						onEdit={editProduct}
-						onToggleArchive={toggleProductArchive}
+						onToggleArchive={catalog.toggleProductArchive}
 					/>
 				) : (
 					<CategoriesTable
-						items={visibleCategories}
-						onOpen={editCategory}
+						items={catalog.visibleCategories}
 						hiddenColumns={categoryColumns.hiddenColumns}
+						onOpen={editCategory}
 					/>
 				)}
 			</DataPanel>
@@ -120,13 +118,13 @@ export function WarehouseCatalog() {
 					key={product.id}
 					product={product}
 					warehouse={warehouse}
-					pending={pending}
-					onClose={closeProduct}
+					isPending={isPending}
 					onSave={handleSaveProduct}
+					onClose={handleCloseProduct}
 				/>
 			)}
 			{isProductMissing && (
-				<Modal title="Карточка товара" onClose={closeProduct}>
+				<Modal title="Карточка товара" onClose={handleCloseProduct}>
 					<Feedback tone="error">Товар не найден в каталоге склада.</Feedback>
 				</Modal>
 			)}
@@ -136,16 +134,16 @@ export function WarehouseCatalog() {
 					category={currentCategory}
 					warehouse={warehouse}
 					execute={execute}
-					isPending={pending}
+					isPending={isPending}
 					onSave={saveCategory}
 					onClose={close}
 				/>
 			) : (
 				<CatalogDialog
 					dialog={dialog}
-					onClose={close}
-					pending={pending}
 					categories={warehouse.categories}
+					isPending={isPending}
+					onClose={close}
 					onSaveProduct={saveProduct}
 					onSaveCategory={saveCategory}
 				/>

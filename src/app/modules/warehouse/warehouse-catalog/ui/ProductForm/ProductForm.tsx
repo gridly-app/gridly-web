@@ -1,32 +1,40 @@
 import type { Category, Product, ProductInput } from "@/domain/warehouse";
 import { Input } from "@/shared/ui/controls";
 import { Combobox, Field, FormGrid, FormShell } from "@/shared/ui/forms";
+
+import { catalogNameMaxLength } from "../../model/catalog";
 import { productFromForm } from "../../model/productFromForm";
 
-export interface ProductFormProps {
-	categories: Category[];
-	product?: Product | undefined;
-	onSave: (product: ProductInput) => Promise<void>;
-	pending: boolean;
-}
+const defaultVolume = "0.500";
 
 export function ProductForm({
 	product,
 	categories,
-	pending,
+	isPending,
 	onSave,
-}: ProductFormProps) {
+}: {
+	product?: Product | undefined;
+	categories: Category[];
+	isPending: boolean;
+	onSave: (product: ProductInput) => Promise<void>;
+}) {
+	const categoryOptions = categories.map((category) => ({
+		value: category.id,
+		label: category.name,
+	}));
+
+	function handleSubmit(data: FormData) {
+		return onSave(productFromForm(data, product));
+	}
+
 	return (
-		<FormShell
-			pending={pending}
-			onSubmit={(data) => onSave(productFromForm(data, product))}
-		>
+		<FormShell pending={isPending} onSubmit={handleSubmit}>
 			<Field label="Название *">
 				<Input
 					name="name"
 					defaultValue={product?.name}
 					required
-					maxLength={80}
+					maxLength={catalogNameMaxLength}
 				/>
 			</Field>
 			<Field label="Артикул *">
@@ -38,17 +46,14 @@ export function ProductForm({
 					defaultValue={product?.category || ""}
 					required
 					placeholder="Выберите категорию"
-					options={categories.map((category) => ({
-						value: category.id,
-						label: category.name,
-					}))}
+					options={categoryOptions}
 				/>
 			</Field>
 			<FormGrid>
 				<Field label="Объём, м³ *">
 					<Input
 						name="volume"
-						defaultValue={product?.volume || "0.500"}
+						defaultValue={product?.volume || defaultVolume}
 						required
 						inputMode="decimal"
 					/>

@@ -6,9 +6,9 @@ import {
 	IconPencil,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import type { Product } from "@/domain/warehouse";
-import { StatusBadge as Badge } from "@/ports/warehouse";
 
+import type { Product } from "@/domain/warehouse";
+import { StatusBadge } from "@/ports/warehouse";
 import { Button, IconButton } from "@/shared/ui/controls";
 import {
 	Table,
@@ -20,152 +20,177 @@ import {
 	TableRow,
 } from "@/shared/ui/dataDisplay";
 import { Link } from "@/shared/ui/navigation";
-import type { CatalogProduct } from "../../model/catalog";
-import { type ProductColumn, productColumns } from "../../model/productColumns";
 
-export interface ProductsTableProps {
-	items: readonly CatalogProduct[];
-	columns: readonly ProductColumn[];
-	pending: boolean;
-	onEdit: (product: Product) => void;
-	onToggleArchive: (id: string) => void;
-}
+import type { CatalogProduct } from "../../model/catalog";
+import {
+	formatProductValue,
+	type ProductColumn,
+	productColumns,
+	type ProductSort,
+	type ProductSortKey,
+	sortProducts,
+} from "../../model/productColumns";
 
 export function ProductsTable({
 	items,
 	columns,
-	pending,
+	isPending,
 	onEdit,
 	onToggleArchive,
-}: ProductsTableProps) {
-	const [sort, setSort] = useState<{
-		key: ProductColumn | "name";
-		descending: boolean;
-	} | null>(null);
-	const visible = productColumns.filter((column) =>
+}: {
+	items: readonly CatalogProduct[];
+	columns: readonly ProductColumn[];
+	isPending: boolean;
+	onEdit: (product: Product) => void;
+	onToggleArchive: (id: string) => void;
+}) {
+	const [sort, setSort] = useState<ProductSort | null>(null);
+	const visibleColumns = productColumns.filter((column) =>
 		columns.includes(column.key),
 	);
-	const activeColumn = visible.find((column) => column.key === sort?.key);
-	const direction = sort?.descending ? -1 : 1;
-	const sorted =
-		sort && (sort.key === "name" || activeColumn)
-			? [...items].sort((a, b) => {
-					const left = activeColumn ? activeColumn.value(a) : a.name;
-					const right = activeColumn ? activeColumn.value(b) : b.name;
-					if (left == null) return right == null ? 0 : 1;
-					if (right == null) return -1;
-					return (
-						direction *
-						(typeof left === "number" && typeof right === "number"
-							? left - right
-							: String(left).localeCompare(String(right), "ru-RU", {
-									numeric: true,
-								}))
-					);
-				})
-			: items;
-	function header(key: ProductColumn | "name", label: string) {
-		const current = sort?.key === key;
-		return (
-			<TableHead
-				key={key}
-				aria-sort={
-					current ? (sort.descending ? "descending" : "ascending") : "none"
-				}
-			>
-				<Button
-					size="sm"
-					variant="ghost"
-					aria-label={`Сортировать: ${label}`}
-					onClick={() =>
-						setSort({ key, descending: current && !sort.descending })
-					}
-				>
-					{label}
-					{current &&
-						(sort.descending ? (
-							<IconArrowDown size={14} />
-						) : (
-							<IconArrowUp size={14} />
-						))}
-				</Button>
-			</TableHead>
-		);
+	const sorted = sortProducts(items, sort, [...columns]);
+
+	function handleSort(key: ProductSortKey) {
+		const isCurrent = sort?.key === key;
+
+		setSort({ key, isDescending: isCurrent && !sort.isDescending });
 	}
 
 	return (
 		<Table>
 			<TableHeader>
 				<TableRow>
-					{header("name", "Товар")}
-					{visible.map((column) => header(column.key, column.label))}
+					<SortableHead
+						sortKey="name"
+						label="Товар"
+						sort={sort}
+						onSort={handleSort}
+					/>
+					{visibleColumns.map((column) => (
+						<SortableHead
+							key={column.key}
+							sortKey={column.key}
+							label={column.label}
+							sort={sort}
+							onSort={handleSort}
+						/>
+					))}
 					<TableHead data-column="actions">Действия</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{sorted.map((p) => (
-					<TableRow key={p.id}>
+				{sorted.map((product) => (
+					<TableRow key={product.id}>
 						<TableCell>
 							<Link
 								to={{
-									search: new URLSearchParams({ product: p.id }).toString(),
+									search: new URLSearchParams({
+										product: product.id,
+									}).toString(),
 								}}
 							>
-								{p.name}
+								{product.name}
 							</Link>
-							{p.archived && <Badge value="Архив" />}
+							{product.archived && <StatusBadge value="Архив" />}
 						</TableCell>
-						{visible.map((column) => {
-							const value = column.value(p);
-							const unit = {
-								volume: " м³",
-								occupancy: " м³",
-								quantity: " шт.",
-								price: " ₽",
-								shelf: " дн.",
-							};
-							return (
-								<TableCell key={column.key}>
-									{typeof value === "number"
-										? column.key === "shelf" && !value
-											? "Без срока"
-											: `${value.toLocaleString("ru-RU", { maximumFractionDigits: 3 })}${column.key in unit ? unit[column.key as keyof typeof unit] : ""}`
-										: (value ?? "—")}
-								</TableCell>
-							);
-						})}
+						{visibleColumns.map((column) => (
+							<TableCell key={column.key}>
+								{formatProductValue(column.key, column.value(product))}
+							</TableCell>
+						))}
 						<TableCell>
-							<TableActions>
-								<IconButton
-									label="Изменить"
-									icon={<IconPencil size={16} />}
-									variant="secondary"
-									disabled={pending || !p.allowedActions?.includes("edit")}
-									onClick={() => onEdit(p)}
-								/>
-								<IconButton
-									label={p.archived ? "Восстановить" : "Архивировать"}
-									icon={
-										p.archived ? (
-											<IconArchiveOff size={16} />
-										) : (
-											<IconArchive size={16} />
-										)
-									}
-									variant="ghost"
-									disabled={
-										pending ||
-										!p.allowedActions?.includes(
-											p.archived ? "restore" : "archive",
-										)
-									}
-									onClick={() => void onToggleArchive(p.id)}
-								/>
-							</TableActions>
+							<ProductActions
+								product={product}
+								isPending={isPending}
+								onEdit={onEdit}
+								onToggleArchive={onToggleArchive}
+							/>
 						</TableCell>
 					</TableRow>
 				))}
 			</TableBody>
 		</Table>
+	);
+}
+
+function SortableHead({
+	sortKey,
+	label,
+	sort,
+	onSort,
+}: {
+	sortKey: ProductSortKey;
+	label: string;
+	sort: ProductSort | null;
+	onSort: (key: ProductSortKey) => void;
+}) {
+	const isCurrent = sort?.key === sortKey;
+	const isDescending = isCurrent && sort.isDescending;
+	const ariaSort = isDescending ? "descending" : "ascending";
+	const SortIcon = isDescending ? IconArrowDown : IconArrowUp;
+
+	function handleClick() {
+		onSort(sortKey);
+	}
+
+	return (
+		<TableHead aria-sort={isCurrent ? ariaSort : "none"}>
+			<Button
+				size="sm"
+				variant="ghost"
+				aria-label={`Сортировать: ${label}`}
+				onClick={handleClick}
+			>
+				{label}
+				{isCurrent && <SortIcon size={14} />}
+			</Button>
+		</TableHead>
+	);
+}
+
+function ProductActions({
+	product,
+	isPending,
+	onEdit,
+	onToggleArchive,
+}: {
+	product: CatalogProduct;
+	isPending: boolean;
+	onEdit: (product: Product) => void;
+	onToggleArchive: (id: string) => void;
+}) {
+	const archiveAction = product.archived ? "restore" : "archive";
+	const archiveLabel = product.archived ? "Восстановить" : "Архивировать";
+	const ArchiveIcon = product.archived ? IconArchiveOff : IconArchive;
+	const canEdit = Boolean(product.allowedActions?.includes("edit"));
+	const canToggleArchive = Boolean(
+		product.allowedActions?.includes(archiveAction),
+	);
+
+	function handleEdit() {
+		onEdit(product);
+	}
+
+	function handleToggleArchive() {
+		onToggleArchive(product.id);
+	}
+
+	return (
+		<TableActions>
+			<IconButton
+				label="Изменить"
+				icon={<IconPencil size={16} />}
+				variant="secondary"
+				disabled={isPending || !canEdit}
+				onClick={handleEdit}
+			/>
+			<IconButton
+				label={archiveLabel}
+				icon={<ArchiveIcon size={16} />}
+				variant="ghost"
+				disabled={isPending || !canToggleArchive}
+				onClick={handleToggleArchive}
+			/>
+		</TableActions>
 	);
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import type {
 	Category,
 	CategoryInput,
@@ -6,31 +7,49 @@ import type {
 	Product,
 	ProductInput,
 } from "@/domain/warehouse";
+
 import type { CatalogDialogState, CatalogTab } from "./catalog";
 
 export function useCatalogDialog(execute: CommandExecutor) {
 	const [dialog, setDialog] = useState<CatalogDialogState | null>(null);
 
+	function closeIfUnchanged() {
+		setDialog((current) => (current === dialog ? null : current));
+	}
+
 	async function saveProduct(product: ProductInput) {
 		await execute("product", product);
-		setDialog((current) => (current === dialog ? null : current));
+		closeIfUnchanged();
 	}
 
 	async function saveCategory(category: CategoryInput) {
 		await execute("category", category);
-		setDialog((current) => (current === dialog ? null : current));
+		closeIfUnchanged();
+	}
+
+	function close() {
+		setDialog(null);
+	}
+
+	function openNewItem(tab: CatalogTab) {
+		setDialog(tab === "products" ? { type: "product" } : { type: "category" });
+	}
+
+	function editProduct(item: Product) {
+		setDialog({ type: "product", item });
+	}
+
+	function editCategory(item: Category) {
+		setDialog({ type: "category", item });
 	}
 
 	return {
 		dialog,
-		close: () => setDialog(null),
+		close,
 		saveProduct,
 		saveCategory,
-		openNewItem: (type: CatalogTab) =>
-			setDialog(
-				type === "products" ? { type: "product" } : { type: "category" },
-			),
-		editProduct: (item: Product) => setDialog({ type: "product", item }),
-		editCategory: (item: Category) => setDialog({ type: "category", item }),
+		openNewItem,
+		editProduct,
+		editCategory,
 	};
 }

@@ -1,49 +1,47 @@
 import type { Category, CategoryInput, ProductInput } from "@/domain/warehouse";
 import { Modal } from "@/shared/ui/overlays";
+
 import type { CatalogDialogState } from "../../model/catalog";
 import { CategoryForm } from "../CategoryForm/CategoryForm";
 import { ProductForm } from "../ProductForm/ProductForm";
 
-export interface CatalogDialogProps {
-	dialog: CatalogDialogState | null;
-	pending: boolean;
-	categories: Category[];
-	onClose: () => void;
-	onSaveProduct: (product: ProductInput) => Promise<void>;
-	onSaveCategory: (category: CategoryInput) => Promise<void>;
-}
-
 export function CatalogDialog({
 	dialog,
-	pending,
 	categories,
+	isPending,
 	onClose,
 	onSaveProduct,
 	onSaveCategory,
-}: CatalogDialogProps) {
+}: {
+	dialog: CatalogDialogState | null;
+	categories: Category[];
+	isPending: boolean;
+	onClose: () => void;
+	onSaveProduct: (product: ProductInput) => Promise<void>;
+	onSaveCategory: (category: CategoryInput) => Promise<void>;
+}) {
+	if (!dialog) return null;
+
+	if (dialog.type === "product") {
+		return (
+			<Modal title="Товар каталога" onClose={onClose}>
+				<ProductForm
+					product={dialog.item}
+					categories={categories}
+					isPending={isPending}
+					onSave={onSaveProduct}
+				/>
+			</Modal>
+		);
+	}
+
 	return (
-		<>
-			{dialog && (
-				<Modal
-					title={dialog.type === "product" ? "Товар каталога" : "Категория"}
-					onClose={onClose}
-				>
-					{dialog.type === "product" ? (
-						<ProductForm
-							product={dialog.item}
-							categories={categories}
-							pending={pending}
-							onSave={onSaveProduct}
-						/>
-					) : (
-						<CategoryForm
-							category={dialog.item}
-							isPending={pending}
-							onSave={onSaveCategory}
-						/>
-					)}
-				</Modal>
-			)}
-		</>
+		<Modal title="Категория" onClose={onClose}>
+			<CategoryForm
+				category={dialog.item}
+				isPending={isPending}
+				onSave={onSaveCategory}
+			/>
+		</Modal>
 	);
 }

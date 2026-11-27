@@ -12,8 +12,4 @@ export interface CatalogProduct extends Product {
 	occupiedVolume: number | null;
 }
 
-export interface CatalogCategory extends Category {
-	productCount: number | undefined;
-}
-
 export const catalogNameMaxLength = 80;

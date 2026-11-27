@@ -8,19 +8,16 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui/dataDisplay";
-import type { CatalogCategory } from "../../model/catalog";
-
-export interface CategoriesTableProps {
-	items: readonly CatalogCategory[];
-	hiddenColumns: readonly number[];
-	onOpen: (category: Category) => void;
-}
 
 export function CategoriesTable({
 	items,
-	onOpen,
 	hiddenColumns,
-}: CategoriesTableProps) {
+	onOpen,
+}: {
+	items: readonly Category[];
+	hiddenColumns: readonly number[];
+	onOpen: (category: Category) => void;
+}) {
 	return (
 		<Table hiddenColumns={hiddenColumns}>
 			<TableHeader>
@@ -30,14 +27,14 @@ export function CategoriesTable({
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{items.map((c) => (
-					<TableRow key={c.id}>
+				{items.map((category) => (
+					<TableRow key={category.id}>
 						<TableCell>
-							<Button variant="text" size="sm" onClick={() => onOpen(c)}>
-								{c.name}
+							<Button variant="text" size="sm" onClick={() => onOpen(category)}>
+								{category.name}
 							</Button>
 						</TableCell>
-						<TableCell>{c.productCount ?? "—"}</TableCell>
+						<TableCell>{category.productCount ?? "—"}</TableCell>
 					</TableRow>
 				))}
 			</TableBody>
