@@ -1,88 +1,103 @@
 import { useState } from "react";
-import type { RobotInput } from "@/domain/warehouse";
+
 import {
+	type Cell,
 	type Robot,
 	robotAssignment,
+	type RobotInput,
 	robotRoleLabels,
 } from "@/domain/warehouse";
 import { useLiveWarehouseScreen } from "@/ports/warehouse";
-import { warehouseResources } from "./warehouseResources";
 
-const roleLabel = (role: string) =>
-	robotRoleLabels[role] ??
-	{ inbound: "Приёмка", outbound: "Отгрузка" }[role] ??
-	role;
+import { type RobotsWarehouse, warehouseResources } from "./warehouseResources";
+
+const directionLabels: Record<string, string> = {
+	inbound: "Приёмка",
+	outbound: "Отгрузка",
+};
+
+function roleLabel(role: string) {
+	return robotRoleLabels[role] ?? directionLabels[role] ?? role;
+}
+
+function spawnCells(warehouse: RobotsWarehouse): Cell[] {
+	if (!warehouse.published) return [];
+
+	const isOccupied = (cell: Cell) =>
+		warehouse.robots.some((robot) => robot.x === cell.x && robot.y === cell.y);
+
+	return warehouse.cells.filter(
+		(cell) =>
+			(cell.type === "aisle" || cell.type === "charge") && !isOccupied(cell),
+	);
+}
+
 export function useRobotsPage() {
-	const { warehouse, execute, command, pending } =
+	const { warehouse, execute, pending } =
 		useLiveWarehouseScreen(warehouseResources);
 	const [status, setStatus] = useState("all");
 	const [role, setRole] = useState("all");
 	const [search, setSearch] = useState("");
 	const [editing, setEditing] = useState<Robot | "new" | null>(null);
-	const searchQuery = search.toLowerCase();
+	const searchQuery = search.trim().toLowerCase();
 
 	async function saveRobot(robot: RobotInput) {
 		await execute("robot", robot);
 		setEditing(null);
 	}
 
-	const visibleRobots = warehouse.robots
-		.filter(
-			(r) =>
-				(status === "all" || r.status === status) &&
-				(role === "all" || r.roles.includes(role)),
-		)
+	async function removeRobot(robotId: string) {
+		await execute("deleteRobot", robotId);
+	}
 
+	const visibleRobots = warehouse.robots
+		.filter((robot) => status === "all" || robot.status === status)
+		.filter((robot) => role === "all" || robot.roles.includes(role))
 		.map((robot) => ({
 			...robot,
-			canEdit: !!robot.allowedActions?.includes("edit"),
-			canDelete: !!robot.allowedActions?.includes("delete"),
-			rolesLabel: robot.roles.map((role) => roleLabel(role)).join(", "),
+			canEdit: Boolean(robot.allowedActions?.includes("edit")),
+			canDelete: Boolean(robot.allowedActions?.includes("delete")),
+			rolesLabel: robot.roles.map(roleLabel).join(", "),
 			assignment: robotAssignment(robot, warehouse),
 		}))
-		.filter((robot) =>
-			[
-				robot.name,
-				robot.assignment.title,
-				robot.assignment.order?.number,
-				robot.assignment.detail,
-			]
+		.filter((robot) => {
+			const { title, order, detail } = robot.assignment;
+			const text = [robot.name, title, order?.number, detail]
 				.join(" ")
-				.toLowerCase()
-				.includes(searchQuery.trim()),
-		);
+				.toLowerCase();
 
-	function removeRobot(robotId: string) {
-		return command("deleteRobot", robotId);
-	}
+			return text.includes(searchQuery);
+		});
+	const roleOptions = [
+		...new Set(warehouse.robots.flatMap((robot) => robot.roles)),
+	].map((value) => ({
+		value,
+		label: roleLabel(value),
+	}));
 
 	return {
 		warehouseId: warehouse.id,
-		spawnCells: warehouse.published
-			? warehouse.cells.filter(
-					(c) =>
-						(c.type === "aisle" || c.type === "charge") &&
-						!warehouse.robots.some((r) => r.x === c.x && r.y === c.y),
-				)
-			: [],
+		spawnCells: spawnCells(warehouse),
 		status,
 		setStatus,
+		statuses: [...new Set(warehouse.robots.map((robot) => robot.status))],
 		role,
 		setRole,
-		statuses: [...new Set(warehouse.robots.map((r) => r.status))],
-		roleOptions: [...new Set(warehouse.robots.flatMap((r) => r.roles))].map(
-			(role) => ({ value: role, label: roleLabel(role) }),
-		),
-		canCreate: !!warehouse.allowedActions?.includes("create-robot"),
-		removeRobot,
-		empty: visibleRobots.length === 0,
-		editingRobot: editing === "new" ? undefined : editing || undefined,
-		visibleRobots,
-		setEditing,
+		roleOptions,
 		search,
 		setSearch,
-		pending,
+		canCreate: Boolean(warehouse.allowedActions?.includes("create-robot")),
+		isEmpty: visibleRobots.length === 0,
+		visibleRobots,
 		editing,
+		editingRobot: editing === "new" ? undefined : (editing ?? undefined),
+		setEditing,
+		pending,
 		saveRobot,
+		removeRobot,
 	};
 }
+
+export type RobotRow = ReturnType<
+	typeof useRobotsPage
+>["visibleRobots"][number];

@@ -1,5 +1,12 @@
 import { useId, useState } from "react";
-import { robotParameterLimits } from "@/domain/warehouse";
+
+import {
+	type Cell,
+	type Robot,
+	type RobotInput,
+	robotParameterLimits,
+	robotRoleOptions,
+} from "@/domain/warehouse";
 import { Checkbox, Input } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
 import {
@@ -9,37 +16,59 @@ import {
 	FormShell,
 	Select,
 } from "@/shared/ui/forms";
-import type { RobotFormOptions } from "../../model/createRobotForm";
-import { createRobotForm } from "../../model/createRobotForm";
+
+import { robotFromForm } from "../../model/robotFromForm";
+
 import styles from "./RobotForm.module.css";
 
-export interface RobotFormProps extends RobotFormOptions {
-	pending: boolean;
+const robotNameMaxLength = 80;
+const defaultSpeed = 2;
+const defaultDuration = 3;
+const defaultCapacity = "10.000";
+
+function spawnCellLabel(cell: Cell) {
+	const kind = cell.type === "charge" ? "Зарядка" : "Проход";
+
+	return `${cell.x}, ${cell.y} · ${kind}`;
 }
 
 export function RobotForm({
 	robot,
-	pending,
-	onSave,
 	spawnCells,
-}: RobotFormProps) {
+	isPending,
+	onSave,
+}: {
+	robot?: Robot | undefined;
+	spawnCells: readonly Cell[];
+	isPending: boolean;
+	onSave: (robot: RobotInput) => Promise<void>;
+}) {
 	const controlId = useId();
 	const [position, setPosition] = useState("");
-	const { handleSubmit, roles } = createRobotForm({
-		onSave,
-		robot,
-		spawnCells,
-	});
+	const roles = robotRoleOptions.map((role) => ({
+		...role,
+		checked: !robot || robot.roles.includes(role.value),
+	}));
+	const positionOptions = spawnCells.map((cell) => ({
+		value: `${cell.x},${cell.y}`,
+		label: spawnCellLabel(cell),
+	}));
 
-	if (!robot && !spawnCells.length)
+	function handleSubmit(data: FormData) {
+		return onSave(robotFromForm(data, robot, spawnCells));
+	}
+
+	if (!robot && !spawnCells.length) {
 		return (
 			<Feedback tone="info">
 				На опубликованной карте нет свободных клеток прохода или зарядки.
 				Освободите клетку или измените карту.
 			</Feedback>
 		);
+	}
+
 	return (
-		<FormShell pending={pending} onSubmit={handleSubmit}>
+		<FormShell pending={isPending} onSubmit={handleSubmit}>
 			{!robot && (
 				<Field label="Стартовая клетка *">
 					<input type="hidden" name="position" value={position} />
@@ -47,15 +76,17 @@ export function RobotForm({
 						value={position}
 						onValueChange={setPosition}
 						aria-label="Стартовая клетка"
-						options={spawnCells.map((c) => ({
-							value: `${c.x},${c.y}`,
-							label: `${c.x}, ${c.y}${c.type === "charge" ? " · Зарядка" : " · Проход"}`,
-						}))}
+						options={positionOptions}
 					/>
 				</Field>
 			)}
 			<Field label="Название *">
-				<Input name="name" defaultValue={robot?.name} required maxLength={80} />
+				<Input
+					name="name"
+					defaultValue={robot?.name}
+					required
+					maxLength={robotNameMaxLength}
+				/>
 			</Field>
 			<Field label="Специализация *">
 				<div className={styles.controls}>
@@ -79,7 +110,7 @@ export function RobotForm({
 						{...robotParameterLimits.speed}
 						step={1}
 						type="number"
-						defaultValue={robot?.speed || 2}
+						defaultValue={robot?.speed || defaultSpeed}
 						required
 					/>
 				</Field>
@@ -89,7 +120,7 @@ export function RobotForm({
 						{...robotParameterLimits.duration}
 						step={1}
 						type="number"
-						defaultValue={robot?.duration || 3}
+						defaultValue={robot?.duration || defaultDuration}
 						required
 					/>
 				</Field>
@@ -100,7 +131,7 @@ export function RobotForm({
 					type="number"
 					min="0.001"
 					step="0.001"
-					defaultValue={robot?.capacity || "10.000"}
+					defaultValue={robot?.capacity || defaultCapacity}
 					required
 				/>
 			</Field>

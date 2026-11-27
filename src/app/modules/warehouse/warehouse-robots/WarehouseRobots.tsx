@@ -1,7 +1,9 @@
 import { IconPlus } from "@tabler/icons-react";
+
 import { Button } from "@/shared/ui/controls";
 import { DataPanel, useTableColumns } from "@/shared/ui/dataDisplay";
 import { Modal } from "@/shared/ui/overlays";
+
 import { useRobotsPage } from "./model/useRobotsPage";
 import { RobotFilters } from "./ui/RobotFilters/RobotFilters";
 import { RobotForm } from "./ui/RobotForm/RobotForm";
@@ -17,41 +19,46 @@ export function WarehouseRobots() {
 		"Статус",
 		"Действия",
 	]);
-	const { setEditing, empty, editingRobot, pending, editing, saveRobot } =
-		model;
+	const { setEditing, editing, editingRobot, pending, saveRobot } = model;
+	const createHint = model.canCreate
+		? undefined
+		: "Создание недоступно по данным сервера";
+
+	function handleCreate() {
+		setEditing("new");
+	}
+
+	function handleCloseEditor() {
+		setEditing(null);
+	}
+
+	const toolbar = (
+		<>
+			<Button
+				variant="default"
+				disabled={!model.canCreate || pending}
+				title={createHint}
+				onClick={handleCreate}
+			>
+				<IconPlus size={18} />
+				Добавить робота
+			</Button>
+			{columns.button}
+			<RobotFilters model={model} />
+		</>
+	);
 
 	return (
 		<>
-			<DataPanel
-				empty={empty}
-				toolbar={
-					<>
-						<Button
-							variant="default"
-							disabled={!model.canCreate || pending}
-							title={
-								!model.canCreate
-									? "Создание недоступно по данным сервера"
-									: undefined
-							}
-							onClick={() => setEditing("new")}
-						>
-							<IconPlus size={18} />
-							Добавить робота
-						</Button>
-						{columns.button}
-						<RobotFilters model={model} />
-					</>
-				}
-			>
+			<DataPanel empty={model.isEmpty} toolbar={toolbar}>
 				<RobotsTable model={model} hiddenColumns={columns.hiddenColumns} />
 			</DataPanel>
 			{editing && (
-				<Modal title="Параметры робота" onClose={() => setEditing(null)}>
+				<Modal title="Параметры робота" onClose={handleCloseEditor}>
 					<RobotForm
 						robot={editingRobot}
 						spawnCells={model.spawnCells}
-						pending={pending}
+						isPending={pending}
 						onSave={saveRobot}
 					/>
 				</Modal>

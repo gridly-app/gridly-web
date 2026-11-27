@@ -1,6 +1,8 @@
 import {
 	type CommandExecutor,
 	type CommandHandler,
+	type CommandIntent,
+	type CommandPayloads,
 	warehouseCommandSchema,
 } from "@/domain/warehouse";
 import {
@@ -19,40 +21,44 @@ export function useWorkspaceCommands(
 	const notify = useWorkspaceNotice();
 	const mutation = useWarehouseCommand(warehouseId);
 	const { hasReadError } = useWarehouseCache();
-	const execute: CommandExecutor<MutationReceipt> = async (
+
+	async function save(
+		action: keyof CommandPayloads,
+		value: unknown,
+		intent: CommandIntent | undefined,
+	) {
+		if (!navigator.onLine || isSnapshotStale)
+			throw new UserError("Дождитесь синхронизации склада");
+
+		const receipt = await mutation.mutateAsync({
+			...warehouseCommandSchema.parse({ action, value }),
+			operationId: intent?.operationId,
+		});
+		const notice = hasReadError(warehouseId)
+			? "Изменения сохранены. Не удалось обновить данные; повторите синхронизацию."
+			: "Изменения сохранены";
+
+		notify(notice);
+
+		return receipt;
+	}
+
+	const execute: CommandExecutor<MutationReceipt> = (
 		action,
 		...[value, intent]
-	) => {
-		try {
-			if (!navigator.onLine || isSnapshotStale) {
-				throw new UserError("Дождитесь синхронизации склада");
-			}
-			const saved = await mutation.mutateAsync({
-				...warehouseCommandSchema.parse({ action, value }),
-				operationId: intent?.operationId,
-			});
-			notify(
-				hasReadError(warehouseId)
-					? "Изменения сохранены. Не удалось обновить данные; повторите синхронизацию."
-					: "Изменения сохранены",
-			);
-			return saved;
-		} catch (error) {
-			notify(errorMessage(error));
-			throw error;
-		}
-	};
+	) => save(action, value, intent);
+
 	const command: CommandHandler = async (action, ...args) => {
 		try {
 			await execute(action, ...args);
+
 			return { ok: true };
 		} catch (error) {
+			notify(errorMessage(error));
+
 			return { ok: false, error };
 		}
 	};
-	return {
-		execute,
-		command,
-		pending: mutation.isPending,
-	};
+
+	return { execute, command, pending: mutation.isPending };
 }

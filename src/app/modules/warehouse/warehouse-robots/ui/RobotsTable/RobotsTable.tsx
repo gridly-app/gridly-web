@@ -1,8 +1,9 @@
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
+
 import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
-import { StatusBadge as Badge } from "@/ports/warehouse";
+import { StatusBadge } from "@/ports/warehouse";
 import { errorMessage } from "@/shared/lib";
 import { IconButton } from "@/shared/ui/controls";
 import {
@@ -18,37 +19,50 @@ import {
 import { Link } from "@/shared/ui/navigation";
 import { ConfirmDialog } from "@/shared/ui/overlays";
 
-import type { useRobotsPage } from "../../model/useRobotsPage";
+import type { RobotRow, useRobotsPage } from "../../model/useRobotsPage";
 
-export interface RobotsTableProps {
-	hiddenColumns: readonly number[];
+const orderKindLabels = { inbound: "Поставка", outbound: "Отгрузка" };
+
+export function RobotsTable({
+	model,
+	hiddenColumns,
+}: {
 	model: Pick<
 		ReturnType<typeof useRobotsPage>,
 		"warehouseId" | "visibleRobots" | "pending" | "setEditing" | "removeRobot"
 	>;
-}
-
-export function RobotsTable({ model, hiddenColumns }: RobotsTableProps) {
+	hiddenColumns: readonly number[];
+}) {
 	const { visibleRobots, pending, warehouseId } = model;
-	const mode = useWorkspaceMode();
 	const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(
 		null,
 	);
 	const [error, setError] = useState("");
-	const [deletingPending, setDeletingPending] = useState(false);
-	async function confirmDelete() {
-		if (!deleting || deletingPending) return;
-		setDeletingPending(true);
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	async function handleConfirmDelete() {
+		if (!deleting || isDeleting) return;
+
+		setIsDeleting(true);
 		setError("");
+
 		try {
-			const result = await model.removeRobot(deleting.id);
-			if (result.ok) setDeleting(null);
-			else setError(errorMessage(result.error));
-		} catch (failure) {
-			setError(errorMessage(failure));
+			await model.removeRobot(deleting.id);
+			setDeleting(null);
+		} catch (removeError) {
+			setError(errorMessage(removeError));
 		} finally {
-			setDeletingPending(false);
+			setIsDeleting(false);
 		}
+	}
+
+	function handleRequestDelete(robot: RobotRow) {
+		setError("");
+		setDeleting({ id: robot.id, name: robot.name });
+	}
+
+	function handleCancelDelete() {
+		setDeleting(null);
 	}
 
 	return (
@@ -66,45 +80,19 @@ export function RobotsTable({ model, hiddenColumns }: RobotsTableProps) {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{visibleRobots.map((r) => (
-						<TableRow key={r.id}>
+					{visibleRobots.map((robot) => (
+						<TableRow key={robot.id}>
 							<TableCell>
-								<b>{r.name}</b>
+								<b>{robot.name}</b>
 							</TableCell>
-							<TableCell>{r.rolesLabel}</TableCell>
-							<TableCell>{r.speed} кл./тик</TableCell>
-							<TableCell>{r.capacity} м³</TableCell>
+							<TableCell>{robot.rolesLabel}</TableCell>
+							<TableCell>{robot.speed} кл./тик</TableCell>
+							<TableCell>{robot.capacity} м³</TableCell>
 							<TableCell>
-								<strong>{r.assignment.title}</strong>
-								{r.assignment.order && (
-									<div>
-										{r.assignment.order.kind ? (
-											<Link
-												to={{
-													pathname: warehousePath(
-														mode,
-														warehouseId,
-														r.assignment.order.kind,
-													),
-													search: new URLSearchParams({
-														order: r.assignment.order.id,
-													}).toString(),
-												}}
-											>
-												{r.assignment.order.kind === "inbound"
-													? "Поставка"
-													: "Отгрузка"}{" "}
-												{r.assignment.order.number}
-											</Link>
-										) : (
-											<span>Заказ {r.assignment.order.number}</span>
-										)}
-										<TableNote>{r.assignment.detail}</TableNote>
-									</div>
-								)}
+								<RobotAssignment robot={robot} warehouseId={warehouseId} />
 							</TableCell>
 							<TableCell>
-								<Badge value={r.status} />
+								<StatusBadge value={robot.status} />
 							</TableCell>
 							<TableCell>
 								<TableActions>
@@ -112,22 +100,19 @@ export function RobotsTable({ model, hiddenColumns }: RobotsTableProps) {
 										label="Изменить"
 										icon={<IconPencil size={16} />}
 										variant="secondary"
-										disabled={pending || !r.canEdit}
-										onClick={() => model.setEditing(r)}
+										disabled={pending || !robot.canEdit}
+										onClick={() => model.setEditing(robot)}
 									/>
 									<IconButton
 										label="Удалить"
 										icon={<IconTrash size={16} />}
 										variant="destructive-outline"
-										disabled={!r.canDelete || pending}
+										disabled={!robot.canDelete || pending}
 										title={
-											r.blockedReason ||
-											(!r.canDelete ? "Удаление недоступно" : undefined)
+											robot.blockedReason ||
+											(robot.canDelete ? undefined : "Удаление недоступно")
 										}
-										onClick={() => {
-											setError("");
-											setDeleting({ id: r.id, name: r.name });
-										}}
+										onClick={() => handleRequestDelete(robot)}
 									/>
 								</TableActions>
 							</TableCell>
@@ -140,11 +125,47 @@ export function RobotsTable({ model, hiddenColumns }: RobotsTableProps) {
 				title="Удалить робота?"
 				description={`Робот «${deleting?.name ?? ""}» будет удалён со склада.`}
 				confirmLabel="Удалить"
-				pending={pending || deletingPending}
+				pending={pending || isDeleting}
 				error={error}
-				onConfirm={confirmDelete}
-				onCancel={() => setDeleting(null)}
+				onConfirm={handleConfirmDelete}
+				onCancel={handleCancelDelete}
 			/>
+		</>
+	);
+}
+
+function RobotAssignment({
+	robot,
+	warehouseId,
+}: {
+	robot: RobotRow;
+	warehouseId: string;
+}) {
+	const mode = useWorkspaceMode();
+	const { title, order, detail } = robot.assignment;
+
+	if (!order) return <strong>{title}</strong>;
+
+	const orderLabel = order.kind ? (
+		<Link
+			to={{
+				pathname: warehousePath(mode, warehouseId, order.kind),
+				search: new URLSearchParams({ order: order.id }).toString(),
+			}}
+		>
+			{orderKindLabels[order.kind]} {order.number}
+		</Link>
+	) : (
+		<span>Заказ {order.number}</span>
+	);
+
+	return (
+		<>
+			<strong>{title}</strong>
+			<div>
+				{orderLabel}
+				<TableNote>{detail}</TableNote>
+			</div>
 		</>
 	);
 }

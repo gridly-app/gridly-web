@@ -7,6 +7,7 @@ import { mountDom } from "../../../../../../tests/support/dom";
 import { warehouse } from "../../../../../../tests/support/warehouse";
 import { warehouseData } from "../../../warehouse-data/model/warehouseData";
 import { useRobotsPage } from "./useRobotsPage";
+import { warehouseResources } from "./warehouseResources";
 
 test("only unoccupied passable cells on a published map can start a robot", async () => {
 	const dom = mountDom();
@@ -29,7 +30,7 @@ test("only unoccupied passable cells on a published map can start a robot", asyn
 					value: {
 						...warehouseData,
 						useLiveWarehouseScope: () => ({
-							resources: ["map", "robots", "orders", "catalog"] as const,
+							resources: warehouseResources,
 							warehouse: {
 								...snapshot,
 								cells: [occupied, charge, wall],

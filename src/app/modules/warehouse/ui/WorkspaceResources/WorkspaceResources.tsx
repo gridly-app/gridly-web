@@ -10,6 +10,7 @@ import { ApiError } from "@/shared/http";
 import { errorMessage, useOnlineStatus } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
+import { useRememberWarehouse } from "../../model/lastWarehouse";
 import { useWorkspaceCommands } from "../../model/useWorkspaceCommands";
 import { ConnectionStatus } from "../ConnectionStatus/ConnectionStatus";
 
@@ -28,6 +29,8 @@ export function WorkspaceResources({
 	loadingFallback: ReactNode;
 	children: ReactNode;
 }) {
+	useRememberWarehouse(warehouse.id);
+
 	const resource = useWarehouseResources(warehouse, resources);
 	const isOnline = useOnlineStatus();
 	const commands = useWorkspaceCommands(warehouse.id, isSnapshotStale);

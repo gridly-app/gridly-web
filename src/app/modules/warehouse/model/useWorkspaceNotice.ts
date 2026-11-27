@@ -1,22 +1,32 @@
 import { useEffect, useRef } from "react";
+
 import { toastManager } from "@/shared/ui/feedback";
 
+const NOTICE_TIMEOUT_MS = 5000;
+
 export function useWorkspaceNotice() {
-	const notice = useRef<string | null>(null);
-	const mounted = useRef(false);
+	const noticeId = useRef<string | null>(null);
+	const isMounted = useRef(false);
 
 	useEffect(() => {
-		mounted.current = true;
+		isMounted.current = true;
+
 		return () => {
-			mounted.current = false;
-			if (notice.current) toastManager.close(notice.current);
-			notice.current = null;
+			isMounted.current = false;
+
+			if (noticeId.current) toastManager.close(noticeId.current);
+
+			noticeId.current = null;
 		};
 	}, []);
 
 	return (description: string) => {
-		if (!mounted.current) return;
-		if (notice.current) toastManager.close(notice.current);
-		notice.current = toastManager.add({ description, timeout: 5000 });
+		if (!isMounted.current) return;
+		if (noticeId.current) toastManager.close(noticeId.current);
+
+		noticeId.current = toastManager.add({
+			description,
+			timeout: NOTICE_TIMEOUT_MS,
+		});
 	};
 }
