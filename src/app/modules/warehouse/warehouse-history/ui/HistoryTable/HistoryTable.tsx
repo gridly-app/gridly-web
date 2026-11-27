@@ -7,38 +7,50 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui/dataDisplay";
-import type { useHistoryPage } from "../../model/useHistoryPage";
+
+import type { HistoryEvent } from "../../model/useHistoryPage";
+
 import styles from "./HistoryTable.module.css";
 
-interface HistoryTableProps {
-	events: ReturnType<typeof useHistoryPage>["visibleEvents"];
-	hiddenColumns: readonly number[];
-	timezone: string;
+const categoryColumnIndex = 1;
+
+function isValidTime(value: string) {
+	return Number.isFinite(Date.parse(value));
 }
 
 export function HistoryTable({
 	events,
 	hiddenColumns,
 	timezone,
-}: HistoryTableProps) {
-	const date = (value: string) =>
-		Number.isFinite(Date.parse(value))
-			? new Date(value).toLocaleDateString("ru-RU", {
-					timeZone: timezone,
-					day: "numeric",
-					month: "short",
-					year: "numeric",
-				})
-			: "Дата не передана";
-	const time = (value: string) =>
-		Number.isFinite(Date.parse(value))
-			? new Date(value).toLocaleTimeString("ru-RU", {
-					timeZone: timezone,
-					hour: "2-digit",
-					minute: "2-digit",
-					second: "2-digit",
-				})
-			: "—";
+}: {
+	events: HistoryEvent[];
+	hiddenColumns: readonly number[];
+	timezone: string;
+}) {
+	const isCategoryVisible = !hiddenColumns.includes(categoryColumnIndex);
+
+	function formatDate(value: string) {
+		if (!isValidTime(value)) return "Дата не передана";
+
+		return new Date(value).toLocaleDateString("ru-RU", {
+			timeZone: timezone,
+			day: "numeric",
+			month: "short",
+			year: "numeric",
+		});
+	}
+
+	function formatTime(value: string) {
+		if (!isValidTime(value)) return "—";
+
+		return new Date(value).toLocaleTimeString("ru-RU", {
+			timeZone: timezone,
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+		});
+	}
+
 	return (
 		<div className={styles.log} data-history-log="">
 			<Table hiddenColumns={hiddenColumns}>
@@ -54,9 +66,11 @@ export function HistoryTable({
 						<TableRow key={event.id}>
 							<TableCell>
 								<div className={styles.event}>
-									<strong>{event.title}</strong>
-									{event.detail && <p>{event.detail}</p>}
-									{!hiddenColumns.includes(1) && (
+									<strong className={styles.title}>{event.title}</strong>
+									{event.detail && (
+										<p className={styles.detail}>{event.detail}</p>
+									)}
+									{isCategoryVisible && (
 										<span className={styles.mobileBadge}>
 											<Badge tone="neutral">{event.groupLabel}</Badge>
 										</span>
@@ -68,14 +82,13 @@ export function HistoryTable({
 							</TableCell>
 							<TableCell className={styles.when}>
 								<time
-									dateTime={
-										Number.isFinite(Date.parse(event.time))
-											? event.time
-											: undefined
-									}
+									className={styles.time}
+									dateTime={isValidTime(event.time) ? event.time : undefined}
 								>
-									{date(event.time)}
-									<small>{time(event.time)}</small>
+									{formatDate(event.time)}
+									<small className={styles.clock}>
+										{formatTime(event.time)}
+									</small>
 								</time>
 							</TableCell>
 						</TableRow>

@@ -1,11 +1,42 @@
 import { useState } from "react";
+
+import type { Event } from "@/domain/warehouse";
 import { useWarehouseScreen } from "@/ports/warehouse";
 import { dateKey } from "@/shared/lib";
 
-import {
-	historyEventGroup as group,
-	historyGroupLabels as labels,
-} from "./eventGroup";
+import { historyEventGroup, historyGroupLabel } from "./eventGroup";
+
+const readyEventTitle = "Склад готов к работе";
+
+export type HistoryEvent = Event & { group: string; groupLabel: string };
+
+type HistoryFilter = {
+	category: string;
+	from: string;
+	to: string;
+	searchQuery: string;
+	timeZone: string;
+};
+
+function isInRange(day: string | null, from: string, to: string) {
+	if (from && (!day || day < from)) return false;
+	if (to && (!day || day > to)) return false;
+
+	return true;
+}
+
+function matchesFilter(
+	event: HistoryEvent,
+	{ category, from, to, searchQuery, timeZone }: HistoryFilter,
+) {
+	const day = dateKey(event.time, timeZone);
+	const matchesCategory = category === "all" || event.group === category;
+	const matchesSearch = `${event.title} ${event.detail}`
+		.toLowerCase()
+		.includes(searchQuery);
+
+	return matchesCategory && isInRange(day, from, to) && matchesSearch;
+}
 
 export function useHistoryPage() {
 	const { warehouse } = useWarehouseScreen(["history"]);
@@ -14,35 +45,35 @@ export function useHistoryPage() {
 	const [from, setFrom] = useState("");
 	const [to, setTo] = useState("");
 	const [sort, setSort] = useState("newest");
-	const query = search.trim().toLowerCase();
-	const valid = !from || !to || from <= to;
+	const isRangeValid = !from || !to || from <= to;
+	const direction = sort === "newest" ? 1 : -1;
+	const filter = {
+		category,
+		from,
+		to,
+		searchQuery: search.trim().toLowerCase(),
+		timeZone: warehouse.timezone,
+	};
 	const events = warehouse.events
-		.filter(
-			(event) =>
-				(!event.warehouseId || event.warehouseId === warehouse.id) &&
-				event.title.trim() !== "Склад готов к работе",
-		)
-		.map((event) => ({
-			...event,
-			group: group(event),
-			groupLabel: labels[group(event)] ?? "Склад",
-		}));
-	const visibleEvents = events
-		.filter((event) => {
-			const day = dateKey(event.time, warehouse.timezone);
-			return (
-				valid &&
-				(category === "all" || event.group === category) &&
-				(!from || (!!day && day >= from)) &&
-				(!to || (!!day && day <= to)) &&
-				`${event.title} ${event.detail}`.toLowerCase().includes(query)
-			);
-		})
-		.sort(
-			(a, b) =>
-				(Date.parse(b.time) - Date.parse(a.time)) *
-				(sort === "newest" ? 1 : -1),
-		);
+		.filter((event) => !event.warehouseId || event.warehouseId === warehouse.id)
+		.filter((event) => event.title.trim() !== readyEventTitle)
+		.map((event): HistoryEvent => {
+			const group = historyEventGroup(event);
+
+			return { ...event, group, groupLabel: historyGroupLabel(group) };
+		});
+	const visibleEvents = isRangeValid
+		? events
+				.filter((event) => matchesFilter(event, filter))
+				.sort((a, b) => (Date.parse(b.time) - Date.parse(a.time)) * direction)
+		: [];
+	const groups = [...new Set(events.map((event) => event.group))].map(
+		(value) => ({
+			value,
+			label: historyGroupLabel(value),
+		}),
+	);
+
 	return {
 		visibleEvents,
 		search,
@@ -55,21 +86,9 @@ export function useHistoryPage() {
 		setTo,
 		sort,
 		setSort,
-		valid,
+		groups,
+		isRangeValid,
+		isEmpty: events.length === 0,
 		timezone: warehouse.timezone,
-		empty: events.length === 0,
-		groups: [...new Set(events.map((event) => event.group))].map((value) => ({
-			value,
-			label: labels[value] ?? "Склад",
-		})),
-		hasFilters:
-			!!search || category !== "all" || !!from || !!to || sort !== "newest",
-		reset: () => {
-			setSearch("");
-			setCategory("all");
-			setFrom("");
-			setTo("");
-			setSort("newest");
-		},
 	};
 }

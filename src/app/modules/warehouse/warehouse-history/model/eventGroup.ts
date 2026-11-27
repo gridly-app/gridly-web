@@ -13,25 +13,42 @@ export const historyGroupLabels: Record<string, string> = {
 	warehouse: "Склад",
 	simulation: "Обработка",
 };
-function fromText(text: string) {
-	if (/заказ|поставк|отгрузк|order/i.test(text)) return "order";
-	if (/робот|robot/i.test(text)) return "robot";
-	if (/списан|остат|партия|inventory|stock/i.test(text)) return "stock";
-	if (/маршрут|карт[аыуе]|layout/i.test(text)) return "map";
-	if (/каталог|категори|товар|product/i.test(text)) return "product";
-	if (/задач|task/i.test(text)) return "task";
-	if (/обработк|симуляц|simulation/i.test(text)) return "simulation";
-	if (/склад|warehouse/i.test(text)) return "warehouse";
-	return null;
+
+const textGroups = [
+	{ group: "order", pattern: /заказ|поставк|отгрузк|order/i },
+	{ group: "robot", pattern: /робот|robot/i },
+	{ group: "stock", pattern: /списан|остат|партия|inventory|stock/i },
+	{ group: "map", pattern: /маршрут|карт[аыуе]|layout/i },
+	{ group: "product", pattern: /каталог|категори|товар|product/i },
+	{ group: "task", pattern: /задач|task/i },
+	{ group: "simulation", pattern: /обработк|симуляц|simulation/i },
+	{ group: "warehouse", pattern: /склад|warehouse/i },
+];
+
+function groupFromText(text: string) {
+	return textGroups.find(({ pattern }) => pattern.test(text))?.group;
 }
+
+function groupFromTokens(source: string | undefined) {
+	const tokens = (source ?? "").toLowerCase().split(/[/._:-]+/);
+
+	return tokens
+		.map((token) => token.replace(/s$/, ""))
+		.find((key) => historyGroupLabels[key]);
+}
+
+export function historyGroupLabel(group: string) {
+	return historyGroupLabels[group] ?? "Склад";
+}
+
 export function historyEventGroup(
 	event: Pick<Event, "type" | "entity" | "title" | "detail">,
 ) {
-	for (const source of [event.type, event.entity]) {
-		for (const token of (source || "").toLowerCase().split(/[/._:-]+/)) {
-			const key = token.replace(/s$/, "");
-			if (historyGroupLabels[key]) return key;
-		}
-	}
-	return fromText(event.title) ?? fromText(event.detail || "") ?? "warehouse";
+	return (
+		groupFromTokens(event.type) ??
+		groupFromTokens(event.entity) ??
+		groupFromText(event.title) ??
+		groupFromText(event.detail ?? "") ??
+		"warehouse"
+	);
 }
