@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
+
 import { cellKey } from "@/domain/warehouse";
 import { MapGeometry } from "@/domain/warehouse/layout";
 import { useSelectionSummary } from "@/ports/warehouse";
+
 import type { MapEditor } from "./draft/useMapEditor";
 import type { useRouteEditor } from "./editor/useRouteEditor";
 import { getMapPresentation, inspectMapSelection } from "./mapPresentation";
@@ -26,7 +28,7 @@ export function useMapInspection({
 	const { cells } = editor;
 	const { selected: selection, selectionKeys } = editor.selection;
 	const robot =
-		warehouse.robots.find((robot) => robot.id === selectedRobotId) || null;
+		warehouse.robots.find((item) => item.id === selectedRobotId) ?? null;
 	const geometry = useMemo(() => new MapGeometry(cells), [cells]);
 	const selected = selection
 		? (geometry.cellIndex.get(cellKey(selection)) ?? null)
@@ -54,6 +56,7 @@ export function useMapInspection({
 		selectionKeys,
 		routeEditor,
 	});
+
 	return {
 		presentation,
 		selectedRobotId,

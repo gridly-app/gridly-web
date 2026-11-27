@@ -2,7 +2,6 @@ import type {
 	BlockRoutePlan,
 	Category,
 	Cell,
-	CommandExecutor,
 	Robot,
 	Stock,
 	WarehouseView,
@@ -13,7 +12,6 @@ export interface MapInspection {
 		WarehouseView<"catalog" | "map" | "orders">,
 		"categories" | "cells" | "orders" | "products"
 	>;
-	command: CommandExecutor;
 	onCategory: (category: Category) => void;
 	cells: Cell[];
 	selected: Cell | null;
@@ -36,5 +34,4 @@ export interface MapInspection {
 		stock: (Stock & { productName: string | undefined })[];
 		batchCount: number | undefined;
 	};
-	constructing: boolean;
 }

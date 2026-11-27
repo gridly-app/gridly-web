@@ -1,18 +1,15 @@
 import type { CellType } from "@/domain/warehouse";
 import { Badge } from "@/shared/ui/dataDisplay";
+
 import detailsStyles from "../../shared.module.css";
 import styles from "./MapLegend.module.css";
 
-export interface MapLegendProps {
-	model: MapLegendModel;
-}
-
 export interface MapLegendModel {
-	entries: [string, string][];
+	entries: [CellType, string][];
 	palette: Record<CellType, string>;
 }
 
-export function MapLegend({ model }: MapLegendProps) {
+export function MapLegend({ model }: { model: MapLegendModel }) {
 	const { entries, palette } = model;
 
 	return (
@@ -22,11 +19,11 @@ export function MapLegend({ model }: MapLegendProps) {
 			>
 				ОБОЗНАЧЕНИЯ
 			</div>
-			{entries.map(([k, label]) => (
-				<Badge key={k} tone="neutral">
+			{entries.map(([type, label]) => (
+				<Badge key={type} tone="neutral">
 					<Badge
 						aria-hidden="true"
-						style={{ background: palette[k as CellType] }}
+						style={{ background: palette[type] }}
 						className={styles.legendSwatch}
 					/>
 					{label}

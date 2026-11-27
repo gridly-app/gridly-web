@@ -1,21 +1,30 @@
 import { type ChangeEvent, type SubmitEvent, useState } from "react";
-import type {
-	Category,
-	Cell,
-	CommandExecutor,
-	WarehouseView,
+
+import {
+	type Category,
+	type Cell,
+	cellKey,
+	type WarehouseView,
 } from "@/domain/warehouse";
-import { cellKey } from "@/domain/warehouse";
 import { errorMessage, id, UserError } from "@/shared/lib";
 
 export interface ZonePanelOptions {
 	warehouse: Pick<WarehouseView<"catalog">, "categories">;
 	cells: Cell[];
 	keys: string[];
-	editing: boolean;
-	command: CommandExecutor;
 	onDraft: (cells: Cell[]) => void;
 	onCategory: (category: Category) => void;
+}
+
+function zoneSize(cells: Cell[], zoneId: string | undefined) {
+	return cells.filter((cell) => cell.zone?.id === zoneId).length;
+}
+
+function totalCapacity(cells: Cell[]) {
+	if (!cells.length || cells.some((cell) => cell.capacity === undefined))
+		return undefined;
+
+	return cells.reduce((sum, cell) => sum + (cell.capacity ?? 0), 0);
 }
 
 export function useZonePanel({
@@ -27,77 +36,77 @@ export function useZonePanel({
 }: ZonePanelOptions) {
 	const picked = cells.filter((cell) => keys.includes(cellKey(cell)));
 	const first = picked[0];
-	const partialZone =
-		first?.zone &&
-		cells.filter((cell) => cell.zone?.id === first.zone?.id).length >
-			picked.length;
-	const [name, setName] = useState(
-		first?.zone
-			? `${first.zone.name}${partialZone ? " · часть зоны" : ""}`
-			: "",
-	);
-	const [category, changeCategory] = useState(first?.zone?.categoryId || "");
+	const firstZone = first?.zone;
+	const isPartialZone =
+		Boolean(firstZone) && zoneSize(cells, firstZone?.id) > picked.length;
+	const initialName = firstZone
+		? `${firstZone.name}${isPartialZone ? " · часть зоны" : ""}`
+		: "";
+	const [name, setName] = useState(initialName);
+	const [category, changeCategory] = useState(firstZone?.categoryId || "");
 	const [error, setError] = useState("");
-	const [pending, setPending] = useState(false);
 	const [adding, setAdding] = useState(false);
 	const [newName, setNewName] = useState("");
+	const visibleCategories = warehouse.categories.filter(
+		(item) => !item.archived,
+	);
+	const capacity = totalCapacity(picked);
 
-	async function save(e: SubmitEvent<HTMLFormElement>) {
-		e.preventDefault();
+	function applyZone(storageCell: Cell) {
+		const isWholeZone =
+			picked.every(
+				(cell) => cell.zone?.id && cell.zone.id === storageCell.zone?.id,
+			) && zoneSize(cells, storageCell.zone?.id) === picked.length;
+		const zone = {
+			id: isWholeZone && storageCell.zone ? storageCell.zone.id : id(),
+			name,
+			categoryId: category,
+		};
+		const chosen = new Set(keys);
+
+		onDraft(
+			cells.map((cell) =>
+				chosen.has(cellKey(cell)) ? { ...cell, zone } : cell,
+			),
+		);
+	}
+
+	function save(event: SubmitEvent<HTMLFormElement>) {
+		event.preventDefault();
 		setError("");
-		setPending(true);
+
 		try {
 			if (!first) throw new UserError("Выделите клетки хранения");
-			const same =
-				picked.every(
-					(cell) => cell.zone?.id && cell.zone.id === first.zone?.id,
-				) &&
-				cells.filter((cell) => cell.zone?.id === first.zone?.id).length ===
-					picked.length;
-			const zone = {
-				id: same && first.zone ? first.zone.id : id(),
-				name,
-				categoryId: category,
-			};
-			const chosen = new Set(keys);
-			const next = cells.map((cell) =>
-				chosen.has(cellKey(cell)) ? { ...cell, zone } : cell,
-			);
-			onDraft(next);
-		} catch (e) {
-			setError(errorMessage(e));
-		} finally {
-			setPending(false);
+
+			applyZone(first);
+		} catch (saveError) {
+			setError(errorMessage(saveError));
 		}
 	}
 
-	async function addCategory() {
-		setPending(true);
+	function addCategory() {
+		const categoryName = newName.trim();
+
 		setError("");
+
 		try {
 			if (!first) throw new UserError("Выделите клетки хранения");
-			if (!newName.trim()) {
-				throw new UserError("Введите название категории");
-			}
+			if (!categoryName) throw new UserError("Введите название категории");
+
 			const categoryId = id();
 
 			onCategory({
 				id: categoryId,
-				name: newName.trim(),
+				name: categoryName,
 				cold: first.type === "cold",
 			});
 			changeCategory(categoryId);
 			setAdding(false);
 			setNewName("");
-		} catch (e) {
-			setError(errorMessage(e));
-		} finally {
-			setPending(false);
+		} catch (categoryError) {
+			setError(errorMessage(categoryError));
 		}
 	}
-
-	const visibleCategories = warehouse.categories.filter((c) => !c.archived);
-	const capacity: number | undefined = undefined;
 
 	function changeName(event: ChangeEvent<HTMLInputElement>) {
 		setName(event.target.value);
@@ -112,21 +121,20 @@ export function useZonePanel({
 	}
 
 	return {
-		changeName,
-		changeCategory,
-		changeNewName,
-		toggleAdding,
-		capacity,
-		visibleCategories,
-		save,
 		picked,
 		first,
+		capacity,
 		name,
+		changeName,
 		category,
+		changeCategory,
+		visibleCategories,
 		adding,
+		toggleAdding,
 		newName,
-		pending,
+		changeNewName,
 		addCategory,
+		save,
 		error,
 	};
 }

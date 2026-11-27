@@ -1,5 +1,6 @@
-import { warehouseResources } from "./model/warehouseResources";
 import { warehouseAccess, warehousePaths } from "@/ports/navigation";
+
+import { warehouseResources } from "./model/warehouseResources";
 
 export const mapRoute = {
 	id: "map",

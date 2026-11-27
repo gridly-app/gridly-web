@@ -1,11 +1,11 @@
-import type { Cell, CommandExecutor, Robot } from "@/domain/warehouse";
+import type { Cell, Robot } from "@/domain/warehouse";
+
 import type { MapEditor } from "./draft/useMapEditor";
 import type { useMapInspection } from "./useMapInspection";
 import type { MapWarehouse } from "./warehouseResources";
 
 interface MapInspectionInput {
 	warehouse: MapWarehouse;
-	command: CommandExecutor;
 	editor: Pick<
 		MapEditor,
 		| "cells"
@@ -25,7 +25,6 @@ interface MapInspectionInput {
 
 export function getMapInspectionModel({
 	warehouse,
-	command,
 	editor,
 	presentation,
 	selected,
@@ -38,7 +37,6 @@ export function getMapInspectionModel({
 			? { ...warehouse, categories: editor.categories }
 			: warehouse,
 		onCategory: editor.addCategory,
-		command,
 		cells: editor.cells,
 		selected,
 		robot,
@@ -53,6 +51,5 @@ export function getMapInspectionModel({
 		onDraft: editor.zoneSaved,
 		routes: presentation.routes,
 		inspection,
-		constructing: editing && editor.mode === "construction",
 	};
 }

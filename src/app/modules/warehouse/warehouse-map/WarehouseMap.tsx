@@ -1,6 +1,11 @@
 import { useRef, useState } from "react";
-import type { CommandExecutor } from "@/domain/warehouse";
-import { cellKey, cellLabels } from "@/domain/warehouse";
+
+import {
+	cellKey,
+	cellLabels,
+	type CellType,
+	type CommandExecutor,
+} from "@/domain/warehouse";
 import {
 	type LayoutOperation,
 	useLayoutOperation,
@@ -9,12 +14,12 @@ import {
 import { useImmersiveRegion, useTheme } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice, Feedback } from "@/shared/ui/feedback";
+
 import { mapThemes } from "./config/mapTheme";
-import { LayoutIssueList } from "./ui/LayoutIssueList/LayoutIssueList";
-import { useUnsavedLayoutWarning } from "./model/draft/useUnsavedLayoutWarning";
-import { LayoutOperationFeedback } from "./ui/LayoutOperationFeedback/LayoutOperationFeedback";
-import { useMapEditor } from "./model/draft/useMapEditor";
 import { MapLayout } from "./map.compose";
+import type { EditorMode } from "./model/draft/editorState";
+import { useMapEditor } from "./model/draft/useMapEditor";
+import { useUnsavedLayoutWarning } from "./model/draft/useUnsavedLayoutWarning";
 import { useMapSize } from "./model/editor/useMapSize";
 import { useRouteEditor } from "./model/editor/useRouteEditor";
 import { getMapInspectionModel } from "./model/getMapInspectionModel";
@@ -28,14 +33,17 @@ import {
 	type MapWarehouse,
 	warehouseResources,
 } from "./model/warehouseResources";
+import { LayoutIssueList } from "./ui/LayoutIssueList/LayoutIssueList";
+import { LayoutOperationFeedback } from "./ui/LayoutOperationFeedback/LayoutOperationFeedback";
 import { MapNavigation } from "./ui/MapNavigation/MapNavigation";
 import { MapToolbar } from "./ui/MapToolbar/MapToolbar";
-import mapStyles from "./shared.module.css";
+
+import styles from "./shared.module.css";
 
 interface WarehouseMapProps {
 	warehouse: MapWarehouse;
 	command: CommandExecutor;
-	pending: boolean;
+	isPending: boolean;
 	dark: boolean;
 	layout: {
 		operation: LayoutOperation | null;
@@ -43,6 +51,10 @@ interface WarehouseMapProps {
 		discardRejected(): void;
 	};
 }
+
+const legendEntries = (
+	Object.entries(cellLabels) as [CellType, string][]
+).filter(([type]) => type !== "cold");
 
 export function MapPage() {
 	const { warehouse, execute, pending } =
@@ -55,7 +67,7 @@ export function MapPage() {
 			key={warehouse.id}
 			warehouse={warehouse}
 			command={execute}
-			pending={pending}
+			isPending={pending}
 			dark={dark}
 			layout={layout}
 		/>
@@ -65,7 +77,7 @@ export function MapPage() {
 export function WarehouseMap({
 	warehouse,
 	command,
-	pending,
+	isPending,
 	dark,
 	layout,
 }: WarehouseMapProps) {
@@ -78,27 +90,28 @@ export function WarehouseMap({
 	const routeEditor = useRouteEditor(editor, warehouse.id);
 	const hasUnsubmittedChanges =
 		editor.dirty && !editor.saving && !editor.resetting && !editor.writeBlocked;
+
 	useUnsavedLayoutWarning(hasUnsubmittedChanges);
 
-	const sizeEditor = useMapSize({
-		warehouse,
-		command,
-		blocked:
-			editor.editing ||
-			editor.writeBlocked ||
-			warehouse.draftRevision !== undefined,
-	});
+	const isSizeBlocked =
+		editor.editing ||
+		editor.writeBlocked ||
+		warehouse.draftRevision !== undefined;
+	const sizeEditor = useMapSize({ warehouse, command, blocked: isSizeBlocked });
 	const view = useMapView(editor.editing, editor.recovered);
-	const needsComparison = editor.versionChanged || editor.hasConflict;
 	const [comparePublished, setComparePublished] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
+	const immersiveRegion = useRef<HTMLDivElement>(null);
+	const viewTrigger = useRef<HTMLButtonElement>(null);
+	const needsComparison = editor.versionChanged || editor.hasConflict;
 	const isComparing = needsComparison && comparePublished;
 	const editing = view.editing && !isComparing;
 	const visibleEditor = isComparing
 		? { ...editor, cells: warehouse.cells }
 		: editor;
-	const immersiveRegion = useRef<HTMLDivElement>(null);
-	const viewTrigger = useRef<HTMLButtonElement>(null);
+
 	useImmersiveRegion(view.viewing, immersiveRegion, viewTrigger);
+
 	const camera = useMapCamera(view.viewing, warehouse);
 	const simulation = useMapSimulation(warehouse, command);
 	const mapInspection = useMapInspection({
@@ -119,15 +132,42 @@ export function WarehouseMap({
 		editing,
 		inspection: { presentation, selectedRobotId, selectRobot },
 	});
-	const [menuOpen, setMenuOpen] = useState(false);
-	const configuringRoutes = editing && editor.mode === "routes";
-	const cellEntries = Object.entries(cellLabels);
 	const legend = {
-		entries: cellEntries.filter(([type]) => type !== "cold"),
+		entries: legendEntries,
 		palette: mapThemes[dark ? "dark" : "light"].cells,
 	};
+	const selectedCell = editor.selection.selected;
+	const selectedKey = selectedCell ? cellKey(selectedCell) : null;
+	const { saveIssues, widthError, heightError, cellErrors } = layoutIssueView(
+		layout.operation,
+		selectedKey,
+	);
+	const inspector = getMapInspectionModel({
+		warehouse,
+		editor: visibleEditor,
+		presentation,
+		selected: mapInspection.selected,
+		robot,
+		inspection,
+		editing,
+	});
+	const sizeControls = { ...sizeEditor, widthError, heightError };
+	const hasDetails = Boolean(selectedCell || robot || editing);
+	const className = [
+		styles.mapWorkspace,
+		view.viewing && styles.mapFullscreen,
+		hasDetails && styles.mapShowDetails,
+	]
+		.filter(Boolean)
+		.join(" ");
+	const comparisonLabel = isComparing
+		? "Вернуться к черновику"
+		: "Показать сохранённую карту";
+	const comparisonMessage = isComparing
+		? "Показана сохранённая планировка."
+		: "Сверьте черновик с сохранённой планировкой перед новой записью.";
 
-	function handleStartEditor(mode: typeof editor.mode) {
+	function handleStartEditor(mode: EditorMode) {
 		setMenuOpen(false);
 		selectRobot(null);
 		editor.startMode(mode);
@@ -138,38 +178,33 @@ export function WarehouseMap({
 		sizeEditor.show();
 	}
 
-	const selectedCell = editor.selection.selected;
-	const selectedKey = selectedCell ? cellKey(selectedCell) : null;
-	const { saveIssues, widthError, heightError, cellErrors } = layoutIssueView(
-		layout.operation,
-		selectedKey,
-	);
-
-	const inspector = getMapInspectionModel({
-		warehouse,
-		command,
-		editor: visibleEditor,
-		presentation,
-		selected: mapInspection.selected,
-		robot,
-		inspection,
-		editing,
-	});
-	const sizeControls = { ...sizeEditor, widthError, heightError };
-	const classes = [
-		mapStyles.mapWorkspace,
-		view.viewing && mapStyles.mapFullscreen,
-		(selectedCell || robot || editing) && mapStyles.mapShowDetails,
-	].filter(Boolean);
-	const className = classes.join(" ");
-
 	function handleOpenView() {
 		view.setViewing(true);
+	}
+
+	function handleExitView() {
+		view.setViewing(false);
 	}
 
 	function handleToggleComparison() {
 		setComparePublished(!isComparing);
 	}
+
+	const navigationEditor = {
+		active: editing,
+		busy: editor.busy || isComparing,
+		menuOpen,
+		setMenuOpen,
+		start: handleStartEditor,
+		openSize: handleOpenSizeEditor,
+		close: editor.closeEditor,
+	};
+	const navigationRoutes = {
+		configuring: editing && editor.mode === "routes",
+		optimize: routeEditor.optimize,
+		supported: Boolean(warehouse.allowedActions?.includes("optimize-routes")),
+		optimizing: routeEditor.optimizing,
+	};
 
 	return (
 		<div
@@ -181,31 +216,18 @@ export function WarehouseMap({
 			{view.viewing ? (
 				<MapNavigation
 					navigation={camera.navigation}
-					view={view}
-					editor={{
-						active: editing,
-						busy: editor.busy || isComparing,
-						menuOpen,
-						setMenuOpen,
-						start: handleStartEditor,
-						openSize: handleOpenSizeEditor,
-						close: editor.closeEditor,
-					}}
-					routes={{
-						configuring: configuringRoutes,
-						optimize: routeEditor.optimize,
-						supported: !!warehouse.allowedActions?.includes("optimize-routes"),
-						optimizing: routeEditor.optimizing,
-					}}
+					editor={navigationEditor}
+					routes={navigationRoutes}
+					onExitView={handleExitView}
 				/>
 			) : (
 				<MapToolbar
 					running={warehouse.running}
 					robotCount={simulation.robotCount}
-					pending={pending}
+					isPending={isPending}
 					simulation={simulation}
 					viewTrigger={viewTrigger}
-					openView={handleOpenView}
+					onOpenView={handleOpenView}
 				/>
 			)}
 			<ErrorNotice message={simulation.error} />
@@ -218,15 +240,11 @@ export function WarehouseMap({
 					tone="warning"
 					action={
 						<Button variant="secondary" onClick={handleToggleComparison}>
-							{isComparing
-								? "Вернуться к черновику"
-								: "Показать сохранённую карту"}
+							{comparisonLabel}
 						</Button>
 					}
 				>
-					{isComparing
-						? "Показана сохранённая планировка."
-						: "Сверьте черновик с сохранённой планировкой перед новой записью."}
+					{comparisonMessage}
 				</Feedback>
 			)}
 			{saveIssues && (
@@ -241,7 +259,7 @@ export function WarehouseMap({
 				editing={editing}
 				sizeEditor={sizeControls}
 				routeEditor={routeEditor}
-				pending={pending}
+				pending={isPending}
 				canvas={canvas}
 				viewing={view.viewing}
 				inspection={inspector}

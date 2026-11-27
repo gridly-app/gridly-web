@@ -1,29 +1,27 @@
 import { Button, Input } from "@/shared/ui/controls";
 import { Card } from "@/shared/ui/dataDisplay";
 import { Field } from "@/shared/ui/forms";
-import type { useZonePanel } from "../../model/zones/useZonePanel";
-import mapStyles from "../../shared.module.css";
 
-export interface ZoneCategoryFormProps {
+import type { useZonePanel } from "../../model/zones/useZonePanel";
+
+import styles from "../../shared.module.css";
+
+const categoryNameMaxLength = 80;
+
+export function ZoneCategoryForm({
+	model,
+}: {
 	model: Pick<
 		ReturnType<typeof useZonePanel>,
-		| "toggleAdding"
-		| "adding"
-		| "newName"
-		| "changeNewName"
-		| "pending"
-		| "addCategory"
+		"toggleAdding" | "adding" | "newName" | "changeNewName" | "addCategory"
 	>;
-}
-
-export function ZoneCategoryForm({ model }: ZoneCategoryFormProps) {
-	const { toggleAdding, adding, newName, changeNewName, pending, addCategory } =
-		model;
+}) {
+	const { toggleAdding, adding, newName, changeNewName, addCategory } = model;
 
 	return (
 		<>
 			<Button
-				className={`${mapStyles.zoneButton} ${mapStyles.zoneTextButton}`}
+				className={`${styles.zoneButton} ${styles.zoneTextButton}`}
 				variant="text"
 				type="button"
 				onClick={toggleAdding}
@@ -33,26 +31,23 @@ export function ZoneCategoryForm({ model }: ZoneCategoryFormProps) {
 			{adding && (
 				<Card>
 					<Field
-						className={mapStyles.zoneField}
+						className={styles.zoneField}
 						label="Название категории"
 						accessibleLabel="Название новой категории"
 					>
 						<Input
-							className={mapStyles.zoneInput}
+							className={styles.zoneInput}
 							aria-label="Название новой категории"
 							value={newName}
 							onChange={changeNewName}
-							maxLength={80}
+							maxLength={categoryNameMaxLength}
 						/>
 					</Field>
 					<Button
-						className={mapStyles.zoneButton}
+						className={styles.zoneButton}
 						variant="ghost"
 						type="button"
-						disabled={pending}
-						onClick={() => {
-							void addCategory();
-						}}
+						onClick={addCategory}
 					>
 						Создать категорию
 					</Button>

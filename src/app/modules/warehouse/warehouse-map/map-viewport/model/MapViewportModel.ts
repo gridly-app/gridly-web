@@ -4,6 +4,7 @@ import type {
 	RefObject,
 	WheelEventHandler,
 } from "react";
+
 import type { PointerHit } from "./pointerHit";
 
 type MapPointerHandler = (
@@ -20,6 +21,7 @@ export interface MapViewportModel {
 	height: number;
 	size: number;
 	gridInset: number;
+	canvasPadding: number;
 	panOffset: { x: number; y: number };
 	panning: boolean;
 	zoom: number;

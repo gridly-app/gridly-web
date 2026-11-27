@@ -5,16 +5,16 @@ import {
 	IconRoute,
 } from "@tabler/icons-react";
 import type { RefObject } from "react";
+
 import { Button, Toolbar } from "@/shared/ui/controls";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@/shared/ui/overlays";
-import type { MapEditor } from "../../model/draft/useMapEditor";
-import type { useMapView } from "../../model/useMapView";
 
-import mapStyles from "./MapNavigation.module.css";
+import type { MapEditor } from "../../model/draft/useMapEditor";
+
+import styles from "./MapNavigation.module.css";
 
 export interface MapNavigationProps {
 	navigation: RefObject<HTMLDivElement | null>;
-	view: Pick<ReturnType<typeof useMapView>, "setViewing">;
 	editor: {
 		active: boolean;
 		busy: boolean;
@@ -30,24 +30,44 @@ export interface MapNavigationProps {
 		supported: boolean;
 		optimizing: boolean;
 	};
+	onExitView: () => void;
 }
 
 export function MapNavigation({
-	view,
+	navigation,
 	editor,
 	routes,
-	navigation,
+	onExitView,
 }: MapNavigationProps) {
+	const menuItemButton = (
+		<Button variant="ghost" size="sm" className={styles.navigationItem} />
+	);
+	const optimizeHint = routes.supported
+		? undefined
+		: "Построение маршрутов недоступно по данным сервера";
+
+	function handleConstruction() {
+		editor.start("construction");
+	}
+
+	function handleRoutes() {
+		editor.start("routes");
+	}
+
+	function handleOptimize() {
+		void routes.optimize();
+	}
+
 	return (
 		<Toolbar
 			data-variant="floating"
 			data-map-editor-menu=""
 			aria-label="Действия режима просмотра"
 			ref={navigation}
-			className={mapStyles.mapViewNavigation}
+			className={styles.mapViewNavigation}
 		>
 			<nav aria-label="Управление картой">
-				<ul className={mapStyles.spaceNavigationList}>
+				<ul className={styles.spaceNavigationList}>
 					<li>
 						<Menu open={editor.menuOpen} onOpenChange={editor.setMenuOpen}>
 							<MenuTrigger
@@ -55,25 +75,19 @@ export function MapNavigation({
 								render={
 									<Button
 										variant="ghost"
-										className={mapStyles.spaceNavigationTrigger}
+										className={styles.spaceNavigationTrigger}
 									/>
 								}
 							>
 								Редактирование <IconChevronDown size={14} />
 							</MenuTrigger>
 							<MenuPopup
-								className={mapStyles.spaceNavigationContent}
+								className={styles.spaceNavigationContent}
 								data-map-editor-menu=""
 							>
 								<MenuItem
 									nativeButton
-									render={
-										<Button
-											variant="ghost"
-											size="sm"
-											className={mapStyles.navigationItem}
-										/>
-									}
+									render={menuItemButton}
 									onClick={editor.openSize}
 									disabled={editor.active}
 								>
@@ -82,28 +96,16 @@ export function MapNavigation({
 								</MenuItem>
 								<MenuItem
 									nativeButton
-									render={
-										<Button
-											variant="ghost"
-											size="sm"
-											className={mapStyles.navigationItem}
-										/>
-									}
-									onClick={() => editor.start("construction")}
+									render={menuItemButton}
+									onClick={handleConstruction}
 								>
 									<IconHammer size={16} />
 									Строительство
 								</MenuItem>
 								<MenuItem
 									nativeButton
-									render={
-										<Button
-											variant="ghost"
-											size="sm"
-											className={mapStyles.navigationItem}
-										/>
-									}
-									onClick={() => editor.start("routes")}
+									render={menuItemButton}
+									onClick={handleRoutes}
 								>
 									<IconRoute size={16} />
 									Настройка путей
@@ -111,20 +113,13 @@ export function MapNavigation({
 							</MenuPopup>
 						</Menu>
 					</li>
-
 					{routes.configuring && (
 						<li>
 							<Button
 								variant="ghost"
 								disabled={!routes.supported || routes.optimizing}
-								title={
-									!routes.supported
-										? "Построение маршрутов недоступно по данным сервера"
-										: undefined
-								}
-								onClick={() => {
-									void routes.optimize();
-								}}
+								title={optimizeHint}
+								onClick={handleOptimize}
 							>
 								Оптимизация путей
 							</Button>
@@ -133,7 +128,7 @@ export function MapNavigation({
 					{editor.active && (
 						<li>
 							<Button
-								className={mapStyles.viewButton}
+								className={styles.viewButton}
 								variant="ghost"
 								disabled={editor.busy}
 								onClick={editor.close}
@@ -144,9 +139,9 @@ export function MapNavigation({
 					)}
 					<li>
 						<Button
-							className={mapStyles.viewButton}
+							className={styles.viewButton}
 							variant="ghost"
-							onClick={() => view.setViewing(false)}
+							onClick={onExitView}
 							tooltip="Вернуться в рабочую область · Esc"
 						>
 							Выйти из просмотра

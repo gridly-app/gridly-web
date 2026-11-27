@@ -1,74 +1,71 @@
-import { cellLabels, storageCellTypes } from "@/domain/warehouse";
-
+import {
+	cellLabels,
+	type GridPosition,
+	storageCellTypes,
+} from "@/domain/warehouse";
 import { Card } from "@/shared/ui/dataDisplay";
+
 import type { MapInspection } from "../../model/MapInspection";
-import mapStyles from "../../shared.module.css";
+
+import styles from "../../shared.module.css";
+
+function routeSteps(route: readonly GridPosition[]) {
+	return route.length ? `${route.length - 1} шагов` : "Маршрут не получен";
+}
 
 export function SelectedCellDetails({ model }: { model: MapInspection }) {
-	const { selected, inspection } = model;
-	const {
-		cells: inspectedCells,
-		capacity: inspectedCapacity,
-		zone: inspectedZone,
-		category: inspectedCategory,
-		stock: stocked,
-	} = inspection;
+	const { selected, inspection, routes } = model;
 
-	if (!selected) {
-		return null;
-	}
+	if (!selected) return null;
+
+	const { cells, capacity, zone, category, stock, batchCount } = inspection;
+	const hasRoutes = !model.editing && storageCellTypes.includes(selected.type);
 
 	return (
 		<>
-			<h3>{inspectedZone?.name || cellLabels[selected.type]}</h3>
-			{inspectedZone && (
+			<h3>{zone?.name || cellLabels[selected.type]}</h3>
+			{zone && (
 				<>
-					<div className={mapStyles.detailsSectionCaption}>
-						СКЛАДСКАЯ ЗОНА · {inspectedCells.length} КЛ.
+					<div className={styles.detailsSectionCaption}>
+						СКЛАДСКАЯ ЗОНА · {cells.length} КЛ.
 					</div>
-					<div className={mapStyles.detailLine}>
+					<div className={styles.detailLine}>
 						<span>Тип хранения</span>
 						<b>{cellLabels[selected.type]}</b>
 					</div>
-					<div className={mapStyles.detailLine}>
+					<div className={styles.detailLine}>
 						<span>Категория</span>
-						<b>{inspectedCategory?.name || "Не назначена"}</b>
+						<b>{category?.name || "Не назначена"}</b>
 					</div>
 				</>
 			)}
-			<div className={mapStyles.detailLine}>
+			<div className={styles.detailLine}>
 				<span>Вместимость</span>
-				<b>{inspectedCapacity ?? "—"} м³</b>
+				<b>{capacity ?? "—"} м³</b>
 			</div>
-			<div className={mapStyles.detailLine}>
+			<div className={styles.detailLine}>
 				<span>Партий</span>
-				<b>{inspection.batchCount ?? "—"}</b>
+				<b>{batchCount ?? "—"}</b>
 			</div>
-			{stocked.map((s) => (
-				<Card key={s.id}>
-					<b>{s.productName}</b>
+			{stock.map((item) => (
+				<Card key={item.id}>
+					<b>{item.productName}</b>
 					<p>
-						{s.quantity} шт. · резерв {s.reserved ?? "—"}
+						{item.quantity} шт. · резерв {item.reserved ?? "—"}
 					</p>
-					<span className={mapStyles.muted}>
-						{s.expires || "Без срока годности"}
+					<span className={styles.muted}>
+						{item.expires || "Без срока годности"}
 					</span>
 				</Card>
 			))}
-			{!model.editing && storageCellTypes.includes(selected.type) && (
-				<div className={mapStyles.mapRoutesSummary}>
-					<div className={mapStyles.detailsSectionCaption}>МАРШРУТЫ РОБОТА</div>
-					<p className={mapStyles.routeInbound}>
-						Разгрузка → блок:{" "}
-						{model.routes.inbound.length
-							? `${model.routes.inbound.length - 1} шагов`
-							: "Маршрут не получен"}
+			{hasRoutes && (
+				<div className={styles.mapRoutesSummary}>
+					<div className={styles.detailsSectionCaption}>МАРШРУТЫ РОБОТА</div>
+					<p className={styles.routeInbound}>
+						Разгрузка → блок: {routeSteps(routes.inbound)}
 					</p>
-					<p className={mapStyles.routeOutbound}>
-						Блок → погрузка:{" "}
-						{model.routes.outbound.length
-							? `${model.routes.outbound.length - 1} шагов`
-							: "Маршрут не получен"}
+					<p className={styles.routeOutbound}>
+						Блок → погрузка: {routeSteps(routes.outbound)}
 					</p>
 				</div>
 			)}

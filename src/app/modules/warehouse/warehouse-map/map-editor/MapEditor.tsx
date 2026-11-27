@@ -1,5 +1,7 @@
 import type { Category } from "@/domain/warehouse";
 import { ConfirmDialog } from "@/shared/ui/overlays";
+
+import { RouteToolbar, type RouteToolbarProps } from "./route-toolbar";
 import {
 	EditLayoutToolbar,
 	type EditLayoutToolbarProps,
@@ -8,7 +10,6 @@ import {
 	MapSizeDialog,
 	type MapSizeDialogProps,
 } from "./ui/MapSizeDialog/MapSizeDialog";
-import { RouteToolbar, type RouteToolbarProps } from "./route-toolbar";
 
 interface MapEditorProps {
 	editor: EditLayoutToolbarProps["editor"] &
@@ -38,6 +39,9 @@ export function MapEditor({
 	className,
 	onHeightChange,
 }: MapEditorProps) {
+	const isConstruction = editing && editor.mode === "construction";
+	const isRoutes = editing && editor.mode === "routes";
+
 	return (
 		<>
 			<MapSizeDialog model={sizeEditor} />
@@ -51,7 +55,7 @@ export function MapEditor({
 				onConfirm={editor.confirmDiscard}
 				onCancel={editor.cancelDiscard}
 			/>
-			{editing && editor.mode === "construction" && (
+			{isConstruction && (
 				<EditLayoutToolbar
 					className={className}
 					editor={editor}
@@ -61,7 +65,7 @@ export function MapEditor({
 					onHeightChange={onHeightChange}
 				/>
 			)}
-			{editing && editor.mode === "routes" && (
+			{isRoutes && (
 				<RouteToolbar
 					className={className}
 					model={routeEditor}

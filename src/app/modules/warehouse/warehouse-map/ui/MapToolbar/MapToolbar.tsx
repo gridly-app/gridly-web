@@ -1,31 +1,36 @@
 import type { Ref } from "react";
+
 import { Button, StableLabel, Toolbar } from "@/shared/ui/controls";
 import { StatusBadge } from "@/shared/ui/dataDisplay";
-import type { useMapSimulation } from "../../model/viewport/useMapSimulation";
-import mapStyles from "./MapToolbar.module.css";
 
-interface MapToolbarProps {
+import type { useMapSimulation } from "../../model/viewport/useMapSimulation";
+
+import styles from "./MapToolbar.module.css";
+
+export function MapToolbar({
+	running,
+	robotCount,
+	isPending,
+	simulation,
+	viewTrigger,
+	onOpenView,
+}: {
 	running: boolean;
 	robotCount: number;
-	pending: boolean;
+	isPending: boolean;
 	simulation: Pick<
 		ReturnType<typeof useMapSimulation>,
 		"activeRobots" | "supported" | "toggle"
 	>;
 	viewTrigger: Ref<HTMLButtonElement>;
-	openView: () => void;
-}
+	onOpenView: () => void;
+}) {
+	function handleToggleSimulation() {
+		void simulation.toggle();
+	}
 
-export function MapToolbar({
-	running,
-	robotCount,
-	pending,
-	simulation,
-	viewTrigger,
-	openView,
-}: MapToolbarProps) {
 	return (
-		<Toolbar aria-label="Действия карты" className={mapStyles.toolbar}>
+		<Toolbar aria-label="Действия карты" className={styles.toolbar}>
 			<StatusBadge
 				compactOnMobile
 				status={running ? "online" : "offline"}
@@ -34,15 +39,13 @@ export function MapToolbar({
 			>
 				/ {robotCount} роботов
 			</StatusBadge>
-			<div className={mapStyles.actions}>
+			<div className={styles.actions}>
 				{simulation.supported && (
 					<Button
-						className={mapStyles.button}
+						className={styles.button}
 						variant="ghost"
-						onClick={() => {
-							void simulation.toggle();
-						}}
-						disabled={pending}
+						onClick={handleToggleSimulation}
+						disabled={isPending}
 					>
 						<StableLabel variants={["Пауза", "Продолжить"]}>
 							{running ? "Пауза" : "Продолжить"}
@@ -50,10 +53,10 @@ export function MapToolbar({
 					</Button>
 				)}
 				<Button
-					className={mapStyles.button}
+					className={styles.button}
 					ref={viewTrigger}
 					variant="secondary"
-					onClick={openView}
+					onClick={onOpenView}
 					tooltip="Открыть карту на всю рабочую область"
 				>
 					Режим просмотра

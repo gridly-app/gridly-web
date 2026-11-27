@@ -100,7 +100,7 @@ function renderMap(
 						<WarehouseMap
 							warehouse={snapshot}
 							command={command}
-							pending={false}
+							isPending={false}
 							dark={false}
 							layout={{
 								operation,

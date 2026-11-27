@@ -22,10 +22,6 @@ test("an inspector draft error preserves selected cells and retry affects only t
 			warehouse: { categories: [] },
 			cells,
 			keys: ["1,2"],
-			editing: true,
-			command: async () => {
-				throw new Error("Unexpected warehouse write");
-			},
 			onDraft: (draft) => {
 				if (unavailable) throw new UserError("Изменения временно недоступны.");
 

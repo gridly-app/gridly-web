@@ -1,4 +1,5 @@
 import { IconHandStop } from "@tabler/icons-react";
+
 import { Button } from "@/shared/ui/controls";
 import {
 	Empty,
@@ -9,13 +10,14 @@ import {
 	ErrorNotice,
 } from "@/shared/ui/feedback";
 import { ScrollArea } from "@/shared/ui/navigation";
+
 import type { MapInspection } from "./model/MapInspection";
-import styles from "./shared.module.css";
-import type { MapLegendModel } from "./ui/MapLegend/MapLegend";
-import { MapLegend } from "./ui/MapLegend/MapLegend";
+import { MapLegend, type MapLegendModel } from "./ui/MapLegend/MapLegend";
 import { RobotDetails } from "./ui/RobotDetails/RobotDetails";
 import { SelectedCellDetails } from "./ui/SelectedCellDetails/SelectedCellDetails";
-import ZonePanel from "./ui/ZonePanel/ZonePanel";
+import { ZonePanel } from "./ui/ZonePanel/ZonePanel";
+
+import styles from "./shared.module.css";
 
 export interface MapInspectorProps {
 	legend: MapLegendModel;
@@ -24,35 +26,39 @@ export interface MapInspectorProps {
 	className?: string | undefined;
 }
 
+function detailsCaption(model: MapInspection) {
+	if (model.robot && !model.editing) return "РОБОТ";
+	if (!model.selected) return "ОБЗОР СКЛАДА";
+	if (model.inspection.zone && !model.editing) return "СКЛАДСКАЯ ЗОНА";
+
+	return "ВЫБРАННАЯ КЛЕТКА";
+}
+
 export function MapInspector({
 	legend,
 	model,
 	className,
 	cellErrors,
 }: MapInspectorProps) {
+	const isEmpty =
+		!model.selected && !model.robot && model.selectionKeys.length === 0;
+	const canClearSelection = model.editing && model.selectionKeys.length > 0;
+
 	return (
 		<ScrollArea
 			fill
 			data-slot="card"
 			render={<aside />}
 			className={`${className ?? ""} ${styles.details}`}
-			data-empty={
-				!model.selected && !model.robot && model.selectionKeys.length === 0
-			}
+			data-empty={isEmpty}
 		>
 			<div className={styles.mapDetailsBody}>
 				<div className={styles.detailsSectionCaption}>
-					{model.robot && !model.editing
-						? "РОБОТ"
-						: model.selected
-							? model.inspection.zone && !model.editing
-								? "СКЛАДСКАЯ ЗОНА"
-								: "ВЫБРАННАЯ КЛЕТКА"
-							: "ОБЗОР СКЛАДА"}
+					{detailsCaption(model)}
 				</div>
 				<ErrorNotice message={model.selectionError} />
 				<ErrorNotice message={cellErrors?.join(" · ")} />
-				{model.editing && model.selectionKeys.length > 0 && (
+				{canClearSelection && (
 					<Button variant="ghost" onClick={model.clearSelection}>
 						Снять выделение
 					</Button>
@@ -65,9 +71,9 @@ export function MapInspector({
 }
 
 function MapSelectionDetails({ model }: { model: MapInspection }) {
-	if (model.robot && !model.editing) {
+	if (model.robot && !model.editing)
 		return <RobotDetails robot={model.robot} warehouse={model.warehouse} />;
-	}
+
 	if (model.canAssignZone && model.editing) {
 		return (
 			<ZonePanel
@@ -76,36 +82,31 @@ function MapSelectionDetails({ model }: { model: MapInspection }) {
 				warehouse={model.warehouse}
 				cells={model.cells}
 				keys={model.zoneKeys}
-				editing={model.constructing}
-				command={model.command}
 				onDraft={model.onDraft}
 				onCategory={model.onCategory}
 			/>
 		);
 	}
-	return model.selected ? (
-		<SelectedCellDetails model={model} />
-	) : (
-		<MapOverview editing={model.editing} />
-	);
+
+	if (model.selected) return <SelectedCellDetails model={model} />;
+
+	return <MapOverview editing={model.editing} />;
 }
 
-type MapOverviewProps = { editing: boolean };
-function MapOverview({ editing }: MapOverviewProps) {
+function MapOverview({ editing }: { editing: boolean }) {
+	const title = editing ? "Выберите клетки" : "Выберите клетку";
+	const description = editing
+		? "Нажимайте на клетки или выделяйте область. Повторный клик снимает выделение."
+		: "Нажмите на клетку, чтобы посмотреть информацию. Складская зона показывается целиком.";
+
 	return (
 		<Empty>
 			<EmptyMedia variant="icon">
 				<IconHandStop aria-hidden="true" />
 			</EmptyMedia>
 			<EmptyHeader>
-				<EmptyTitle>
-					{editing ? "Выберите клетки" : "Выберите клетку"}
-				</EmptyTitle>
-				<EmptyDescription>
-					{editing
-						? "Нажимайте на клетки или выделяйте область. Повторный клик снимает выделение."
-						: "Нажмите на клетку, чтобы посмотреть информацию. Складская зона показывается целиком."}
-				</EmptyDescription>
+				<EmptyTitle>{title}</EmptyTitle>
+				<EmptyDescription>{description}</EmptyDescription>
 			</EmptyHeader>
 		</Empty>
 	);
