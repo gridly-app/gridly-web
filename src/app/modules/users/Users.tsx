@@ -63,9 +63,8 @@ export function Users({
 		userKind,
 	);
 	const { editing, deleting } = actions;
-	const latest = users
-		.filter(isEditableAccount)
-		.find((user) => user.id === editing?.id);
+	const accounts = users.filter(isEditableAccount);
+	const latest = accounts.find((user) => user.id === editing?.id);
 	const replacement =
 		latest && latest.revision !== editing?.revision ? latest : null;
 	const latestActions = latest?.allowed_actions ?? [];
@@ -172,6 +171,7 @@ export function Users({
 					mode={mode}
 					user={deleting}
 					warehouseId={actions.deletingWarehouseId}
+					accounts={accounts}
 					refreshUsers={query.refetch}
 					isFetching={query.isFetching}
 					readError={query.error}

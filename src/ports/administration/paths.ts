@@ -22,3 +22,12 @@ export function guestLinksApiPath(mode: WorkspaceMode, warehouseId: string) {
 
 	return `${apiPrefix(mode)}/admin/warehouses/${warehouse}/shipment-links`;
 }
+
+export function warehouseOwnerApiPath(
+	mode: WorkspaceMode,
+	warehouseId: string,
+) {
+	const warehouse = encodeURIComponent(warehouseId);
+
+	return `${apiPrefix(mode)}/admin/warehouses/${warehouse}/owner`;
+}

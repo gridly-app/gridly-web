@@ -1,5 +1,7 @@
+import { useState } from "react";
+
 import type { WorkspaceMode } from "@/ports/session";
-import { type HttpClient, isStaleRevision } from "@/shared/http";
+import { ApiError, type HttpClient, isStaleRevision } from "@/shared/http";
 import { UserError } from "@/shared/lib";
 import { DeleteConfirmation } from "@/shared/ui/management";
 
@@ -11,12 +13,21 @@ import {
 } from "../../api/usersApi";
 import { canStillRemove } from "../../model/accountActions";
 import { userActionError } from "../../model/userActionError";
+import { OwnershipTransfer } from "../OwnershipTransfer/OwnershipTransfer";
+
+function isOwnerTransferRequired(error: unknown) {
+	return (
+		error instanceof ApiError &&
+		error.code === "WAREHOUSE_OWNER_TRANSFER_REQUIRED"
+	);
+}
 
 export function UserRemovalDialog({
 	http,
 	mode,
 	user: deleting,
 	warehouseId,
+	accounts,
 	refreshUsers,
 	isFetching,
 	readError,
@@ -29,6 +40,7 @@ export function UserRemovalDialog({
 	mode: WorkspaceMode;
 	user: EditableAccount;
 	warehouseId: string | undefined;
+	accounts: EditableAccount[];
 	refreshUsers: ReturnType<typeof useAdminUsers>["refetch"];
 	isFetching: boolean;
 	readError: Error | null;
@@ -37,6 +49,7 @@ export function UserRemovalDialog({
 	onReplace: (user: EditableAccount) => void;
 	onUnavailable: () => void;
 }) {
+	const [isTransferring, setIsTransferring] = useState(false);
 	const removeUser = useRemoveAdminUser(http, mode, () =>
 		onRemoved(warehouseId),
 	);
@@ -50,7 +63,7 @@ export function UserRemovalDialog({
 		deleteError && !isStale
 			? new UserError(userActionError(deleteError))
 			: deleteError;
-	const refreshDelete = isStale ? handleRefreshForDelete : undefined;
+	const recovery = removalRecovery();
 	const warehouseName = removedWarehouse?.warehouse_name ?? warehouseId;
 	const texts = warehouseId
 		? {
@@ -63,6 +76,21 @@ export function UserRemovalDialog({
 				description: `У аккаунта «${deleting.name}» будут отозваны все сессии и доступы ко всем складам.`,
 				confirm: "Деактивировать аккаунт",
 			};
+
+	function removalRecovery() {
+		if (isStale) {
+			return {
+				label: "Обновить данные пользователя",
+				action: handleRefreshForDelete,
+			};
+		}
+
+		if (isOwnerTransferRequired(removeUser.error)) {
+			return { label: "Передать владение", action: handleStartTransfer };
+		}
+
+		return null;
+	}
 
 	function handleCloseDelete() {
 		if (!removeUser.isPending && !isRefreshingRemoval) onClose();
@@ -96,17 +124,44 @@ export function UserRemovalDialog({
 		onUnavailable();
 	}
 
+	function handleStartTransfer() {
+		setIsTransferring(true);
+	}
+
+	function handleCancelTransfer() {
+		setIsTransferring(false);
+	}
+
+	async function handleTransferred() {
+		setIsTransferring(false);
+		await handleRefreshForDelete();
+	}
+
+	if (isTransferring) {
+		return (
+			<OwnershipTransfer
+				http={http}
+				mode={mode}
+				owner={deleting}
+				warehouseId={warehouseId}
+				accounts={accounts}
+				onBack={handleCancelTransfer}
+				onTransferred={handleTransferred}
+			/>
+		);
+	}
+
 	return (
 		<DeleteConfirmation
 			title={texts.title}
 			description={texts.description}
 			confirmLabel={texts.confirm}
-			refreshLabel="Обновить данные пользователя"
+			recoverLabel={recovery?.label}
 			isPending={removeUser.isPending || isRefreshingRemoval}
 			error={removalMessage}
 			onClose={handleCloseDelete}
 			onConfirm={handleConfirmDelete}
-			onRefresh={refreshDelete}
+			onRecover={recovery?.action}
 		/>
 	);
 }

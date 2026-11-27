@@ -13,8 +13,8 @@ export function DeleteConfirmation({
 	error,
 	onClose,
 	onConfirm,
-	onRefresh,
-	refreshLabel,
+	onRecover,
+	recoverLabel,
 }: {
 	title: string;
 	description: string;
@@ -23,8 +23,8 @@ export function DeleteConfirmation({
 	error: Error | null;
 	onClose: () => void;
 	onConfirm: () => void;
-	onRefresh?: (() => Promise<void>) | undefined;
-	refreshLabel?: string;
+	onRecover?: (() => void | Promise<void>) | undefined;
+	recoverLabel?: string | undefined;
 }) {
 	function handleClose() {
 		if (!isPending) onClose();
@@ -43,9 +43,9 @@ export function DeleteConfirmation({
 					>
 						Отмена
 					</Button>
-					{onRefresh ? (
-						<Button disabled={isPending} onClick={onRefresh}>
-							{refreshLabel}
+					{onRecover ? (
+						<Button disabled={isPending} onClick={onRecover}>
+							{recoverLabel}
 						</Button>
 					) : (
 						<Button

@@ -27,6 +27,7 @@ const warehouseAccess = z.object({
 	warehouse_id: text.min(1),
 	warehouse_name: text,
 	permissions: z.array(text.min(1)).refine(isUnique),
+	is_owner: z.boolean().optional(),
 });
 
 const subject = z.object({ id: text.min(1), name: text });
@@ -59,6 +60,8 @@ const membershipUpdate = z.object({
 });
 
 export const assignmentSchema = membershipUpdate.extend({ login: loginSchema });
+
+export const ownerTransferSchema = z.object({ user_id: text.min(1) });
 
 export const accountUserUpdateSchema = userProfileSchema
 	.partial()

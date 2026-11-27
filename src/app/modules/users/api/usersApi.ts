@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { adminApiPath, adminQueryKey } from "@/ports/administration";
+import {
+	adminApiPath,
+	adminQueryKey,
+	warehouseOwnerApiPath,
+} from "@/ports/administration";
 import type { WorkspaceMode } from "@/ports/session";
 import { useWarehouseScopeId } from "@/ports/warehouse";
 import { ApiError, type HttpClient, parseResponse } from "@/shared/http";
@@ -11,6 +15,7 @@ import {
 	accountUserUpdateSchema,
 	assignmentSchema,
 	type EditableAccount,
+	ownerTransferSchema,
 	usersSchema,
 } from "./users.dto";
 
@@ -133,6 +138,38 @@ export function useAddWarehouseMember(
 			await invalidate();
 
 			if (!error) onAdded();
+		},
+	});
+}
+
+export function useTransferWarehouseOwner(
+	http: HttpClient,
+	mode: WorkspaceMode,
+	onTransferred: () => void,
+) {
+	const { invalidate } = useUsersCache(mode);
+
+	return useMutation({
+		mutationFn: ({
+			warehouseId,
+			userId,
+		}: {
+			warehouseId: string;
+			userId: string;
+		}) =>
+			http.request(warehouseOwnerApiPath(mode, warehouseId), {
+				method: "POST",
+				body: ownerTransferSchema.parse({ user_id: userId }),
+			}),
+		onError: async (error) => {
+			if (isForbidden(error)) await invalidate();
+		},
+		onSuccess: async () => {
+			await Promise.all([
+				invalidate(),
+				invalidate(adminApiPath(mode, "audit")),
+			]);
+			onTransferred();
 		},
 	});
 }
