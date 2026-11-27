@@ -1,9 +1,14 @@
 import { Button } from "@/shared/ui/controls";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
+
+import { formatNumber } from "../../lib/formatNumber";
 import { stockCategories } from "../../model/chartData";
 import type { ReportWarehouse } from "../../model/warehouseResources";
+
 import chartStyles from "../../shared.module.css";
 import styles from "./CategoryDistribution.module.css";
+
+const dimmedOpacity = 0.3;
 
 export function CategoryDistribution({
 	warehouse,
@@ -15,7 +20,12 @@ export function CategoryDistribution({
 	onSelect: (category: string) => void;
 }) {
 	const categories = stockCategories(warehouse);
-	const max = Math.max(1, ...categories.map((item) => item.quantity));
+	const maxQuantity = Math.max(1, ...categories.map((item) => item.quantity));
+
+	function handleShowAll() {
+		onSelect("all");
+	}
+
 	return (
 		<section
 			className={chartStyles.chartCard}
@@ -27,38 +37,42 @@ export function CategoryDistribution({
 					<p>Выберите категорию, чтобы связать её с остальными графиками.</p>
 				</div>
 				{category !== "all" && (
-					<Button variant="text" size="sm" onClick={() => onSelect("all")}>
+					<Button variant="text" size="sm" onClick={handleShowAll}>
 						Все категории
 					</Button>
 				)}
 			</div>
 			<div className={styles.categoryBars}>
-				{categories.map((item) => (
-					<Button
-						key={item.id}
-						variant="ghost"
-						disabled={!item.id}
-						selected={category === item.id}
-						onClick={() => onSelect(category === item.id ? "all" : item.id)}
-						className={styles.categoryBar}
-						aria-label={`${item.label}: ${item.quantity} единиц. Фильтр категории.`}
-					>
-						<span className={styles.categoryBarLabel}>
-							<span>{item.label}</span>
-							<strong>
-								{item.quantity.toLocaleString("ru-RU")} <small>шт.</small>
-							</strong>
-						</span>
-						<span className={styles.categoryBarTrack}>
-							<span
-								style={{
-									width: `${(item.quantity / max) * 100}%`,
-									opacity: category === "all" || category === item.id ? 1 : 0.3,
-								}}
-							/>
-						</span>
-					</Button>
-				))}
+				{categories.map((item) => {
+					const isSelected = category === item.id;
+					const isHighlighted = category === "all" || isSelected;
+					const barStyle = {
+						width: `${(item.quantity / maxQuantity) * 100}%`,
+						opacity: isHighlighted ? 1 : dimmedOpacity,
+					};
+
+					return (
+						<Button
+							key={item.id}
+							variant="ghost"
+							disabled={!item.id}
+							selected={isSelected}
+							onClick={() => onSelect(isSelected ? "all" : item.id)}
+							className={styles.categoryBar}
+							aria-label={`${item.label}: ${item.quantity} единиц. Фильтр категории.`}
+						>
+							<span className={styles.categoryBarLabel}>
+								<span>{item.label}</span>
+								<strong>
+									{formatNumber(item.quantity)} <small>шт.</small>
+								</strong>
+							</span>
+							<span className={styles.categoryBarTrack}>
+								<span style={barStyle} />
+							</span>
+						</Button>
+					);
+				})}
 			</div>
 			{!categories.length && (
 				<Empty>

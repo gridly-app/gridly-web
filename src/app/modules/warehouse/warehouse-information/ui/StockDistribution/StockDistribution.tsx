@@ -1,8 +1,11 @@
 import { useState } from "react";
+
 import { Badge } from "@/shared/ui/dataDisplay";
+
 import type { WarehouseReport } from "../../model/report";
-import chartStyles from "../../shared.module.css";
 import { Donut } from "../Donut/Donut";
+
+import chartStyles from "../../shared.module.css";
 
 export function StockDistribution({ report }: { report: WarehouseReport }) {
 	const [selected, setSelected] = useState("all");
@@ -21,6 +24,11 @@ export function StockDistribution({ report }: { report: WarehouseReport }) {
 		},
 	];
 	const active = slices.find((slice) => slice.key === selected);
+
+	function handleSelect(key: string) {
+		setSelected(selected === key ? "all" : key);
+	}
+
 	return (
 		<section
 			className={chartStyles.chartCard}
@@ -38,10 +46,10 @@ export function StockDistribution({ report }: { report: WarehouseReport }) {
 			<Donut
 				slices={slices}
 				selected={selected}
-				onSelect={(key) => setSelected(selected === key ? "all" : key)}
 				title="Доступные и зарезервированные товары"
-				center={active?.value ?? report.stockQuantity}
+				total={active?.value ?? report.stockQuantity}
 				caption={active?.label ?? "единиц товара"}
+				onSelect={handleSelect}
 			/>
 			{!report.stockQuantity && (
 				<p className={chartStyles.chartNote}>

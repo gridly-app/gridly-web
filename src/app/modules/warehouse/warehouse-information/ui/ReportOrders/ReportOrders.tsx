@@ -1,4 +1,5 @@
 import type { Ref } from "react";
+
 import { StatusBadge } from "@/ports/warehouse";
 import { Button } from "@/shared/ui/controls";
 import {
@@ -12,22 +13,23 @@ import {
 	useTableColumns,
 } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
-import { formatShortDay as shortDay } from "../../model/reportPeriod";
-import { type WarehouseReport } from "../../model/report";
-import { warehouseDay } from "../../model/reportPeriod";
-import { type ReportRange } from "../../model/reportPeriod";
+
+import { formatNumber } from "../../lib/formatNumber";
+import type { WarehouseReport } from "../../model/report";
+import {
+	formatRange,
+	formatShortDay,
+	type ReportRange,
+	warehouseDay,
+} from "../../model/reportPeriod";
 import { reportOrderPageSize } from "../../model/useReportFilters";
+
 import layoutStyles from "../../shared.module.css";
 
-interface ReportOrdersProps {
-	orders: WarehouseReport["orders"];
-	selectedRange: ReportRange | null;
-	sectionRef: Ref<HTMLElement>;
-	timezone: string;
-	limit: number;
-	onClearRange: () => void;
-	onLoadMore: () => void;
-}
+const orderKinds = {
+	inbound: { label: "Поставка", tone: "success" },
+	outbound: { label: "Отгрузка", tone: "accent" },
+} as const;
 
 export function ReportOrders({
 	orders,
@@ -37,7 +39,15 @@ export function ReportOrders({
 	limit,
 	onClearRange,
 	onLoadMore,
-}: ReportOrdersProps) {
+}: {
+	orders: WarehouseReport["orders"];
+	selectedRange: ReportRange | null;
+	sectionRef: Ref<HTMLElement>;
+	timezone: string;
+	limit: number;
+	onClearRange: () => void;
+	onLoadMore: () => void;
+}) {
 	const columns = useTableColumns("report-orders", [
 		"Направление",
 		"Контрагент",
@@ -45,6 +55,13 @@ export function ReportOrders({
 		"Статус",
 		"Дата",
 	]);
+	const title = selectedRange
+		? `Операции: ${formatRange(selectedRange)}`
+		: "Операции за период";
+	const description = selectedRange
+		? "Детализация выбранной точки графика."
+		: "Выберите точку графика, статус или категорию, чтобы сузить список.";
+	const nextPageSize = Math.min(reportOrderPageSize, orders.length - limit);
 
 	return (
 		<section
@@ -55,16 +72,8 @@ export function ReportOrders({
 		>
 			<div className={layoutStyles.chartHeading}>
 				<div>
-					<h3>
-						{selectedRange
-							? `Операции: ${shortDay(selectedRange.from)}${selectedRange.from !== selectedRange.to ? ` — ${shortDay(selectedRange.to)}` : ""}`
-							: "Операции за период"}
-					</h3>
-					<p>
-						{selectedRange
-							? "Детализация выбранной точки графика."
-							: "Выберите точку графика, статус или категорию, чтобы сузить список."}
-					</p>
+					<h3>{title}</h3>
+					<p>{description}</p>
 				</div>
 				<div className={layoutStyles.headerActions}>
 					<div className={layoutStyles.tableControls}>
@@ -92,33 +101,32 @@ export function ReportOrders({
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{orders.slice(0, limit).map((order) => (
-								<TableRow key={order.id}>
-									<TableCell>
-										<strong>{order.number}</strong>
-									</TableCell>
-									<TableCell>
-										<Badge
-											tone={order.kind === "inbound" ? "success" : "accent"}
-										>
-											{order.kind === "inbound" ? "Поставка" : "Отгрузка"}
-										</Badge>
-									</TableCell>
-									<TableCell>{order.party}</TableCell>
-									<TableCell>
-										{order.lines
-											.reduce((sum, line) => sum + line.quantity, 0)
-											.toLocaleString("ru-RU")}{" "}
-										шт.
-									</TableCell>
-									<TableCell>
-										<StatusBadge value={order.status} />
-									</TableCell>
-									<TableCell>
-										{shortDay(warehouseDay(order.created, timezone))}
-									</TableCell>
-								</TableRow>
-							))}
+							{orders.slice(0, limit).map((order) => {
+								const kind = orderKinds[order.kind];
+								const quantity = order.lines.reduce(
+									(sum, line) => sum + line.quantity,
+									0,
+								);
+
+								return (
+									<TableRow key={order.id}>
+										<TableCell>
+											<strong>{order.number}</strong>
+										</TableCell>
+										<TableCell>
+											<Badge tone={kind.tone}>{kind.label}</Badge>
+										</TableCell>
+										<TableCell>{order.party}</TableCell>
+										<TableCell>{formatNumber(quantity)} шт.</TableCell>
+										<TableCell>
+											<StatusBadge value={order.status} />
+										</TableCell>
+										<TableCell>
+											{formatShortDay(warehouseDay(order.created, timezone))}
+										</TableCell>
+									</TableRow>
+								);
+							})}
 						</TableBody>
 					</Table>
 				</div>
@@ -131,7 +139,7 @@ export function ReportOrders({
 			)}
 			{orders.length > limit && (
 				<Button variant="secondary" onClick={onLoadMore}>
-					Показать ещё {Math.min(reportOrderPageSize, orders.length - limit)}
+					Показать ещё {nextPageSize}
 				</Button>
 			)}
 		</section>

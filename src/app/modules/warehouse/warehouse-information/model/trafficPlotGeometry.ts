@@ -1,49 +1,70 @@
 import type { TrafficBucket } from "./chartData";
 
 export type TrafficSeries = Record<"inbound" | "outbound", boolean>;
-export const LEFT = 52,
-	RIGHT = 780,
-	TOP = 20,
-	BOTTOM = 224;
+
+export const plotViewBox = { width: 800, height: 264 };
+export const plotBounds = { left: 52, right: 780, top: 20, bottom: 224 };
+export const axisLabelY = 252;
+export const gridSteps = 4;
+
+const minimumPointHalfWidth = 8;
+const minimumPointWidth = 16;
+
+function visibleValues(buckets: TrafficBucket[], visible: TrafficSeries) {
+	return buckets.flatMap((bucket) => [
+		visible.inbound ? bucket.inbound : 0,
+		visible.outbound ? bucket.outbound : 0,
+	]);
+}
 
 export function trafficPlotGeometry(
 	buckets: TrafficBucket[],
 	preceding: TrafficBucket[],
 	visible: TrafficSeries,
 ) {
+	const { left, right, top, bottom } = plotBounds;
+	const width = right - left;
 	const maximum = Math.max(
 		1,
-		...buckets.flatMap((bucket) => [
-			visible.inbound ? bucket.inbound : 0,
-			visible.outbound ? bucket.outbound : 0,
-		]),
-		...preceding.flatMap((bucket) => [
-			visible.inbound ? bucket.inbound : 0,
-			visible.outbound ? bucket.outbound : 0,
-		]),
+		...visibleValues(buckets, visible),
+		...visibleValues(preceding, visible),
 	);
-	const ceiling = Math.ceil(maximum / 4) * 4;
-	const x = (index: number) =>
-		buckets.length === 1
-			? (LEFT + RIGHT) / 2
-			: LEFT + (index / (buckets.length - 1)) * (RIGHT - LEFT);
-	const y = (value: number) => BOTTOM - (value / ceiling) * (BOTTOM - TOP);
-	const line = (data: TrafficBucket[], kind: keyof TrafficSeries) =>
-		data
+	const ceiling = Math.ceil(maximum / gridSteps) * gridSteps;
+	const pointWidth = width / Math.max(1, buckets.length - 1);
+
+	function x(index: number) {
+		if (buckets.length === 1) return (left + right) / 2;
+
+		return left + (index / (buckets.length - 1)) * width;
+	}
+
+	function y(value: number) {
+		return bottom - (value / ceiling) * (bottom - top);
+	}
+
+	function line(data: TrafficBucket[], kind: keyof TrafficSeries) {
+		return data
 			.map(
 				(bucket, index) =>
 					`${index ? "L" : "M"} ${x(index)} ${y(bucket[kind])}`,
 			)
 			.join(" ");
-	const pointWidth = (RIGHT - LEFT) / Math.max(1, buckets.length - 1);
+	}
+
+	function pointLeft(index: number) {
+		return Math.max(
+			left,
+			x(index) - Math.max(minimumPointHalfWidth, pointWidth / 2),
+		);
+	}
+
 	return {
 		ceiling,
 		x,
 		y,
 		line,
-		pointLeft: (index: number) =>
-			Math.max(LEFT, x(index) - Math.max(8, pointWidth / 2)),
-		pointWidth: Math.min(RIGHT - LEFT, Math.max(16, pointWidth)),
+		pointLeft,
+		pointWidth: Math.min(width, Math.max(minimumPointWidth, pointWidth)),
 	};
 }
 

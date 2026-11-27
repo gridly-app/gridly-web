@@ -1,20 +1,56 @@
 import { statusLabels } from "@/domain/warehouse";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { Empty, EmptyDescription } from "@/shared/ui/feedback";
+
 import type { WarehouseReport } from "../../model/report";
-import chartStyles from "../../shared.module.css";
 import { Donut } from "../Donut/Donut";
 
-const statusColor = (status: string) =>
-	["received", "shipped", "completed"].includes(status)
-		? "var(--primary)"
-		: ["cancelled", "canceled", "draft", "created"].includes(status)
-			? "var(--neutral)"
-			: ["blocked", "received_with_losses", "failed"].includes(status)
-				? "var(--error)"
-				: status.includes("waiting") || status.includes("awaiting")
-					? "var(--warning)"
-					: "var(--info)";
+import chartStyles from "../../shared.module.css";
+
+const statusColors = [
+	{
+		color: "var(--primary)",
+		matches: (status: string) =>
+			["received", "shipped", "completed"].includes(status),
+	},
+	{
+		color: "var(--neutral)",
+		matches: (status: string) =>
+			["cancelled", "canceled", "draft", "created"].includes(status),
+	},
+	{
+		color: "var(--error)",
+		matches: (status: string) =>
+			["blocked", "received_with_losses", "failed"].includes(status),
+	},
+	{
+		color: "var(--warning)",
+		matches: (status: string) =>
+			status.includes("waiting") || status.includes("awaiting"),
+	},
+];
+
+function statusColor(status: string) {
+	return (
+		statusColors.find(({ matches }) => matches(status))?.color ?? "var(--info)"
+	);
+}
+
+function statusSlices(orders: WarehouseReport["orders"]) {
+	const counts = new Map<string, number>();
+
+	for (const order of orders) {
+		counts.set(order.status, (counts.get(order.status) ?? 0) + 1);
+	}
+
+	return [...counts].map(([key, value]) => ({
+		key,
+		value,
+		label: statusLabels[key] ?? key,
+		color: statusColor(key),
+	}));
+}
+
 export function StatusDistribution({
 	report,
 	status,
@@ -24,16 +60,9 @@ export function StatusDistribution({
 	status: string;
 	onSelect: (status: string) => void;
 }) {
-	const counts = new Map<string, number>();
-	for (const order of report.orders)
-		counts.set(order.status, (counts.get(order.status) ?? 0) + 1);
-	const slices = [...counts].map(([key, value]) => ({
-		key,
-		value,
-		label: statusLabels[key] ?? key,
-		color: statusColor(key),
-	}));
+	const slices = statusSlices(report.orders);
 	const selected = slices.find((slice) => slice.key === status);
+
 	return (
 		<section
 			className={chartStyles.chartCard}
@@ -50,10 +79,10 @@ export function StatusDistribution({
 				<Donut
 					slices={slices}
 					selected={status}
-					onSelect={onSelect}
 					title="Количество заказов по статусам"
-					center={selected?.value ?? report.orders.length}
+					total={selected?.value ?? report.orders.length}
 					caption={selected ? "выбрано" : "всего заказов"}
+					onSelect={onSelect}
 				/>
 			) : (
 				<Empty>

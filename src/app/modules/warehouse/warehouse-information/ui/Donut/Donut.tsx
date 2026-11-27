@@ -1,4 +1,9 @@
+import type { KeyboardEvent } from "react";
+
 import { Button } from "@/shared/ui/controls";
+
+import { formatNumber } from "../../lib/formatNumber";
+
 import chartStyles from "../../shared.module.css";
 import styles from "./Donut.module.css";
 
@@ -8,24 +13,57 @@ interface Slice {
 	value: number;
 	color: string;
 }
+
+const center = 100;
+const radius = 72;
+const strokeWidth = 22;
+const selectedStrokeWidth = 27;
+const sliceGap = 3;
+const dimmedOpacity = 0.25;
+const circumference = 2 * Math.PI * radius;
+
+function sliceArcs(slices: Slice[]) {
+	const total = slices.reduce((sum, slice) => sum + slice.value, 0);
+	let offset = 0;
+
+	return slices
+		.filter((slice) => slice.value > 0)
+		.map((slice) => {
+			const length = total ? (slice.value / total) * circumference : 0;
+			const arc = { slice, length, offset };
+
+			offset += length;
+
+			return arc;
+		});
+}
+
 export function Donut({
 	slices,
 	selected,
-	onSelect,
 	title,
-	center,
+	total,
 	caption,
+	onSelect,
 }: {
 	slices: Slice[];
 	selected: string;
-	onSelect: (key: string) => void;
 	title: string;
-	center: number;
+	total: number;
 	caption: string;
+	onSelect: (key: string) => void;
 }) {
-	const total = slices.reduce((sum, slice) => sum + slice.value, 0);
-	const circumference = 2 * Math.PI * 72;
-	let accumulated = 0;
+	function opacityOf(key: string) {
+		return selected === "all" || selected === key ? 1 : dimmedOpacity;
+	}
+
+	function handleSliceKeyDown(event: KeyboardEvent, key: string) {
+		if (event.key !== "Enter" && event.key !== " ") return;
+
+		event.preventDefault();
+		onSelect(key);
+	}
+
 	return (
 		<div className={styles.distribution}>
 			<svg
@@ -36,59 +74,59 @@ export function Donut({
 			>
 				<desc>{title}</desc>
 				<circle
-					cx="100"
-					cy="100"
-					r="72"
+					cx={center}
+					cy={center}
+					r={radius}
 					fill="none"
 					stroke="var(--muted)"
-					strokeWidth="22"
+					strokeWidth={strokeWidth}
 				/>
-				{slices
-					.filter((slice) => slice.value > 0)
-					.map((slice) => {
-						const length = total ? (slice.value / total) * circumference : 0;
-						const offset = accumulated;
-						accumulated += length;
-						return (
-							<Button
-								render={<g />}
-								variant="ghost"
-								tooltip={`${slice.label}: ${slice.value.toLocaleString("ru-RU")}`}
-								key={slice.key}
-								role="button"
-								tabIndex={0}
-								className={styles.donutSlice}
-								aria-label={`${slice.label}: ${slice.value}. Выбрать.`}
-								onClick={() => onSelect(slice.key)}
-								onKeyDown={(event) => {
-									if (event.key === "Enter" || event.key === " ") {
-										event.preventDefault();
-										onSelect(slice.key);
-									}
-								}}
-							>
-								<circle
-									cx="100"
-									cy="100"
-									r="72"
-									fill="none"
-									stroke={slice.color}
-									strokeWidth={selected === slice.key ? 27 : 22}
-									strokeDasharray={`${Math.max(0, length - (length < circumference ? 3 : 0))} ${circumference}`}
-									strokeDashoffset={-offset}
-									transform="rotate(-90 100 100)"
-									opacity={
-										selected === "all" || selected === slice.key ? 1 : 0.25
-									}
-								/>
-							</Button>
-						);
-					})}
-				<text x="100" y="99" textAnchor="middle" className={styles.donutValue}>
-					{center.toLocaleString("ru-RU")}
+				{sliceArcs(slices).map(({ slice, length, offset }) => {
+					const visibleLength = Math.max(
+						0,
+						length - (length < circumference ? sliceGap : 0),
+					);
+
+					return (
+						<Button
+							render={<g />}
+							variant="ghost"
+							tooltip={`${slice.label}: ${formatNumber(slice.value)}`}
+							key={slice.key}
+							role="button"
+							tabIndex={0}
+							className={styles.donutSlice}
+							aria-label={`${slice.label}: ${slice.value}. Выбрать.`}
+							onClick={() => onSelect(slice.key)}
+							onKeyDown={(event) => handleSliceKeyDown(event, slice.key)}
+						>
+							<circle
+								cx={center}
+								cy={center}
+								r={radius}
+								fill="none"
+								stroke={slice.color}
+								strokeWidth={
+									selected === slice.key ? selectedStrokeWidth : strokeWidth
+								}
+								strokeDasharray={`${visibleLength} ${circumference}`}
+								strokeDashoffset={-offset}
+								transform={`rotate(-90 ${center} ${center})`}
+								opacity={opacityOf(slice.key)}
+							/>
+						</Button>
+					);
+				})}
+				<text
+					x={center}
+					y="99"
+					textAnchor="middle"
+					className={styles.donutValue}
+				>
+					{formatNumber(total)}
 				</text>
 				<text
-					x="100"
+					x={center}
 					y="122"
 					textAnchor="middle"
 					className={styles.donutCaption}
@@ -111,7 +149,7 @@ export function Donut({
 							style={{ background: slice.color }}
 						/>
 						<span className={styles.sliceLabel}>{slice.label}</span>
-						<strong>{slice.value.toLocaleString("ru-RU")}</strong>
+						<strong>{formatNumber(slice.value)}</strong>
 					</Button>
 				))}
 			</div>

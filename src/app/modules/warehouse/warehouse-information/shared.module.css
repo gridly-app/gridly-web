@@ -1,141 +1,157 @@
-.dashboard {
+.pageScroll {
 	flex: 1;
 	min-height: 0;
-	overflow: visible;
-	padding: var(--workspace-inset);
-	display: flex;
-	flex-direction: column;
-	gap: 24px;
 }
+
+.dashboard {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--space-6);
+	min-height: 0;
+	padding: var(--workspace-inset);
+	overflow: visible;
+}
+
 .dashboard > * {
 	flex-shrink: 0;
 	min-width: 0;
 }
+
 .dashboard h2 {
 	font-size: clamp(24px, 2.4vw, 32px);
 	line-height: 1.25;
 	letter-spacing: -0.025em;
 }
+
 .dashboard h3 {
 	font-size: 18px;
 	line-height: 26px;
 	letter-spacing: -0.015em;
 }
+
 .dashboard p {
-	color: var(--muted-foreground);
 	font-size: var(--text-control);
 	line-height: 1.6;
+
+	color: var(--muted-foreground);
 }
+
+@media (width <= 700px) {
+	.dashboard {
+		gap: var(--space-4);
+		padding: var(--space-4);
+	}
+}
+
 .pageHeader {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 16px;
+	gap: var(--space-4);
 }
-.pageHeader p {
-	margin-top: 6px;
-	max-width: 65ch;
+
+@media (width <= 700px) {
+	.pageHeader {
+		flex-wrap: wrap;
+	}
 }
+
 .headerActions {
 	display: flex;
+	flex-shrink: 0;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 12px;
-	flex-shrink: 0;
+	gap: var(--space-3);
 }
+
+@media (width <= 700px) {
+	.headerActions {
+		flex-shrink: 1;
+	}
+}
+
 .tableControls {
 	display: grid;
-	grid-auto-flow: column;
 	grid-auto-columns: 1fr;
+	grid-auto-flow: column;
 	align-items: stretch;
 	gap: var(--space-3);
 }
+
 .tableControls [data-slot="badge"] {
-	block-size: auto;
 	justify-content: center;
+	block-size: auto;
 	padding-inline: var(--space-3);
+
 	font-size: var(--text-control);
+
 	border-radius: var(--radius-control);
 }
 
 .tableControls:has([data-slot="badge"]:only-child) [data-slot="badge"] {
 	min-block-size: 36px;
 }
+
 .chartGrid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 24px;
+	gap: var(--space-6);
 }
-.tableScroll {
-	margin-top: 20px;
-	margin-bottom: 16px;
-}
+
 @media (width <= 1200px) {
 	.chartGrid {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
+
 @media (width <= 700px) {
-	.dashboard {
-		padding: 16px;
-		gap: 16px;
-	}
-	.pageHeader {
-		flex-wrap: wrap;
-	}
-	.headerActions {
-		flex-shrink: 1;
-	}
 	.chartGrid {
-		gap: 16px;
+		gap: var(--space-4);
 	}
 }
-.pageScroll {
-	flex: 1;
-	min-height: 0;
+
+.tableScroll {
+	margin-top: 20px;
+	margin-bottom: var(--space-4);
+}
+
+.chartCard {
+	padding: var(--space-6);
+
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: 0;
+	box-shadow: var(--shadow-panel);
+}
+
+.chartCard:focus-visible {
+	outline: 2px solid var(--ring);
+	outline-offset: 3px;
+}
+
+@media (width <= 700px) {
+	.chartCard {
+		padding: var(--space-4);
+	}
 }
 
 .chartHeading {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 16px;
+	gap: var(--space-4);
 }
+
 .chartHeading p {
-	margin-top: 6px;
 	max-width: 65ch;
+	margin-top: 6px;
 }
-.chartCard {
-	border: 1px solid var(--border);
-	border-radius: 0;
-	background: var(--card);
-	box-shadow: var(--shadow-panel);
-}
-.chartCard {
-	padding: 24px;
-}
-.dot {
-	display: inline-block;
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	flex-shrink: 0;
-}
-.chartNote {
-	margin-top: 12px;
-	font-size: var(--text-caption);
-}
+
 @media (width <= 700px) {
 	.chartHeading {
 		flex-wrap: wrap;
 	}
-	.chartCard {
-		padding: 16px;
-	}
-}
-.chartCard:focus-visible {
-	outline: 2px solid var(--ring);
-	outline-offset: 3px;
 }
 
 .chartControls {
@@ -143,21 +159,23 @@
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: var(--space-3);
 	margin-top: 20px;
 }
+
 .legend {
 	display: flex;
-	align-items: center;
 	flex-wrap: wrap;
-	gap: 8px;
+	align-items: center;
+	gap: var(--space-2);
 }
+
 .legendButton {
 	--button-background: var(--secondary);
 	--button-foreground: var(--secondary-foreground);
 	--button-hover: var(--secondary);
 
-	gap: 8px;
+	gap: var(--space-2);
 }
 
 .legendButton[aria-pressed="true"] {
@@ -165,56 +183,88 @@
 	--button-foreground: var(--sidebar-accent-foreground);
 	--button-hover: var(--sidebar-accent);
 }
-.trafficPlot {
-	margin-top: 16px;
+
+.dot {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 8px;
+	height: 8px;
+
+	border-radius: 50%;
 }
+
+.chartNote {
+	margin-top: var(--space-3);
+
+	font-size: var(--text-caption);
+}
+
+.trafficPlot {
+	margin-top: var(--space-4);
+}
+
 .trafficPlot svg {
 	display: block;
 	width: 100%;
 	min-width: 620px;
 }
+
 .gridLine {
 	stroke: var(--border);
 	stroke-dasharray: 3 5;
 }
+
 .axisLabel {
-	fill: var(--muted-foreground);
 	font:
 		13px Geist,
 		sans-serif;
+
+	fill: var(--muted-foreground);
 }
+
 .crosshair {
 	stroke: var(--muted-foreground);
 	stroke-dasharray: 4 4;
 	opacity: 0.5;
 }
+
 .chartPoint {
-	cursor: pointer;
 	outline: none;
+
+	cursor: pointer;
 }
-.inbound {
-	color: var(--primary);
+
+.chartPoint[data-slot="button"] {
+	position: static;
+
+	display: inline;
+	padding: 0;
+
+	background: none;
+	border: 0;
 }
-.outbound {
-	color: var(--info);
-}
+
 .chartPoint:focus-visible circle {
 	stroke: var(--foreground);
 	stroke-width: 4;
 }
-.chartPoint[data-slot="button"] {
-	display: inline;
-	position: static;
-	padding: 0;
-	border: 0;
-	background: none;
-}
+
 .chartPoint[data-slot="button"]:active {
 	transform: none;
 }
+
 .trafficHint {
 	display: grid;
-	gap: 8px;
+	gap: var(--space-2);
 	min-width: 160px;
+
 	font-variant-numeric: tabular-nums;
+}
+
+.inbound {
+	color: var(--primary);
+}
+
+.outbound {
+	color: var(--info);
 }
