@@ -5,11 +5,11 @@ import {
 } from "@tabler/icons-react";
 
 import { formatMoment } from "@/shared/lib";
+import { Card } from "@/shared/ui/dataDisplay";
+import { managementStyles as styles } from "@/shared/ui/management";
+
 import type { SystemStatus } from "../../api/system.dto";
 
-import { Card } from "@/shared/ui/dataDisplay";
-
-import { managementStyles as styles } from "@/shared/ui/management";
 import metricStyles from "./SystemMetrics.module.css";
 
 export function SystemMetrics({
@@ -26,7 +26,6 @@ export function SystemMetrics({
 	const activeJobs = data.jobs.filter(
 		(job) => job.status === "running" || job.status === "pending",
 	).length;
-
 	const checkedAt = formatMoment(data.checked_at);
 
 	return (

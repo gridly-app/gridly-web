@@ -1,32 +1,30 @@
 import { useMemo, useState } from "react";
 
-import { useWorkspaceMode } from "@/ports/session";
-
-import { textSearchQuery, formatMoment } from "@/shared/lib";
-import {
-	systemErrorRows,
-	systemErrorSearchIndexes,
-} from "../../model/systemErrors";
 import type { AuditEvent } from "@/domain/shipment";
+import { useWorkspaceMode } from "@/ports/session";
+import { formatMoment, textSearchQuery } from "@/shared/lib";
+import { Button } from "@/shared/ui/controls";
+import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
+import {
+	managementStyles as styles,
+	SortedTable,
+	type TableColumns,
+} from "@/shared/ui/management";
+
 import type { SystemError } from "../../api/system.dto";
 import type {
 	DescribeAuditEvent,
 	RecentErrorAudit,
 	RenderAuditEvents,
 } from "../../model/auditContext";
-
-import { Button } from "@/shared/ui/controls";
-import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
-
-import { SystemErrorDialog } from "../SystemErrorDialog/SystemErrorDialog";
 import {
-	type TableColumns,
-	SortedTable,
-	managementStyles as styles,
-} from "@/shared/ui/management";
+	type SystemErrorRow,
+	systemErrorRows,
+	systemErrorSearchIndexes,
+} from "../../model/systemErrors";
+import { SystemErrorDialog } from "../SystemErrorDialog/SystemErrorDialog";
 
 import sharedStyles from "../../shared.module.css";
-
 import recentErrorsStyles from "./RecentErrors.module.css";
 
 export type RecentErrorsInput = {
@@ -69,7 +67,6 @@ export function RecentErrors({
 	const visibleRows = matches
 		? indexedRows.filter(({ index }) => matches(index)).map(({ row }) => row)
 		: rows;
-
 	const selectedRow = rows.find((row) => row.key === selected);
 	const contextUnavailable = audit.isFetching ? (
 		<Skeleton label="Ищем событие…" />
@@ -81,7 +78,7 @@ export function RecentErrors({
 		setSelected(null);
 	}
 
-	const columns: TableColumns<(typeof rows)[number]> = [
+	const columns: TableColumns<SystemErrorRow> = [
 		{
 			id: "date",
 			label: "Дата и время",

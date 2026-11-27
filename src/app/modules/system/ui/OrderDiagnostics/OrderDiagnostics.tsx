@@ -1,14 +1,11 @@
-import { shipmentManagementPath, adminLocation } from "@/ports/navigation";
+import { adminLocation, shipmentManagementPath } from "@/ports/navigation";
 import type { WorkspaceMode } from "@/ports/session";
-
 import { formatMoment } from "@/shared/lib";
-import type { SystemStatus } from "../../api/system.dto";
-
+import { managementStyles as styles } from "@/shared/ui/management";
 import { Link } from "@/shared/ui/navigation";
 
+import type { SystemStatus } from "../../api/system.dto";
 import type { RenderAuditEvents } from "../../model/auditContext";
-
-import { managementStyles as styles } from "@/shared/ui/management";
 
 import sharedStyles from "../../shared.module.css";
 

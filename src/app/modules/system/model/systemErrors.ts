@@ -1,10 +1,10 @@
+import type { AuditEvent } from "@/domain/shipment";
 import { warehousePath } from "@/ports/navigation";
 import type { WorkspaceMode } from "@/ports/session";
-
 import { createTextIndex, formatMoment } from "@/shared/lib";
-import type { DescribeAuditEvent } from "./auditContext";
-import type { AuditEvent } from "@/domain/shipment";
+
 import type { SystemError } from "../api/system.dto";
+import type { DescribeAuditEvent } from "./auditContext";
 import { componentName } from "./systemLabels";
 
 const areaPages = new Map([
@@ -13,28 +13,47 @@ const areaPages = new Map([
 	["map", "map"],
 ]);
 
+function eventsByOperation(events: AuditEvent[]) {
+	const byOperation = new Map<string, AuditEvent[]>();
+	const uniqueEvents = new Map(events.map((event) => [event.id, event]));
+
+	for (const event of uniqueEvents.values()) {
+		if (!event.correlation_id) continue;
+
+		const related = byOperation.get(event.correlation_id) ?? [];
+
+		related.push(event);
+		byOperation.set(event.correlation_id, related);
+	}
+
+	return byOperation;
+}
+
+function errorIdentity(error: SystemError, timestamp: number) {
+	if (error.id) return JSON.stringify(["id", error.id]);
+
+	return JSON.stringify([
+		"legacy",
+		error.correlation_id,
+		timestamp,
+		error.component,
+		error.message,
+	]);
+}
+
 export function systemErrorRows(
 	items: SystemError[],
 	events: AuditEvent[],
 	mode: WorkspaceMode,
 	describeEvent: DescribeAuditEvent,
 ) {
-	const byOperation = new Map<string, AuditEvent[]>();
-	const uniqueEvents = new Map(events.map((event) => [event.id, event]));
-
-	for (const event of uniqueEvents.values()) {
-		if (!event.correlation_id) continue;
-		const related = byOperation.get(event.correlation_id) ?? [];
-		related.push(event);
-		byOperation.set(event.correlation_id, related);
-	}
-
+	const byOperation = eventsByOperation(events);
 	const occurrences = new Map<string, number>();
 
 	return items.map((error) => {
 		const timestamp = Date.parse(error.occurred_at);
-		const events = byOperation.get(error.correlation_id) ?? [];
-		const failures = events.filter(
+		const related = byOperation.get(error.correlation_id) ?? [];
+		const failures = related.filter(
 			(entry) =>
 				entry.result === "failure" &&
 				Date.parse(entry.occurred_at) === timestamp,
@@ -51,16 +70,9 @@ export function systemErrorRows(
 			page && event?.warehouse_id
 				? warehousePath(mode, event.warehouse_id, page)
 				: undefined;
-		const identity = error.id
-			? JSON.stringify(["id", error.id])
-			: JSON.stringify([
-					"legacy",
-					error.correlation_id,
-					timestamp,
-					error.component,
-					error.message,
-				]);
+		const identity = errorIdentity(error, timestamp);
 		const occurrence = occurrences.get(identity) ?? 0;
+
 		occurrences.set(identity, occurrence + 1);
 
 		return {
@@ -68,7 +80,7 @@ export function systemErrorRows(
 			timestamp,
 			key: JSON.stringify([identity, occurrence]),
 			componentLabel: error.component_name ?? componentName(error.component),
-			events,
+			events: related,
 			context,
 			sectionUrl,
 		};
@@ -89,6 +101,7 @@ export function systemErrorSearchIndexes(
 		if (cached) return cached;
 
 		const fields = describeEvent(event).searchFields;
+
 		eventFields.set(event.id, fields);
 
 		return fields;

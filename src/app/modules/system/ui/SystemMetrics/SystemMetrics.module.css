@@ -5,7 +5,7 @@
 	gap: var(--space-4);
 }
 
-@media (max-width: 560px) {
+@media (width <= 560px) {
 	.metrics {
 		grid-template-columns: minmax(0, 1fr);
 	}
@@ -16,9 +16,9 @@
 	gap: var(--space-2);
 	padding: var(--space-4);
 
+	background: var(--background);
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
-	background: var(--background);
 }
 
 .value {

@@ -3,4 +3,6 @@ const componentNames = new Map([
 	["warehouse", "Складской сервис"],
 ]);
 
-export const componentName = (code: string) => componentNames.get(code) ?? code;
+export function componentName(code: string) {
+	return componentNames.get(code) ?? code;
+}

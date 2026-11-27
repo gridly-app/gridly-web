@@ -1,12 +1,10 @@
-import type { SystemErrorRow } from "../../model/systemErrors";
-
 import { Skeleton } from "@/shared/ui/feedback";
+import { managementStyles as styles } from "@/shared/ui/management";
 import { Link } from "@/shared/ui/navigation";
 import { Modal } from "@/shared/ui/overlays";
 
 import type { RenderAuditEvents } from "../../model/auditContext";
-
-import { managementStyles as styles } from "@/shared/ui/management";
+import type { SystemErrorRow } from "../../model/systemErrors";
 
 export function SystemErrorDialog({
 	row,

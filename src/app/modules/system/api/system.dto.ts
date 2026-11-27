@@ -5,6 +5,10 @@ import { auditEventSchema } from "@/domain/shipment";
 const text = z.string();
 const date = z.iso.datetime({ offset: true });
 
+function isUnique(values: string[]) {
+	return new Set(values).size === values.length;
+}
+
 export const systemSchema = z.object({
 	checked_at: date,
 	components: z
@@ -17,9 +21,7 @@ export const systemSchema = z.object({
 				lag_seconds: z.number().nonnegative().nullable(),
 			}),
 		)
-		.refine(
-			(items) => new Set(items.map(({ code }) => code)).size === items.length,
-		),
+		.refine((items) => isUnique(items.map(({ code }) => code))),
 	error_count: z.number().int().nonnegative(),
 	recent_errors: z.array(
 		z.object({
@@ -42,9 +44,7 @@ export const systemSchema = z.object({
 				started_at: date.nullable(),
 			}),
 		)
-		.refine(
-			(items) => new Set(items.map(({ id }) => id)).size === items.length,
-		),
+		.refine((items) => isUnique(items.map(({ id }) => id))),
 	order_diagnostics: z
 		.object({
 			warehouse_id: text.min(1),
@@ -59,4 +59,5 @@ export const systemSchema = z.object({
 });
 
 export type SystemStatus = z.infer<typeof systemSchema>;
+
 export type SystemError = SystemStatus["recent_errors"][number];

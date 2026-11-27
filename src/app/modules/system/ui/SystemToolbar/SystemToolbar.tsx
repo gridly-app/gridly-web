@@ -3,7 +3,6 @@ import { IconRefresh } from "@tabler/icons-react";
 import { Button } from "@/shared/ui/controls";
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { DateRangeFields } from "@/shared/ui/forms";
-
 import { managementStyles as styles } from "@/shared/ui/management";
 
 export function SystemToolbar({
@@ -28,6 +27,11 @@ export function SystemToolbar({
 	onRefresh: () => void;
 }) {
 	const activeFilters = Number(Boolean(from)) + Number(Boolean(to));
+	const searchField = {
+		"aria-label": "Поиск по диагностике",
+		value: search,
+		onChange: onSearchChange,
+	};
 
 	function handleResetDates() {
 		onFromChange("");
@@ -37,11 +41,7 @@ export function SystemToolbar({
 	return (
 		<div className={styles.toolbar}>
 			<ListFilters
-				search={{
-					"aria-label": "Поиск по диагностике",
-					value: search,
-					onChange: onSearchChange,
-				}}
+				search={searchField}
 				count={activeFilters}
 				onReset={handleResetDates}
 			>

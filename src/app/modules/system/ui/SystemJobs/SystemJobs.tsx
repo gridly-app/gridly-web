@@ -1,9 +1,8 @@
 import { formatMoment } from "@/shared/lib";
-import type { SystemStatus } from "../../api/system.dto";
-
 import { Badge } from "@/shared/ui/dataDisplay";
+import { SortedTable, type TableColumns } from "@/shared/ui/management";
 
-import { type TableColumns, SortedTable } from "@/shared/ui/management";
+import type { SystemStatus } from "../../api/system.dto";
 
 import sharedStyles from "../../shared.module.css";
 

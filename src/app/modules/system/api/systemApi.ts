@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { adminQueryKey } from "@/ports/administration";
 import type { OrderLocation } from "@/ports/navigation";
 import { useWarehouseScopeId } from "@/ports/warehouse";
-
 import { type HttpClient, parseResponse } from "@/shared/http";
 import {
 	dateRangeError,
@@ -32,14 +31,24 @@ export function systemQueryUrl(
 		params.set("order_id", orderScope.orderId);
 	}
 
-	if (from || to) {
-		if (!timeZone)
-			throw new UserError("Дождитесь загрузки часового пояса склада.");
-		if (from) params.set("from", zonedDayBoundary(from, timeZone));
-		if (to) params.set("to", zonedDayBoundary(to, timeZone, true));
-	}
+	if ((from || to) && !timeZone)
+		throw new UserError("Дождитесь загрузки часового пояса склада.");
+	if (from && timeZone) params.set("from", zonedDayBoundary(from, timeZone));
+	if (to && timeZone) params.set("to", zonedDayBoundary(to, timeZone, true));
 
 	return `${path}?${params}`;
+}
+
+function resolveSystemUrl(path: string, filters: SystemFilters) {
+	const rangeError = dateRangeError(filters.from, filters.to);
+
+	if (rangeError) return { url: path, rangeError };
+
+	try {
+		return { url: systemQueryUrl(path, filters), rangeError: null };
+	} catch (error) {
+		return { url: path, rangeError: errorMessage(error) };
+	}
 }
 
 export function useSystemStatus(
@@ -48,16 +57,7 @@ export function useSystemStatus(
 	filters: SystemFilters,
 ) {
 	const scopeId = useWarehouseScopeId();
-	let rangeError = dateRangeError(filters.from, filters.to);
-	let url = path;
-
-	if (!rangeError) {
-		try {
-			url = systemQueryUrl(path, filters);
-		} catch (error) {
-			rangeError = errorMessage(error);
-		}
-	}
+	const { url, rangeError } = resolveSystemUrl(path, filters);
 
 	const query = useQuery({
 		queryKey: adminQueryKey(scopeId, url),

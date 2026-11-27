@@ -1,25 +1,34 @@
 import { type ReactNode, useState } from "react";
 
+import { newWarehouseId, type OrderLocation } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouse } from "@/ports/warehouse";
-
 import { ApiError, type HttpClient, isAccessDenied } from "@/shared/http";
-import { useSystemStatus } from "./api/systemApi";
-
-import { newWarehouseId, type OrderLocation } from "@/ports/navigation";
-import { textSearch, errorMessage } from "@/shared/lib";
-
+import { errorMessage, textSearch } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
+import { managementStyles as styles } from "@/shared/ui/management";
 
-import { SystemComponents } from "./ui/SystemComponents/SystemComponents";
-import { SystemJobs } from "./ui/SystemJobs/SystemJobs";
-import type { RecentErrorsInput } from "./ui/RecentErrors/RecentErrors";
+import type { SystemStatus } from "./api/system.dto";
+import { useSystemStatus } from "./api/systemApi";
 import type { RenderAuditEvents } from "./model/auditContext";
 import { OrderDiagnostics } from "./ui/OrderDiagnostics/OrderDiagnostics";
-import { SystemToolbar } from "./ui/SystemToolbar/SystemToolbar";
+import type { RecentErrorsInput } from "./ui/RecentErrors/RecentErrors";
+import { SystemComponents } from "./ui/SystemComponents/SystemComponents";
+import { SystemJobs } from "./ui/SystemJobs/SystemJobs";
 import { SystemMetrics } from "./ui/SystemMetrics/SystemMetrics";
+import { SystemToolbar } from "./ui/SystemToolbar/SystemToolbar";
 
-import { managementStyles as styles } from "@/shared/ui/management";
+function scopedDiagnostics(
+	data: SystemStatus | undefined,
+	orderScope: OrderLocation | null,
+) {
+	const diagnostics = data?.order_diagnostics;
+	const isScopedOrder =
+		diagnostics?.warehouse_id === orderScope?.warehouseId &&
+		diagnostics?.order_id === orderScope?.orderId;
+
+	return orderScope && diagnostics && isScopedOrder ? diagnostics : undefined;
+}
 
 export function System({
 	http,
@@ -50,22 +59,22 @@ export function System({
 		to,
 		timeZone,
 	});
-	const forbidden =
+	const isForbidden =
 		query.error instanceof ApiError && query.error.status === 403;
-	const isDenied = isAccessDenied(query.error);
-	const data = isDenied || rangeError ? undefined : query.data;
-	const hasRefreshError = !!data && !!query.error;
+	const data =
+		isAccessDenied(query.error) || rangeError ? undefined : query.data;
+	const hasRefreshError = Boolean(data) && Boolean(query.error);
+	const hasLoadError = !rangeError && Boolean(query.error) && !hasRefreshError;
 	const matches = textSearch(search);
-	const diagnostics = data?.order_diagnostics;
-	const order =
-		orderScope &&
-		diagnostics?.warehouse_id === orderScope.warehouseId &&
-		diagnostics.order_id === orderScope.orderId
-			? diagnostics
-			: undefined;
-
+	const order = scopedDiagnostics(data, orderScope);
 	const isOrderUnavailable = Boolean(data && orderScope && !order);
 	const isRefreshDisabled = query.isFetching || Boolean(rangeError);
+	const loadErrorMessage = isForbidden
+		? "У аккаунта нет доступа к диагностике."
+		: errorMessage(query.error);
+	const loadErrorAction = isForbidden ? undefined : (
+		<RetryButton onRetry={query.refetch} />
+	);
 
 	function handleRefresh() {
 		void query.refetch();
@@ -95,16 +104,9 @@ export function System({
 			{query.isPending && !rangeError && (
 				<Feedback tone="loading">Проверяем состояние системы…</Feedback>
 			)}
-			{!rangeError && query.error && !hasRefreshError && (
-				<Feedback
-					tone="error"
-					action={
-						forbidden ? undefined : <RetryButton onRetry={query.refetch} />
-					}
-				>
-					{forbidden
-						? "У аккаунта нет доступа к диагностике."
-						: errorMessage(query.error)}
+			{hasLoadError && (
+				<Feedback tone="error" action={loadErrorAction}>
+					{loadErrorMessage}
 				</Feedback>
 			)}
 			{hasRefreshError && (
@@ -116,36 +118,69 @@ export function System({
 				</Feedback>
 			)}
 			{data && (
-				<>
-					{isOrderUnavailable && (
-						<Feedback tone="warning">
-							Диагностика этого заказа недоступна.
-						</Feedback>
-					)}
-					<SystemMetrics data={data} />
-					{order && (
-						<OrderDiagnostics
-							order={order}
-							mode={mode}
-							search={search}
-							renderAuditEvents={renderAuditEvents}
-						/>
-					)}
-					<SystemComponents components={data.components} matches={matches} />
-					{data.error_count > data.recent_errors.length && (
-						<p className={styles.subtle}>
-							Показаны последние {data.recent_errors.length} из{" "}
-							{data.error_count} ошибок за период.
-						</p>
-					)}
-					{renderRecentErrors({
-						items: data.recent_errors,
-						orderEvents: order?.recent_events,
-						search,
-					})}
-					<SystemJobs jobs={data.jobs} matches={matches} />
-				</>
+				<SystemReport
+					data={data}
+					order={order}
+					isOrderUnavailable={isOrderUnavailable}
+					search={search}
+					matches={matches}
+					mode={mode}
+					renderAuditEvents={renderAuditEvents}
+					renderRecentErrors={renderRecentErrors}
+				/>
 			)}
 		</section>
+	);
+}
+
+function SystemReport({
+	data,
+	order,
+	isOrderUnavailable,
+	search,
+	matches,
+	mode,
+	renderAuditEvents,
+	renderRecentErrors,
+}: {
+	data: SystemStatus;
+	order: ReturnType<typeof scopedDiagnostics>;
+	isOrderUnavailable: boolean;
+	search: string;
+	matches: (values: string[]) => boolean;
+	mode: ReturnType<typeof useWorkspaceMode>;
+	renderAuditEvents: RenderAuditEvents;
+	renderRecentErrors: (input: RecentErrorsInput) => ReactNode;
+}) {
+	const isErrorListTruncated = data.error_count > data.recent_errors.length;
+
+	return (
+		<>
+			{isOrderUnavailable && (
+				<Feedback tone="warning">Диагностика этого заказа недоступна.</Feedback>
+			)}
+			<SystemMetrics data={data} />
+			{order && (
+				<OrderDiagnostics
+					order={order}
+					mode={mode}
+					search={search}
+					renderAuditEvents={renderAuditEvents}
+				/>
+			)}
+			<SystemComponents components={data.components} matches={matches} />
+			{isErrorListTruncated && (
+				<p className={styles.subtle}>
+					Показаны последние {data.recent_errors.length} из {data.error_count}{" "}
+					ошибок за период.
+				</p>
+			)}
+			{renderRecentErrors({
+				items: data.recent_errors,
+				orderEvents: order?.recent_events,
+				search,
+			})}
+			<SystemJobs jobs={data.jobs} matches={matches} />
+		</>
 	);
 }
