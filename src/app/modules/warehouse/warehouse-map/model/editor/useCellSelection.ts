@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+
 import {
 	type Cell,
 	cellKey,
@@ -20,6 +21,15 @@ interface CellSelectionGesture {
 	moved: boolean;
 }
 
+function isInArea(cell: Cell, start: Cell, end: Cell) {
+	const isInColumns =
+		cell.x >= Math.min(start.x, end.x) && cell.x <= Math.max(start.x, end.x);
+	const isInRows =
+		cell.y >= Math.min(start.y, end.y) && cell.y <= Math.max(start.y, end.y);
+
+	return isInColumns && isInRows;
+}
+
 export function useCellSelection({
 	cells,
 	editing,
@@ -29,51 +39,47 @@ export function useCellSelection({
 	const [selectionKeys, setSelectionKeys] = useState<string[]>([]);
 	const [selectionError, setSelectionError] = useState("");
 	const gesture = useRef<CellSelectionGesture | null>(null);
-	function toggleCell(cell: Cell) {
-		if (!editing) {
-			setSelected(cell);
 
-			return;
-		}
-		if (mode === "routes") {
-			setSelectionKeys(
-				connectedBlock(cells, cell)
-					.filter((cell) => storageCellTypes.includes(cell.type))
-					.map(cellKey),
-			);
-			setSelectionError("");
-
-			return;
-		}
+	function toggleZone(cell: Cell) {
 		try {
 			const keys = toggleZoneCell(cells, selectionKeys, cellKey(cell));
 
 			setSelectionKeys(keys);
-			if (!keys.length) {
-				setSelected(null);
-			}
+
+			if (!keys.length) setSelected(null);
+
 			setSelectionError("");
 		} catch (error) {
 			setSelectionError(errorMessage(error));
 		}
 	}
 
+	function toggleCell(cell: Cell) {
+		if (!editing) {
+			setSelected(cell);
+
+			return;
+		}
+
+		if (mode === "routes") {
+			const blockKeys = connectedBlock(cells, cell)
+				.filter((item) => storageCellTypes.includes(item.type))
+				.map(cellKey);
+
+			setSelectionKeys(blockKeys);
+			setSelectionError("");
+
+			return;
+		}
+
+		toggleZone(cell);
+	}
+
 	function selectArea({ start, initial }: CellSelectionGesture, end: Cell) {
-		const left = Math.min(start.x, end.x);
-		const right = Math.max(start.x, end.x);
-		const top = Math.min(start.y, end.y);
-		const bottom = Math.max(start.y, end.y);
 		const keys = new Set(initial);
 
 		for (const cell of cells) {
-			if (
-				cell.x >= left &&
-				cell.x <= right &&
-				cell.y >= top &&
-				cell.y <= bottom
-			) {
-				keys.add(cellKey(cell));
-			}
+			if (isInArea(cell, start, end)) keys.add(cellKey(cell));
 		}
 
 		setSelectionKeys([...keys]);
@@ -82,29 +88,33 @@ export function useCellSelection({
 
 	function beginSelection(cell: Cell) {
 		setSelected(cell);
-		if (!editing) {
-			return;
-		}
+
+		if (!editing) return;
+
 		if (mode === "routes") {
 			toggleCell(cell);
 
 			return;
 		}
+
 		gesture.current = { start: cell, initial: selectionKeys, moved: false };
 		setSelectionError("");
 	}
 
 	function extendSelection(cell: Cell) {
 		const current = gesture.current;
+		const isStartCell =
+			current?.start.x === cell.x && current.start.y === cell.y;
 
-		if (current && (current.start.x !== cell.x || current.start.y !== cell.y)) {
-			current.moved = true;
-			selectArea(current, cell);
-		}
+		if (!current || isStartCell) return;
+
+		current.moved = true;
+		selectArea(current, cell);
 	}
 
 	function finishSelection(cell?: Cell | undefined) {
 		const current = gesture.current;
+
 		gesture.current = null;
 
 		if (!current || !cell) return;

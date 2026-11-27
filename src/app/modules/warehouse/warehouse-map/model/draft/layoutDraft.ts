@@ -1,5 +1,6 @@
 import type { BlockRoutePlan, Category, Cell } from "@/domain/warehouse";
 import type { LayoutOperation } from "@/ports/warehouse";
+
 import type { MapWarehouse } from "../warehouseResources";
 
 export interface LayoutDraft {

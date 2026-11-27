@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from "react";
+
 import type {
 	BlockRoutePlan,
 	Category,
@@ -8,6 +9,7 @@ import type {
 } from "@/domain/warehouse";
 import { blocksLayoutWrite, type LayoutOperation } from "@/ports/warehouse";
 import { errorMessage } from "@/shared/lib";
+
 import { useCellSelection } from "../editor/useCellSelection";
 import type { MapWarehouse } from "../warehouseResources";
 import {
@@ -51,9 +53,11 @@ export function useMapEditor(
 	const [categoryId, setCategoryId] = useState<string | null>(null);
 	const [errors, setErrors] = useState<string[] | null>(null);
 	const [discardOpen, setDiscardOpen] = useState(false);
-
+	const [dirty, setDirty] = useState(Boolean(recovered));
 	const inFlight = useRef(false);
-	const [dirty, setDirty] = useState(!!recovered);
+	const recoveredPending = useRef(
+		Boolean(recovered) && operation?.status === "sending",
+	);
 	const versionChanged = editing && !isCurrentLayout(draft, warehouse);
 	const hasConflict =
 		operation?.status === "conflict" && operation.command.action === "saveMap";
@@ -66,6 +70,8 @@ export function useMapEditor(
 	const cells = editing ? draft.cells : warehouse.cells;
 	const routes = editing ? draft.routes : (warehouse.routePlans ?? []);
 	const selection = useCellSelection({ cells, editing, mode });
+	const busy = writeBlocked || saving || resetting || optimizing;
+
 	function isLocked() {
 		return inFlight.current || writeBlocked;
 	}
@@ -241,28 +247,25 @@ export function useMapEditor(
 		if (!resetting) setDiscardOpen(false);
 	}
 
-	const recoveredPending = useRef(
-		!!recovered && operation?.status === "sending",
-	);
 	useEffect(() => {
-		if (!recoveredPending.current) return;
-		if (operation?.status === "sending") return;
+		if (!recoveredPending.current || operation?.status === "sending") return;
 
 		recoveredPending.current = false;
 
-		if (
+		const isConfirmed =
 			operation === null ||
 			operation.status === "refreshing" ||
-			operation.status === "refresh-failed"
-		) {
-			setDirty(false);
-			dispatch({ type: "close" });
-		}
+			operation.status === "refresh-failed";
+
+		if (!isConfirmed) return;
+
+		setDirty(false);
+		dispatch({ type: "close" });
 	}, [operation]);
 
 	return {
 		selection,
-		recovered: !!recovered,
+		recovered: Boolean(recovered),
 		versionChanged,
 		hasConflict,
 		writeBlocked,
@@ -277,7 +280,7 @@ export function useMapEditor(
 		dirty,
 		saving,
 		optimizing,
-		busy: writeBlocked || saving || resetting || optimizing,
+		busy,
 		optimizeRoutes,
 		categoryId,
 		resetting,
@@ -289,10 +292,8 @@ export function useMapEditor(
 		closeEditor,
 		undo,
 		redo,
-		canUndo:
-			history.canUndo && !writeBlocked && !saving && !resetting && !optimizing,
-		canRedo:
-			history.canRedo && !writeBlocked && !saving && !resetting && !optimizing,
+		canUndo: history.canUndo && !busy,
+		canRedo: history.canRedo && !busy,
 		save,
 		zoneSaved: applyCells,
 		discard: openDiscard,
@@ -314,4 +315,6 @@ function resolveSaveUnavailableReason(
 	if (!warehouse.allowedActions?.includes("save-map")) {
 		return "Сохранение карты недоступно: сервер не предоставляет эту возможность";
 	}
+
+	return undefined;
 }

@@ -4,11 +4,10 @@ import { useNavigationConfirmation } from "@/ports/navigation";
 
 export function useUnsavedLayoutWarning(hasUnsubmittedChanges: boolean) {
 	useNavigationConfirmation((currentPath, nextPath) => {
-		if (!hasUnsubmittedChanges || currentPath === nextPath) return;
-		if (
-			currentPath.startsWith("/sandbox/") &&
-			!nextPath.startsWith("/sandbox/")
-		)
+		const isLeavingSandbox =
+			currentPath.startsWith("/sandbox/") && !nextPath.startsWith("/sandbox/");
+
+		if (!hasUnsubmittedChanges || currentPath === nextPath || isLeavingSandbox)
 			return;
 
 		return {
@@ -18,6 +17,7 @@ export function useUnsavedLayoutWarning(hasUnsubmittedChanges: boolean) {
 			confirmLabel: "Покинуть карту",
 		};
 	});
+
 	useEffect(() => {
 		if (!hasUnsubmittedChanges) return;
 

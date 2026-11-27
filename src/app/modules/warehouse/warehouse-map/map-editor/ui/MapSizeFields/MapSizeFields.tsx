@@ -1,6 +1,10 @@
 import { useId } from "react";
+
 import { Input } from "@/shared/ui/controls";
 import { Field } from "@/shared/ui/forms";
+
+const minMapSize = 5;
+const maxMapSize = 100;
 
 export function MapSizeFields({
 	width,
@@ -23,8 +27,8 @@ export function MapSizeFields({
 					name="width"
 					aria-describedby={widthError ? widthErrorId : undefined}
 					type="number"
-					min={5}
-					max={100}
+					min={minMapSize}
+					max={maxMapSize}
 					required
 					defaultValue={width}
 				/>
@@ -34,8 +38,8 @@ export function MapSizeFields({
 					name="height"
 					aria-describedby={heightError ? heightErrorId : undefined}
 					type="number"
-					min={5}
-					max={100}
+					min={minMapSize}
+					max={maxMapSize}
 					required
 					defaultValue={height}
 				/>

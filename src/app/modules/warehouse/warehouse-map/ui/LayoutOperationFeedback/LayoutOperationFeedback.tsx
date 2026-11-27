@@ -7,11 +7,12 @@ import { layoutStatus } from "../../model/draft/layoutStatus";
 
 export function LayoutOperationFeedback({
 	operation,
-	retryRead,
+	onRetryRead,
 }: {
 	operation: LayoutOperation | null;
-	retryRead: () => Promise<void>;
+	onRetryRead: () => Promise<void>;
 }) {
+	const [retryError, setRetryError] = useState("");
 	const status = layoutStatus(operation);
 	const canRetryCommit =
 		operation?.status === "unknown" && operation.command.action === "saveMap";
@@ -19,13 +20,12 @@ export function LayoutOperationFeedback({
 		canRetryCommit ||
 		operation?.status === "refresh-failed" ||
 		operation?.status === "conflict";
-	const [retryError, setRetryError] = useState("");
 
 	async function handleRetryLayout() {
 		setRetryError("");
 
 		try {
-			await retryRead();
+			await onRetryRead();
 		} catch (error) {
 			setRetryError(
 				error instanceof Error
@@ -35,20 +35,17 @@ export function LayoutOperationFeedback({
 		}
 	}
 
+	const retryAction = canRetryRead ? (
+		<RetryButton onRetry={handleRetryLayout}>
+			{canRetryCommit ? "Повторить сохранение" : "Повторить"}
+		</RetryButton>
+	) : undefined;
+
 	return (
 		<>
 			<ErrorNotice message={retryError} />
 			{status && (
-				<Feedback
-					tone="warning"
-					action={
-						canRetryRead ? (
-							<RetryButton onRetry={handleRetryLayout}>
-								{canRetryCommit ? "Повторить сохранение" : "Повторить"}
-							</RetryButton>
-						) : undefined
-					}
-				>
+				<Feedback tone="warning" action={retryAction}>
 					{status}
 				</Feedback>
 			)}

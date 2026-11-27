@@ -21,12 +21,15 @@ export function editorReducer(
 	state: EditorState,
 	event: EditorEvent,
 ): EditorState {
-	if (event.type === "operation")
+	if (event.type === "operation") {
 		return state.view === "editing"
 			? { ...state, operation: event.operation }
 			: state;
+	}
+
 	if (state.operation !== "idle") return state;
-	return event.type === "open"
-		? { ...state, view: "editing", mode: event.mode }
-		: { ...state, view: "viewing", operation: "idle" };
+	if (event.type === "open")
+		return { ...state, view: "editing", mode: event.mode };
+
+	return { ...state, view: "viewing", operation: "idle" };
 }

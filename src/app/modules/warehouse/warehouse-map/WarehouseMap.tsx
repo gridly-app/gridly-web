@@ -211,7 +211,7 @@ export function WarehouseMap({
 			<ErrorNotice message={simulation.error} />
 			<LayoutOperationFeedback
 				operation={layout.operation}
-				retryRead={layout.retryRead}
+				onRetryRead={layout.retryRead}
 			/>
 			{needsComparison && (
 				<Feedback

@@ -1,10 +1,13 @@
 import type { SubmitEvent } from "react";
+
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
 import { Form } from "@/shared/ui/forms";
 import { Modal } from "@/shared/ui/overlays";
-import styles from "./MapSizeDialog.module.css";
+
 import { MapSizeFields } from "../MapSizeFields/MapSizeFields";
+
+import styles from "./MapSizeDialog.module.css";
 
 export interface MapSizeDialogProps {
 	model: {
@@ -23,17 +26,15 @@ export interface MapSizeDialogProps {
 }
 
 export function MapSizeDialog({ model }: MapSizeDialogProps) {
-	if (!model.open) {
-		return null;
+	if (!model.open) return null;
+
+	function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+		void model.submit(event);
 	}
 
 	return (
 		<Modal title="Размер карты" onClose={model.close}>
-			<Form
-				onSubmit={(event) => {
-					void model.submit(event);
-				}}
-			>
+			<Form onSubmit={handleSubmit}>
 				<p className={styles.description}>
 					Допустимость изменения размера проверяется при сохранении.
 				</p>
@@ -43,7 +44,6 @@ export function MapSizeDialog({ model }: MapSizeDialogProps) {
 					widthError={model.widthError}
 					heightError={model.heightError}
 				/>
-
 				<ErrorNotice message={model.error} />
 				{!model.supported && <ErrorNotice message={model.unavailableReason} />}
 				<Button

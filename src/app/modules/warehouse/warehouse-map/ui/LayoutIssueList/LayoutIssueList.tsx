@@ -15,6 +15,7 @@ export function LayoutIssueList({
 		<ul aria-label="Ошибки планировки">
 			{issues.map((issue) => {
 				const key = JSON.stringify(issue);
+
 				if (issue.kind === "field") {
 					return (
 						<li key={key}>
@@ -22,6 +23,7 @@ export function LayoutIssueList({
 						</li>
 					);
 				}
+
 				const cell = cells.get(issue.key);
 				const label = `Клетка ${issue.key} — ${issue.message}`;
 

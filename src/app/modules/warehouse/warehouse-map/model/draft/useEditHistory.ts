@@ -1,18 +1,19 @@
 import { useState } from "react";
 
+const historyLimit = 40;
+
 export function useEditHistory<T>() {
 	const [past, setPast] = useState<T[]>([]);
 	const [future, setFuture] = useState<T[]>([]);
 
 	function record(value: T) {
-		setPast((values) => [...values.slice(-39), value]);
+		setPast((values) => [...values.slice(1 - historyLimit), value]);
 		setFuture([]);
 	}
 
 	function undo(current: T) {
-		if (!past.length) {
-			return;
-		}
+		if (!past.length) return;
+
 		const value = past.at(-1);
 
 		setPast(past.slice(0, -1));
@@ -22,9 +23,8 @@ export function useEditHistory<T>() {
 	}
 
 	function redo(current: T) {
-		if (!future.length) {
-			return;
-		}
+		if (!future.length) return;
+
 		const value = future.at(-1);
 
 		setFuture(future.slice(0, -1));

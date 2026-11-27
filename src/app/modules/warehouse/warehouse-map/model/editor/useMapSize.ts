@@ -1,4 +1,5 @@
 import { type SubmitEvent, useState } from "react";
+
 import type { CommandExecutor, Warehouse } from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
 
@@ -14,6 +15,10 @@ export function useMapSize({
 	const [open, setOpen] = useState(false);
 	const [error, setError] = useState("");
 	const [saving, setSaving] = useState(false);
+	const canResize = Boolean(warehouse.allowedActions?.includes("resize"));
+	const unavailableReason = blocked
+		? "Завершите операцию с планировкой или закройте черновик перед изменением размера."
+		: "Изменение размера недоступно по данным сервера.";
 
 	function show() {
 		setError("");
@@ -21,19 +26,19 @@ export function useMapSize({
 	}
 
 	function close() {
-		if (!saving) {
-			setOpen(false);
-		}
+		if (!saving) setOpen(false);
 	}
 
 	async function submit(event: SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
+
 		if (blocked || saving) return;
 
 		const data = new FormData(event.currentTarget);
 
 		setSaving(true);
 		setError("");
+
 		try {
 			await command("resize", {
 				width: Number(data.get("width")),
@@ -56,9 +61,7 @@ export function useMapSize({
 		error,
 		width: warehouse.width,
 		height: warehouse.height,
-		supported: !blocked && !!warehouse.allowedActions?.includes("resize"),
-		unavailableReason: blocked
-			? "Завершите операцию с планировкой или закройте черновик перед изменением размера."
-			: "Изменение размера недоступно по данным сервера.",
+		supported: !blocked && canResize,
+		unavailableReason,
 	};
 }

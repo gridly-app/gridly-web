@@ -5,20 +5,45 @@ import {
 	IconChevronRight,
 	IconRotate,
 } from "@tabler/icons-react";
+
 import { Button, Toolbar, ToolbarGroup } from "@/shared/ui/controls";
 import { Feedback } from "@/shared/ui/feedback";
-import styles from "./EditLayoutToolbar.module.css";
+
 import {
 	type EditLayoutToolbarOptions,
 	useEditLayoutToolbar,
 } from "../../model/useEditLayoutToolbar";
 
+import styles from "./EditLayoutToolbar.module.css";
+
+const maxShownErrors = 8;
+
 export type EditLayoutToolbarProps = EditLayoutToolbarOptions & {
 	className?: string | undefined;
 };
+
 export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 	const { container, ...model } = useEditLayoutToolbar(props);
 	const { tools, editor, pending } = model;
+	const hasPages = model.pages > 1;
+	const saveHint = editor.canSave ? undefined : editor.saveUnavailableReason;
+	const hasErrors = Boolean(editor.errors?.length);
+	const errorText = hasErrors
+		? editor.errors?.slice(0, maxShownErrors).join(" · ")
+		: "Карта проверена. Ошибок нет.";
+
+	function handlePreviousPage() {
+		model.changePage(model.page - 1);
+	}
+
+	function handleNextPage() {
+		model.changePage(model.page + 1);
+	}
+
+	function handleSave() {
+		void editor.save();
+	}
+
 	return (
 		<div
 			ref={container}
@@ -45,13 +70,13 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 				className={styles.categoryPagination}
 				hidden={model.available.length === 0}
 			>
-				{model.pages > 1 && (
+				{hasPages && (
 					<Button
 						size="compact"
 						variant="ghost"
 						aria-label="Предыдущие категории"
 						disabled={model.page === 0 || editor.busy}
-						onClick={() => model.changePage(model.page - 1)}
+						onClick={handlePreviousPage}
 					>
 						<IconChevronLeft size={16} />
 					</Button>
@@ -71,13 +96,13 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 						</Button>
 					))}
 				</div>
-				{model.pages > 1 && (
+				{hasPages && (
 					<Button
 						size="compact"
 						variant="ghost"
 						aria-label="Следующие категории"
 						disabled={model.page + 1 === model.pages || editor.busy}
-						onClick={() => model.changePage(model.page + 1)}
+						onClick={handleNextPage}
 					>
 						<IconChevronRight size={16} />
 					</Button>
@@ -137,12 +162,8 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 						<Button
 							size="compact"
 							disabled={pending || editor.busy || !editor.canSave}
-							tooltip={
-								!editor.canSave ? editor.saveUnavailableReason : undefined
-							}
-							onClick={() => {
-								void editor.save();
-							}}
+							tooltip={saveHint}
+							onClick={handleSave}
 						>
 							Сохранить изменения
 						</Button>
@@ -165,11 +186,9 @@ export function EditLayoutToolbar(props: EditLayoutToolbarProps) {
 			{editor.errors && (
 				<Feedback
 					className={styles.notice}
-					tone={editor.errors.length ? "error" : "success"}
+					tone={hasErrors ? "error" : "success"}
 				>
-					{editor.errors.length
-						? editor.errors.slice(0, 8).join(" · ")
-						: "Карта проверена. Ошибок нет."}
+					{errorText}
 				</Feedback>
 			)}
 		</div>

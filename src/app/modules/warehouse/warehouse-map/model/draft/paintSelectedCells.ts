@@ -10,11 +10,11 @@ export function paintCellType(
 	keys: Set<string>,
 	type: CellType,
 ) {
-	return cells.map((cell) =>
-		keys.has(cellKey(cell))
-			? { ...cell, type, zone: cell.type === type ? cell.zone : undefined }
-			: cell,
-	);
+	return cells.map((cell) => {
+		if (!keys.has(cellKey(cell))) return cell;
+
+		return { ...cell, type, zone: cell.type === type ? cell.zone : undefined };
+	});
 }
 
 export function paintCategoryZone(
@@ -28,6 +28,7 @@ export function paintCategoryZone(
 		categoryId: category.id,
 	};
 	const type = category.cold ? "cold" : "storage";
+
 	return cells.map((cell): Cell =>
 		keys.has(cellKey(cell)) ? { ...cell, type, zone } : cell,
 	);
