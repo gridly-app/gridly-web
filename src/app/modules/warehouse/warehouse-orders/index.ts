@@ -1,9 +1,10 @@
-import { warehouseResources } from "./model/warehouseResources";
 import {
 	type WarehouseScreenRoute,
 	warehouseAccess,
 	warehousePaths,
 } from "@/ports/navigation";
+
+import { warehouseResources } from "./model/warehouseResources";
 
 const common = {
 	access: warehouseAccess,

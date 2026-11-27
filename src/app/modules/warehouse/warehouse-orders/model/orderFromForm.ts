@@ -8,17 +8,19 @@ interface OrderDraft {
 	manual: WorkflowPolicy;
 }
 
+function isValidLine(line: Order["lines"][number]) {
+	return (
+		Boolean(line.product) &&
+		Number.isInteger(line.quantity) &&
+		line.quantity >= 1
+	);
+}
+
 export function orderFromForm(
 	data: FormData,
 	{ kind, order, lines, manual }: OrderDraft,
 ): OrderInput {
-	if (
-		!lines.length ||
-		lines.some(
-			(line) =>
-				!line.product || line.quantity < 1 || !Number.isInteger(line.quantity),
-		)
-	) {
+	if (!lines.length || !lines.every(isValidLine)) {
 		throw new UserError("Добавьте товар и целое положительное количество");
 	}
 

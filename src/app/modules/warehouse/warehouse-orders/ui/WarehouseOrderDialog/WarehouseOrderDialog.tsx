@@ -48,7 +48,7 @@ export function WarehouseOrderDialog({ warehouse }: { warehouse: Warehouse }) {
 		<OrderDetailDialog
 			model={selection}
 			warehouse={resources.data}
-			pending={mutation.isPending || Boolean(resources.error)}
+			isPending={mutation.isPending || Boolean(resources.error)}
 			execute={execute}
 		/>
 	);

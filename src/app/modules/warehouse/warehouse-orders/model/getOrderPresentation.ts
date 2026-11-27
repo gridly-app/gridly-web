@@ -1,5 +1,34 @@
-import type { Order, WarehouseView } from "@/domain/warehouse";
-import { productPrice, processedQuantity } from "@/domain/warehouse";
+import {
+	type Order,
+	processedQuantity,
+	productPrice,
+	type WarehouseView,
+} from "@/domain/warehouse";
+
+const fulfilledStatuses = ["shipped", "completed", "received"];
+const notStartedStatuses = ["draft", "created"];
+const confirmationLabels: Record<string, string> = {
+	"confirm-pick": "Подтвердить отбор",
+	"confirm-putaway": "Подтвердить размещение",
+};
+
+function lineProcessed(order: Order, line: Order["lines"][number]) {
+	if (fulfilledStatuses.includes(order.status)) return line.quantity;
+	if (line.putaway !== undefined || line.writtenOff !== undefined)
+		return processedQuantity(line);
+	if (notStartedStatuses.includes(order.status)) return 0;
+
+	return null;
+}
+
+function confirmationActions(allowedActions: string[] | undefined) {
+	return allowedActions
+		?.filter((action) => action in confirmationLabels)
+		.map((action) => ({
+			id: action,
+			label: confirmationLabels[action] ?? action,
+		}));
+}
 
 export function getOrderPresentation(
 	order: Order,
@@ -11,16 +40,8 @@ export function getOrderPresentation(
 	const lines = order.lines.map((line) => {
 		const product = products.get(line.product);
 		const unitPrice = productPrice(product?.price);
-		const processed =
-			order.status === "shipped" ||
-			order.status === "completed" ||
-			order.status === "received"
-				? line.quantity
-				: line.putaway !== undefined || line.writtenOff !== undefined
-					? processedQuantity(line)
-					: ["draft", "created"].includes(order.status)
-						? 0
-						: null;
+		const processed = lineProcessed(order, line);
+
 		return {
 			...line,
 			unitPrice,
@@ -35,15 +56,7 @@ export function getOrderPresentation(
 	});
 	const tasks = order.tasks?.map((task) => ({
 		...task,
-		confirmationActions: task.allowed_actions
-			?.filter((action) => ["confirm-pick", "confirm-putaway"].includes(action))
-			.map((action) => ({
-				id: action,
-				label:
-					action === "confirm-pick"
-						? "Подтвердить отбор"
-						: "Подтвердить размещение",
-			})),
+		confirmationActions: confirmationActions(task.allowed_actions),
 	}));
 
 	return { lines, tasks };

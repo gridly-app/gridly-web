@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+
 import type { CommandExecutor, OrderInput } from "@/domain/warehouse";
 import { useOrder } from "@/ports/warehouse";
 import {
@@ -7,6 +8,7 @@ import {
 	type SearchParamChanges,
 	useUpdateSearchParams,
 } from "@/shared/lib";
+
 import type { OrderScreenWarehouse } from "./warehouseResources";
 
 export function useOrderSelection(
@@ -22,24 +24,38 @@ export function useOrderSelection(
 	const selected = orderQuery.data;
 
 	function setDetail(id: string | null, highlightUnpriced = false) {
-		detailGeneration.current++;
 		const changes: SearchParamChanges = id
 			? { order: id }
 			: { order: null, highlight: null };
+
+		detailGeneration.current++;
 
 		if (highlightUnpriced) changes.highlight = "unpriced";
 
 		updateSearchParams(changes);
 		setEditing(false);
 	}
+
 	function closeOrder() {
 		setDetail(null);
 	}
+
 	async function saveDraft(order: OrderInput) {
 		const generation = detailGeneration.current;
+
 		await execute("order", order);
+
 		if (generation === detailGeneration.current) setEditing(false);
 	}
+
+	function retryDetail() {
+		void orderQuery.refetch();
+	}
+
+	function editSelected() {
+		setEditing(true);
+	}
+
 	return {
 		setDetail,
 		selected,
@@ -49,9 +65,7 @@ export function useOrderSelection(
 		fetching: orderQuery.isFetching || orderQuery.isError,
 		detailOpen: detail !== null,
 		detailError: orderQuery.error ? errorMessage(orderQuery.error) : "",
-		retryDetail: () => {
-			void orderQuery.refetch();
-		},
-		editSelected: () => setEditing(true),
+		retryDetail,
+		editSelected,
 	};
 }

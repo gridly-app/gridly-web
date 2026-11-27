@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import type { Order } from "@/domain/warehouse";
 import {
 	Table,
@@ -7,38 +8,41 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/shared/ui/dataDisplay";
+
 import type { useOrderSelection } from "../../model/useOrderSelection";
 import type { useOrdersPage } from "../../model/useOrdersPage";
 import type { OrderScreenWarehouse } from "../../model/warehouseResources";
 import { OrderRow } from "../OrderRow/OrderRow";
 
-export interface OrdersTableProps {
-	warehouse: OrderScreenWarehouse;
-	hiddenColumns: readonly number[];
-	orders: ReturnType<typeof useOrdersPage>["visibleOrders"];
-	kind: Order["kind"];
-	pending: boolean;
-	onDetail: ReturnType<typeof useOrderSelection>["setDetail"];
-	onStart: ReturnType<typeof useOrdersPage>["startOrder"];
-	onConfirm: ReturnType<typeof useOrdersPage>["confirmOrder"];
-}
-
 export function OrdersTable({
 	orders,
 	kind,
-	pending,
+	isPending,
 	onDetail,
 	onStart,
 	onConfirm,
 	warehouse,
 	hiddenColumns,
-}: OrdersTableProps) {
-	const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
-	function toggleOrder(id: string) {
+}: {
+	warehouse: OrderScreenWarehouse;
+	hiddenColumns: readonly number[];
+	orders: ReturnType<typeof useOrdersPage>["visibleOrders"];
+	kind: Order["kind"];
+	isPending: boolean;
+	onDetail: ReturnType<typeof useOrderSelection>["setDetail"];
+	onStart: ReturnType<typeof useOrdersPage>["startOrder"];
+	onConfirm: ReturnType<typeof useOrdersPage>["confirmOrder"];
+}) {
+	const [expanded, setExpanded] = useState<ReadonlySet<string>>(
+		() => new Set(),
+	);
+
+	function handleToggle(id: string) {
 		setExpanded((current) => {
 			const next = new Set(current);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
+
+			if (!next.delete(id)) next.add(id);
+
 			return next;
 		});
 	}
@@ -64,9 +68,9 @@ export function OrdersTable({
 						key={order.id}
 						order={order}
 						warehouse={warehouse}
-						expanded={expanded.has(order.id)}
-						pending={pending}
-						onToggle={() => toggleOrder(order.id)}
+						isExpanded={expanded.has(order.id)}
+						isPending={isPending}
+						onToggle={handleToggle}
 						onDetail={onDetail}
 						onStart={onStart}
 						onConfirm={onConfirm}

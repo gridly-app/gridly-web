@@ -6,26 +6,33 @@ import {
 	IconPlayerPlay,
 	IconTruckDelivery,
 } from "@tabler/icons-react";
+
 import type { Order } from "@/domain/warehouse";
 import { shipmentManagementPath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
-import { StatusBadge as Badge, useOrder } from "@/ports/warehouse";
+import { StatusBadge, useOrder } from "@/ports/warehouse";
 import { Button, IconButton, IconLink } from "@/shared/ui/controls";
 import { TableActions, TableCell, TableRow } from "@/shared/ui/dataDisplay";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
+
 import { getOrderPresentation } from "../../model/getOrderPresentation";
 import type { useOrderSelection } from "../../model/useOrderSelection";
 import type { useOrdersPage } from "../../model/useOrdersPage";
 import type { OrderScreenWarehouse } from "../../model/warehouseResources";
 import { OrderLines } from "../OrderLines/OrderLines";
+
 import styles from "./OrderRow.module.css";
 
+type OrderRowOrder = ReturnType<typeof useOrdersPage>["visibleOrders"][number];
+
+const orderColumnCount = 7;
+
 interface OrderRowProps {
-	order: ReturnType<typeof useOrdersPage>["visibleOrders"][number];
+	order: OrderRowOrder;
 	warehouse: OrderScreenWarehouse;
-	expanded: boolean;
-	pending: boolean;
-	onToggle: () => void;
+	isExpanded: boolean;
+	isPending: boolean;
+	onToggle: (orderId: string) => void;
 	onDetail: ReturnType<typeof useOrderSelection>["setDetail"];
 	onStart: ReturnType<typeof useOrdersPage>["startOrder"];
 	onConfirm: ReturnType<typeof useOrdersPage>["confirmOrder"];
@@ -34,15 +41,30 @@ interface OrderRowProps {
 export function OrderRow({
 	order,
 	warehouse,
-	expanded,
-	pending,
+	isExpanded,
+	isPending,
 	onToggle,
 	onDetail,
 	onStart,
 	onConfirm,
 }: OrderRowProps) {
 	const mode = useWorkspaceMode();
-	const canManageShipment = order.kind === "outbound";
+	const ToggleIcon = isExpanded ? IconChevronDown : IconChevronRight;
+	const costHint = order.cost.unknown
+		? `Без цены: ${order.cost.unknown} шт.`
+		: "Стоимость по ценам каталога";
+
+	function handleToggle() {
+		onToggle(order.id);
+	}
+
+	function handleDetail() {
+		onDetail(order.id);
+	}
+
+	function handleUnpricedDetail() {
+		onDetail(order.id, true);
+	}
 
 	return (
 		<>
@@ -51,21 +73,15 @@ export function OrderRow({
 					<TableActions>
 						<IconButton
 							label={`Состав заказа ${order.number}`}
-							aria-expanded={expanded}
-							icon={
-								expanded ? (
-									<IconChevronDown size={16} />
-								) : (
-									<IconChevronRight size={16} />
-								)
-							}
-							onClick={onToggle}
+							aria-expanded={isExpanded}
+							icon={<ToggleIcon size={16} />}
+							onClick={handleToggle}
 						/>
 						<Button
 							size="sm"
 							variant="ghost"
 							className={styles.orderLink}
-							onClick={() => onDetail(order.id)}
+							onClick={handleDetail}
 						>
 							{order.number}
 						</Button>
@@ -73,18 +89,12 @@ export function OrderRow({
 				</TableCell>
 				<TableCell>{order.party}</TableCell>
 				<TableCell>{order.quantity ?? "—"} шт.</TableCell>
-				<TableCell
-					title={
-						order.cost.unknown
-							? `Без цены: ${order.cost.unknown} шт.`
-							: "Стоимость по ценам каталога"
-					}
-				>
+				<TableCell title={costHint}>
 					{order.cost.unknown > 0 ? (
 						<Button
 							variant="text"
 							size="sm"
-							onClick={() => onDetail(order.id, true)}
+							onClick={handleUnpricedDetail}
 							aria-label={`${order.number}: товары без цены`}
 						>
 							{order.cost.label} · без цены: {order.cost.unknown} шт. →
@@ -95,56 +105,90 @@ export function OrderRow({
 				</TableCell>
 				<TableCell>{order.createdLabel}</TableCell>
 				<TableCell>
-					<Badge value={order.status} />
+					<StatusBadge value={order.status} />
 				</TableCell>
 				<TableCell>
 					<TableActions>
-						{canManageShipment && (
+						{order.kind === "outbound" && (
 							<IconLink
 								label="Управление отгрузкой"
 								icon={<IconTruckDelivery aria-hidden="true" />}
 								to={shipmentManagementPath(mode, warehouse.id, order.id)}
 							/>
 						)}
-						{order.canStart ? (
-							<IconButton
-								label="Запустить"
-								icon={<IconPlayerPlay size={16} />}
-								variant="default"
-								disabled={pending}
-								onClick={() => void onStart(order.id)}
-							/>
-						) : order.canConfirm ? (
-							<IconButton
-								label={
-									order.kind === "inbound"
-										? "Подтвердить разгрузку"
-										: "Подтвердить погрузку"
-								}
-								icon={<IconCheck size={16} />}
-								variant="default"
-								disabled={pending}
-								onClick={() => void onConfirm(order)}
-							/>
-						) : (
-							<IconButton
-								label="Подробнее"
-								icon={<IconEye size={16} />}
-								variant="secondary"
-								onClick={() => onDetail(order.id)}
-							/>
-						)}
+						<OrderPrimaryAction
+							order={order}
+							isPending={isPending}
+							onStart={onStart}
+							onConfirm={onConfirm}
+							onDetail={handleDetail}
+						/>
 					</TableActions>
 				</TableCell>
 			</TableRow>
-			{expanded && (
+			{isExpanded && (
 				<TableRow>
-					<TableCell colSpan={7} className={styles.expandedOrder}>
+					<TableCell
+						colSpan={orderColumnCount}
+						className={styles.expandedOrder}
+					>
 						<ExpandedOrder order={order} warehouse={warehouse} />
 					</TableCell>
 				</TableRow>
 			)}
 		</>
+	);
+}
+
+function OrderPrimaryAction({
+	order,
+	isPending,
+	onStart,
+	onConfirm,
+	onDetail,
+}: {
+	order: OrderRowOrder;
+	isPending: boolean;
+	onStart: OrderRowProps["onStart"];
+	onConfirm: OrderRowProps["onConfirm"];
+	onDetail: () => void;
+}) {
+	if (order.canStart) {
+		return (
+			<IconButton
+				label="Запустить"
+				icon={<IconPlayerPlay size={16} />}
+				variant="default"
+				disabled={isPending}
+				onClick={() => void onStart(order.id)}
+			/>
+		);
+	}
+
+	if (order.canConfirm) {
+		const label =
+			order.kind === "inbound"
+				? "Подтвердить разгрузку"
+				: "Подтвердить погрузку";
+
+		return (
+			<IconButton
+				label={label}
+				icon={<IconCheck size={16} />}
+				variant="default"
+				disabled={isPending}
+				onClick={() => void onConfirm(order)}
+			/>
+		);
+	}
+
+	return (
+		<IconButton
+			label="Подробнее"
+			icon={<IconEye size={16} />}
+			variant="secondary"
+			onClick={onDetail}
+		/>
 	);
 }
 
@@ -156,9 +200,12 @@ function ExpandedOrder({
 	warehouse: OrderScreenWarehouse;
 }) {
 	const query = useOrder(warehouse.id, order.id);
-	if (query.isPending && !order.lines.length)
+	const hasLines = order.lines.length > 0;
+
+	if (query.isPending && !hasLines)
 		return <Feedback tone="loading">Загружаем состав…</Feedback>;
-	if (query.isError && !order.lines.length)
+
+	if (query.isError && !hasLines) {
 		return (
 			<Feedback
 				tone="error"
@@ -167,6 +214,7 @@ function ExpandedOrder({
 				Не удалось загрузить состав заказа.
 			</Feedback>
 		);
+	}
 
 	return (
 		<OrderLines

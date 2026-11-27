@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+
 import type { CommandExecutor, CommandHandler } from "@/domain/warehouse";
 import {
 	useSandboxAccess,
@@ -10,38 +11,38 @@ import { browserStorage, memoryStorage } from "@/shared/lib";
 import { Button } from "@/shared/ui/controls";
 import { DataPanel, useTableColumns } from "@/shared/ui/dataDisplay";
 import { ErrorNotice, Feedback } from "@/shared/ui/feedback";
+
 import { OrderFormDrafts } from "./model/orderFormDrafts";
 import { useOrderCreation } from "./model/useOrderCreation";
 import { useOrderSelection } from "./model/useOrderSelection";
-import type { OrdersPageOptions } from "./model/useOrdersPage";
-import { useOrdersPage } from "./model/useOrdersPage";
-import type { OrderScreenWarehouse } from "./model/warehouseResources";
-import { warehouseResources } from "./model/warehouseResources";
-import { OrderDetailDialog } from "./ui/OrderDetailDialog/OrderDetailDialog";
+import { type OrdersPageOptions, useOrdersPage } from "./model/useOrdersPage";
+import {
+	type OrderScreenWarehouse,
+	warehouseResources,
+} from "./model/warehouseResources";
 import { OrderCreationDialog } from "./ui/OrderCreationDialog/OrderCreationDialog";
-import { OrdersToolbar } from "./ui/OrdersToolbar/OrdersToolbar";
+import { OrderDetailDialog } from "./ui/OrderDetailDialog/OrderDetailDialog";
 import { OrdersTable } from "./ui/OrdersTable/OrdersTable";
+import { OrdersToolbar } from "./ui/OrdersToolbar/OrdersToolbar";
 
-export type OrdersPageProps = OrdersPageOptions;
-
-export function WarehouseOrders({ kind }: OrdersPageProps) {
+export function WarehouseOrders({ kind }: OrdersPageOptions) {
 	const { warehouse, execute, command, pending } =
 		useLiveWarehouseScreen(warehouseResources);
 	const mode = useWorkspaceMode();
 	const { user } = useSession();
 	const sandbox = useSandboxAccess();
-	const owner = mode === "sandbox" ? (sandbox.access?.access_id ?? "") : user;
+	const isSandbox = mode === "sandbox";
+	const owner = isSandbox ? (sandbox.access?.access_id ?? "") : user;
 	const identity = JSON.stringify([mode, owner, warehouse.id, kind]);
-	const drafts = useMemo(
-		() =>
-			new OrderFormDrafts(
-				mode === "sandbox" ? memoryStorage() : browserStorage("localStorage"),
-				[mode === "sandbox" ? "sandbox" : "account", owner],
-				warehouse.id,
-				kind,
-			),
-		[mode, owner, warehouse.id, kind],
-	);
+	const drafts = useMemo(() => {
+		const storage = isSandbox
+			? memoryStorage()
+			: browserStorage("localStorage");
+		const scope = [isSandbox ? "sandbox" : "account", owner];
+
+		return new OrderFormDrafts(storage, scope, warehouse.id, kind);
+	}, [isSandbox, owner, warehouse.id, kind]);
+
 	return (
 		<OrdersPageContent
 			key={identity}
@@ -49,7 +50,7 @@ export function WarehouseOrders({ kind }: OrdersPageProps) {
 			warehouse={warehouse}
 			execute={execute}
 			command={command}
-			pending={pending}
+			isPending={pending}
 			drafts={drafts}
 		/>
 	);
@@ -59,14 +60,14 @@ function OrdersPageContent({
 	warehouse,
 	execute,
 	command,
-	pending,
+	isPending,
 	drafts,
 	kind,
 }: OrdersPageOptions & {
 	warehouse: OrderScreenWarehouse;
 	execute: CommandExecutor;
 	command: CommandHandler;
-	pending: boolean;
+	isPending: boolean;
 	drafts: OrderFormDrafts;
 }) {
 	const model = useOrdersPage({ kind, warehouse, command });
@@ -84,13 +85,24 @@ function OrdersPageContent({
 		"Статус",
 		"Действия",
 	]);
+	const isCreationIdle = !creation.creation && !creation.choosing;
+	const hasReportFilters =
+		model.unpriced || Boolean(model.from) || Boolean(model.to);
+	const reportTitle = model.unpriced ? "Товары без цены" : "Из отчёта";
+	const toolbar = (
+		<OrdersToolbar
+			filters={model.filters}
+			kind={kind}
+			canCreate={model.canCreate}
+			onCreate={openCreation}
+			columns={columns.button}
+		/>
+	);
 
 	return (
 		<>
-			{!creation.creation && !creation.choosing && (
-				<ErrorNotice message={creation.formError} />
-			)}
-			{(model.unpriced || model.from || model.to) && (
+			{isCreationIdle && <ErrorNotice message={creation.formError} />}
+			{hasReportFilters && (
 				<Feedback
 					tone="info"
 					inset
@@ -104,29 +116,18 @@ function OrdersPageContent({
 						</Button>
 					}
 				>
-					{model.unpriced ? "Товары без цены" : "Из отчёта"}
+					{reportTitle}
 					{model.from && ` · с ${model.from}`}
 					{model.to && ` · по ${model.to}`}
 				</Feedback>
 			)}
-			<DataPanel
-				empty={model.empty}
-				toolbar={
-					<OrdersToolbar
-						filters={model.filters}
-						kind={kind}
-						canCreate={model.canCreate}
-						onCreate={openCreation}
-						columns={columns.button}
-					/>
-				}
-			>
+			<DataPanel empty={model.isEmpty} toolbar={toolbar}>
 				<OrdersTable
 					hiddenColumns={columns.hiddenColumns}
 					warehouse={warehouse}
 					orders={model.visibleOrders}
 					kind={kind}
-					pending={pending}
+					isPending={isPending}
 					onDetail={setDetail}
 					onStart={model.startOrder}
 					onConfirm={model.confirmOrder}
@@ -136,12 +137,12 @@ function OrdersPageContent({
 				model={creation}
 				kind={kind}
 				warehouse={warehouse}
-				pending={pending}
+				isPending={isPending}
 			/>
 			<OrderDetailDialog
 				model={detail}
 				warehouse={warehouse}
-				pending={pending}
+				isPending={isPending}
 				execute={execute}
 			/>
 		</>

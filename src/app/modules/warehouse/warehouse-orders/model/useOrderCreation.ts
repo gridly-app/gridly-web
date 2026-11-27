@@ -1,6 +1,8 @@
 import { useReducer, useRef, useState } from "react";
+
 import type { CommandExecutor, OrderInput } from "@/domain/warehouse";
 import { errorMessage } from "@/shared/lib";
+
 import {
 	initialOrderForm,
 	type OrderFormDrafts,
@@ -69,6 +71,17 @@ function startCreation(id: string, values: OrderFormValues): Creation {
 const formsReadError =
 	"Не удалось прочитать сохранённые формы. Проверьте доступность хранилища браузера и повторите открытие формы.";
 
+function readInitialForms(drafts: OrderFormDrafts): {
+	forms: SavedOrderForm[];
+	error: string;
+} {
+	try {
+		return { forms: drafts.read(), error: "" };
+	} catch {
+		return { forms: [], error: formsReadError };
+	}
+}
+
 export function useOrderCreation(
 	warehouse: OrderScreenWarehouse,
 	execute: CommandExecutor,
@@ -79,59 +92,70 @@ export function useOrderCreation(
 	const choosing = flow.kind === "choosing";
 	const confirmClose = flow.kind === "confirming";
 	const submitting = flow.kind === "submitting";
-
-	const [initialForms] = useState<{ forms: SavedOrderForm[]; error: string }>(
-		() => {
-			try {
-				return { forms: drafts.read(), error: "" };
-			} catch {
-				return { forms: [], error: formsReadError };
-			}
-		},
-	);
+	const [initialForms] = useState(() => readInitialForms(drafts));
 	const [savedForms, setSavedForms] = useState(initialForms.forms);
-
 	const [formError, setFormError] = useState(initialForms.error);
-
 	const inFlight = useRef(false);
 
 	function newForm() {
 		if (inFlight.current) return;
+
 		dispatch({
 			type: "start",
 			creation: startCreation(crypto.randomUUID(), initialOrderForm(warehouse)),
 		});
 		setFormError("");
 	}
+
 	function openCreation() {
 		if (inFlight.current || creation) return;
+
+		let forms: SavedOrderForm[];
+
 		try {
-			const forms = drafts.read();
-			setSavedForms(forms);
-			setFormError("");
-			if (forms.length) dispatch({ type: "choose" });
-			else newForm();
+			forms = drafts.read();
 		} catch {
 			setFormError(formsReadError);
+
+			return;
 		}
+
+		setSavedForms(forms);
+		setFormError("");
+
+		if (!forms.length) {
+			newForm();
+
+			return;
+		}
+
+		dispatch({ type: "choose" });
 	}
+
 	function restoreForm(form: SavedOrderForm) {
 		dispatch({ type: "start", creation: startCreation(form.id, form.values) });
 		setFormError("");
 	}
+
 	function changeValues(values: OrderFormValues) {
 		if (inFlight.current) return;
+
 		dispatch({ type: "change", values });
 	}
+
 	function closeCreation() {
 		if (inFlight.current) return;
+
 		const isChanged =
-			!!creation && JSON.stringify(creation.values) !== creation.baseline;
+			creation !== null &&
+			JSON.stringify(creation.values) !== creation.baseline;
 
 		dispatch({ type: isChanged ? "askToClose" : "close" });
 	}
+
 	function saveForm() {
 		if (!creation || inFlight.current) return;
+
 		try {
 			setSavedForms(
 				drafts.save({
@@ -146,29 +170,48 @@ export function useOrderCreation(
 			setFormError(`Не удалось сохранить форму: ${errorMessage(error)}`);
 		}
 	}
+
 	function deleteForm(id: string) {
 		if (inFlight.current) return false;
+
 		try {
 			setSavedForms(drafts.remove(id));
 			setFormError("");
+
 			return true;
 		} catch (error) {
 			setFormError(`Не удалось удалить форму: ${errorMessage(error)}`);
+
 			return false;
 		}
 	}
+
 	function discardForm() {
 		if (!creation || !deleteForm(creation.id)) return;
 
 		dispatch({ type: "close" });
 	}
+
+	function closeChooser() {
+		dispatch({ type: "closeChooser" });
+	}
+
+	function continueForm() {
+		dispatch({ type: "continue" });
+		setFormError("");
+	}
+
 	async function createDraft(order: OrderInput) {
 		if (!creation || inFlight.current) return;
+
 		const formId = creation.id;
+
 		inFlight.current = true;
 		dispatch({ type: "submit" });
+
 		try {
 			await execute("order", order, { operationId: formId });
+
 			try {
 				setSavedForms(drafts.remove(formId));
 			} catch {
@@ -198,11 +241,8 @@ export function useOrderCreation(
 		saveForm,
 		discardForm,
 		deleteForm,
-		closeChooser: () => dispatch({ type: "closeChooser" }),
-		continueForm: () => {
-			dispatch({ type: "continue" });
-			setFormError("");
-		},
+		closeChooser,
+		continueForm,
 		createDraft,
 	};
 }

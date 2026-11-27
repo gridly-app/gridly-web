@@ -1,5 +1,6 @@
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import { useId } from "react";
+
 import { Button, Checkbox, IconButton, Input } from "@/shared/ui/controls";
 import {
 	CheckLabel,
@@ -8,15 +9,20 @@ import {
 	Fieldset,
 	FormShell,
 } from "@/shared/ui/forms";
-import type { OrderFormOptions } from "../../model/useOrderForm";
-import { useOrderForm } from "../../model/useOrderForm";
+
+import { type OrderFormOptions, useOrderForm } from "../../model/useOrderForm";
+
 import styles from "./OrderForm.module.css";
 
-export type OrderFormProps = OrderFormOptions;
+type OrderFormModel = ReturnType<typeof useOrderForm>;
 
-export function OrderForm(props: OrderFormProps) {
+const partyMaxLength = 500;
+
+export function OrderForm(props: OrderFormOptions) {
 	const model = useOrderForm(props);
 	const { pending, order, handleSubmit, kind } = model;
+	const partyLabel =
+		kind === "inbound" ? "Поставщик *" : "Получатель / адрес *";
 
 	return (
 		<FormShell
@@ -25,18 +31,15 @@ export function OrderForm(props: OrderFormProps) {
 			onSubmit={handleSubmit}
 		>
 			<Fieldset className={styles.formFields} disabled={pending}>
-				<Field
-					label={kind === "inbound" ? "Поставщик *" : "Получатель / адрес *"}
-				>
+				<Field label={partyLabel}>
 					<Input
 						name="party"
 						value={model.party}
 						onChange={model.changeParty}
 						required
-						maxLength={500}
+						maxLength={partyMaxLength}
 					/>
 				</Field>
-
 				<OrderLinesFields model={model} />
 				<OrderConfirmations model={model} />
 			</Fieldset>
@@ -44,9 +47,11 @@ export function OrderForm(props: OrderFormProps) {
 	);
 }
 
-interface OrderLinesFieldsProps {
+function OrderLinesFields({
+	model,
+}: {
 	model: Pick<
-		ReturnType<typeof useOrderForm>,
+		OrderFormModel,
 		| "lines"
 		| "products"
 		| "kind"
@@ -56,18 +61,14 @@ interface OrderLinesFieldsProps {
 		| "changeExpires"
 		| "removeLine"
 	>;
-}
-
-function OrderLinesFields({ model }: OrderLinesFieldsProps) {
-	const { lines, addLine } = model;
-
+}) {
 	return (
 		<>
 			<div className={styles.caption}>ПОЗИЦИИ ЗАКАЗА</div>
-			{lines.map((line) => (
+			{model.lines.map((line) => (
 				<OrderLineFields key={line.key} line={line} model={model} />
 			))}
-			<Button variant="ghost" type="button" onClick={addLine}>
+			<Button variant="ghost" type="button" onClick={model.addLine}>
 				<IconPlus size={16} />
 				Добавить позицию
 			</Button>
@@ -75,10 +76,13 @@ function OrderLinesFields({ model }: OrderLinesFieldsProps) {
 	);
 }
 
-interface OrderLineFieldsProps {
-	line: ReturnType<typeof useOrderForm>["lines"][number];
+function OrderLineFields({
+	line,
+	model,
+}: {
+	line: OrderFormModel["lines"][number];
 	model: Pick<
-		ReturnType<typeof useOrderForm>,
+		OrderFormModel,
 		| "products"
 		| "kind"
 		| "changeProduct"
@@ -86,10 +90,11 @@ interface OrderLineFieldsProps {
 		| "changeExpires"
 		| "removeLine"
 	>;
-}
-
-function OrderLineFields({ line, model }: OrderLineFieldsProps) {
-	const { products, kind } = model;
+}) {
+	const productOptions = model.products.map((product) => ({
+		value: product.id,
+		label: `${product.name} · ${product.volume} м³`,
+	}));
 
 	return (
 		<div className={styles.orderLine}>
@@ -99,10 +104,7 @@ function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 					onValueChange={(product) => model.changeProduct(line.key, product)}
 					required
 					placeholder="Выберите товар"
-					options={products.map((product) => ({
-						value: product.id,
-						label: `${product.name} · ${product.volume} м³`,
-					}))}
+					options={productOptions}
 				/>
 			</Field>
 			<div className={styles.lineControls}>
@@ -115,7 +117,7 @@ function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 						required
 					/>
 				</Field>
-				{kind === "inbound" && (
+				{model.kind === "inbound" && (
 					<Field className={styles.lineField} label="Годность партии">
 						<Input
 							type="date"
@@ -136,22 +138,18 @@ function OrderLineFields({ line, model }: OrderLineFieldsProps) {
 	);
 }
 
-interface OrderConfirmationsProps {
-	model: Pick<
-		ReturnType<typeof useOrderForm>,
-		"confirmations" | "resetManual" | "updateManual"
-	>;
-}
-
-function OrderConfirmations({ model }: OrderConfirmationsProps) {
+function OrderConfirmations({
+	model,
+}: {
+	model: Pick<OrderFormModel, "confirmations" | "resetManual" | "updateManual">;
+}) {
 	const controlId = useId();
-	const { confirmations, resetManual } = model;
 
 	return (
 		<>
 			<p className={styles.caption}>РУЧНЫЕ ПОДТВЕРЖДЕНИЯ</p>
 			<div className={styles.choices}>
-				{confirmations.map((confirmation) => (
+				{model.confirmations.map((confirmation) => (
 					<CheckLabel
 						key={confirmation.label}
 						htmlFor={`${controlId}-${confirmation.index}`}
@@ -167,7 +165,7 @@ function OrderConfirmations({ model }: OrderConfirmationsProps) {
 					</CheckLabel>
 				))}
 			</div>
-			<Button variant="text" type="button" onClick={resetManual}>
+			<Button variant="text" type="button" onClick={model.resetManual}>
 				Вернуть настройки склада
 			</Button>
 		</>

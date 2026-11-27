@@ -1,9 +1,16 @@
 import { IconEdit } from "@tabler/icons-react";
+
 import { Button, IconButton } from "@/shared/ui/controls";
+
 import type { useOrderDetail } from "../../model/useOrderDetail";
+
 import styles from "./OrderActions.module.css";
 
-export interface OrderActionsProps {
+const destructiveActions = ["cancel", "abort", "write-off-expired"];
+
+export function OrderActions({
+	model,
+}: {
 	model: Pick<
 		ReturnType<typeof useOrderDetail>,
 		| "onEdit"
@@ -15,18 +22,20 @@ export interface OrderActionsProps {
 		| "confirmOrder"
 		| "runOrderAction"
 	>;
-}
-
-export function OrderActions({ model }: OrderActionsProps) {
+}) {
 	const { onEdit, canEdit, pending, visibleActions, canConfirm, confirmOrder } =
 		model;
+	const canEditDraft = Boolean(onEdit) && canEdit;
 
-	if (!(onEdit && canEdit) && !visibleActions.length && !canConfirm)
-		return null;
+	if (!canEditDraft && !visibleActions.length && !canConfirm) return null;
+
+	function handleConfirm() {
+		void confirmOrder();
+	}
 
 	return (
 		<div className={styles.actions}>
-			{onEdit && canEdit && (
+			{canEditDraft && (
 				<IconButton
 					label="Изменить черновик"
 					icon={<IconEdit aria-hidden="true" />}
@@ -38,9 +47,7 @@ export function OrderActions({ model }: OrderActionsProps) {
 			{visibleActions.map((action) => (
 				<Button
 					variant={
-						["cancel", "abort", "write-off-expired"].includes(action.id)
-							? "destructive"
-							: "default"
+						destructiveActions.includes(action.id) ? "destructive" : "default"
 					}
 					key={action.id}
 					disabled={pending}
@@ -50,13 +57,7 @@ export function OrderActions({ model }: OrderActionsProps) {
 				</Button>
 			))}
 			{canConfirm && (
-				<Button
-					variant="default"
-					disabled={pending}
-					onClick={() => {
-						void confirmOrder();
-					}}
-				>
+				<Button variant="default" disabled={pending} onClick={handleConfirm}>
 					{model.confirmLabel}
 				</Button>
 			)}

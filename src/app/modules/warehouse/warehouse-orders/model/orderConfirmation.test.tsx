@@ -29,8 +29,7 @@ test("a generic confirmation replaces only its directional alias", () => {
 
 	function Card() {
 		const model = useOrderDetail({
-			o: order,
-			w: snapshot,
+			order,
 			pending: false,
 			command,
 		});

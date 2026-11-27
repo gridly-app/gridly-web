@@ -1,18 +1,37 @@
 import { useState } from "react";
-import type { CommandExecutor, Order, WarehouseView } from "@/domain/warehouse";
+
+import type { CommandExecutor, Order } from "@/domain/warehouse";
 import { errorMessage, formText, useSingleFlight } from "@/shared/lib";
+
 import { actionLabels } from "../config/orderActions";
 
+type OrderTask = NonNullable<Order["tasks"]>[number];
+
 export interface OrderDetailOptions {
-	o: Order;
-	w: WarehouseView<"catalog" | "robots">;
+	order: Order;
 	command: CommandExecutor;
 	pending: boolean;
 	onEdit?: (() => void) | undefined;
 }
 
+const reasonActions = ["abort", "write-off-expired"];
+
+function visibleOrderActions(order: Order, actions: string[]) {
+	const specificConfirm =
+		order.kind === "inbound" ? "confirm-unload" : "confirm-load";
+	const hasGenericConfirm = actions.includes("confirm");
+
+	return actions.flatMap((action) => {
+		const label = actionLabels[action];
+
+		if (!label || (hasGenericConfirm && action === specificConfirm)) return [];
+
+		return [{ id: action, label }];
+	});
+}
+
 export function useOrderDetail({
-	o: order,
+	order,
 	command,
 	pending,
 	onEdit,
@@ -20,7 +39,8 @@ export function useOrderDetail({
 	const [reasonAction, setReasonAction] = useState("");
 	const [error, setError] = useState("");
 	const flight = useSingleFlight();
-	const saving = flight.isRunning;
+	const actions = order.allowedActions ?? [];
+
 	const executeAction: CommandExecutor = async (action, ...args) => {
 		if (pending) return;
 
@@ -29,23 +49,24 @@ export function useOrderDetail({
 
 			try {
 				await command(action, ...args);
-			} catch (error) {
-				setError(errorMessage(error));
+			} catch (actionError) {
+				setError(errorMessage(actionError));
 			}
 		});
 	};
-	const actions = order.allowedActions || [];
-	const canEdit = actions.includes("edit");
+
 	function runOrderAction(action: string) {
-		if (["abort", "write-off-expired"].includes(action)) {
+		if (reasonActions.includes(action)) {
 			setReasonAction(action);
-		} else {
-			void executeAction("orderAction", {
-				id: order.id,
-				action,
-				revision: order.revision,
-			});
+
+			return;
 		}
+
+		void executeAction("orderAction", {
+			id: order.id,
+			action,
+			revision: order.revision,
+		});
 	}
 
 	async function handleSubmit(data: FormData) {
@@ -58,23 +79,7 @@ export function useOrderDetail({
 		setReasonAction("");
 	}
 
-	const specificConfirm =
-		order.kind === "inbound" ? "confirm-unload" : "confirm-load";
-	const visibleActions = [];
-
-	for (const action of actions) {
-		const label = actionLabels[action];
-
-		if (!label || (actions.includes("confirm") && action === specificConfirm))
-			continue;
-
-		visibleActions.push({ id: action, label });
-	}
-
-	function confirmTask(
-		task: NonNullable<Order["tasks"]>[number],
-		action: string,
-	) {
+	function confirmTask(task: OrderTask, action: string) {
 		return executeAction("taskAction", {
 			orderId: order.id,
 			id: task.id,
@@ -96,22 +101,22 @@ export function useOrderDetail({
 	}
 
 	return {
-		confirmOrder,
+		canEdit: actions.includes("edit"),
+		canConfirm: actions.includes("confirm"),
 		confirmLabel:
 			order.kind === "inbound"
 				? "Подтвердить разгрузку"
 				: "Подтвердить погрузку",
-		closeReason,
-		canConfirm: actions.includes("confirm"),
-		reasonLabel: actionLabels[reasonAction],
-		canEdit,
-		confirmTask,
-		visibleActions,
-		onEdit,
-		pending: pending || saving,
-		runOrderAction,
-		error,
+		visibleActions: visibleOrderActions(order, actions),
 		reasonAction,
+		reasonLabel: actionLabels[reasonAction],
+		pending: pending || flight.isRunning,
+		error,
+		onEdit,
+		runOrderAction,
+		confirmOrder,
+		confirmTask,
+		closeReason,
 		handleSubmit,
 	};
 }

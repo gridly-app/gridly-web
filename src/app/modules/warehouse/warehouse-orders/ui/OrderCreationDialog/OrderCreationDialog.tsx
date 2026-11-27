@@ -1,54 +1,32 @@
 import { IconTrash } from "@tabler/icons-react";
+
 import { Button, IconButton } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
 import { Modal } from "@/shared/ui/overlays";
+
 import type { useOrderCreation } from "../../model/useOrderCreation";
 import type { OrderScreenWarehouse } from "../../model/warehouseResources";
-import styles from "./OrderCreationDialog.module.css";
 import { OrderForm } from "../OrderForm/OrderForm";
 
-export interface OrderCreationDialogProps {
-	model: Omit<ReturnType<typeof useOrderCreation>, "openCreation">;
-	warehouse: OrderScreenWarehouse;
-	pending: boolean;
-	kind: "inbound" | "outbound";
-}
+import styles from "./OrderCreationDialog.module.css";
+
+type CreationModel = Omit<ReturnType<typeof useOrderCreation>, "openCreation">;
 
 export function OrderCreationDialog({
 	model,
 	warehouse,
-	pending,
+	isPending,
 	kind,
-}: OrderCreationDialogProps) {
-	if (model.choosing)
-		return (
-			<Modal title="Сохранённые формы" onClose={model.closeChooser}>
-				<p>Продолжите заполнение формы или создайте новую.</p>
-				<div className={styles.savedForms}>
-					{model.savedForms.map((form) => (
-						<div key={form.id} className={styles.savedForm}>
-							<Button
-								variant="secondary"
-								onClick={() => model.restoreForm(form)}
-							>
-								Продолжить форму: {form.values.party || "Без контрагента"} ·{" "}
-								{new Date(form.updatedAt).toLocaleString("ru")}
-							</Button>
-							<IconButton
-								icon={<IconTrash size={16} />}
-								variant="destructive"
-								label={`Удалить сохранённую форму ${form.values.party || "Без контрагента"}`}
-								onClick={() => model.deleteForm(form.id)}
-							/>
-						</div>
-					))}
-				</div>
-				<ErrorNotice message={model.formError} />
-				<Button onClick={model.newForm}>+ Форма</Button>
-			</Modal>
-		);
+}: {
+	model: CreationModel;
+	warehouse: OrderScreenWarehouse;
+	isPending: boolean;
+	kind: "inbound" | "outbound";
+}) {
+	if (model.choosing) return <SavedFormsDialog model={model} />;
 	if (!model.creation) return null;
-	if (model.confirmClose)
+
+	if (model.confirmClose) {
 		return (
 			<Modal
 				title="Сохранить незавершённую форму?"
@@ -70,6 +48,8 @@ export function OrderCreationDialog({
 				</div>
 			</Modal>
 		);
+	}
+
 	return (
 		<Modal
 			title={kind === "inbound" ? "Поставка" : "Заказ"}
@@ -79,12 +59,45 @@ export function OrderCreationDialog({
 				key={model.creation.id}
 				kind={kind}
 				warehouse={warehouse}
-				pending={pending || model.submitting}
+				pending={isPending || model.submitting}
 				onSave={model.createDraft}
 				values={model.creation.values}
 				onValuesChange={model.changeValues}
 			/>
 			<ErrorNotice message={model.formError} />
+		</Modal>
+	);
+}
+
+function SavedFormsDialog({ model }: { model: CreationModel }) {
+	return (
+		<Modal title="Сохранённые формы" onClose={model.closeChooser}>
+			<p>Продолжите заполнение формы или создайте новую.</p>
+			<div className={styles.savedForms}>
+				{model.savedForms.map((form) => {
+					const party = form.values.party || "Без контрагента";
+
+					return (
+						<div key={form.id} className={styles.savedForm}>
+							<Button
+								variant="secondary"
+								onClick={() => model.restoreForm(form)}
+							>
+								Продолжить форму: {party} ·{" "}
+								{new Date(form.updatedAt).toLocaleString("ru")}
+							</Button>
+							<IconButton
+								icon={<IconTrash size={16} />}
+								variant="destructive"
+								label={`Удалить сохранённую форму ${party}`}
+								onClick={() => model.deleteForm(form.id)}
+							/>
+						</div>
+					);
+				})}
+			</div>
+			<ErrorNotice message={model.formError} />
+			<Button onClick={model.newForm}>+ Форма</Button>
 		</Modal>
 	);
 }
