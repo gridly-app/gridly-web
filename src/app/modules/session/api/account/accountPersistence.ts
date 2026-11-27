@@ -10,7 +10,13 @@ const accountTransition = "null";
 
 const accountSchema = z.object({ login: z.string().min(1), id: z.uuid() });
 
-export type Account = z.infer<typeof accountSchema>;
+export type Account = z.infer<typeof accountSchema> & { isStored: boolean };
+
+export type StoredAccountState = "same" | "other" | "unknown";
+
+function serialize({ login, id }: Account) {
+	return JSON.stringify({ login, id });
+}
 
 export class AccountPersistence {
 	constructor(
@@ -31,7 +37,7 @@ export class AccountPersistence {
 			const isLoggedOutInTab =
 				this.tabStorage?.getItem(tabLogoutKey) === account.data.id;
 
-			return isLoggedOutInTab ? null : account.data;
+			return isLoggedOutInTab ? null : { ...account.data, isStored: true };
 		} catch {
 			runtimeNotices.report(
 				"account.read",
@@ -60,7 +66,22 @@ export class AccountPersistence {
 	}
 
 	matches(account: Account) {
-		return this.read() === JSON.stringify(account);
+		return this.compare(account) === "same";
+	}
+
+	compare(account: Account): StoredAccountState {
+		let stored: string | null;
+
+		try {
+			stored = this.storage.getItem(accountKey);
+		} catch {
+			return "unknown";
+		}
+
+		if (stored === serialize(account)) return "same";
+		if (!account.isStored && stored === null) return "unknown";
+
+		return "other";
 	}
 
 	read() {
@@ -75,10 +96,11 @@ export class AccountPersistence {
 		return this.write(accountTransition);
 	}
 
-	remember(login: string): Account | null {
+	remember(login: string): Account {
 		const account = { login, id: crypto.randomUUID() };
+		const isStored = this.write(JSON.stringify(account));
 
-		return this.write(JSON.stringify(account)) ? account : null;
+		return { ...account, isStored };
 	}
 
 	write(value: string) {

@@ -26,7 +26,8 @@ export async function loginAccount(
 	{ credentials, signal, canUseCookie, assertActive }: LoginAttempt,
 ) {
 	const previous = persistence.read();
-	const canRemember = canUseCookie && persistence.beginLogin();
+	const isMarked = canUseCookie && persistence.beginLogin();
+	const canRemember = canUseCookie;
 
 	try {
 		const response = await http.request(accountAuthEndpoints.login, {
@@ -43,10 +44,15 @@ export async function loginAccount(
 		return { user, canRemember };
 	} catch (error) {
 		const shouldRestorePrevious =
-			canRemember && previous && isInvalidCredentials(error);
+			isMarked && previous && isInvalidCredentials(error);
 
-		if (shouldRestorePrevious) persistence.write(previous);
-		else if (canRemember) persistence.clear();
+		if (shouldRestorePrevious) {
+			persistence.write(previous);
+
+			throw error;
+		}
+
+		if (isMarked) persistence.clear();
 
 		throw error;
 	}

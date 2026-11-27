@@ -11,9 +11,9 @@ export function logoutAccount(
 	{ account, signal }: { account: Account; signal: AbortSignal },
 ) {
 	return lock(async () => {
-		if (!persistence.matches(account)) return;
+		if (persistence.compare(account) === "other") return;
 
-		persistence.clear();
+		if (account.isStored) persistence.clear();
 		await http.request(accountLogoutPath, {
 			method: "POST",
 			detached: true,

@@ -1,4 +1,4 @@
-import { expect, spyOn, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import { memoryStorage } from "@/shared/browser/browserStorage";
 import { ApiError, FetchHttpClient } from "@/shared/http";
@@ -139,37 +139,38 @@ test("legacy account names require a new sign-in", async () => {
 	expect(account.getSnapshot().status).toBe("ended");
 });
 
-test("a memory-only sign-in does not need a persistent account identifier", async () => {
+test("a sign-in without browser storage keeps refreshing in the same tab", async () => {
 	const storage = {
 		...memoryStorage(),
+		getItem: () => {
+			throw new DOMException("Storage is disabled", "SecurityError");
+		},
 		setItem: () => {
-			throw new Error("Storage unavailable");
+			throw new DOMException("Storage is disabled", "SecurityError");
 		},
 	};
-	const uuid = spyOn(crypto, "randomUUID");
+	const credentials: (RequestCredentials | undefined)[] = [];
+	let refreshes = 0;
+	const account = new BrowserSessionRepository(
+		httpDouble({
+			request: async (_path, options) => {
+				credentials.push(options?.credentials);
 
-	try {
-		const account = new BrowserSessionRepository(
-			httpDouble({
-				request: async (_path, options) => {
-					expect(options?.credentials).toBe("omit");
+				return { user: { login: "operator" } };
+			},
+		}),
+		storage,
+		undefined,
+		immediateLock,
+	);
 
-					return { user: { login: "operator" } };
-				},
-			}),
-			storage,
-			undefined,
-			immediateLock,
-		);
+	await account.authenticate("login", { login: "operator", password: "test" });
+	await account.withRefresh(async (validate) => {
+		refreshes++;
+		validate({ user: { login: "operator" } });
+	}, new AbortController().signal);
 
-		await account.authenticate("login", {
-			login: "operator",
-			password: "test",
-		});
-
-		expect(account.current()).toBe("operator");
-		expect(uuid).not.toHaveBeenCalled();
-	} finally {
-		uuid.mockRestore();
-	}
+	expect(credentials).toEqual(["include"]);
+	expect(refreshes).toBe(1);
+	expect(account.current()).toBe("operator");
 });

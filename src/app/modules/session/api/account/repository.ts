@@ -89,9 +89,13 @@ export class BrowserSessionRepository {
 		const refreshAccount = () => {
 			signal.throwIfAborted();
 
-			const isCurrentAccount = !!account && account === this.account;
+			const isCurrentAccount = Boolean(account) && account === this.account;
 
-			if (!isCurrentAccount || !this.persistence.matches(account)) {
+			if (
+				!account ||
+				!isCurrentAccount ||
+				this.persistence.compare(account) === "other"
+			) {
 				if (account === this.account) this.end(changedSessionMessage);
 
 				throw sessionChangedError();
@@ -241,7 +245,8 @@ export class BrowserSessionRepository {
 
 	private handleStorage = (event: StorageEvent) => {
 		const isOtherAccount =
-			!!this.account && !this.persistence.matches(this.account);
+			this.account !== null &&
+			this.persistence.compare(this.account) === "other";
 
 		if (this.persistence.isChange(event) && isOtherAccount)
 			this.end(changedSessionMessage);
