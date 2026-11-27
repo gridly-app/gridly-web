@@ -1,95 +1,19 @@
 import { Suspense } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { warehousePath, newWarehouseId } from "@/ports/navigation";
+
+import { newWarehouseId, warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouse, useWarehouses } from "@/ports/warehouse";
 import { ApiError } from "@/shared/http";
 import { errorMessage } from "@/shared/lib";
 import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
 import { SidebarTrigger } from "@/shared/ui/navigation";
+
+import type { WarehouseRoute } from "../../model/useWarehouseRoute";
 import { NewWarehouse } from "../NewWarehouse/NewWarehouse";
-import { RememberWarehouse } from "../../model/lastWarehouse";
-import type { useWarehouseRoute } from "../../model/useWarehouseRoute";
-import styles from "./WorkspaceContent.module.css";
 import { WorkspaceResources } from "../WorkspaceResources/WorkspaceResources";
 
-type WarehouseRoute = NonNullable<ReturnType<typeof useWarehouseRoute>>;
-
-function WarehouseSectionContent({
-	warehouseId,
-	route,
-}: {
-	warehouseId: string;
-	route: WarehouseRoute;
-}) {
-	const mode = useWorkspaceMode();
-	const warehouses = useWarehouses();
-	const snapshot = useWarehouse(warehouseId);
-	const loading = (
-		<Skeleton
-			layout={route.warehouseSection === "map" ? "map" : "table"}
-			label="Загружаем раздел…"
-		/>
-	);
-	if (snapshot.isPending) return loading;
-
-	const list = warehouses.data;
-	const missingFromSandbox =
-		mode === "sandbox" &&
-		snapshot.isError &&
-		!warehouses.isFetching &&
-		list !== undefined &&
-		!list.some(({ id }) => id === warehouseId);
-	if (missingFromSandbox) {
-		return (
-			<Navigate
-				replace
-				to={warehousePath(mode, list[0]?.id ?? newWarehouseId)}
-			/>
-		);
-	}
-
-	const error = snapshot.error ?? snapshot.failureReason;
-	const accessLost =
-		error instanceof ApiError && (error.status === 403 || error.status === 404);
-
-	if (!snapshot.data || accessLost) {
-		return (
-			<Feedback
-				inset
-				tone="error"
-				fill
-				title={accessLost ? "Склад недоступен" : "Не удалось загрузить склад"}
-				action={
-					<RetryButton
-						variant="secondary"
-						size="sm"
-						onRetry={snapshot.refetch}
-					/>
-				}
-			>
-				{errorMessage(error)}
-			</Feedback>
-		);
-	}
-
-	return (
-		<>
-			<RememberWarehouse warehouseId={warehouseId} />
-			<WorkspaceResources
-				warehouse={snapshot.data}
-				isSnapshotStale={snapshot.isError}
-				isSnapshotFetching={snapshot.isFetching}
-				resources={route.resources}
-				loadingFallback={loading}
-			>
-				<Suspense key={route.id} fallback={loading}>
-					<Outlet />
-				</Suspense>
-			</WorkspaceResources>
-		</>
-	);
-}
+import styles from "./WorkspaceContent.module.css";
 
 export function WorkspaceContent({
 	warehouseId,
@@ -120,11 +44,91 @@ function WorkspaceOutlet({
 }) {
 	if (!route) return <Outlet />;
 	if (warehouseId === newWarehouseId) return <NewWarehouse />;
+
 	return (
 		<WarehouseSectionContent
 			key={warehouseId}
 			warehouseId={warehouseId}
 			route={route}
 		/>
+	);
+}
+
+function isAccessLost(error: unknown) {
+	return (
+		error instanceof ApiError && (error.status === 403 || error.status === 404)
+	);
+}
+
+function WarehouseSectionContent({
+	warehouseId,
+	route,
+}: {
+	warehouseId: string;
+	route: WarehouseRoute;
+}) {
+	const mode = useWorkspaceMode();
+	const warehouses = useWarehouses();
+	const snapshot = useWarehouse(warehouseId);
+	const skeletonLayout = route.warehouseSection === "map" ? "map" : "table";
+	const loading = (
+		<Skeleton layout={skeletonLayout} label="Загружаем раздел…" />
+	);
+
+	if (snapshot.isPending) return loading;
+
+	const list = warehouses.data;
+	const isListSettled = !warehouses.isFetching && list !== undefined;
+	const isMissingFromSandbox =
+		mode === "sandbox" &&
+		snapshot.isError &&
+		isListSettled &&
+		!list.some(({ id }) => id === warehouseId);
+
+	if (isMissingFromSandbox) {
+		const fallbackId = list[0]?.id ?? newWarehouseId;
+
+		return <Navigate replace to={warehousePath(mode, fallbackId)} />;
+	}
+
+	const error = snapshot.error ?? snapshot.failureReason;
+	const accessLost = isAccessLost(error);
+
+	if (!snapshot.data || accessLost) {
+		const title = accessLost
+			? "Склад недоступен"
+			: "Не удалось загрузить склад";
+
+		return (
+			<Feedback
+				inset
+				tone="error"
+				fill
+				title={title}
+				action={
+					<RetryButton
+						variant="secondary"
+						size="sm"
+						onRetry={snapshot.refetch}
+					/>
+				}
+			>
+				{errorMessage(error)}
+			</Feedback>
+		);
+	}
+
+	return (
+		<WorkspaceResources
+			warehouse={snapshot.data}
+			isSnapshotStale={snapshot.isError}
+			isSnapshotFetching={snapshot.isFetching}
+			resources={route.resources}
+			loadingFallback={loading}
+		>
+			<Suspense key={route.id} fallback={loading}>
+				<Outlet />
+			</Suspense>
+		</WorkspaceResources>
 	);
 }

@@ -1,5 +1,6 @@
 import { lazy, type ReactNode } from "react";
 import { Navigate, type RouteObject } from "react-router-dom";
+
 import type { Warehouse } from "@/domain/warehouse";
 import type {
 	WarehouseRouteHandle,
@@ -10,6 +11,7 @@ import type { ShipmentProgressSlot } from "@/ports/shipment";
 import { useWarehouseScope } from "@/ports/warehouse";
 import type { FileHttpClient } from "@/shared/http";
 import { PageNotFound } from "@/shared/ui/feedback";
+
 import { deliveriesRoute, shipmentRoute } from "./shipment-management";
 import { catalogRoute } from "./warehouse-catalog";
 import { historyRoute } from "./warehouse-history";
@@ -19,8 +21,9 @@ import { mapRoute } from "./warehouse-map";
 import { loadOrderDialog, ordersRoute } from "./warehouse-orders";
 import { robotsRoute } from "./warehouse-robots";
 
-const WarehouseOrderDialog = lazy(loadOrderDialog);
-const Shipments = lazy(shipmentRoute.load);
+export const WarehouseOrderCard = lazy(loadOrderDialog);
+
+const ShipmentManagementPage = lazy(shipmentRoute.load);
 const DeliveriesPage = lazy(deliveriesRoute.load);
 const CatalogPage = lazy(catalogRoute.load);
 const HistoryPage = lazy(historyRoute.load);
@@ -30,10 +33,6 @@ const MapPage = lazy(mapRoute.load);
 const OrdersPage = lazy(ordersRoute.load);
 const RobotsPage = lazy(robotsRoute.load);
 
-export function WarehouseOrderCard({ warehouse }: { warehouse: Warehouse }) {
-	return <WarehouseOrderDialog warehouse={warehouse} />;
-}
-
 function warehouseRoute(
 	route: WarehouseScreenRoute,
 	element: ReactNode,
@@ -41,16 +40,12 @@ function warehouseRoute(
 ): RouteObject[] {
 	if (!route.access.includes(mode)) return [];
 
-	return [
-		{
-			path: route.path,
-			element,
-			handle: {
-				warehouseSection: route.id,
-				resources: [...route.resources],
-			} satisfies WarehouseRouteHandle,
-		},
-	];
+	const handle: WarehouseRouteHandle = {
+		warehouseSection: route.id,
+		resources: [...route.resources],
+	};
+
+	return [{ path: route.path, element, handle }];
 }
 
 export function warehouseChildren({
@@ -71,7 +66,7 @@ export function warehouseChildren({
 	}
 
 	function ShipmentManagementRoute() {
-		return <Shipments http={useHttp()} />;
+		return <ShipmentManagementPage http={useHttp()} />;
 	}
 
 	function SettingsRoute() {
@@ -79,6 +74,8 @@ export function warehouseChildren({
 
 		return renderSettings(warehouse);
 	}
+
+	const warehouseListRoute = { ...informationRoute, path: "warehouses" };
 
 	return [
 		...warehouseRoute(mapRoute, <MapPage />, mode),
@@ -100,11 +97,7 @@ export function warehouseChildren({
 		...warehouseRoute(historyRoute, <HistoryPage />, mode),
 		...warehouseRoute(settingsRoute, <SettingsRoute />, mode),
 		...warehouseRoute(informationRoute, <InformationPage />, mode),
-		...warehouseRoute(
-			{ ...informationRoute, path: "warehouses" },
-			<InformationPage />,
-			mode,
-		),
+		...warehouseRoute(warehouseListRoute, <InformationPage />, mode),
 		{ index: true, element: <Navigate replace to={mapRoute.path} /> },
 		{ path: "*", element: <PageNotFound /> },
 	];

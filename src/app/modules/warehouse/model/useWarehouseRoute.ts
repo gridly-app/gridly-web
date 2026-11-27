@@ -1,5 +1,8 @@
 import { useMatches } from "react-router-dom";
+
 import type { WarehouseRouteHandle } from "@/ports/navigation";
+
+export type WarehouseRoute = WarehouseRouteHandle & { id: string };
 
 function isWarehouseRouteHandle(
 	handle: unknown,
@@ -11,9 +14,10 @@ function isWarehouseRouteHandle(
 	);
 }
 
-export function useWarehouseRoute() {
+export function useWarehouseRoute(): WarehouseRoute | undefined {
 	const match = useMatches().at(-1);
-	return match && isWarehouseRouteHandle(match.handle)
-		? { id: match.id, ...match.handle }
-		: undefined;
+
+	if (!match || !isWarehouseRouteHandle(match.handle)) return undefined;
+
+	return { id: match.id, ...match.handle };
 }

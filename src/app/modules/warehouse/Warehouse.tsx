@@ -1,33 +1,39 @@
 import { useParams } from "react-router-dom";
+
 import { useWorkspaceMode } from "@/ports/session";
 import { ImmersiveProvider } from "@/shared/lib";
 import { SidebarProvider } from "@/shared/ui/navigation";
-import workspaceStyles from "./Warehouse.module.css";
+
 import { WarehouseNavigation } from "./warehouse-navigation";
+import { useWarehouseRoute } from "./model/useWarehouseRoute";
 import { WorkspaceContent } from "./ui/WorkspaceContent/WorkspaceContent";
 import { WorkspaceSidebar } from "./ui/WorkspaceSidebar/WorkspaceSidebar";
-import { useWarehouseRoute } from "./model/useWarehouseRoute";
+
+import styles from "./Warehouse.module.css";
 
 export function Warehouse() {
 	const { warehouseId } = useParams();
 	const route = useWarehouseRoute();
-	const section = route?.warehouseSection ?? "map";
 	const mode = useWorkspaceMode();
+	const section = route?.warehouseSection ?? "map";
+
 	if (!warehouseId) throw new Error("Warehouse route requires a warehouseId");
+
+	const navigation = (
+		<WarehouseNavigation
+			warehouseId={warehouseId}
+			section={section}
+			mode={mode}
+		/>
+	);
 
 	return (
 		<ImmersiveProvider>
-			<SidebarProvider className={workspaceStyles.appShell}>
+			<SidebarProvider className={styles.appShell}>
 				<WorkspaceSidebar
 					warehouseId={warehouseId}
 					section={section}
-					navigation={
-						<WarehouseNavigation
-							warehouseId={warehouseId}
-							section={section}
-							mode={mode}
-						/>
-					}
+					navigation={navigation}
 				/>
 				<WorkspaceContent warehouseId={warehouseId} route={route} />
 			</SidebarProvider>
