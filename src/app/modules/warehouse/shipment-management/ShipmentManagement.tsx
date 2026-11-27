@@ -193,8 +193,8 @@ function ManagementContent({
 				uploadDocument={resource.uploadDocument}
 				publishDocument={resource.publishDocument}
 				run={run}
-				busy={!canWrite}
-				creationBlocked={!!resource.creation}
+				isBusy={!canWrite}
+				isCreationBlocked={!!resource.creation}
 				canRetryUpload={
 					resource.creation?.kind === "document" &&
 					resource.creation.status === "unknown"

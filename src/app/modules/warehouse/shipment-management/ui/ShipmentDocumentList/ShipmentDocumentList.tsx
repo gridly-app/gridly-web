@@ -14,13 +14,13 @@ type DocumentActions = {
 export function ShipmentDocumentList({
 	documents,
 	timeZone,
-	busy,
+	isBusy,
 	onDownload,
 	onPublish,
 }: DocumentActions & {
 	documents: WorkingShipment["documents"];
 	timeZone: string;
-	busy: boolean;
+	isBusy: boolean;
 }) {
 	if (!documents.length) return <p>Документы ещё не загружены.</p>;
 
@@ -47,7 +47,7 @@ export function ShipmentDocumentList({
 							key={document.id}
 							document={document}
 							timeZone={timeZone}
-							busy={busy}
+							isBusy={isBusy}
 							onDownload={onDownload}
 							onPublish={onPublish}
 						/>
@@ -61,13 +61,13 @@ export function ShipmentDocumentList({
 function DocumentRow({
 	document: row,
 	timeZone,
-	busy,
+	isBusy,
 	onDownload,
 	onPublish,
 }: DocumentActions & {
 	document: WorkingShipment["documents"][number];
 	timeZone: string;
-	busy: boolean;
+	isBusy: boolean;
 }) {
 	const visibility = row.published ? "Опубликован" : "Скрыт";
 	const publicationAction = row.published
@@ -95,7 +95,7 @@ function DocumentRow({
 				<Button
 					variant="secondary"
 					size="sm"
-					disabled={busy}
+					disabled={isBusy}
 					aria-label={downloadLabel}
 					onClick={handleDownloadClick}
 				>
@@ -104,7 +104,7 @@ function DocumentRow({
 				<Button
 					variant="secondary"
 					size="sm"
-					disabled={busy}
+					disabled={isBusy}
 					aria-label={publicationLabel}
 					onClick={handlePublicationClick}
 				>

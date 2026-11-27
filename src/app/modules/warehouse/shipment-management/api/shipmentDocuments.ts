@@ -1,16 +1,17 @@
 import { ApiError, type FileHttpClient, saveResponseFile } from "@/shared/http";
 import { UserError } from "@/shared/lib";
 
-import type { WorkingShipment } from "./shipment.dto";
 import {
+	documentSizeLimitLabel,
 	documentVersionLimit,
 	validateShipmentDocument,
 } from "../model/shipmentDocument";
+import type { WorkingShipment } from "./shipment.dto";
 import type { ShipmentCreation } from "./shipmentCreationStorage";
 import type { ShipmentCreationAccess } from "./useShipmentCreation";
 
 const documentErrors = new Map([
-	["FILE_TOO_LARGE", "Размер файла превышает 20 МиБ."],
+	["FILE_TOO_LARGE", `Размер файла превышает ${documentSizeLimitLabel}.`],
 	[
 		"UNSUPPORTED_FILE_TYPE",
 		"Сервер не поддерживает содержимое выбранного файла.",
@@ -24,6 +25,18 @@ const documentErrors = new Map([
 		"У документа появилась новая версия. Обновите документы и выберите её.",
 	],
 ]);
+
+function isUnknownUpload(
+	attempt: ShipmentCreation | null | undefined,
+): attempt is ShipmentCreation {
+	return attempt?.kind === "document" && attempt.status === "unknown";
+}
+
+function documentErrorMessage(error: unknown) {
+	if (!(error instanceof ApiError) || !error.code) return undefined;
+
+	return documentErrors.get(error.code);
+}
 
 export function shipmentDocuments({
 	http,
@@ -46,6 +59,14 @@ export function shipmentDocuments({
 		shipment: WorkingShipment,
 	) => Promise<void>;
 }) {
+	function sendUpload(body: FormData, signal: AbortSignal, key: string) {
+		body.set("upload_request_id", key);
+		body.set("published", "false");
+		creation.rememberUpload(body);
+
+		return http.request(`${path}/documents`, { method: "POST", body, signal });
+	}
+
 	async function uploadDocument(
 		body: FormData,
 		signal: AbortSignal,
@@ -53,37 +74,28 @@ export function shipmentDocuments({
 	) {
 		validateShipmentDocument(body.get("file"));
 
-		if (!retry && (getDocumentCount() ?? 0) >= documentVersionLimit) {
-			throw new UserError("В заказе уже 100 версий документов.");
-		}
+		const isAtLimit = (getDocumentCount() ?? 0) >= documentVersionLimit;
+
+		if (!retry && isAtLimit)
+			throw new UserError(
+				`В заказе уже ${documentVersionLimit} версий документов.`,
+			);
 
 		try {
 			await creation.create(
 				"document",
-				(key) => {
-					body.set("upload_request_id", key);
-					body.set("published", "false");
-					creation.rememberUpload(body);
-
-					return http.request(`${path}/documents`, {
-						method: "POST",
-						body,
-						signal,
-					});
-				},
+				(key) => sendUpload(body, signal, key),
 				{ retry },
 			);
 		} catch (error) {
-			if (!signal.aborted && creation.getAttempt()?.status === "unknown") {
-				const confirmed = await reconcileUpload(signal).catch(() => false);
+			const canReconcile =
+				!signal.aborted && creation.getAttempt()?.status === "unknown";
+			const isConfirmed =
+				canReconcile && (await reconcileUpload(signal).catch(() => false));
 
-				if (confirmed) return;
-			}
+			if (isConfirmed) return;
 
-			const message =
-				error instanceof ApiError && error.code
-					? documentErrors.get(error.code)
-					: undefined;
+			const message = documentErrorMessage(error);
 
 			if (message) throw new UserError(message);
 
@@ -94,19 +106,17 @@ export function shipmentDocuments({
 	async function reconcileUpload(signal: AbortSignal) {
 		const attempt = creation.getAttempt();
 
-		if (attempt?.kind !== "document" || attempt.status !== "unknown")
-			return false;
+		if (!isUnknownUpload(attempt)) return false;
 
 		const shipment = await readShipment(signal);
 
 		await replaceShipment(signal, shipment);
 
-		if (
-			!shipment.documents.some(
-				({ upload_request_id }) => upload_request_id === attempt.key,
-			)
-		)
-			return false;
+		const isUploaded = shipment.documents.some(
+			({ upload_request_id }) => upload_request_id === attempt.key,
+		);
+
+		if (!isUploaded) return false;
 
 		creation.clear();
 
@@ -119,7 +129,7 @@ export function shipmentDocuments({
 		const attempt = creation.getAttempt();
 		const body = creation.getUpload();
 
-		if (!body || attempt?.kind !== "document" || attempt.status !== "unknown") {
+		if (!body || !isUnknownUpload(attempt)) {
 			throw new UserError(
 				"Документ пока не найден. Исходный файл для повтора недоступен.",
 			);

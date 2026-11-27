@@ -4,74 +4,69 @@ import { categories } from "@/domain/shipment";
 import { Button, Input } from "@/shared/ui/controls";
 import { Combobox, Field } from "@/shared/ui/forms";
 
+import type { WorkingShipment } from "../../api/shipment.dto";
 import type { ShipmentResource } from "../../api/useShipmentResource";
-import type { WorkingShipment } from "../../api/shipment.dto.ts";
+import {
+	documentAccept,
+	documentFormatsLabel,
+	documentSizeLimitLabel,
+	documentVersionLimit,
+} from "../../model/shipmentDocument";
 import type { RunShipmentAction } from "../../model/useShipmentActions";
-
-import { documentAccept } from "../../model/shipmentDocument";
 import { ShipmentDocumentList } from "../ShipmentDocumentList/ShipmentDocumentList";
 import { ShipmentFactExport } from "../ShipmentFactExport/ShipmentFactExport";
 
 import styles from "../../shared.module.css";
 
 const newDocument = { value: "new", label: "Новый документ" };
-const categoryEntries = Object.entries(categories);
-const documentCategories = categoryEntries.map(([value, label]) => ({
+const categoryOptions = Object.entries(categories).map(([value, label]) => ({
 	value,
 	label,
 }));
 
+function versionOptions(documents: WorkingShipment["documents"]) {
+	const latest = documents.filter((document) => document.is_latest === true);
+
+	return [
+		newDocument,
+		...latest.map(({ id, name, version }) => ({
+			value: id,
+			label: `${name}, версия ${version}`,
+		})),
+	];
+}
+
 export function ShipmentDocumentsEditor({
 	shipment,
+	isBusy,
+	isCreationBlocked,
+	canRetryUpload,
+	hasUploadFile,
+	run,
 	uploadDocument,
 	publishDocument,
 	downloadDocument,
 	retryUpload,
-	creationBlocked,
-	canRetryUpload,
-	hasUploadFile,
-	run,
-	busy,
 }: {
 	shipment: WorkingShipment;
+	isBusy: boolean;
+	isCreationBlocked: boolean;
+	canRetryUpload: boolean;
+	hasUploadFile: boolean;
+	run: RunShipmentAction;
 	uploadDocument: ShipmentResource["uploadDocument"];
 	publishDocument: ShipmentResource["publishDocument"];
 	downloadDocument: ShipmentResource["downloadDocument"];
 	retryUpload: ShipmentResource["retryUpload"];
-	creationBlocked: boolean;
-	canRetryUpload: boolean;
-	hasUploadFile: boolean;
-	run: RunShipmentAction;
-	busy: boolean;
 }) {
 	const uploadForm = useRef<HTMLFormElement>(null);
 	const headingId = useId();
 	const limitsId = useId();
 	const { documents, order } = shipment;
-	const isUploadBlocked = busy || creationBlocked;
+	const isUploadBlocked = isBusy || isCreationBlocked;
 	const retryLabel = hasUploadFile
 		? "Проверить и повторить загрузку"
 		: "Проверить загрузку";
-	const versionOptions = [newDocument];
-
-	for (const { id, name, version, is_latest: isLatest } of documents) {
-		if (isLatest !== true) continue;
-
-		versionOptions.push({ value: id, label: `${name}, версия ${version}` });
-	}
-
-	function handleUpload(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-
-		const data = new FormData(event.currentTarget);
-		const previousId = data.get("previous_document_id");
-
-		if (!previousId || previousId === newDocument.value) {
-			data.delete("previous_document_id");
-		}
-
-		submitUpload((signal) => uploadDocument(data, signal));
-	}
 
 	function submitUpload(upload: (signal: AbortSignal) => Promise<void>) {
 		void run(
@@ -83,14 +78,26 @@ export function ShipmentDocumentsEditor({
 		);
 	}
 
-	function handlePublish(id: string, published: boolean) {
-		void run((signal) => publishDocument(id, published, signal), {
-			refreshAfterWrite: true,
-		});
+	function handleUpload(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+
+		const data = new FormData(event.currentTarget);
+		const previousId = data.get("previous_document_id");
+
+		if (!previousId || previousId === newDocument.value)
+			data.delete("previous_document_id");
+
+		submitUpload((signal) => uploadDocument(data, signal));
 	}
 
 	function handleRetryUpload() {
 		submitUpload(retryUpload);
+	}
+
+	function handlePublish(id: string, published: boolean) {
+		void run((signal) => publishDocument(id, published, signal), {
+			refreshAfterWrite: true,
+		});
 	}
 
 	function handleDownload(id: string, name: string) {
@@ -116,7 +123,7 @@ export function ShipmentDocumentsEditor({
 							name="category"
 							required
 							defaultValue="specification"
-							options={documentCategories}
+							options={categoryOptions}
 						/>
 					</div>
 					<div>
@@ -126,7 +133,7 @@ export function ShipmentDocumentsEditor({
 							name="previous_document_id"
 							defaultValue={newDocument.value}
 							placeholder={newDocument.label}
-							options={versionOptions}
+							options={versionOptions(documents)}
 						/>
 					</div>
 					<Field label="Файл">
@@ -139,21 +146,25 @@ export function ShipmentDocumentsEditor({
 						/>
 					</Field>
 					<p id={limitsId}>
-						PDF, PNG, JPEG, XLSX, DOCX и CSV. До 20 МиБ на файл и 100 версий на
-						заказ.
+						{documentFormatsLabel}. До {documentSizeLimitLabel} на файл и{" "}
+						{documentVersionLimit} версий на заказ.
 					</p>
 					<Button type="submit">Загрузить документ</Button>
 				</fieldset>
 			</form>
 			{canRetryUpload && (
-				<Button variant="secondary" disabled={busy} onClick={handleRetryUpload}>
+				<Button
+					variant="secondary"
+					disabled={isBusy}
+					onClick={handleRetryUpload}
+				>
 					{retryLabel}
 				</Button>
 			)}
 			<ShipmentDocumentList
 				documents={documents}
 				timeZone={order.time_zone}
-				busy={busy}
+				isBusy={isBusy}
 				onDownload={handleDownload}
 				onPublish={handlePublish}
 			/>
