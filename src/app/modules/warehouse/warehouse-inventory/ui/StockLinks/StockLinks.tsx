@@ -1,5 +1,6 @@
 import { IconDots, IconPackage } from "@tabler/icons-react";
 import { Link as RouterLink } from "react-router-dom";
+
 import type { Order } from "@/domain/warehouse";
 import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
@@ -11,6 +12,10 @@ import {
 	MenuTrigger,
 } from "@/shared/ui/overlays";
 
+import { orderLink } from "../../lib/orderLink";
+
+const orderKindLabels = { inbound: "Поставка", outbound: "Отгрузка" };
+
 export function StockLinks({
 	warehouseId,
 	productId,
@@ -21,9 +26,14 @@ export function StockLinks({
 	orders: readonly Order[];
 }) {
 	const mode = useWorkspaceMode();
-	const related = orders.filter((order) =>
+	const relatedOrders = orders.filter((order) =>
 		order.lines.some((line) => line.product === productId),
 	);
+	const catalogLink = {
+		pathname: warehousePath(mode, warehouseId, "catalog"),
+		search: new URLSearchParams({ product: productId }).toString(),
+	};
+
 	return (
 		<Menu>
 			<MenuTrigger
@@ -33,31 +43,19 @@ export function StockLinks({
 				<IconDots size={18} />
 			</MenuTrigger>
 			<MenuPopup align="end">
-				<MenuLinkItem
-					render={
-						<RouterLink
-							to={{
-								pathname: warehousePath(mode, warehouseId, "catalog"),
-								search: new URLSearchParams({ product: productId }).toString(),
-							}}
-						/>
-					}
-				>
+				<MenuLinkItem render={<RouterLink to={catalogLink} />}>
 					<IconPackage size={16} /> Товар в каталоге
 				</MenuLinkItem>
-				{related.map((order) => (
+				{relatedOrders.map((order) => (
 					<MenuLinkItem
 						key={order.id}
 						render={
 							<RouterLink
-								to={{
-									pathname: warehousePath(mode, warehouseId, order.kind),
-									search: new URLSearchParams({ order: order.id }).toString(),
-								}}
+								to={orderLink(mode, warehouseId, order.kind, order.id)}
 							/>
 						}
 					>
-						{order.kind === "inbound" ? "Поставка" : "Отгрузка"} {order.number}
+						{orderKindLabels[order.kind]} {order.number}
 					</MenuLinkItem>
 				))}
 			</MenuPopup>

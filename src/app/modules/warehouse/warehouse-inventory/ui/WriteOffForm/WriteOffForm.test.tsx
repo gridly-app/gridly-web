@@ -19,7 +19,7 @@ test("a quantity above the available stock is explained and never submitted", as
 				canWriteOff: true,
 				revision: 4,
 			}}
-			pending={false}
+			isPending={false}
 			onSave={async (write) => {
 				writes.push(write);
 			}}

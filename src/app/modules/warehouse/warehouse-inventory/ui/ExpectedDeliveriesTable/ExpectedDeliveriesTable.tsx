@@ -1,5 +1,4 @@
 import type { WarehouseView } from "@/domain/warehouse";
-import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import {
 	Table,
@@ -12,8 +11,12 @@ import {
 } from "@/shared/ui/dataDisplay";
 import { Link } from "@/shared/ui/navigation";
 import { WarmTooltip } from "@/shared/ui/overlays";
-import type { useInventoryPage } from "../../model/useInventoryPage";
+
+import { orderLink } from "../../lib/orderLink";
+import type { ExpectedProduct } from "../../model/inventoryRows";
 import { StockLinks } from "../StockLinks/StockLinks";
+
+const numberFormat = new Intl.NumberFormat("ru-RU");
 
 export function ExpectedDeliveriesTable({
 	warehouse,
@@ -21,10 +24,14 @@ export function ExpectedDeliveriesTable({
 	hiddenColumns,
 }: {
 	warehouse: Pick<WarehouseView<"orders">, "id" | "orders">;
-	items: ReturnType<typeof useInventoryPage>["expectedProducts"];
+	items: ExpectedProduct[];
 	hiddenColumns: number[];
 }) {
 	const mode = useWorkspaceMode();
+	const rows = items.flatMap((item) =>
+		item.incoming.deliveries.map((delivery) => ({ item, delivery })),
+	);
+
 	return (
 		<Table hiddenColumns={hiddenColumns}>
 			<TableHeader>
@@ -36,41 +43,32 @@ export function ExpectedDeliveriesTable({
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{items.flatMap((item) =>
-					item.incoming.deliveries.map((delivery) => (
-						<TableRow key={`${item.id}-${delivery.orderId}`}>
-							<TableCell>
-								<strong>{item.name}</strong>
-								<StockLinks
-									warehouseId={warehouse.id}
-									productId={item.id}
-									orders={warehouse.orders}
-								/>
-							</TableCell>
-							<TableCell>
-								+{delivery.quantity.toLocaleString("ru-RU")} шт.
-							</TableCell>
-							<TableCell>
-								<Link
-									to={{
-										pathname: warehousePath(mode, warehouse.id, "inbound"),
-										search: new URLSearchParams({
-											order: delivery.orderId,
-										}).toString(),
-									}}
-								>
-									{delivery.orderNumber}
-								</Link>
-								<TableNote>{delivery.party}</TableNote>
-							</TableCell>
-							<TableCell>
-								<WarmTooltip content={delivery.forecast.note} focusable>
-									<span>{delivery.label}</span>
-								</WarmTooltip>
-							</TableCell>
-						</TableRow>
-					)),
-				)}
+				{rows.map(({ item, delivery }) => (
+					<TableRow key={`${item.id}-${delivery.orderId}`}>
+						<TableCell>
+							<strong>{item.name}</strong>
+							<StockLinks
+								warehouseId={warehouse.id}
+								productId={item.id}
+								orders={warehouse.orders}
+							/>
+						</TableCell>
+						<TableCell>+{numberFormat.format(delivery.quantity)} шт.</TableCell>
+						<TableCell>
+							<Link
+								to={orderLink(mode, warehouse.id, "inbound", delivery.orderId)}
+							>
+								{delivery.orderNumber}
+							</Link>
+							<TableNote>{delivery.party}</TableNote>
+						</TableCell>
+						<TableCell>
+							<WarmTooltip content={delivery.forecast.note} focusable>
+								<span>{delivery.label}</span>
+							</WarmTooltip>
+						</TableCell>
+					</TableRow>
+				))}
 			</TableBody>
 		</Table>
 	);

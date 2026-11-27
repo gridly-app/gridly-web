@@ -1,13 +1,15 @@
 import type { Order } from "@/domain/warehouse";
-import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { useOrder } from "@/ports/warehouse";
 import { TableNote } from "@/shared/ui/dataDisplay";
 import { Link } from "@/shared/ui/navigation";
 
+import { orderLink } from "../../lib/orderLink";
 import type { InventoryStock } from "../../model/inventoryStock";
 
 import styles from "./StockSource.module.css";
+
+const numberFormat = new Intl.NumberFormat("ru-RU");
 
 export function StockSource({
 	stock,
@@ -37,17 +39,17 @@ export function StockSource({
 	if (!source)
 		return <span className={styles.source}>Поставка недоступна</span>;
 
-	const path = warehousePath(mode, warehouseId, "inbound");
-	const search = new URLSearchParams({ order: source.id }).toString();
-	const showTotal = total !== undefined && total > stock.quantity;
+	const hasLargerTotal = total !== undefined && total > stock.quantity;
 
 	return (
 		<div className={styles.source}>
-			<Link to={{ pathname: path, search }}>Поставка {source.number}</Link>
+			<Link to={orderLink(mode, warehouseId, "inbound", source.id)}>
+				Поставка {source.number}
+			</Link>
 			<TableNote>{source.party}</TableNote>
-			{showTotal && (
+			{hasLargerTotal && (
 				<TableNote>
-					Всего от поставки: {total.toLocaleString("ru-RU")} шт.
+					Всего от поставки: {numberFormat.format(total)} шт.
 				</TableNote>
 			)}
 		</div>

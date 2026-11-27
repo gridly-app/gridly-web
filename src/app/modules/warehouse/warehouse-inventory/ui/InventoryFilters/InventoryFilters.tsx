@@ -1,5 +1,6 @@
 import { ListFilters } from "@/shared/ui/dataDisplay";
 import { DateRangeFields, Select } from "@/shared/ui/forms";
+
 import type { useInventoryPage } from "../../model/useInventoryPage";
 
 type InventoryFiltersModel = Pick<
@@ -41,47 +42,55 @@ const writeOffOptions = [
 ];
 
 export function InventoryFilters({ model }: { model: InventoryFiltersModel }) {
-	const writeOffView = model.view === "writeoffs";
+	const isWriteOffView = model.view === "writeoffs";
+	const activeFilters = [
+		model.category !== "all",
+		Boolean(model.productFilter),
+		model.filter !== "all",
+		Boolean(model.from),
+		Boolean(model.to),
+	];
+	const productOptions = [
+		{ value: "all", label: "Все товары" },
+		...model.warehouse.products.map((product) => ({
+			value: product.id,
+			label: `${product.name} · ${product.sku}`,
+		})),
+	];
+	const categoryOptions = [
+		{ value: "all", label: "Все категории" },
+		...model.categories.map((category) => ({
+			value: category.id,
+			label: category.name,
+		})),
+	];
+	const searchField = {
+		"aria-label": searchLabels[model.view],
+		value: model.search,
+		onChange: model.setSearch,
+	};
 
 	return (
 		<ListFilters
-			search={{
-				"aria-label": searchLabels[model.view],
-				value: model.search,
-				onChange: model.setSearch,
-			}}
-			count={
-				[
-					model.category !== "all",
-					!!model.productFilter,
-					model.filter !== "all",
-					!!model.from,
-					!!model.to,
-				].filter(Boolean).length
-			}
+			search={searchField}
+			count={activeFilters.filter(Boolean).length}
 			onReset={model.resetFilters}
 		>
 			<Select
 				aria-label="Товар"
 				value={model.productFilter ?? "all"}
 				onValueChange={model.setProduct}
-				options={[
-					{ value: "all", label: "Все товары" },
-					...model.warehouse.products.map((product) => ({
-						value: product.id,
-						label: `${product.name} · ${product.sku}`,
-					})),
-				]}
+				options={productOptions}
 			/>
 			{model.view !== "incoming" && (
 				<Select
-					aria-label={writeOffView ? "Фильтр списаний" : "Фильтр остатков"}
+					aria-label={isWriteOffView ? "Фильтр списаний" : "Фильтр остатков"}
 					value={model.filter}
 					onValueChange={model.changeFilter}
-					options={writeOffView ? writeOffOptions : stockOptions}
+					options={isWriteOffView ? writeOffOptions : stockOptions}
 				/>
 			)}
-			{writeOffView && (
+			{isWriteOffView && (
 				<DateRangeFields
 					from={model.from}
 					to={model.to}
@@ -93,13 +102,7 @@ export function InventoryFilters({ model }: { model: InventoryFiltersModel }) {
 				aria-label="Категория остатков"
 				value={model.category}
 				onValueChange={model.setCategory}
-				options={[
-					{ value: "all", label: "Все категории" },
-					...model.categories.map((category) => ({
-						value: category.id,
-						label: category.name,
-					})),
-				]}
+				options={categoryOptions}
 			/>
 		</ListFilters>
 	);
