@@ -1,6 +1,7 @@
 import {
 	accountUserUpdateSchema,
 	assignmentSchema,
+	ownerTransferSchema,
 	usersSchema,
 } from "../src/app/modules/users/api/users.dto";
 import { warehouseDto } from "../src/app/modules/warehouse-data/api/warehouses/warehouseDto";
@@ -101,6 +102,20 @@ export function handleUsers(
 			return problem(403, "FORBIDDEN", "Недостаточно прав");
 		if (!sandboxPrefix && user.id === "user-sandbox-admin")
 			return problem(403, "SELF_DELETE", "Нельзя удалить свой аккаунт");
+
+		const removedWarehouse =
+			membershipWarehouse && decodeURIComponent(membershipWarehouse);
+		const isRemovingOwner = user.warehouses.some(
+			({ warehouse_id, is_owner }) =>
+				is_owner && (!removedWarehouse || warehouse_id === removedWarehouse),
+		);
+
+		if (isRemovingOwner)
+			return problem(
+				409,
+				"WAREHOUSE_OWNER_TRANSFER_REQUIRED",
+				"Сначала передайте владение складом",
+			);
 		if (
 			user.revision === undefined ||
 			request.headers.get("If-Match") !== `"${user.revision}"`
@@ -206,4 +221,65 @@ export function handleUsers(
 		recordPermissionChange(store, items, user, changed, catalog);
 
 	return Response.json(changed, { headers: privateHeaders });
+}
+
+export function handleOwnerTransfer(
+	request: Request,
+	store: MockStore,
+	sandboxPrefix: string | undefined,
+	warehouseId: string,
+	body: unknown,
+) {
+	if (request.method !== "POST")
+		return problem(405, "METHOD_NOT_ALLOWED", "Операция недоступна");
+
+	const path = `${base}/${sandboxPrefix ?? ""}admin/shipment-users`;
+	const result = usersSchema.safeParse(store.get(path));
+
+	if (!result.success) return;
+
+	const manageable = result.data.manageable_warehouse_ids;
+
+	if (manageable && !manageable.includes(warehouseId))
+		return problem(403, "FORBIDDEN", "Недостаточно прав");
+
+	const transfer = ownerTransferSchema.safeParse(body);
+
+	if (!transfer.success)
+		return problem(422, "INVALID_OWNER", "Укажите нового владельца склада");
+
+	const newOwner = result.data.items.find(
+		(item) =>
+			item.kind === "account" &&
+			item.id === transfer.data.user_id &&
+			item.warehouses.some(({ warehouse_id }) => warehouse_id === warehouseId),
+	);
+
+	if (!newOwner)
+		return problem(
+			422,
+			"INVALID_OWNER",
+			"Новый владелец должен быть участником склада",
+		);
+
+	const items = result.data.items.map((item) => {
+		if (item.kind !== "account") return item;
+
+		const membership = item.warehouses.find(
+			({ warehouse_id }) => warehouse_id === warehouseId,
+		);
+		const isOwner = item.id === newOwner.id;
+
+		if (!membership || Boolean(membership.is_owner) === isOwner) return item;
+
+		const warehouses = item.warehouses.map((entry) =>
+			entry === membership ? { ...entry, is_owner: isOwner } : entry,
+		);
+
+		return { ...item, warehouses, revision: (item.revision ?? 0) + 1 };
+	});
+
+	store.set(path, { ...result.data, items });
+
+	return new Response(null, { status: 204, headers: privateHeaders });
 }

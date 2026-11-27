@@ -62,6 +62,7 @@ export function seedUsers(
 					"warehouse.view",
 					permissionCatalog[index + 1]?.code ?? "warehouse.inventory.view",
 				],
+				is_owner: index === 0,
 			},
 		],
 	}));

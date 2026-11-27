@@ -14,7 +14,7 @@ import {
 } from "./mock-http";
 import { handleMonitoring } from "./monitoring-mock";
 import { mockShipmentDocument } from "./shipment-document-mock";
-import { handleUsers } from "./users-mock";
+import { handleOwnerTransfer, handleUsers } from "./users-mock";
 import { shipmentFor } from "./working-shipment-mock";
 
 export type { MockStore } from "./mock-http";
@@ -146,13 +146,14 @@ export function createAdminMock({ seedLinks = false } = {}) {
 		if (monitoring) return monitoring;
 
 		const admin = pathname.match(
-			/^\/api\/v1\/(sandbox\/)?admin\/(?:warehouses\/([^/]+)\/shipment-links(?:\/([^/]+))?|(shipment-users)(?:\/([^/]+)(?:\/warehouses\/([^/]+))?)?)$/,
+			/^\/api\/v1\/(sandbox\/)?admin\/(?:warehouses\/([^/]+)\/(?:(owner)|shipment-links(?:\/([^/]+))?)|(shipment-users)(?:\/([^/]+)(?:\/warehouses\/([^/]+))?)?)$/,
 		);
 		if (!admin) return;
 		const [
 			,
 			sandboxPrefix,
 			warehouseId,
+			owner,
 			linkId,
 			users,
 			userId,
@@ -166,6 +167,14 @@ export function createAdminMock({ seedLinks = false } = {}) {
 		const body = await readMutation(request);
 		if (body === invalidJson)
 			return problem(422, "INVALID_JSON", "Проверьте данные запроса");
+		if (owner && warehouseId)
+			return handleOwnerTransfer(
+				request,
+				store,
+				sandboxPrefix,
+				decodeURIComponent(warehouseId),
+				body,
+			);
 		if (users)
 			return handleUsers(
 				request,

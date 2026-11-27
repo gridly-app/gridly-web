@@ -14,6 +14,7 @@ import { mapBackScenario, mapEditorScenario } from "./scenarios/mapEditor";
 import { mapSessionScenario } from "./scenarios/mapSession";
 import { modeSwitchScenario } from "./scenarios/modeSwitch";
 import { ordersScenario } from "./scenarios/orders";
+import { ownershipTransferScenario } from "./scenarios/ownershipTransfer";
 import { permissionsScenario } from "./scenarios/permissions";
 import { mobileNavigationScenario } from "./scenarios/mobileNavigation";
 import {
@@ -52,6 +53,7 @@ const scenarios = [
 	["shipments", shipmentsScenario],
 	["administration", administrationScenario],
 	["administration-recovery", administrationRecoveryScenario],
+	["ownership-transfer", ownershipTransferScenario],
 	["system-errors", systemErrorsScenario],
 	["map-editor", mapEditorScenario],
 	["map-back", mapBackScenario],
