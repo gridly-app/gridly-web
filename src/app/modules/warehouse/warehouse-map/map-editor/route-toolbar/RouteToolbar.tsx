@@ -1,18 +1,22 @@
 import { IconArrowBackUp, IconArrowForwardUp } from "@tabler/icons-react";
 import { useEffect, useRef } from "react";
+
 import { Button, Toolbar, ToolbarGroup } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
+
 import styles from "./RouteToolbar.module.css";
+
+type RouteDirection = "inbound" | "outbound";
 
 export interface RouteToolbarProps {
 	model: {
 		canRedo: boolean;
 		canUndo: boolean;
-		direction: "inbound" | "outbound";
+		direction: RouteDirection;
 		error: string;
 		redo: () => void;
 		save: () => Promise<void>;
-		selectDirection: (direction: "inbound" | "outbound") => void;
+		selectDirection: (direction: RouteDirection) => void;
 		undo: () => void;
 	};
 	editor: {
@@ -35,12 +39,18 @@ export function RouteToolbar({
 	onHeightChange,
 }: RouteToolbarProps) {
 	const container = useRef<HTMLDivElement>(null);
+	const saveHint = editor.canSave ? undefined : editor.saveUnavailableReason;
+	const errorMessage = editor.errors?.join(" · ") || model.error;
+
 	useEffect(() => {
 		const element = container.current;
+
 		if (!element || !onHeightChange) return;
 
-		const measure = () =>
-			onHeightChange(element.getBoundingClientRect().height);
+		function measure() {
+			if (element) onHeightChange?.(element.getBoundingClientRect().height);
+		}
+
 		const observer = new ResizeObserver(measure);
 
 		observer.observe(element);
@@ -51,6 +61,14 @@ export function RouteToolbar({
 			onHeightChange(undefined);
 		};
 	}, [onHeightChange]);
+
+	function handleInbound() {
+		model.selectDirection("inbound");
+	}
+
+	function handleOutbound() {
+		model.selectDirection("outbound");
+	}
 
 	function handleSave() {
 		void model.save();
@@ -76,7 +94,7 @@ export function RouteToolbar({
 						variant="ghost"
 						disabled={editor.busy}
 						selected={model.direction === "inbound"}
-						onClick={() => model.selectDirection("inbound")}
+						onClick={handleInbound}
 					>
 						Загрузка склада
 					</Button>
@@ -85,7 +103,7 @@ export function RouteToolbar({
 						variant="ghost"
 						disabled={editor.busy}
 						selected={model.direction === "outbound"}
-						onClick={() => model.selectDirection("outbound")}
+						onClick={handleOutbound}
 					>
 						Отгрузка со склада
 					</Button>
@@ -122,7 +140,7 @@ export function RouteToolbar({
 						size="compact"
 						disabled={pending || editor.busy || !editor.canSave}
 						onClick={handleSave}
-						tooltip={!editor.canSave ? editor.saveUnavailableReason : undefined}
+						tooltip={saveHint}
 					>
 						Сохранить изменения
 					</Button>
@@ -136,11 +154,7 @@ export function RouteToolbar({
 					</Button>
 				</ToolbarGroup>
 			</Toolbar>
-
-			<ErrorNotice
-				className={styles.notice}
-				message={editor.errors?.join(" · ") || model.error}
-			/>
+			<ErrorNotice className={styles.notice} message={errorMessage} />
 		</div>
 	);
 }
