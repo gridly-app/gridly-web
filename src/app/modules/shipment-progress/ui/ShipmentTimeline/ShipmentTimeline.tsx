@@ -18,6 +18,7 @@ export function ShipmentTimeline({
 				return (
 					<li
 						key={step.code}
+						className={styles.step}
 						data-state={step.state}
 						data-connected={step.isConnected}
 						aria-current={ariaCurrent}
@@ -26,12 +27,16 @@ export function ShipmentTimeline({
 							{isComplete && <IconCheck size={14} stroke={3} />}
 						</span>
 						<strong>{step.label}</strong>
-						<small>{step.statusLabel}</small>
-						{step.isDateUnknown && <small>Дата неизвестна</small>}
-						{step.date && (
-							<time dateTime={step.date.value}>{step.date.label}</time>
+						<small className={styles.meta}>{step.statusLabel}</small>
+						{step.isDateUnknown && (
+							<small className={styles.meta}>Дата неизвестна</small>
 						)}
-						{step.note && <small>{step.note}</small>}
+						{step.date && (
+							<time className={styles.meta} dateTime={step.date.value}>
+								{step.date.label}
+							</time>
+						)}
+						{step.note && <small className={styles.meta}>{step.note}</small>}
 					</li>
 				);
 			})}

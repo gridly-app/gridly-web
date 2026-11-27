@@ -18,6 +18,7 @@ const inboundStages = {
 	ready_to_ship: "Готов к отправке",
 	delivered: "Принят на складе",
 };
+
 const milestoneLabels = {
 	completed: "Завершён",
 	current: "Текущий этап",

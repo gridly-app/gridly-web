@@ -1,20 +1,22 @@
 .panel {
-	padding: clamp(16px, 3vw, 28px);
 	min-width: 0;
+	padding: clamp(16px, 3vw, 28px);
 
+	background: var(--card);
 	border: 1px solid var(--border);
 	border-radius: var(--radius-control);
-	background: var(--card);
 }
+
 .heading {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	flex-wrap: wrap;
 	gap: 10px;
 	margin-bottom: 20px;
 }
-.heading h2 {
+
+.title {
 	margin: 0;
 
 	font-size: 1.2rem;

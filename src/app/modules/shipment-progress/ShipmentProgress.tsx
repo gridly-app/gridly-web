@@ -23,7 +23,9 @@ export function ShipmentProgress({
 	return (
 		<section className={styles.panel} aria-labelledby={headingId}>
 			<header className={styles.heading}>
-				<h2 id={headingId}>{title}</h2>
+				<h2 id={headingId} className={styles.title}>
+					{title}
+				</h2>
 				<Badge tone={tone}>{label}</Badge>
 			</header>
 			{reason && <p>{reason}</p>}
