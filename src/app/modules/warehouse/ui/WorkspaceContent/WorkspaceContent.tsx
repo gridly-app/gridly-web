@@ -8,8 +8,8 @@ import { errorMessage } from "@/shared/lib";
 import { Feedback, RetryButton, Skeleton } from "@/shared/ui/feedback";
 import { SidebarTrigger } from "@/shared/ui/navigation";
 import { NewWarehouse } from "../NewWarehouse/NewWarehouse";
-import { RememberWarehouse } from "../../model/workspace/lastWarehouse";
-import type { useWarehouseRoute } from "../../model/workspace/warehouseSection";
+import { RememberWarehouse } from "../../model/lastWarehouse";
+import type { useWarehouseRoute } from "../../model/useWarehouseRoute";
 import styles from "./WorkspaceContent.module.css";
 import { WorkspaceResources } from "../WorkspaceResources/WorkspaceResources";
 

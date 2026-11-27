@@ -30,7 +30,7 @@ import {
 	MenuSubmenuTrigger,
 	MenuTrigger,
 } from "@/shared/ui/overlays";
-import { useWorkspaceNotice } from "../../model/workspace/useWorkspaceNotice";
+import { useWorkspaceNotice } from "../../model/useWorkspaceNotice";
 import styles from "./ProfileMenu.module.css";
 
 export function ProfileMenu() {

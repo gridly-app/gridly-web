@@ -12,7 +12,7 @@ import styles from "./NewWarehouse.module.css";
 import {
 	warehouseFormLimits,
 	warehouseFromForm,
-} from "../../model/workspace/creation/warehouseFromForm";
+} from "../../model/warehouseFromForm";
 
 export function NewWarehouse() {
 	const [open, setOpen] = useState(true);

@@ -10,7 +10,7 @@ import { ApiError } from "@/shared/http";
 import { errorMessage, useOnlineStatus } from "@/shared/lib";
 import { Feedback, RetryButton } from "@/shared/ui/feedback";
 
-import { useWorkspaceCommands } from "../../model/workspace/content/useWorkspaceCommands";
+import { useWorkspaceCommands } from "../../model/useWorkspaceCommands";
 import { ConnectionStatus } from "../ConnectionStatus/ConnectionStatus";
 
 export function WorkspaceResources({

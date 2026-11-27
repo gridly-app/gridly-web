@@ -6,7 +6,7 @@ import workspaceStyles from "./Warehouse.module.css";
 import { WarehouseNavigation } from "./warehouse-navigation";
 import { WorkspaceContent } from "./ui/WorkspaceContent/WorkspaceContent";
 import { WorkspaceSidebar } from "./ui/WorkspaceSidebar/WorkspaceSidebar";
-import { useWarehouseRoute } from "./model/workspace/warehouseSection";
+import { useWarehouseRoute } from "./model/useWarehouseRoute";
 
 export function Warehouse() {
 	const { warehouseId } = useParams();

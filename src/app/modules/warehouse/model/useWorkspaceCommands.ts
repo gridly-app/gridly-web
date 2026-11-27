@@ -10,7 +10,7 @@ import {
 } from "@/ports/warehouse";
 import { errorMessage, UserError } from "@/shared/lib";
 
-import { useWorkspaceNotice } from "../useWorkspaceNotice";
+import { useWorkspaceNotice } from "./useWorkspaceNotice";
 
 export function useWorkspaceCommands(
 	warehouseId: string,
