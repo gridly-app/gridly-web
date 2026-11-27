@@ -1,10 +1,36 @@
 import type { KeyboardEvent, PointerEvent } from "react";
-import type { Cell, GridPosition, WarehouseView } from "@/domain/warehouse";
-import { cellKey, storageCellTypes } from "@/domain/warehouse";
+
+import {
+	type Cell,
+	cellKey,
+	type GridPosition,
+	storageCellTypes,
+	type WarehouseView,
+} from "@/domain/warehouse";
+
 import type { MapEditor } from "../draft/useMapEditor";
 import type { useRouteEditor } from "../editor/useRouteEditor";
 import type { useMapCamera } from "./useMapCamera";
 import type { useMapRenderer } from "./useMapRenderer";
+
+type PointerHit = GridPosition & { canvasX: number; canvasY: number };
+
+interface PointerInteraction {
+	down(event: PointerEvent<HTMLElement>, cell: Cell | undefined): void;
+	move(event: PointerEvent<HTMLElement>, cell: Cell | undefined): void;
+	up(point: PointerHit | undefined): void;
+}
+
+const arrowDirections: Partial<Record<string, readonly [number, number]>> = {
+	ArrowLeft: [-1, 0],
+	ArrowRight: [1, 0],
+	ArrowUp: [0, -1],
+	ArrowDown: [0, 1],
+};
+
+function clamp(value: number, max: number) {
+	return Math.max(0, Math.min(max, value));
+}
 
 export interface MapInteractionOptions {
 	warehouse: Pick<WarehouseView<"robots">, "width" | "height" | "robots">;
@@ -32,16 +58,8 @@ export function createMapHandlers({
 	const { selection } = editor;
 	const { selected } = selection;
 
-	type PointerHit = GridPosition & { canvasX: number; canvasY: number };
-
 	function cellAt(point: GridPosition | undefined) {
 		return point && cellIndex.get(cellKey(point));
-	}
-
-	interface PointerInteraction {
-		down(event: PointerEvent<HTMLElement>, cell: Cell | undefined): void;
-		move(event: PointerEvent<HTMLElement>, cell: Cell | undefined): void;
-		up(point: PointerHit | undefined): void;
 	}
 
 	const routeInteraction: PointerInteraction = {
@@ -96,12 +114,13 @@ export function createMapHandlers({
 			if (!cell || !point) return;
 
 			const robotId =
-				renderer.current?.findRobotAt(point.canvasX, point.canvasY, size) ||
+				renderer.current?.findRobotAt(point.canvasX, point.canvasY, size) ??
 				warehouse.robots.find(
 					(robot) => robot.x === cell.x && robot.y === cell.y,
-				)?.id;
+				)?.id ??
+				null;
 
-			selectRobot(robotId || null);
+			selectRobot(robotId);
 			selection.setSelected(robotId ? null : cell);
 		},
 	};
@@ -140,35 +159,26 @@ export function createMapHandlers({
 		currentInteraction().up(point);
 	}
 
+	function moveSelection(
+		event: KeyboardEvent<HTMLCanvasElement>,
+		[dx, dy]: readonly [number, number],
+	) {
+		const x = clamp((selected?.x ?? 0) + dx, warehouse.width - 1);
+		const y = clamp((selected?.y ?? 0) + dy, warehouse.height - 1);
+
+		selectRobot(null);
+		event.preventDefault();
+		selection.setSelected(cellIndex.get(cellKey({ x, y })) ?? null);
+	}
+
 	function handleKeyDown(event: KeyboardEvent<HTMLCanvasElement>) {
 		if (editor.busy) return;
-		if (event.key === "Escape") {
-			editor.closeEditor();
-		}
-		if (event.key === "Enter" && selected) {
-			selection.toggleCell(selected);
-		}
-		const directions: Partial<Record<string, readonly [number, number]>> = {
-			ArrowLeft: [-1, 0],
-			ArrowRight: [1, 0],
-			ArrowUp: [0, -1],
-			ArrowDown: [0, 1],
-		};
-		const direction = directions[event.key];
-		if (direction) {
-			selectRobot(null);
-			event.preventDefault();
-			const [dx, dy] = direction;
-			const x = Math.max(
-				0,
-				Math.min(warehouse.width - 1, (selected?.x ?? 0) + dx),
-			);
-			const y = Math.max(
-				0,
-				Math.min(warehouse.height - 1, (selected?.y ?? 0) + dy),
-			);
-			selection.setSelected(cellIndex.get(cellKey({ x, y })) ?? null);
-		}
+		if (event.key === "Escape") editor.closeEditor();
+		if (event.key === "Enter" && selected) selection.toggleCell(selected);
+
+		const direction = arrowDirections[event.key];
+
+		if (direction) moveSelection(event, direction);
 	}
 
 	function handlePointerCancel() {

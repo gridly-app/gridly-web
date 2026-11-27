@@ -1,18 +1,40 @@
-import { type PointerEvent, useEffect, useRef, useState } from "react";
+import {
+	type PointerEvent,
+	useEffect,
+	useRef,
+	useState,
+	type WheelEvent,
+} from "react";
 
 import type { Warehouse } from "@/domain/warehouse";
 
+type Offset = { x: number; y: number };
+
+const panThreshold = 5;
+const defaultViewport = { width: 800, height: 700 };
+const viewportPadding = 64;
+const minCellSize = 18;
+const minZoom = 0.4;
+const maxZoom = 2;
+const wheelZoomFactor = 0.002;
+const origin: Offset = { x: 0, y: 0 };
+
 function useMapPan() {
-	const [offset, setOffset] = useState({ x: 0, y: 0 });
+	const [offset, setOffset] = useState(origin);
 	const [panning, setPanning] = useState(false);
 	const stack = useRef<HTMLDivElement>(null);
 	const offsetRef = useRef(offset);
 	const gesture = useRef<{
 		x: number;
 		y: number;
-		origin: typeof offset;
+		origin: Offset;
 		moved: boolean;
 	} | null>(null);
+
+	function applyTransform(next: Offset) {
+		if (stack.current)
+			stack.current.style.transform = `translate(${next.x}px, ${next.y}px)`;
+	}
 
 	function start(event: PointerEvent<HTMLElement>) {
 		gesture.current = {
@@ -27,24 +49,22 @@ function useMapPan() {
 	function move(event: PointerEvent<HTMLElement>) {
 		const current = gesture.current;
 
-		if (!current) {
-			return;
-		}
+		if (!current) return;
+
 		const dx = event.clientX - current.x;
 		const dy = event.clientY - current.y;
 
-		if (Math.hypot(dx, dy) > 5 && !current.moved) {
+		if (!current.moved && Math.hypot(dx, dy) > panThreshold) {
 			current.moved = true;
 			setPanning(true);
 		}
-		if (current.moved) {
-			const next = { x: current.origin.x + dx, y: current.origin.y + dy };
 
-			offsetRef.current = next;
-			if (stack.current) {
-				stack.current.style.transform = `translate(${next.x}px, ${next.y}px)`;
-			}
-		}
+		if (!current.moved) return;
+
+		const next = { x: current.origin.x + dx, y: current.origin.y + dy };
+
+		offsetRef.current = next;
+		applyTransform(next);
 	}
 
 	function finish() {
@@ -52,19 +72,16 @@ function useMapPan() {
 
 		gesture.current = null;
 		setPanning(false);
-		if (moved) {
-			setOffset(offsetRef.current);
-		}
+
+		if (moved) setOffset(offsetRef.current);
 
 		return moved;
 	}
 
 	function reset() {
-		offsetRef.current = { x: 0, y: 0 };
-		setOffset({ x: 0, y: 0 });
-		if (stack.current) {
-			stack.current.style.transform = "translate(0px, 0px)";
-		}
+		offsetRef.current = origin;
+		setOffset(origin);
+		applyTransform(origin);
 	}
 
 	return { offset, panning, stack, start, move, finish, reset };
@@ -73,20 +90,20 @@ function useMapPan() {
 function useMapViewport(viewing: boolean) {
 	const scroll = useRef<HTMLDivElement>(null);
 	const navigation = useRef<HTMLDivElement>(null);
-	const [viewport, setViewport] = useState({ width: 800, height: 700 });
+	const [viewport, setViewport] = useState(defaultViewport);
 
 	useEffect(() => {
 		const element = navigation.current;
 		const workspace = element?.closest<HTMLElement>("[data-map-workspace]");
 
-		if (!element || !workspace || !viewing) {
-			return;
-		}
+		if (!element || !workspace || !viewing) return;
+
 		const observer = new ResizeObserver(([entry]) => {
 			if (!entry) return;
 
 			const height =
 				entry.borderBoxSize[0]?.blockSize ?? entry.contentRect.height;
+
 			workspace.style.setProperty("--map-navigation-height", `${height}px`);
 		});
 
@@ -101,13 +118,13 @@ function useMapViewport(viewing: boolean) {
 	useEffect(() => {
 		const element = scroll.current;
 
-		if (!element) {
-			return;
-		}
+		if (!element) return;
+
 		const observer = new ResizeObserver(([entry]) => {
 			if (!entry) return;
 
 			const { width, height } = entry.contentRect;
+
 			setViewport({ width, height });
 		});
 
@@ -126,17 +143,14 @@ export function useMapCamera(
 	const pan = useMapPan();
 	const { scroll, navigation, viewport } = useMapViewport(viewing);
 	const [zoom, setZoom] = useState(1);
-	const size =
-		Math.max(
-			18,
-			Math.min(
-				(viewport.width - 64) / warehouse.width,
-				(viewport.height - 64) / warehouse.height,
-			),
-		) * zoom;
+	const fittedSize = Math.min(
+		(viewport.width - viewportPadding) / warehouse.width,
+		(viewport.height - viewportPadding) / warehouse.height,
+	);
+	const size = Math.max(minCellSize, fittedSize) * zoom;
 
 	function changeZoom(delta: number) {
-		setZoom((current) => Math.max(0.4, Math.min(2, current + delta)));
+		setZoom((current) => Math.max(minZoom, Math.min(maxZoom, current + delta)));
 	}
 
 	function resetZoom() {
@@ -144,11 +158,11 @@ export function useMapCamera(
 		pan.reset();
 	}
 
-	function onWheel(event: React.WheelEvent<HTMLDivElement>) {
-		if (event.ctrlKey) {
-			event.preventDefault();
-			changeZoom(-event.deltaY * 0.002);
-		}
+	function onWheel(event: WheelEvent<HTMLDivElement>) {
+		if (!event.ctrlKey) return;
+
+		event.preventDefault();
+		changeZoom(-event.deltaY * wheelZoomFactor);
 	}
 
 	return {

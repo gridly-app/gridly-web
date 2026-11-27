@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
+
 import type { WarehouseView } from "@/domain/warehouse";
+
 import {
 	CanvasWarehouseRenderer,
 	type LayoutRenderState,
@@ -30,9 +32,8 @@ export function useMapRenderer({
 	const renderer = useRef<CanvasWarehouseRenderer | null>(null);
 
 	useEffect(() => {
-		if (!canvas.current || !dynamic.current) {
-			return;
-		}
+		if (!canvas.current || !dynamic.current) return;
+
 		const instance = new CanvasWarehouseRenderer(
 			canvas.current,
 			dynamic.current,
@@ -45,6 +46,7 @@ export function useMapRenderer({
 			renderer.current = null;
 		};
 	}, []);
+
 	useEffect(() => {
 		renderer.current?.drawLayout({
 			warehouse: { width, height },
@@ -69,6 +71,7 @@ export function useMapRenderer({
 		routeDragHandle,
 		routeHandles,
 	]);
+
 	useEffect(() => {
 		renderer.current?.drawRobots(
 			{ width, height, robots, asOf },

@@ -1,17 +1,19 @@
 import type {
 	Cell,
 	GridPosition,
+	Robot,
 	Warehouse,
 	WarehouseView,
 } from "@/domain/warehouse";
-import { gridInset } from "../../config/grid";
+
+import { canvasLength, cellCenter, maxPixelRatio } from "../../config/grid";
 import { sameLayout } from "../sameLayout";
 import { paintWarehouseLayout } from "./paintWarehouseLayout";
 import { paintWarehouseRobot } from "./paintWarehouseRobot";
-import type { RobotMotionTrack } from "./robotMotion";
 import {
 	isRobotMotionActive,
 	prepareRobotMotionTrack,
+	type RobotMotionTrack,
 	robotMotionPosition,
 } from "./robotMotion";
 
@@ -24,135 +26,233 @@ export interface LayoutRenderState {
 	dark: boolean;
 	routeDragHandle?: ({ point: GridPosition; index: number } | null) | undefined;
 	routeHandles?: ("inbound" | "outbound") | undefined;
-	routes?:
-		| {
-				inbound: GridPosition[];
-				outbound: GridPosition[];
-		  }
-		| undefined;
+	routes?: { inbound: GridPosition[]; outbound: GridPosition[] } | undefined;
+}
+
+type GridSize = Pick<Warehouse, "width" | "height">;
+
+const defaultSampleMs = 500;
+const minSampleMs = 100;
+const maxSampleMs = 2000;
+const robotHitRadius = 0.43;
+
+function pixelRatio() {
+	return Math.min(devicePixelRatio, maxPixelRatio);
+}
+
+function canvasSize(warehouse: GridSize, size: number) {
+	return {
+		width: canvasLength(warehouse.width, size),
+		height: canvasLength(warehouse.height, size),
+	};
+}
+
+function context2d(
+	canvas: HTMLCanvasElement,
+	current: CanvasRenderingContext2D | null,
+) {
+	const context = current ?? canvas.getContext("2d");
+
+	if (!context) throw new Error("Canvas 2D недоступен");
+
+	return context;
+}
+
+function resizeCanvas(
+	canvas: HTMLCanvasElement,
+	cssWidth: number,
+	cssHeight: number,
+	ratio: number,
+) {
+	const width = Math.round(cssWidth * ratio);
+	const height = Math.round(cssHeight * ratio);
+	const isResized = canvas.width !== width || canvas.height !== height;
+
+	if (canvas.width !== width) canvas.width = width;
+	if (canvas.height !== height) canvas.height = height;
+
+	return isResized;
+}
+
+function motionPath(robot: Robot) {
+	const supplied = robot.motionPath ?? [];
+	const last = supplied.at(-1);
+
+	return last?.x === robot.x && last?.y === robot.y ? supplied : [];
 }
 
 export class CanvasWarehouseRenderer {
 	private frame: number | null = null;
-
 	private layoutContext: CanvasRenderingContext2D | null = null;
-
 	private robotsContext: CanvasRenderingContext2D | null = null;
-
-	private robotsDpr = 0;
-
-	private robotsCssWidth = 0;
-
-	private robotsCssHeight = 0;
-
-	private positions = new Map<string, GridPosition>();
-
-	private tracks = new Map<string, RobotMotionTrack>();
-
 	private layoutState: LayoutRenderState | null = null;
-	private layoutDpr = 0;
-
+	private layoutRatio = 0;
+	private robotsRatio = 0;
+	private robotsCssWidth = 0;
+	private robotsCssHeight = 0;
+	private positions = new Map<string, GridPosition>();
+	private tracks = new Map<string, RobotMotionTrack>();
 	private sampleTime: number | null = null;
-
-	private sampleDuration = 500;
+	private sampleDuration = defaultSampleMs;
 
 	constructor(
 		private readonly layoutCanvas: HTMLCanvasElement,
 		private readonly robotsCanvas: HTMLCanvasElement,
 	) {}
 
-	private prepare(
-		el: HTMLCanvasElement,
-		warehouse: Pick<Warehouse, "width" | "height">,
-		size: number,
-	) {
-		const dpr = Math.min(devicePixelRatio, 2);
+	private prepareLayoutFrame(warehouse: GridSize, size: number) {
+		const canvas = this.layoutCanvas;
+		const ratio = pixelRatio();
+		const { width, height } = canvasSize(warehouse, size);
+		const cssWidth = `${width}px`;
+		const cssHeight = `${height}px`;
 
-		const width = Math.round((warehouse.width * size + 48) * dpr);
-		const height = Math.round((warehouse.height * size + 48) * dpr);
+		resizeCanvas(canvas, width, height, ratio);
 
-		if (el.width !== width || el.height !== height) {
-			el.width = width;
-			el.height = height;
-		}
-		const cssWidth = `${warehouse.width * size + 48}px`;
-		const cssHeight = `${warehouse.height * size + 48}px`;
+		if (canvas.style.width !== cssWidth) canvas.style.width = cssWidth;
+		if (canvas.style.height !== cssHeight) canvas.style.height = cssHeight;
 
-		if (el.style.width !== cssWidth) el.style.width = cssWidth;
-		if (el.style.height !== cssHeight) el.style.height = cssHeight;
-		const context = this.layoutContext || el.getContext("2d");
+		const context = context2d(canvas, this.layoutContext);
 
-		if (!context) {
-			throw new Error("Canvas 2D недоступен");
-		}
 		this.layoutContext = context;
 		context.setTransform(1, 0, 0, 1, 0, 0);
-		context.clearRect(0, 0, el.width, el.height);
-		context.scale(dpr, dpr);
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		context.scale(ratio, ratio);
 
 		return context;
 	}
 
-	private prepareRobotsFrame(
-		warehouse: Pick<Warehouse, "width" | "height">,
-		size: number,
-	) {
-		const dpr = Math.min(devicePixelRatio, 2);
-		const cssWidth = warehouse.width * size + 48;
-		const cssHeight = warehouse.height * size + 48;
-		const width = Math.round(cssWidth * dpr);
-		const height = Math.round(cssHeight * dpr);
+	private prepareRobotsFrame(warehouse: GridSize, size: number) {
 		const canvas = this.robotsCanvas;
-		const resized =
-			canvas.width !== width ||
-			canvas.height !== height ||
-			this.robotsDpr !== dpr;
+		const ratio = pixelRatio();
+		const { width, height } = canvasSize(warehouse, size);
+		const isResized =
+			resizeCanvas(canvas, width, height, ratio) || this.robotsRatio !== ratio;
 
-		if (canvas.width !== width) canvas.width = width;
-		if (canvas.height !== height) canvas.height = height;
-		if (this.robotsCssWidth !== cssWidth) {
-			canvas.style.width = `${cssWidth}px`;
-			this.robotsCssWidth = cssWidth;
-		}
-		if (this.robotsCssHeight !== cssHeight) {
-			canvas.style.height = `${cssHeight}px`;
-			this.robotsCssHeight = cssHeight;
+		if (this.robotsCssWidth !== width) {
+			canvas.style.width = `${width}px`;
+			this.robotsCssWidth = width;
 		}
 
-		const context = this.robotsContext || canvas.getContext("2d");
-
-		if (!context) {
-			throw new Error("Canvas 2D недоступен");
+		if (this.robotsCssHeight !== height) {
+			canvas.style.height = `${height}px`;
+			this.robotsCssHeight = height;
 		}
+
+		const context = context2d(canvas, this.robotsContext);
+
 		this.robotsContext = context;
 
-		if (resized) {
+		if (isResized) {
 			context.setTransform(1, 0, 0, 1, 0, 0);
-			context.scale(dpr, dpr);
-			this.robotsDpr = dpr;
+			context.scale(ratio, ratio);
+			this.robotsRatio = ratio;
 		}
 
-		context.clearRect(0, 0, cssWidth, cssHeight);
+		context.clearRect(0, 0, width, height);
 
 		return context;
+	}
+
+	private cancelFrame() {
+		if (this.frame === null) return;
+
+		cancelAnimationFrame(this.frame);
+		this.frame = null;
+	}
+
+	private updateSampleDuration(asOf: string | undefined) {
+		const sampleTime = Date.parse(asOf || "");
+
+		if (!Number.isFinite(sampleTime) || sampleTime === this.sampleTime) return;
+
+		if (this.sampleTime !== null && sampleTime > this.sampleTime) {
+			this.sampleDuration = Math.max(
+				minSampleMs,
+				Math.min(maxSampleMs, sampleTime - this.sampleTime),
+			);
+		}
+
+		this.sampleTime = sampleTime;
+	}
+
+	private updateTrack(
+		robot: Robot,
+		asOf: string | undefined,
+		startedAt: number,
+	) {
+		const track = this.tracks.get(robot.id);
+		const isCurrent =
+			track?.target.x === robot.x &&
+			track.target.y === robot.y &&
+			track.sample === asOf;
+
+		if (isCurrent) return;
+
+		const path = motionPath(robot);
+		const start = { x: path[0]?.x ?? robot.x, y: path[0]?.y ?? robot.y };
+
+		this.tracks.set(
+			robot.id,
+			prepareRobotMotionTrack({
+				timed: robot.motionTimed,
+				sample: asOf,
+				target: robot,
+				path: path.length ? path : [robot],
+				startedAt,
+				duration: path.length ? this.sampleDuration : 0,
+			}),
+		);
+
+		const position = this.positions.get(robot.id);
+
+		if (!position) {
+			this.positions.set(robot.id, start);
+
+			return;
+		}
+
+		position.x = start.x;
+		position.y = start.y;
+	}
+
+	private forgetMissingRobots(robots: Robot[]) {
+		const currentIds = new Set(robots.map((robot) => robot.id));
+
+		for (const id of this.positions.keys()) {
+			if (currentIds.has(id)) continue;
+
+			this.positions.delete(id);
+			this.tracks.delete(id);
+		}
+	}
+
+	private positionOf(robot: Robot) {
+		const position = this.positions.get(robot.id);
+
+		if (position) return position;
+
+		const created = { x: robot.x, y: robot.y };
+
+		this.positions.set(robot.id, created);
+
+		return created;
 	}
 
 	drawLayout(state: LayoutRenderState) {
-		const dpr = Math.min(devicePixelRatio, 2);
-		if (
+		const ratio = pixelRatio();
+		const isUnchanged =
 			this.layoutState &&
-			this.layoutDpr === dpr &&
-			sameLayout(this.layoutState, state)
-		)
-			return;
-		const context = this.prepare(
-			this.layoutCanvas,
-			state.warehouse,
-			state.size,
-		);
+			this.layoutRatio === ratio &&
+			sameLayout(this.layoutState, state);
+
+		if (isUnchanged) return;
+
+		const context = this.prepareLayoutFrame(state.warehouse, state.size);
+
 		paintWarehouseLayout(context, state);
 		this.layoutState = state;
-		this.layoutDpr = dpr;
+		this.layoutRatio = ratio;
 	}
 
 	drawRobots(
@@ -163,89 +263,36 @@ export class CanvasWarehouseRenderer {
 		size: number,
 		selectedRobotId?: (string | null) | undefined,
 	) {
-		if (this.frame !== null) {
-			cancelAnimationFrame(this.frame);
-			this.frame = null;
-		}
-		const reduced = window.matchMedia(
+		this.cancelFrame();
+
+		const isReducedMotion = window.matchMedia(
 			"(prefers-reduced-motion: reduce)",
 		).matches;
-		const start = performance.now();
-		const sampleTime = Date.parse(warehouse.asOf || "");
+		const startedAt = performance.now();
 
-		if (Number.isFinite(sampleTime) && sampleTime !== this.sampleTime) {
-			if (this.sampleTime !== null && sampleTime > this.sampleTime) {
-				this.sampleDuration = Math.max(
-					100,
-					Math.min(2000, sampleTime - this.sampleTime),
-				);
-			}
-			this.sampleTime = sampleTime;
-		}
+		this.updateSampleDuration(warehouse.asOf);
+
 		for (const robot of warehouse.robots) {
-			const track = this.tracks.get(robot.id);
-
-			if (
-				track &&
-				track.target.x === robot.x &&
-				track.target.y === robot.y &&
-				track.sample === warehouse.asOf
-			) {
-				continue;
-			}
-			const supplied = robot.motionPath ?? [];
-			const last = supplied.at(-1);
-			const path = last?.x === robot.x && last?.y === robot.y ? supplied : [];
-
-			const nextTrack = prepareRobotMotionTrack({
-				timed: robot.motionTimed,
-				sample: warehouse.asOf,
-				target: robot,
-				path: path.length ? path : [robot],
-				startedAt: start,
-				duration: path.length ? this.sampleDuration : 0,
-			});
-			this.tracks.set(robot.id, nextTrack);
-
-			const currentPosition = this.positions.get(robot.id);
-
-			if (currentPosition) {
-				currentPosition.x = path[0]?.x ?? robot.x;
-				currentPosition.y = path[0]?.y ?? robot.y;
-			} else {
-				this.positions.set(robot.id, {
-					x: path[0]?.x ?? robot.x,
-					y: path[0]?.y ?? robot.y,
-				});
-			}
+			this.updateTrack(robot, warehouse.asOf, startedAt);
 		}
-		const currentIds = new Set(warehouse.robots.map((robot) => robot.id));
 
-		for (const id of this.positions.keys()) {
-			if (!currentIds.has(id)) {
-				this.positions.delete(id);
-				this.tracks.delete(id);
-			}
-		}
+		this.forgetMissingRobots(warehouse.robots);
+
 		const render = (now: number) => {
-			let animating = false;
-			const ctx = this.prepareRobotsFrame(warehouse, size);
+			const context = this.prepareRobotsFrame(warehouse, size);
+			let isAnimating = false;
 
-			for (let index = 0; index < warehouse.robots.length; index += 1) {
-				const robot = warehouse.robots[index];
-				if (!robot) continue;
+			for (const [index, robot] of warehouse.robots.entries()) {
 				const track = this.tracks.get(robot.id);
-				if (!track) continue;
-				let position = this.positions.get(robot.id);
 
-				if (!position) {
-					position = { x: robot.x, y: robot.y };
-					this.positions.set(robot.id, position);
-				}
-				robotMotionPosition(track, reduced ? Infinity : now, position);
-				animating ||= !reduced && isRobotMotionActive(track, now);
+				if (!track) continue;
+
+				const position = this.positionOf(robot);
+
+				robotMotionPosition(track, isReducedMotion ? Infinity : now, position);
+				isAnimating ||= !isReducedMotion && isRobotMotionActive(track, now);
 				paintWarehouseRobot(
-					ctx,
+					context,
 					robot,
 					position,
 					size,
@@ -253,47 +300,47 @@ export class CanvasWarehouseRenderer {
 					robot.id === selectedRobotId,
 				);
 			}
-			this.frame = animating ? requestAnimationFrame(render) : null;
+
+			this.frame = isAnimating ? requestAnimationFrame(render) : null;
 		};
 
-		render(start);
+		render(startedAt);
 	}
 
 	findRobotAt(x: number, y: number, size: number): string | null {
+		const radius = size * robotHitRadius;
+
 		for (const [id, point] of this.positions) {
-			if (
-				Math.abs(x - (gridInset + (point.x + 0.5) * size)) <= size * 0.43 &&
-				Math.abs(y - (gridInset + (point.y + 0.5) * size)) <= size * 0.43
-			) {
-				return id;
-			}
+			const isInside =
+				Math.abs(x - cellCenter(point.x, size)) <= radius &&
+				Math.abs(y - cellCenter(point.y, size)) <= radius;
+
+			if (isInside) return id;
 		}
 
 		return null;
 	}
 
 	dispose() {
-		if (this.frame !== null) {
-			cancelAnimationFrame(this.frame);
-			this.frame = null;
-		}
+		this.cancelFrame();
 		this.positions.clear();
 		this.tracks.clear();
 		this.layoutState = null;
-		this.layoutDpr = 0;
+		this.layoutRatio = 0;
 		this.sampleTime = null;
 		this.layoutContext = null;
 		this.robotsContext = null;
-		this.robotsDpr = 0;
+		this.robotsRatio = 0;
 		this.robotsCssWidth = 0;
 		this.robotsCssHeight = 0;
+
 		for (const canvas of [this.layoutCanvas, this.robotsCanvas]) {
 			const context = canvas.getContext("2d");
 
-			if (context) {
-				context.setTransform(1, 0, 0, 1, 0, 0);
-				context.clearRect(0, 0, canvas.width, canvas.height);
-			}
+			if (!context) continue;
+
+			context.setTransform(1, 0, 0, 1, 0, 0);
+			context.clearRect(0, 0, canvas.width, canvas.height);
 		}
 	}
 }

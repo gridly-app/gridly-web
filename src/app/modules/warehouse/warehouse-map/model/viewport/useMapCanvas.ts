@@ -1,4 +1,5 @@
-import { gridInset } from "../../config/grid";
+import { canvasPadding, gridInset } from "../../config/grid";
+
 import type { MapEditor } from "../draft/useMapEditor";
 import type { useRouteEditor } from "../editor/useRouteEditor";
 import type { getMapPresentation } from "../mapPresentation";
@@ -78,6 +79,7 @@ export function useMapCanvas({
 		height: warehouse.height,
 		size: camera.size,
 		gridInset,
+		canvasPadding,
 		panOffset: camera.pan.offset,
 		panning: camera.pan.panning,
 		zoom: camera.zoom,

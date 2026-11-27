@@ -42,6 +42,6 @@ export function useMapSimulation(
 		toggle,
 		robotCount,
 		activeRobots,
-		supported: !!warehouse.allowedActions?.includes("simulation"),
+		supported: Boolean(warehouse.allowedActions?.includes("simulation")),
 	};
 }

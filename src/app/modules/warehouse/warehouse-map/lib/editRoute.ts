@@ -6,6 +6,26 @@ import {
 } from "@/domain/warehouse";
 import { requiredAt, UserError } from "@/shared/lib";
 
+function withoutLoops(path: GridPosition[]) {
+	const simple: GridPosition[] = [];
+
+	for (const point of path) {
+		const repeated = simple.findIndex(
+			(previous) => cellKey(previous) === cellKey(point),
+		);
+
+		if (repeated >= 0) {
+			simple.splice(repeated + 1);
+
+			continue;
+		}
+
+		simple.push(point);
+	}
+
+	return simple;
+}
+
 export function moveRouteCell(
 	cells: Cell[],
 	path: GridPosition[],
@@ -14,27 +34,22 @@ export function moveRouteCell(
 	allowStorage = false,
 	blocked = new Set<string>(),
 ): GridPosition[] {
+	const first = path[0];
 	const last = path.at(-1);
-	if (!last || !path[index])
+	const moved = path[index];
+
+	if (!first || !last || !moved)
 		throw new UserError("Выберите точку существующего маршрута");
-	if (index === 0) {
+	if (index === 0)
 		return routeThrough(cells, [target, last], blocked, allowStorage);
-	}
-	if (index === path.length - 1) {
-		return routeThrough(
-			cells,
-			[requiredAt(path, 0), target],
-			blocked,
-			allowStorage,
-		);
-	}
-	if (cellKey(requiredAt(path, index)) === cellKey(target)) {
-		return path;
-	}
+	if (index === path.length - 1)
+		return routeThrough(cells, [first, target], blocked, allowStorage);
+	if (cellKey(moved) === cellKey(target)) return path;
+
 	const replacement = routeThrough(
 		cells,
 		[requiredAt(path, index - 1), target, requiredAt(path, index + 1)],
-		new Set([...blocked, cellKey(requiredAt(path, index))]),
+		new Set([...blocked, cellKey(moved)]),
 		allowStorage,
 	);
 	const result = [
@@ -42,19 +57,7 @@ export function moveRouteCell(
 		...replacement,
 		...path.slice(index + 2),
 	];
-	const simple: GridPosition[] = [];
-
-	for (const point of result) {
-		const repeated = simple.findIndex(
-			(previous) => cellKey(previous) === cellKey(point),
-		);
-
-		if (repeated >= 0) {
-			simple.splice(repeated + 1);
-		} else {
-			simple.push(point);
-		}
-	}
+	const simple = withoutLoops(result);
 
 	return simple.some((point) => cellKey(point) === cellKey(target))
 		? simple

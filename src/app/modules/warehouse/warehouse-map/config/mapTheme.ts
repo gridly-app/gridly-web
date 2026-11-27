@@ -1,5 +1,18 @@
 import type { CellType } from "@/domain/warehouse";
 
+export const routeColors = {
+	inbound: "#e86536",
+	outbound: "#4f83c4",
+};
+
+export const robotColors = {
+	carrying: routeColors.inbound,
+	waiting: "#e9ac4b",
+	idle: "#8b9580",
+	working: "#596bc2",
+	label: "white",
+};
+
 export const mapThemes = {
 	light: {
 		cells: {
@@ -18,6 +31,7 @@ export const mapThemes = {
 		storageMark: "#276440",
 		symbol: "#294b37",
 		selection: "#a33f1b",
+		selectionFill: "rgba(85,105,210,.10)",
 	},
 	dark: {
 		cells: {
@@ -36,5 +50,6 @@ export const mapThemes = {
 		storageMark: "#c3efd2",
 		symbol: "#fafafa",
 		selection: "#fafafa",
+		selectionFill: "rgba(160,175,255,.14)",
 	},
 };

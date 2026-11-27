@@ -1,229 +1,398 @@
-import { cellKey, connectedBlock, storageCellTypes } from "@/domain/warehouse";
-import { gridInset } from "../../config/grid";
-import { mapThemes } from "../../config/mapTheme";
+import {
+	type Cell,
+	cellKey,
+	connectedBlock,
+	type GridPosition,
+	storageCellTypes,
+} from "@/domain/warehouse";
+
+import { cellCenter, cellOrigin, gridInset } from "../../config/grid";
+import { mapThemes, routeColors } from "../../config/mapTheme";
 import { shelfRoutePoints } from "../shelfRoute";
 import type { LayoutRenderState } from "./CanvasWarehouseRenderer";
 
-export function paintWarehouseLayout(
+type MapTheme = (typeof mapThemes)["light"];
+
+type RouteKind = "inbound" | "outbound";
+
+const cellGap = 2;
+const cellRadius = 3;
+const perimeterGap = 2;
+const perimeterRadius = 5;
+const cellSymbols: Partial<Record<Cell["type"], string>> = {
+	charge: "ϟ",
+	unload: "↓",
+	load: "↑",
+};
+const routeStyles = [
+	{ kind: "inbound", dash: [] },
+	{ kind: "outbound", dash: [6, 4] },
+] as const;
+
+function isStorage(cell: Cell) {
+	return storageCellTypes.includes(cell.type);
+}
+
+function paintStorageCell(
 	ctx: CanvasRenderingContext2D,
-	{
-		warehouse,
-		cells,
-		selected,
-		selectionKeys,
-		size,
-		dark,
-		routes,
-		routeHandles,
-		routeDragHandle,
-	}: LayoutRenderState,
+	cell: Cell,
+	size: number,
+	storage: Map<string, Cell>,
 ) {
-	const theme = mapThemes[dark ? "dark" : "light"];
-	const palette = theme.cells;
+	const x = cellOrigin(cell.x, size);
+	const y = cellOrigin(cell.y, size);
 
-	ctx.font = "10px Geist, sans-serif";
-	ctx.textAlign = "center";
-	const selectedSet = new Set(selectionKeys.length ? selectionKeys : []);
+	function gapTowards(dx: number, dy: number) {
+		const neighbour = storage.get(`${cell.x + dx},${cell.y + dy}`);
+		const isSameZone =
+			neighbour?.type === cell.type && neighbour?.zone?.id === cell.zone?.id;
 
-	const storage = new Map(
-		cells
-			.filter((c) => storageCellTypes.includes(c.type))
-			.map((c) => [cellKey(c), c]),
+		return isSameZone ? 0 : cellGap;
+	}
+
+	const left = gapTowards(-1, 0);
+	const right = gapTowards(1, 0);
+	const top = gapTowards(0, -1);
+	const bottom = gapTowards(0, 1);
+	const corner = (first: number, second: number) =>
+		first && second ? cellRadius : 0;
+
+	ctx.beginPath();
+	ctx.roundRect(x + left, y + top, size - left - right, size - top - bottom, [
+		corner(left, top),
+		corner(right, top),
+		corner(right, bottom),
+		corner(left, bottom),
+	]);
+	ctx.fill();
+}
+
+function paintPlainCell(
+	ctx: CanvasRenderingContext2D,
+	cell: Cell,
+	size: number,
+	theme: MapTheme,
+) {
+	const x = cellOrigin(cell.x, size);
+	const y = cellOrigin(cell.y, size);
+
+	ctx.beginPath();
+	ctx.roundRect(
+		x + cellGap,
+		y + cellGap,
+		size - 2 * cellGap,
+		size - 2 * cellGap,
+		cellRadius,
 	);
-	for (const cell of cells) {
-		const x = gridInset + cell.x * size;
-		const y = gridInset + cell.y * size;
+	ctx.fill();
 
-		ctx.fillStyle = palette[cell.type];
-		if (storageCellTypes.includes(cell.type)) {
-			const same = (dx: number, dy: number) => {
-				const next = storage.get(`${cell.x + dx},${cell.y + dy}`);
-				return next?.type === cell.type && next?.zone?.id === cell.zone?.id;
-			};
-			const left = same(-1, 0) ? 0 : 2;
-			const right = same(1, 0) ? 0 : 2;
-			const top = same(0, -1) ? 0 : 2;
-			const bottom = same(0, 1) ? 0 : 2;
-			ctx.beginPath();
-			ctx.roundRect(
-				x + left,
-				y + top,
-				size - left - right,
-				size - top - bottom,
-				[
-					left && top ? 3 : 0,
-					right && top ? 3 : 0,
-					right && bottom ? 3 : 0,
-					left && bottom ? 3 : 0,
-				],
-			);
-			ctx.fill();
-		} else {
-			ctx.beginPath();
-			ctx.roundRect(x + 2, y + 2, size - 4, size - 4, 3);
-			ctx.fill();
-			if (cell.type === "wall") {
-				ctx.strokeStyle = theme.wallBorder;
-				ctx.lineWidth = 1;
-				ctx.stroke();
-			}
-		}
-		if (["unload", "load", "charge"].includes(cell.type)) {
-			ctx.fillStyle = theme.symbol;
-			ctx.font = `${size * 0.4}px Geist, sans-serif`;
-			ctx.fillText(
-				cell.type === "charge" ? "ϟ" : cell.type === "unload" ? "↓" : "↑",
-				x + size / 2,
-				y + size * 0.65,
-			);
-		}
-		if (selectedSet.has(cellKey(cell))) {
-			ctx.fillStyle = dark ? "rgba(160,175,255,.14)" : "rgba(85,105,210,.10)";
-			ctx.fill();
+	if (cell.type !== "wall") return;
+
+	ctx.strokeStyle = theme.wallBorder;
+	ctx.lineWidth = 1;
+	ctx.stroke();
+}
+
+function paintCellShape(
+	ctx: CanvasRenderingContext2D,
+	cell: Cell,
+	size: number,
+	theme: MapTheme,
+	storage: Map<string, Cell>,
+) {
+	ctx.fillStyle = theme.cells[cell.type];
+
+	if (isStorage(cell)) {
+		paintStorageCell(ctx, cell, size, storage);
+
+		return;
+	}
+
+	paintPlainCell(ctx, cell, size, theme);
+}
+
+function paintCellSymbol(
+	ctx: CanvasRenderingContext2D,
+	cell: Cell,
+	size: number,
+	theme: MapTheme,
+) {
+	const symbol = cellSymbols[cell.type];
+
+	if (!symbol) return;
+
+	ctx.fillStyle = theme.symbol;
+	ctx.font = `${size * 0.4}px Geist, sans-serif`;
+	ctx.fillText(
+		symbol,
+		cellOrigin(cell.x, size) + size / 2,
+		cellOrigin(cell.y, size) + size * 0.65,
+	);
+}
+
+function paintSelectionOutline(
+	ctx: CanvasRenderingContext2D,
+	cell: Cell,
+	size: number,
+	theme: MapTheme,
+	selected: Set<string>,
+) {
+	const x = cellOrigin(cell.x, size);
+	const y = cellOrigin(cell.y, size);
+	const edges = [
+		{ neighbour: `${cell.x},${cell.y - 1}`, from: [x, y], to: [x + size, y] },
+		{
+			neighbour: `${cell.x + 1},${cell.y}`,
+			from: [x + size, y],
+			to: [x + size, y + size],
+		},
+		{
+			neighbour: `${cell.x},${cell.y + 1}`,
+			from: [x, y + size],
+			to: [x + size, y + size],
+		},
+		{ neighbour: `${cell.x - 1},${cell.y}`, from: [x, y], to: [x, y + size] },
+	] as const;
+
+	ctx.fillStyle = theme.selectionFill;
+	ctx.fill();
+	ctx.strokeStyle = theme.selection;
+	ctx.lineWidth = 2;
+	ctx.beginPath();
+
+	for (const { neighbour, from, to } of edges) {
+		if (selected.has(neighbour)) continue;
+
+		ctx.moveTo(...from);
+		ctx.lineTo(...to);
+	}
+
+	ctx.stroke();
+}
+
+function paintCells(
+	ctx: CanvasRenderingContext2D,
+	state: LayoutRenderState,
+	theme: MapTheme,
+	selected: Set<string>,
+) {
+	const { cells, size } = state;
+	const storage = new Map(
+		cells.filter(isStorage).map((cell) => [cellKey(cell), cell]),
+	);
+
+	for (const cell of cells) {
+		const isSelectedCell =
+			!selected.size &&
+			state.selected?.x === cell.x &&
+			state.selected?.y === cell.y;
+
+		paintCellShape(ctx, cell, size, theme, storage);
+		paintCellSymbol(ctx, cell, size, theme);
+
+		if (selected.has(cellKey(cell)))
+			paintSelectionOutline(ctx, cell, size, theme, selected);
+
+		if (isSelectedCell) {
 			ctx.strokeStyle = theme.selection;
 			ctx.lineWidth = 2;
-			ctx.beginPath();
-			if (!selectedSet.has(`${cell.x},${cell.y - 1}`)) {
-				ctx.moveTo(x, y);
-				ctx.lineTo(x + size, y);
-			}
-			if (!selectedSet.has(`${cell.x + 1},${cell.y}`)) {
-				ctx.moveTo(x + size, y);
-				ctx.lineTo(x + size, y + size);
-			}
-			if (!selectedSet.has(`${cell.x},${cell.y + 1}`)) {
-				ctx.moveTo(x, y + size);
-				ctx.lineTo(x + size, y + size);
-			}
-			if (!selectedSet.has(`${cell.x - 1},${cell.y}`)) {
-				ctx.moveTo(x, y);
-				ctx.lineTo(x, y + size);
-			}
-			ctx.stroke();
-		}
-		if (!selectedSet.size && selected?.x === cell.x && selected?.y === cell.y) {
-			ctx.strokeStyle = theme.selection;
-			ctx.lineWidth = 2;
-			ctx.strokeRect(x + 1, y + 1, size - 2, size - 2);
+			ctx.strokeRect(
+				cellOrigin(cell.x, size) + 1,
+				cellOrigin(cell.y, size) + 1,
+				size - 2,
+				size - 2,
+			);
 		}
 	}
-	ctx.textAlign = "center";
-	const shelf =
-		selected && storageCellTypes.includes(selected.type)
-			? connectedBlock(cells, selected)
-			: cells.filter(
-					(cell) =>
-						selectedSet.has(cellKey(cell)) &&
-						storageCellTypes.includes(cell.type),
-				);
-	for (const [sourcePath, color, dash, direction] of [
-		[routes?.inbound, "#e86536", [], "inbound"],
-		[routes?.outbound, "#4f83c4", [6, 4], "outbound"],
-	] as const) {
-		const path = shelfRoutePoints(sourcePath ?? [], shelf, direction, size);
-		if (!path.length) {
-			continue;
-		}
+}
+
+function selectedShelf(
+	{ cells, selected }: LayoutRenderState,
+	selectedKeys: Set<string>,
+) {
+	if (selected && isStorage(selected)) return connectedBlock(cells, selected);
+
+	return cells.filter(
+		(cell) => selectedKeys.has(cellKey(cell)) && isStorage(cell),
+	);
+}
+
+function paintRouteArrow(
+	ctx: CanvasRenderingContext2D,
+	path: GridPosition[],
+	size: number,
+) {
+	const end = path.at(-1);
+	const previous = path.at(-2);
+
+	if (!end || !previous) return;
+
+	const arrow = Math.max(6, size * 0.2);
+
+	ctx.translate(cellCenter(end.x, size), cellCenter(end.y, size));
+	ctx.rotate(Math.atan2(end.y - previous.y, end.x - previous.x));
+	ctx.setLineDash([]);
+	ctx.beginPath();
+	ctx.moveTo(-arrow, -arrow * 0.65);
+	ctx.lineTo(0, 0);
+	ctx.lineTo(-arrow, arrow * 0.65);
+	ctx.stroke();
+}
+
+function paintRoutes(
+	ctx: CanvasRenderingContext2D,
+	state: LayoutRenderState,
+	shelf: Cell[],
+) {
+	const { routes, size } = state;
+
+	for (const { kind, dash } of routeStyles) {
+		const path = shelfRoutePoints(routes?.[kind] ?? [], shelf, kind, size);
+
+		if (!path.length) continue;
+
 		ctx.save();
-		ctx.strokeStyle = color;
+		ctx.strokeStyle = routeColors[kind];
 		ctx.lineWidth = Math.max(2, size * 0.08);
 		ctx.lineCap = "round";
 		ctx.lineJoin = "round";
 		ctx.setLineDash([...dash]);
 		ctx.beginPath();
-		path.forEach((cell, index) => {
-			const x = gridInset + (cell.x + 0.5) * size;
-			const y = gridInset + (cell.y + 0.5) * size;
+
+		for (const [index, point] of path.entries()) {
+			const x = cellCenter(point.x, size);
+			const y = cellCenter(point.y, size);
 
 			if (index === 0) {
 				ctx.moveTo(x, y);
-			} else {
-				ctx.lineTo(x, y);
-			}
-		});
-		ctx.stroke();
-		const end = path.at(-1);
-		if (!end) continue;
 
-		const previous = path.at(-2);
-		if (previous) {
-			const x = gridInset + (end.x + 0.5) * size;
-			const y = gridInset + (end.y + 0.5) * size;
-			ctx.translate(x, y);
-			ctx.rotate(Math.atan2(end.y - previous.y, end.x - previous.x));
-			const arrow = Math.max(6, size * 0.2);
-			ctx.setLineDash([]);
-			ctx.beginPath();
-			ctx.moveTo(-arrow, -arrow * 0.65);
-			ctx.lineTo(0, 0);
-			ctx.lineTo(-arrow, arrow * 0.65);
-			ctx.stroke();
+				continue;
+			}
+
+			ctx.lineTo(x, y);
 		}
+
+		ctx.stroke();
+		paintRouteArrow(ctx, path, size);
 		ctx.restore();
 	}
-	if (routeHandles && routes?.[routeHandles].length) {
-		const path = routes[routeHandles];
+}
 
-		const handles = [
-			routeDragHandle?.index === 0 ? routeDragHandle.point : path[0],
-			routeDragHandle &&
-			routeDragHandle.index > 0 &&
-			routeDragHandle.index >= path.length - 1
-				? routeDragHandle.point
-				: path[path.length - 1],
-		];
+function paintPoint(
+	ctx: CanvasRenderingContext2D,
+	point: GridPosition,
+	size: number,
+	radius: number,
+) {
+	ctx.beginPath();
+	ctx.arc(
+		cellCenter(point.x, size),
+		cellCenter(point.y, size),
+		radius,
+		0,
+		Math.PI * 2,
+	);
+}
 
-		for (const point of path.slice(1, -1)) {
-			ctx.beginPath();
-			ctx.arc(
-				gridInset + (point.x + 0.5) * size,
-				gridInset + (point.y + 0.5) * size,
-				Math.max(2, size * 0.1),
-				0,
-				Math.PI * 2,
-			);
-			ctx.fillStyle = routeHandles === "inbound" ? "#e86536" : "#4f83c4";
-			ctx.fill();
-		}
-		if (routeDragHandle) {
-			ctx.beginPath();
-			ctx.arc(
-				gridInset + (routeDragHandle.point.x + 0.5) * size,
-				gridInset + (routeDragHandle.point.y + 0.5) * size,
-				Math.max(8, size * 0.32),
-				0,
-				Math.PI * 2,
-			);
-			ctx.strokeStyle = "#e86536";
-			ctx.lineWidth = 3;
-			ctx.stroke();
-		}
-		for (const [index, point] of handles.entries()) {
-			if (!point) continue;
-			const x = gridInset + (point.x + 0.5) * size;
-			const y = gridInset + (point.y + 0.5) * size;
+function routeEndpoints(
+	path: GridPosition[],
+	dragHandle: LayoutRenderState["routeDragHandle"],
+) {
+	const start = path[0];
+	const end = path.at(-1);
 
-			ctx.beginPath();
-			ctx.arc(x, y, Math.max(8, size * 0.32), 0, Math.PI * 2);
-			ctx.fillStyle = "#fff";
-			ctx.fill();
-			ctx.strokeStyle = routeHandles === "inbound" ? "#e86536" : "#4f83c4";
-			ctx.lineWidth = 2;
-			ctx.stroke();
-			ctx.fillStyle = ctx.strokeStyle;
-			ctx.font = "bold 10px Geist, sans-serif";
-			ctx.fillText(String(index + 1), x, y + 3);
-		}
+	if (!dragHandle) return [start, end];
+
+	const isDraggingEnd =
+		dragHandle.index > 0 && dragHandle.index >= path.length - 1;
+
+	return [
+		dragHandle.index === 0 ? dragHandle.point : start,
+		isDraggingEnd ? dragHandle.point : end,
+	];
+}
+
+function paintRouteHandles(
+	ctx: CanvasRenderingContext2D,
+	state: LayoutRenderState,
+	kind: RouteKind,
+) {
+	const { routes, routeDragHandle, size } = state;
+	const path = routes?.[kind] ?? [];
+	const color = routeColors[kind];
+	const handleRadius = Math.max(8, size * 0.32);
+
+	for (const point of path.slice(1, -1)) {
+		paintPoint(ctx, point, size, Math.max(2, size * 0.1));
+		ctx.fillStyle = color;
+		ctx.fill();
 	}
+
+	if (routeDragHandle) {
+		paintPoint(ctx, routeDragHandle.point, size, handleRadius);
+		ctx.strokeStyle = routeColors.inbound;
+		ctx.lineWidth = 3;
+		ctx.stroke();
+	}
+
+	for (const [index, point] of routeEndpoints(
+		path,
+		routeDragHandle,
+	).entries()) {
+		if (!point) continue;
+
+		paintPoint(ctx, point, size, handleRadius);
+		ctx.fillStyle = "#fff";
+		ctx.fill();
+		ctx.strokeStyle = color;
+		ctx.lineWidth = 2;
+		ctx.stroke();
+		ctx.fillStyle = color;
+		ctx.font = "bold 10px Geist, sans-serif";
+		ctx.fillText(
+			String(index + 1),
+			cellCenter(point.x, size),
+			cellCenter(point.y, size) + 3,
+		);
+	}
+}
+
+function paintPerimeter(
+	ctx: CanvasRenderingContext2D,
+	{ warehouse, size }: LayoutRenderState,
+	theme: MapTheme,
+) {
+	const origin = gridInset - perimeterGap;
+
 	ctx.beginPath();
 	ctx.roundRect(
-		30,
-		30,
-		warehouse.width * size + 4,
-		warehouse.height * size + 4,
-		5,
+		origin,
+		origin,
+		warehouse.width * size + 2 * perimeterGap,
+		warehouse.height * size + 2 * perimeterGap,
+		perimeterRadius,
 	);
 	ctx.strokeStyle = theme.perimeter;
 	ctx.lineWidth = 1;
 	ctx.stroke();
+}
+
+export function paintWarehouseLayout(
+	ctx: CanvasRenderingContext2D,
+	state: LayoutRenderState,
+) {
+	const theme = mapThemes[state.dark ? "dark" : "light"];
+	const selected = new Set(state.selectionKeys);
+	const { routes, routeHandles } = state;
+
+	ctx.font = "10px Geist, sans-serif";
+	ctx.textAlign = "center";
+
+	paintCells(ctx, state, theme, selected);
+	paintRoutes(ctx, state, selectedShelf(state, selected));
+
+	if (routeHandles && routes?.[routeHandles].length)
+		paintRouteHandles(ctx, state, routeHandles);
+
+	paintPerimeter(ctx, state, theme);
 }

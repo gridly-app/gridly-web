@@ -21,9 +21,7 @@ const motionMetrics = new WeakMap<RobotMotionTrack, RobotMotionMetrics>();
 function getMotionMetrics(track: RobotMotionTrack): RobotMotionMetrics {
 	const cached = motionMetrics.get(track);
 
-	if (cached) {
-		return cached;
-	}
+	if (cached) return cached;
 
 	const segmentLengths: number[] = [];
 	const cumulativeLengths = Array.from(track.path, () => 0);
@@ -57,6 +55,7 @@ export function prepareRobotMotionTrack(track: RobotMotionTrack) {
 		),
 	});
 	getMotionMetrics(prepared);
+
 	return prepared;
 }
 
@@ -88,6 +87,7 @@ export function remainingRobotMotionPath(
 				...track.path.slice(index + 1),
 			];
 		}
+
 		distance -= length;
 	}
 
@@ -99,28 +99,14 @@ export function robotMotionPosition(
 	now: number,
 	output?: GridPosition | undefined,
 ): GridPosition {
-	const position = output || { x: track.target.x, y: track.target.y };
-	const first = requiredAt(track.path, 0);
-
-	if (!first) {
-		return copyPosition(position, track.target);
-	}
-
+	const position = output ?? { x: track.target.x, y: track.target.y };
+	const first = track.path[0];
 	const { cumulativeLengths, totalLength } = getMotionMetrics(track);
-
-	if (totalLength === 0) {
-		return copyPosition(position, track.target);
-	}
-
 	const progress = getProgress(track, now);
 
-	if (progress <= 0) {
-		return copyPosition(position, first);
-	}
-
-	if (progress >= 1) {
+	if (!first || totalLength === 0 || progress >= 1)
 		return copyPosition(position, track.target);
-	}
+	if (progress <= 0) return copyPosition(position, first);
 
 	const targetDistance = totalLength * progress;
 	let low = 1;
@@ -131,9 +117,11 @@ export function robotMotionPosition(
 
 		if (requiredAt(cumulativeLengths, middle) < targetDistance) {
 			low = middle + 1;
-		} else {
-			high = middle;
+
+			continue;
 		}
+
+		high = middle;
 	}
 
 	const from = requiredAt(track.path, low - 1);
@@ -141,9 +129,7 @@ export function robotMotionPosition(
 	const segmentLength =
 		requiredAt(cumulativeLengths, low) - requiredAt(cumulativeLengths, low - 1);
 
-	if (segmentLength === 0) {
-		return copyPosition(position, to);
-	}
+	if (segmentLength === 0) return copyPosition(position, to);
 
 	const fraction =
 		(targetDistance - requiredAt(cumulativeLengths, low - 1)) / segmentLength;
@@ -155,9 +141,7 @@ export function robotMotionPosition(
 }
 
 function getProgress(track: RobotMotionTrack, now: number) {
-	if (track.duration <= 0) {
-		return now >= track.startedAt ? 1 : 0;
-	}
+	if (track.duration <= 0) return now >= track.startedAt ? 1 : 0;
 
 	return Math.max(0, Math.min(1, (now - track.startedAt) / track.duration));
 }

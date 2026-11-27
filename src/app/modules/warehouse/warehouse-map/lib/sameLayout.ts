@@ -1,10 +1,12 @@
 import type { GridPosition } from "@/domain/warehouse";
+
 import type { LayoutRenderState } from "./canvas/CanvasWarehouseRenderer";
 
-const samePoint = (
-	a?: (GridPosition | null) | undefined,
-	b?: (GridPosition | null) | undefined,
-) => a === b || (a?.x === b?.x && a?.y === b?.y);
+type MaybePoint = GridPosition | null | undefined;
+
+function samePoint(a: MaybePoint, b: MaybePoint) {
+	return a === b || (a?.x === b?.x && a?.y === b?.y);
+}
 
 function samePath(a: GridPosition[] = [], b: GridPosition[] = []) {
 	return (
@@ -12,6 +14,10 @@ function samePath(a: GridPosition[] = [], b: GridPosition[] = []) {
 		(a.length === b.length &&
 			a.every((point, index) => samePoint(point, b[index])))
 	);
+}
+
+function sameKeys(a: string[], b: string[]) {
+	return a.length === b.length && a.every((key, index) => key === b[index]);
 }
 
 export function sameLayout(a: LayoutRenderState, b: LayoutRenderState) {
@@ -22,8 +28,7 @@ export function sameLayout(a: LayoutRenderState, b: LayoutRenderState) {
 		a.size === b.size &&
 		a.dark === b.dark &&
 		samePoint(a.selected, b.selected) &&
-		a.selectionKeys.length === b.selectionKeys.length &&
-		a.selectionKeys.every((key, index) => key === b.selectionKeys[index]) &&
+		sameKeys(a.selectionKeys, b.selectionKeys) &&
 		samePath(a.routes?.inbound, b.routes?.inbound) &&
 		samePath(a.routes?.outbound, b.routes?.outbound) &&
 		a.routeHandles === b.routeHandles &&
