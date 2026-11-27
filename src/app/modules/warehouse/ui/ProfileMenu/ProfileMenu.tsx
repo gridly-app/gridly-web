@@ -9,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
 	accountEntryPath,
 	shipmentAdminPath,
@@ -30,58 +31,89 @@ import {
 	MenuSubmenuTrigger,
 	MenuTrigger,
 } from "@/shared/ui/overlays";
+
 import { useWorkspaceNotice } from "../../model/useWorkspaceNotice";
+
 import styles from "./ProfileMenu.module.css";
 
+const sandboxProfile = {
+	avatarSeed: "sandbox-guest",
+	initials: "Г",
+	name: "Гость",
+	role: "Песочница",
+	logoutLabel: "Выйти из песочницы",
+};
+
 export function ProfileMenu() {
-	const [open, setOpen] = useState(false);
+	const [isOpen, setIsOpen] = useState(false);
 	const navigate = useNavigate();
 	const mode = useWorkspaceMode();
-	const { user, logout: endSession } = useSession();
+	const { user, logout } = useSession();
 	const { dark, setDark } = useTheme();
 	const notify = useWorkspaceNotice();
 	const isSandbox = mode === "sandbox";
+	const accountProfile = {
+		avatarSeed: user,
+		initials: user.slice(0, 2).toUpperCase(),
+		name: user,
+		role: "Оператор склада",
+		logoutLabel: "Выйти",
+	};
+	const profile = isSandbox ? sandboxProfile : accountProfile;
+	const canOpenAccount = isSandbox && Boolean(user);
 
-	async function logout() {
-		setOpen(false);
-		try {
-			if (!isSandbox) await endSession();
-			await navigate(isSandbox ? "/" : signInPath, { replace: true });
-		} catch (error) {
-			notify(errorMessage(error));
-		}
+	async function leave() {
+		if (!isSandbox) await logout();
+
+		await navigate(isSandbox ? "/" : signInPath, { replace: true });
 	}
 
-	function selectTheme(dark: boolean) {
-		setDark(dark);
-		setOpen(false);
+	function handleLogout() {
+		setIsOpen(false);
+		leave().catch((error: unknown) => notify(errorMessage(error)));
 	}
+
+	function handleLightTheme() {
+		setDark(false);
+		setIsOpen(false);
+	}
+
+	function handleDarkTheme() {
+		setDark(true);
+		setIsOpen(false);
+	}
+
+	function handleAdministration() {
+		setIsOpen(false);
+		void navigate(shipmentAdminPath(mode));
+	}
+
+	function handleAccount() {
+		setIsOpen(false);
+		void navigate(accountEntryPath);
+	}
+
+	const trigger = (
+		<Button
+			variant="ghost"
+			className={styles.profileTrigger}
+			data-sandbox={isSandbox || undefined}
+		/>
+	);
 
 	return (
-		<Menu open={open} onOpenChange={setOpen}>
-			<MenuTrigger
-				render={
-					<Button
-						variant="ghost"
-						className={styles.profileTrigger}
-						data-sandbox={isSandbox || undefined}
-					/>
-				}
-				aria-label="Меню профиля"
-			>
+		<Menu open={isOpen} onOpenChange={setIsOpen}>
+			<MenuTrigger render={trigger} aria-label="Меню профиля">
 				<AvatarExtended className={styles.avatarWrapper}>
 					<Avatar className={styles.avatar}>
-						<GeneratedAvatar
-							name={isSandbox ? "sandbox-guest" : user}
-							variant="bot"
-						>
-							{isSandbox ? "Г" : user.slice(0, 2).toUpperCase()}
+						<GeneratedAvatar name={profile.avatarSeed} variant="bot">
+							{profile.initials}
 						</GeneratedAvatar>
 					</Avatar>
 				</AvatarExtended>
 				<span className={styles.profileName}>
-					<b>{isSandbox ? "Гость" : user}</b>
-					<small>{isSandbox ? "Песочница" : "Оператор склада"}</small>
+					<b>{profile.name}</b>
+					<small>{profile.role}</small>
 				</span>
 				<IconChevronDown className={styles.profileChevron} size={16} />
 			</MenuTrigger>
@@ -97,40 +129,28 @@ export function ProfileMenu() {
 						<span>Тема</span>
 					</MenuSubmenuTrigger>
 					<MenuPopup side="right" sideOffset={8} className={styles.profileMenu}>
-						<MenuItem onClick={() => selectTheme(false)}>
+						<MenuItem onClick={handleLightTheme}>
 							<IconSun size={18} />
 							<span>Светлая</span>
 							{!dark && <IconCheck size={15} />}
 						</MenuItem>
-						<MenuItem onClick={() => selectTheme(true)}>
+						<MenuItem onClick={handleDarkTheme}>
 							<IconMoon size={18} />
 							<span>Тёмная</span>
 							{dark && <IconCheck size={15} />}
 						</MenuItem>
 					</MenuPopup>
 				</MenuSubmenu>
-				<MenuItem
-					onClick={() => {
-						setOpen(false);
-						void navigate(shipmentAdminPath(mode));
-					}}
-				>
+				<MenuItem onClick={handleAdministration}>
 					<IconShieldCog size={18} aria-hidden="true" />
 					<span>Администрирование</span>
 				</MenuItem>
-				{isSandbox && user && (
-					<MenuItem
-						onClick={() => {
-							setOpen(false);
-							void navigate(accountEntryPath);
-						}}
-					>
-						Мои склады
-					</MenuItem>
+				{canOpenAccount && (
+					<MenuItem onClick={handleAccount}>Мои склады</MenuItem>
 				)}
-				<MenuItem onClick={() => void logout()}>
+				<MenuItem onClick={handleLogout}>
 					<IconLogout size={18} />
-					<span>{isSandbox ? "Выйти из песочницы" : "Выйти"}</span>
+					<span>{profile.logoutLabel}</span>
 				</MenuItem>
 			</MenuPopup>
 		</Menu>

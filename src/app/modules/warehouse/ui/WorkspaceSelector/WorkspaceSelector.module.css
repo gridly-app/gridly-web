@@ -15,33 +15,34 @@
 	padding-inline: var(--space-2);
 }
 
-[data-collapsible="icon"] .loading {
-	width: 36px;
-}
-
 [data-collapsible="icon"] .dropdown {
 	justify-content: center;
 	width: 100%;
 }
 
-[data-collapsible="icon"] .trigger {
+[data-collapsible="icon"] .loading {
 	width: 36px;
-	height: 36px;
-	min-width: 36px;
-	min-height: 36px;
-	padding: 0;
-	margin-inline: auto;
-	justify-content: center;
-	flex-shrink: 0;
-	background: var(--card);
-	box-shadow: none;
-	gap: 0;
 }
 
 [data-collapsible="icon"] .icon {
 	display: block;
 	width: 18px;
 	height: 18px;
+}
+
+[data-collapsible="icon"] .trigger {
+	flex-shrink: 0;
+	justify-content: center;
+	gap: 0;
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	min-height: 36px;
+	margin-inline: auto;
+	padding: 0;
+
+	background: var(--card);
+	box-shadow: none;
 }
 
 [data-collapsible="icon"]

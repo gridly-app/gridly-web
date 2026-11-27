@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import type { WarehouseSection } from "@/ports/navigation";
-import { warehousePath } from "@/ports/navigation";
+
+import { type WarehouseSection, warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
 import { useWarehouses } from "@/ports/warehouse";
 import { useImmersiveState } from "@/shared/lib";
@@ -14,8 +14,10 @@ import {
 	SidebarHeader,
 	SidebarTrigger,
 } from "@/shared/ui/navigation";
+
 import { ProfileMenu } from "../ProfileMenu/ProfileMenu";
 import { WorkspaceSelector } from "../WorkspaceSelector/WorkspaceSelector";
+
 import styles from "./WorkspaceSidebar.module.css";
 
 export function WorkspaceSidebar({
@@ -30,12 +32,18 @@ export function WorkspaceSidebar({
 	const mode = useWorkspaceMode();
 	const navigate = useNavigate();
 	const warehouses = useWarehouses();
-	const immersive = useImmersiveState();
+	const isImmersive = useImmersiveState();
+
+	function handleWarehouseChange(nextWarehouseId: string) {
+		if (nextWarehouseId)
+			void navigate(warehousePath(mode, nextWarehouseId, section));
+	}
+
 	return (
 		<Sidebar
-			inert={immersive}
-			aria-hidden={immersive || undefined}
-			data-immersive={immersive || undefined}
+			inert={isImmersive}
+			aria-hidden={isImmersive || undefined}
+			data-immersive={isImmersive || undefined}
 			className={styles.workspace}
 		>
 			<SidebarHeader className={styles.header}>
@@ -48,15 +56,12 @@ export function WorkspaceSidebar({
 						className={styles.trigger}
 					/>
 				</div>
-
 				<span className={styles.label}>РАБОЧЕЕ ПРОСТРАНСТВО</span>
 				<WorkspaceSelector
 					warehouseId={warehouseId}
 					warehouses={warehouses.data ?? []}
-					loading={warehouses.isPending}
-					changeWarehouse={(id) => {
-						if (id) void navigate(warehousePath(mode, id, section));
-					}}
+					isLoading={warehouses.isPending}
+					onWarehouseChange={handleWarehouseChange}
 				/>
 				<Separator className={styles.railSeparator} />
 			</SidebarHeader>

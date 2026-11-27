@@ -4,21 +4,25 @@
 
 .menuButton {
 	min-height: 40px;
-	border-radius: var(--radius-control);
+
 	font-size: var(--text-control);
+
+	border-radius: var(--radius-control);
 }
 
-.menuButton:is([data-active="true"], [aria-current="page"]) {
-	background: var(--accent-bg);
-	color: var(--primary);
-	box-shadow: var(--shadow-control);
+@media (pointer: coarse), (width <= 580px) {
+	.menuButton {
+		min-height: 44px;
+	}
 }
 
 .railSelection {
 	position: absolute;
 	inset: 0;
-	border-radius: var(--radius-control);
+
 	background: var(--accent-bg);
+	border-radius: var(--radius-control);
+
 	pointer-events: none;
 }
 
@@ -26,10 +30,14 @@
 	position: relative;
 }
 
-@media (pointer: coarse), (width <= 580px) {
-	.menuButton {
-		min-height: 44px;
-	}
+.menuButton:is([data-active="true"], [aria-current="page"]) {
+	color: var(--primary);
+	background: var(--accent-bg);
+	box-shadow: var(--shadow-control);
+}
+
+.menuButton[aria-current="page"] > .icon {
+	color: var(--primary);
 }
 
 [data-collapsible="icon"] .menu {
@@ -58,8 +66,4 @@
 
 [data-collapsible="icon"] .text {
 	display: none;
-}
-
-.menuButton[aria-current="page"] > .icon {
-	color: var(--primary);
 }

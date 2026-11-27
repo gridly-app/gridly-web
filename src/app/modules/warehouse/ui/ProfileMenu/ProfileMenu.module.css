@@ -3,74 +3,83 @@
 	--button-foreground: var(--sidebar-foreground);
 	--button-hover: var(--sidebar-accent);
 
-	min-width: 0;
-	overflow: hidden;
 	justify-content: flex-start;
+	gap: var(--space-2);
 	width: 100%;
+	min-width: 0;
 	height: auto;
+	padding-inline: var(--space-2);
+	overflow: hidden;
+
 	white-space: normal;
-	padding-inline: 8px;
-	gap: 8px;
 }
+
+.avatarWrapper {
+	flex: 0 0 32px;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	overflow: hidden;
+
+	border-radius: 50%;
+}
+
+.avatar {
+	flex: 0 0 2rem;
+}
+
 .profileName {
 	flex: 1;
 	min-width: 0;
+
 	text-align: left;
 }
-.profileName b,
-.profileName small {
+
+.profileName > * {
 	display: block;
 	overflow: hidden;
+
 	text-overflow: ellipsis;
-}
-.avatar {
-	flex: 0 0 2rem;
 }
 
 .profileMenu {
 	width: 190px;
 	max-width: calc(100vw - 24px);
 }
+
 .profileMenu > div {
-	padding: 4px;
+	padding: var(--space-1);
 }
-.profileMenu [data-slot="menu-item"],
-.profileMenu [data-slot="menu-sub-trigger"] {
+
+.profileMenu :is([data-slot="menu-item"], [data-slot="menu-sub-trigger"]) {
+	gap: var(--space-2);
 	min-height: 30px;
-	padding: 5px 8px;
-	gap: 8px;
-	border-radius: 6px;
+	padding: 5px var(--space-2);
+
 	white-space: nowrap;
+
+	border-radius: 6px;
 }
+
 .profileMenu [data-slot="menu-item"] + [data-slot="menu-item"] {
 	margin-top: 2px;
 }
 
-.avatarWrapper {
-	flex: 0 0 32px;
-	width: 32px;
-	height: 32px;
-	align-items: center;
-	justify-content: center;
-	overflow: hidden;
-	border-radius: 50%;
-}
-
-[data-collapsible="icon"] .profileName,
-[data-collapsible="icon"] .profileChevron {
+[data-collapsible="icon"] :is(.profileName, .profileChevron) {
 	display: none;
 }
 
 [data-collapsible="icon"] .profileTrigger {
+	flex-shrink: 0;
+	justify-content: center;
+	gap: 0;
 	width: 36px;
 	height: 36px;
 	min-width: 36px;
 	min-height: 36px;
-	padding: 0;
-	gap: 0;
 	margin-inline: auto;
-	justify-content: center;
-	flex-shrink: 0;
+	padding: 0;
 }
 
 [data-collapsible="icon"] .profileTrigger [data-slot="avatar"] {
