@@ -14,21 +14,33 @@ import {
 import { Select } from "@/shared/ui/forms";
 import { Link } from "@/shared/ui/navigation";
 
+import { productOrders } from "../../model/productMovements";
+
 interface ProductOrderFilters {
 	search: string;
 	kind: string;
 	status: string;
 }
 
-interface ProductOrdersPanelProps {
-	productId: string;
-	warehouseId: string;
-	warehouseOrders: Order[];
-	filters: ProductOrderFilters;
-	onChange: (filters: ProductOrderFilters) => void;
-}
+const numberFormat = new Intl.NumberFormat("ru-RU");
+const kindOptions = [
+	{ value: "all", label: "Все заказы" },
+	{ value: "inbound", label: "Поставки" },
+	{ value: "outbound", label: "Отгрузки" },
+];
 
-const number = new Intl.NumberFormat("ru-RU");
+function matchesOrder(
+	order: Order,
+	{ search, kind, status }: ProductOrderFilters,
+) {
+	const text = `${order.number} ${order.party}`.toLowerCase();
+	const matchesKind = kind === "all" || order.kind === kind;
+	const matchesStatus = status === "all" || order.status === status;
+
+	return (
+		matchesKind && matchesStatus && text.includes(search.trim().toLowerCase())
+	);
+}
 
 export function ProductOrdersPanel({
 	productId,
@@ -36,65 +48,75 @@ export function ProductOrdersPanel({
 	warehouseOrders,
 	filters,
 	onChange,
-}: ProductOrdersPanelProps) {
+}: {
+	productId: string;
+	warehouseId: string;
+	warehouseOrders: Order[];
+	filters: ProductOrderFilters;
+	onChange: (filters: ProductOrderFilters) => void;
+}) {
 	const mode = useWorkspaceMode();
-	const { search: orderSearch, kind: orderKind, status: orderStatus } = filters;
-	const orders = warehouseOrders
-		.flatMap((order) => {
-			const lines = order.lines.filter((line) => line.product === productId);
-			return lines.length
-				? [
-						{
-							order,
-							quantity: lines.reduce((sum, line) => sum + line.quantity, 0),
-						},
-					]
-				: [];
-		})
-		.sort((a, b) => b.order.created.localeCompare(a.order.created));
-	const visibleOrders = orders.filter(
-		({ order }) =>
-			(orderKind === "all" || order.kind === orderKind) &&
-			(orderStatus === "all" || order.status === orderStatus) &&
-			`${order.number} ${order.party}`
-				.toLowerCase()
-				.includes(orderSearch.trim().toLowerCase()),
+	const orders = productOrders(warehouseOrders, productId);
+	const visibleOrders = orders.filter(({ order }) =>
+		matchesOrder(order, filters),
 	);
+	const statuses = [...new Set(orders.map(({ order }) => order.status))];
+	const statusOptions = [
+		{ value: "all", label: "Все статусы" },
+		...statuses.map((status) => ({
+			value: status,
+			label: statusLabels[status] ?? status,
+		})),
+	];
+	const activeCount =
+		Number(filters.kind !== "all") + Number(filters.status !== "all");
+	const emptyMessage = orders.length
+		? "Нет заказов по выбранным фильтрам и поиску."
+		: "В доступном составе заказов этот товар не найден.";
+	const searchField = {
+		"aria-label": "Поиск по заказам товара",
+		value: filters.search,
+		onChange: (search: string) => onChange({ ...filters, search }),
+	};
+
+	function handleKindChange(kind: string) {
+		onChange({ ...filters, kind });
+	}
+
+	function handleStatusChange(status: string) {
+		onChange({ ...filters, status });
+	}
+
+	function handleReset() {
+		onChange({ ...filters, kind: "all", status: "all" });
+	}
+
+	function orderLink(order: Order) {
+		return {
+			pathname: warehousePath(mode, warehouseId, order.kind),
+			search: new URLSearchParams({ order: order.id }).toString(),
+		};
+	}
+
 	return (
 		<>
 			{orders.length > 0 && (
 				<ListFilters
-					search={{
-						"aria-label": "Поиск по заказам товара",
-						value: orderSearch,
-						onChange: (search) => onChange({ ...filters, search }),
-					}}
-					count={Number(orderKind !== "all") + Number(orderStatus !== "all")}
-					onReset={() => onChange({ ...filters, kind: "all", status: "all" })}
+					search={searchField}
+					count={activeCount}
+					onReset={handleReset}
 				>
 					<Select
 						aria-label="Тип заказа"
-						value={orderKind}
-						onValueChange={(kind) => onChange({ ...filters, kind })}
-						options={[
-							{ value: "all", label: "Все заказы" },
-							{ value: "inbound", label: "Поставки" },
-							{ value: "outbound", label: "Отгрузки" },
-						]}
+						value={filters.kind}
+						onValueChange={handleKindChange}
+						options={kindOptions}
 					/>
 					<Select
 						aria-label="Статус заказа"
-						value={orderStatus}
-						onValueChange={(status) => onChange({ ...filters, status })}
-						options={[
-							{ value: "all", label: "Все статусы" },
-							...[...new Set(orders.map(({ order }) => order.status))].map(
-								(status) => ({
-									value: status,
-									label: statusLabels[status] ?? status,
-								}),
-							),
-						]}
+						value={filters.status}
+						onValueChange={handleStatusChange}
+						options={statusOptions}
 					/>
 				</ListFilters>
 			)}
@@ -113,16 +135,7 @@ export function ProductOrdersPanel({
 						{visibleOrders.map(({ order, quantity }) => (
 							<TableRow key={order.id}>
 								<TableCell>
-									<Link
-										to={{
-											pathname: warehousePath(mode, warehouseId, order.kind),
-											search: new URLSearchParams({
-												order: order.id,
-											}).toString(),
-										}}
-									>
-										{order.number}
-									</Link>
+									<Link to={orderLink(order)}>{order.number}</Link>
 								</TableCell>
 								<TableCell>
 									{order.kind === "inbound" ? "Поставка" : "Отгрузка"}
@@ -131,17 +144,13 @@ export function ProductOrdersPanel({
 								<TableCell>
 									<StatusBadge value={order.status} />
 								</TableCell>
-								<TableCell>{number.format(quantity)} шт.</TableCell>
+								<TableCell>{numberFormat.format(quantity)} шт.</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
 				</Table>
 			) : (
-				<p>
-					{orders.length
-						? "Нет заказов по выбранным фильтрам и поиску."
-						: "В доступном составе заказов этот товар не найден."}
-				</p>
+				<p>{emptyMessage}</p>
 			)}
 		</>
 	);

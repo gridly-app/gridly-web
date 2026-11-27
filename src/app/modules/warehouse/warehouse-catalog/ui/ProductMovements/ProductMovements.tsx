@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import type { Order } from "@/domain/warehouse";
 import { warehousePath } from "@/ports/navigation";
 import { useWorkspaceMode } from "@/ports/session";
@@ -13,147 +14,146 @@ import {
 } from "@/shared/ui/dataDisplay";
 import { Select } from "@/shared/ui/forms";
 import { Link } from "@/shared/ui/navigation";
-import type { WarehouseView } from "@/domain/warehouse";
+
+import {
+	type ProductMovement,
+	productMovements,
+} from "../../model/productMovements";
+import type { CatalogMovementsWarehouse } from "../../model/warehouseResources";
+
+const numberFormat = new Intl.NumberFormat("ru-RU");
+
+function matchesMovement(
+	movement: ProductMovement,
+	type: string,
+	searchQuery: string,
+) {
+	const text =
+		`${movement.type} ${movement.order?.number ?? ""} ${movement.reason}`.toLowerCase();
+
+	return (
+		(type === "all" || movement.type === type) && text.includes(searchQuery)
+	);
+}
 
 export function ProductMovements({
 	productId,
 	warehouse,
 }: {
 	productId: string;
-	warehouse: WarehouseView<"catalog" | "inventory" | "orders" | "history">;
+	warehouse: CatalogMovementsWarehouse;
 }) {
-	const mode = useWorkspaceMode();
 	const [search, setSearch] = useState("");
 	const [type, setType] = useState("all");
-	const number = new Intl.NumberFormat("ru-RU");
-	const date = new Intl.DateTimeFormat("ru-RU", {
-		dateStyle: "medium",
-		timeZone: warehouse.timezone,
-	});
-	const movements = warehouse.orders.flatMap((order) => {
-		const lines = order.lines.filter((line) => line.product === productId);
-		const quantity = lines.reduce(
-			(sum, line) =>
-				sum +
-				(order.kind === "inbound"
-					? (line.putaway ?? (order.status === "received" ? line.quantity : 0))
-					: ["shipped", "completed"].includes(order.status)
-						? line.quantity
-						: 0),
-			0,
-		);
-		return quantity > 0
-			? [
-					{
-						id: `order:${order.id}`,
-						order,
-						quantity: order.kind === "inbound" ? quantity : -quantity,
-						type: order.kind === "inbound" ? "Размещение" : "Отгрузка",
-						time: "",
-						reason: "",
-					},
-				]
-			: [];
-	});
-	const writeOffs = (warehouse.writeOffs ?? [])
-		.filter((item) => item.product === productId)
-		.map((item) => ({
-			id: `writeoff:${item.id}`,
-			order: null as Order | null,
-			quantity: -item.quantity,
-			type: "Списание",
-			time: item.time,
-			reason: item.reason,
-		}));
-	const rows = [...movements, ...writeOffs].sort((a, b) =>
-		(b.time || b.order?.created || "").localeCompare(
-			a.time || a.order?.created || "",
+	const movements = productMovements(warehouse, productId);
+	const searchQuery = search.trim().toLowerCase();
+	const visible = movements.filter((movement) =>
+		matchesMovement(movement, type, searchQuery),
+	);
+	const typeOptions = [
+		{ value: "all", label: "Все операции" },
+		...[...new Set(movements.map((movement) => movement.type))].map(
+			(value) => ({ value, label: value }),
 		),
-	);
+	];
+	const searchField = {
+		"aria-label": "Поиск по движениям товара",
+		value: search,
+		onChange: setSearch,
+	};
 
-	const visible = rows.filter(
-		(row) =>
-			(type === "all" || row.type === type) &&
-			`${row.type} ${row.order?.number ?? ""} ${row.reason}`
-				.toLowerCase()
-				.includes(search.trim().toLowerCase()),
-	);
+	function handleReset() {
+		setType("all");
+	}
 
-	if (!rows.length) return <p>Движений товара в доступных данных нет.</p>;
+	if (!movements.length) return <p>Движений товара в доступных данных нет.</p>;
+
 	return (
 		<>
 			<ListFilters
-				search={{
-					"aria-label": "Поиск по движениям товара",
-					value: search,
-					onChange: setSearch,
-				}}
+				search={searchField}
 				count={Number(type !== "all")}
-				onReset={() => setType("all")}
+				onReset={handleReset}
 			>
 				<Select
 					aria-label="Тип операции"
 					value={type}
 					onValueChange={setType}
-					options={[
-						{ value: "all", label: "Все операции" },
-						...[...new Set(rows.map((row) => row.type))].map((value) => ({
-							value,
-							label: value,
-						})),
-					]}
+					options={typeOptions}
 				/>
 			</ListFilters>
 			{visible.length ? (
-				<Table aria-label="Движения товара">
-					<TableHeader>
-						<TableRow>
-							<TableHead>Операция</TableHead>
-							<TableHead>Изменение</TableHead>
-							<TableHead>Дата операции</TableHead>
-							<TableHead>Основание</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{visible.map((row) => (
-							<TableRow key={row.id}>
-								<TableCell>{row.type}</TableCell>
-								<TableCell>
-									{row.quantity > 0 ? "+" : ""}
-									{number.format(row.quantity)} шт.
-								</TableCell>
-								<TableCell>
-									{row.time && Number.isFinite(Date.parse(row.time))
-										? date.format(new Date(row.time))
-										: "—"}
-								</TableCell>
-								<TableCell>
-									{row.order ? (
-										<Link
-											to={{
-												pathname: warehousePath(
-													mode,
-													warehouse.id,
-													row.order.kind,
-												),
-												search: new URLSearchParams({
-													order: row.order.id,
-												}).toString(),
-											}}
-										>
-											{row.order.number}
-										</Link>
-									) : (
-										row.reason || "—"
-									)}
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+				<MovementsTable
+					movements={visible}
+					warehouseId={warehouse.id}
+					timeZone={warehouse.timezone}
+				/>
 			) : (
 				<p>Нет движений по выбранным фильтрам и поиску.</p>
 			)}
 		</>
+	);
+}
+
+function MovementsTable({
+	movements,
+	warehouseId,
+	timeZone,
+}: {
+	movements: ProductMovement[];
+	warehouseId: string;
+	timeZone: string;
+}) {
+	const mode = useWorkspaceMode();
+	const dateFormat = new Intl.DateTimeFormat("ru-RU", {
+		dateStyle: "medium",
+		timeZone,
+	});
+
+	function formatTime(time: string) {
+		return time && Number.isFinite(Date.parse(time))
+			? dateFormat.format(new Date(time))
+			: "—";
+	}
+
+	function orderLink(order: Order) {
+		return {
+			pathname: warehousePath(mode, warehouseId, order.kind),
+			search: new URLSearchParams({ order: order.id }).toString(),
+		};
+	}
+
+	return (
+		<Table aria-label="Движения товара">
+			<TableHeader>
+				<TableRow>
+					<TableHead>Операция</TableHead>
+					<TableHead>Изменение</TableHead>
+					<TableHead>Дата операции</TableHead>
+					<TableHead>Основание</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				{movements.map((movement) => (
+					<TableRow key={movement.id}>
+						<TableCell>{movement.type}</TableCell>
+						<TableCell>
+							{movement.quantity > 0 ? "+" : ""}
+							{numberFormat.format(movement.quantity)} шт.
+						</TableCell>
+						<TableCell>{formatTime(movement.time)}</TableCell>
+						<TableCell>
+							{movement.order ? (
+								<Link to={orderLink(movement.order)}>
+									{movement.order.number}
+								</Link>
+							) : (
+								movement.reason || "—"
+							)}
+						</TableCell>
+					</TableRow>
+				))}
+			</TableBody>
+		</Table>
 	);
 }
