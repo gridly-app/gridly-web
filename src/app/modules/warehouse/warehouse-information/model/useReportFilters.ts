@@ -1,58 +1,96 @@
 import { useState } from "react";
-import type { WarehouseView } from "@/domain/warehouse";
-import { type ReportFilters, shiftDay, warehouseDay } from "./reportPeriod";
 
-export type ReportRange = Pick<ReportFilters, "from" | "to">;
+import type { WarehouseView } from "@/domain/warehouse";
+
+import {
+	type ReportFilters,
+	type ReportRange,
+	shiftDay,
+	warehouseDay,
+} from "./reportPeriod";
+
 export const reportOrderPageSize = 8;
+
+export type ReportPeriod = number | "all";
+
+const defaultPeriodDays = 30;
+
+function lastDays(today: string, days: number): ReportRange {
+	return { from: shiftDay(today, 1 - days), to: today };
+}
+
+function orderDays(
+	warehouse: Pick<WarehouseView<"orders">, "orders" | "timezone">,
+) {
+	return warehouse.orders
+		.filter((order) => Number.isFinite(Date.parse(order.created)))
+		.map((order) => warehouseDay(order.created, warehouse.timezone))
+		.sort();
+}
+
+function isValidRange({ from, to }: ReportRange) {
+	return (
+		Number.isFinite(Date.parse(from)) &&
+		Number.isFinite(Date.parse(to)) &&
+		from <= to
+	);
+}
 
 export function useReportFilters(
 	warehouse: Pick<WarehouseView<"orders">, "orders" | "timezone">,
 ) {
-	const [filters, setFilters] = useState<ReportFilters>(() => {
-		const to = warehouseDay(Date.now(), warehouse.timezone);
-		return {
-			from: shiftDay(to, -29),
-			to,
-			kind: "all",
-			status: "all",
-			category: "all",
-			compare: false,
-		};
-	});
-	const [period, setPeriodSelection] = useState("30");
+	const [filters, setFilters] = useState<ReportFilters>(() => ({
+		...lastDays(
+			warehouseDay(Date.now(), warehouse.timezone),
+			defaultPeriodDays,
+		),
+		kind: "all",
+		status: "all",
+		category: "all",
+		compare: false,
+	}));
+	const [period, setPeriodSelection] = useState(String(defaultPeriodDays));
 	const [selectedRange, setSelectedRange] = useState<ReportRange | null>(null);
 	const [orderLimit, setOrderLimit] = useState(reportOrderPageSize);
-	const valid =
-		Number.isFinite(Date.parse(filters.from)) &&
-		Number.isFinite(Date.parse(filters.to)) &&
-		filters.from <= filters.to;
-	const today = warehouseDay(Date.now(), warehouse.timezone);
-	const update = <K extends keyof ReportFilters>(
-		key: K,
-		value: ReportFilters[K],
-	) => {
-		setFilters((current) => ({ ...current, [key]: value }));
-		if (key === "from" || key === "to") setPeriodSelection("");
-		setSelectedRange(null);
-		setOrderLimit(reportOrderPageSize);
-	};
-	function setPeriod(days: number | "all") {
-		setPeriodSelection(String(days));
-		const dates = warehouse.orders
-			.filter((order) => Number.isFinite(Date.parse(order.created)))
-			.map((order) => warehouseDay(order.created, warehouse.timezone))
-			.sort();
-		setFilters((current) => ({
-			...current,
-			from:
-				days === "all"
-					? (dates[0] ?? shiftDay(today, -29))
-					: shiftDay(today, 1 - days),
-			to: days === "all" ? (dates.at(-1) ?? today) : today,
-		}));
+	const isValid = isValidRange(filters);
+
+	function resetDetails() {
 		setSelectedRange(null);
 		setOrderLimit(reportOrderPageSize);
 	}
+
+	function update<K extends keyof ReportFilters>(
+		key: K,
+		value: ReportFilters[K],
+	) {
+		setFilters((current) => ({ ...current, [key]: value }));
+
+		if (key === "from" || key === "to") setPeriodSelection("");
+
+		resetDetails();
+	}
+
+	function periodRange(days: ReportPeriod): ReportRange {
+		const today = warehouseDay(Date.now(), warehouse.timezone);
+
+		if (days !== "all") return lastDays(today, days);
+
+		const dates = orderDays(warehouse);
+
+		return {
+			from: dates[0] ?? lastDays(today, defaultPeriodDays).from,
+			to: dates.at(-1) ?? today,
+		};
+	}
+
+	function setPeriod(days: ReportPeriod) {
+		const range = periodRange(days);
+
+		setPeriodSelection(String(days));
+		setFilters((current) => ({ ...current, ...range }));
+		resetDetails();
+	}
+
 	function selectRange(from: string, to: string) {
 		setSelectedRange((current) =>
 			current?.from === from && current.to === to ? null : { from, to },
@@ -60,16 +98,24 @@ export function useReportFilters(
 		setOrderLimit(reportOrderPageSize);
 	}
 
+	function clearRange() {
+		setSelectedRange(null);
+	}
+
+	function loadMoreOrders() {
+		setOrderLimit((limit) => limit + reportOrderPageSize);
+	}
+
 	return {
 		filters,
 		period,
 		selectedRange,
 		orderLimit,
-		valid,
+		isValid,
 		update,
 		setPeriod,
 		selectRange,
-		clearRange: () => setSelectedRange(null),
-		loadMoreOrders: () => setOrderLimit((limit) => limit + reportOrderPageSize),
+		clearRange,
+		loadMoreOrders,
 	};
 }

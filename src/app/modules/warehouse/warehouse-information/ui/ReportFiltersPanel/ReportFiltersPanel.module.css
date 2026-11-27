@@ -1,11 +1,10 @@
 .filterPanel {
+	padding: var(--space-4);
+
+	background: var(--card);
 	border: 1px solid var(--border);
 	border-radius: 0;
-	background: var(--card);
 	box-shadow: var(--shadow-panel);
-}
-.filterPanel {
-	padding: 16px;
 }
 .filterMain {
 	display: flex;

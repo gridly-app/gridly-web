@@ -15,10 +15,8 @@ import { Empty, EmptyDescription } from "@/shared/ui/feedback";
 import { formatShortDay as shortDay } from "../../model/reportPeriod";
 import { type WarehouseReport } from "../../model/report";
 import { warehouseDay } from "../../model/reportPeriod";
-import {
-	type ReportRange,
-	reportOrderPageSize,
-} from "../../model/useReportFilters";
+import { type ReportRange } from "../../model/reportPeriod";
+import { reportOrderPageSize } from "../../model/useReportFilters";
 import layoutStyles from "../../shared.module.css";
 
 interface ReportOrdersProps {

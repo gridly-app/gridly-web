@@ -1,23 +1,40 @@
 import { useRef } from "react";
+
 import { useWarehouseScreen } from "@/ports/warehouse";
 import { saveFile } from "@/shared/http";
 import { Button } from "@/shared/ui/controls";
 import { ErrorNotice } from "@/shared/ui/feedback";
 import { ScrollArea } from "@/shared/ui/navigation";
+
 import { buildReport } from "./model/report";
-import { previousPeriod, warehouseDay } from "./model/reportPeriod";
 import { reportCsv } from "./model/reportCsv";
+import {
+	previousPeriod,
+	type ReportRange,
+	warehouseDay,
+} from "./model/reportPeriod";
 import { useReportFilters } from "./model/useReportFilters";
 import { warehouseResources } from "./model/warehouseResources";
 import { CategoryDistribution } from "./ui/CategoryDistribution/CategoryDistribution";
+import { ReportFiltersPanel } from "./ui/ReportFiltersPanel/ReportFiltersPanel";
+import { ReportFinancialMetrics } from "./ui/ReportFinancialMetrics/ReportFinancialMetrics";
+import { ReportMetrics } from "./ui/ReportMetrics/ReportMetrics";
+import { ReportOrders } from "./ui/ReportOrders/ReportOrders";
 import { StatusDistribution } from "./ui/StatusDistribution/StatusDistribution";
 import { StockDistribution } from "./ui/StockDistribution/StockDistribution";
 import { TrafficChart } from "./ui/TrafficChart/TrafficChart";
-import { ReportFinancialMetrics } from "./ui/ReportFinancialMetrics/ReportFinancialMetrics";
-import { ReportMetrics } from "./ui/ReportMetrics/ReportMetrics";
-import { ReportFiltersPanel } from "./ui/ReportFiltersPanel/ReportFiltersPanel";
-import { ReportOrders } from "./ui/ReportOrders/ReportOrders";
+
 import styles from "./shared.module.css";
+
+function isInRange(day: string, range: ReportRange | null) {
+	return !range || (day >= range.from && day <= range.to);
+}
+
+function scrollBehavior(): ScrollBehavior {
+	return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		? "auto"
+		: "smooth";
+}
 
 export function WarehouseInformation() {
 	const { warehouse } = useWarehouseScreen(warehouseResources);
@@ -27,7 +44,7 @@ export function WarehouseInformation() {
 		period,
 		selectedRange,
 		orderLimit,
-		valid,
+		isValid,
 		update,
 		setPeriod,
 		selectRange,
@@ -37,49 +54,56 @@ export function WarehouseInformation() {
 	const report = buildReport(warehouse, filters);
 	const statusReport = buildReport(warehouse, { ...filters, status: "all" });
 	const previous =
-		valid && filters.compare
+		isValid && filters.compare
 			? buildReport(warehouse, previousPeriod(filters))
 			: null;
+	const detailOrders = report.orders
+		.filter((order) =>
+			isInRange(warehouseDay(order.created, warehouse.timezone), selectedRange),
+		)
+		.sort((a, b) => b.created.localeCompare(a.created));
+	const chartKey = [
+		filters.from,
+		filters.to,
+		filters.kind,
+		filters.status,
+		filters.category,
+	].join(":");
 
-	function selectTraffic(from: string, to: string) {
+	function handleTrafficSelect(from: string, to: string) {
 		selectRange(from, to);
 		requestAnimationFrame(() => {
 			operations.current?.focus({ preventScroll: true });
 			operations.current?.scrollIntoView({
 				block: "start",
-				behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-					? "auto"
-					: "smooth",
+				behavior: scrollBehavior(),
 			});
 		});
 	}
-	const detailOrders = report.orders
-		.filter((order) => {
-			const day = warehouseDay(order.created, warehouse.timezone);
-			return (
-				!selectedRange || (day >= selectedRange.from && day <= selectedRange.to)
-			);
-		})
-		.sort((a, b) => b.created.localeCompare(a.created));
 
-	function download() {
+	function handleStatusSelect(status: string) {
+		update("status", filters.status === status ? "all" : status);
+	}
+
+	function handleCategorySelect(category: string) {
+		update("category", category);
+	}
+
+	function handleDownload() {
 		const file = new Blob([reportCsv(warehouse, filters)], {
 			type: "text/csv;charset=utf-8",
 		});
-		const filename = `gridly-${warehouse.id}-${filters.from}-${filters.to}.csv`;
 
-		saveFile(file, filename);
+		saveFile(file, `gridly-${warehouse.id}-${filters.from}-${filters.to}.csv`);
 	}
 
 	return (
 		<ScrollArea className={styles.pageScroll}>
 			<section className={styles.dashboard} data-information-dashboard="">
 				<header className={styles.pageHeader}>
-					<div>
-						<h2>{warehouse.name}</h2>
-					</div>
+					<h2>{warehouse.name}</h2>
 					<div className={styles.headerActions}>
-						<Button onClick={download} disabled={!valid}>
+						<Button onClick={handleDownload} disabled={!isValid}>
 							Выгрузить CSV
 						</Button>
 					</div>
@@ -89,36 +113,32 @@ export function WarehouseInformation() {
 					categories={warehouse.categories}
 					orders={warehouse.orders}
 					period={period}
-					setPeriod={setPeriod}
+					onPeriodChange={setPeriod}
 					onChange={update}
 				/>
-				{!valid ? (
-					<ErrorNotice message="Укажите корректный период: начало не позже окончания." />
-				) : (
+				{isValid ? (
 					<>
 						<ReportMetrics report={report} previous={previous} />
 						<TrafficChart
-							key={`${filters.from}:${filters.to}:${filters.kind}:${filters.status}:${filters.category}`}
+							key={chartKey}
 							report={report}
 							previous={previous}
 							filters={filters}
 							timezone={warehouse.timezone}
-							onSelect={selectTraffic}
+							onSelect={handleTrafficSelect}
 						/>
 						<div className={styles.chartGrid}>
 							<StatusDistribution
 								report={statusReport}
 								status={filters.status}
-								onSelect={(status) =>
-									update("status", filters.status === status ? "all" : status)
-								}
+								onSelect={handleStatusSelect}
 							/>
 							<StockDistribution report={report} />
 						</div>
 						<CategoryDistribution
 							warehouse={warehouse}
 							category={filters.category}
-							onSelect={(category) => update("category", category)}
+							onSelect={handleCategorySelect}
 						/>
 						<ReportFinancialMetrics
 							report={report}
@@ -136,6 +156,8 @@ export function WarehouseInformation() {
 							onLoadMore={loadMoreOrders}
 						/>
 					</>
+				) : (
+					<ErrorNotice message="Укажите корректный период: начало не позже окончания." />
 				)}
 			</section>
 		</ScrollArea>

@@ -1,33 +1,89 @@
 import { useId } from "react";
+
 import { statusLabels, type WarehouseView } from "@/domain/warehouse";
 import { Checkbox } from "@/shared/ui/controls";
 import { Badge } from "@/shared/ui/dataDisplay";
 import { DateRangeFields, Field, Label, Select } from "@/shared/ui/forms";
 import { SegmentedControl } from "@/shared/ui/navigation";
+
 import type { ReportFilters } from "../../model/reportPeriod";
+import type { ReportPeriod } from "../../model/useReportFilters";
+
 import styles from "./ReportFiltersPanel.module.css";
 
-interface ReportFiltersPanelProps {
-	filters: ReportFilters;
-	categories: WarehouseView<"catalog">["categories"];
-	orders: WarehouseView<"orders">["orders"];
-	period: string;
-	setPeriod: (days: number | "all") => void;
-	onChange: <K extends keyof ReportFilters>(
-		key: K,
-		value: ReportFilters[K],
-	) => void;
-}
+const periodItems = [
+	{ value: "7", label: "7 дней" },
+	{ value: "30", label: "30 дней" },
+	{ value: "90", label: "90 дней" },
+	{ value: "all", label: "Весь период" },
+];
+const kindItems = [
+	{ value: "all", label: "Все" },
+	{ value: "inbound", label: "Поставки" },
+	{ value: "outbound", label: "Отгрузки" },
+];
 
 export function ReportFiltersPanel({
 	filters,
 	categories,
 	orders,
 	period,
-	setPeriod,
+	onPeriodChange,
 	onChange,
-}: ReportFiltersPanelProps) {
+}: {
+	filters: ReportFilters;
+	categories: WarehouseView<"catalog">["categories"];
+	orders: WarehouseView<"orders">["orders"];
+	period: string;
+	onPeriodChange: (days: ReportPeriod) => void;
+	onChange: <K extends keyof ReportFilters>(
+		key: K,
+		value: ReportFilters[K],
+	) => void;
+}) {
 	const compareId = useId();
+	const categoryOptions = [
+		{ value: "all", label: "Все категории" },
+		...categories.map((category) => ({
+			value: category.id,
+			label: category.name,
+		})),
+	];
+	const statusOptions = [
+		{ value: "all", label: "Все статусы" },
+		...[...new Set(orders.map((order) => order.status))].map((status) => ({
+			value: status,
+			label: statusLabels[status] ?? status,
+		})),
+	];
+
+	function handlePeriodChange(value: string) {
+		onPeriodChange(value === "all" ? "all" : Number(value));
+	}
+
+	function handleKindChange(kind: string) {
+		onChange("kind", kind);
+	}
+
+	function handleCategoryChange(category: string) {
+		onChange("category", category);
+	}
+
+	function handleFromChange(from: string) {
+		onChange("from", from);
+	}
+
+	function handleToChange(to: string) {
+		onChange("to", to);
+	}
+
+	function handleStatusChange(status: string) {
+		onChange("status", status);
+	}
+
+	function handleCompareChange(compare: boolean) {
+		onChange("compare", compare);
+	}
 
 	return (
 		<section className={styles.filterPanel} aria-label="Фильтры аналитики">
@@ -35,37 +91,20 @@ export function ReportFiltersPanel({
 				<SegmentedControl
 					aria-label="Быстрый выбор периода"
 					value={period}
-					onValueChange={(value) =>
-						setPeriod(value === "all" ? "all" : Number(value))
-					}
-					items={[
-						{ value: "7", label: "7 дней" },
-						{ value: "30", label: "30 дней" },
-						{ value: "90", label: "90 дней" },
-						{ value: "all", label: "Весь период" },
-					]}
+					onValueChange={handlePeriodChange}
+					items={periodItems}
 				/>
 				<SegmentedControl
 					aria-label="Направление отчёта"
 					value={filters.kind}
-					onValueChange={(kind) => onChange("kind", kind)}
-					items={[
-						{ value: "all", label: "Все" },
-						{ value: "inbound", label: "Поставки" },
-						{ value: "outbound", label: "Отгрузки" },
-					]}
+					onValueChange={handleKindChange}
+					items={kindItems}
 				/>
 				<Select
 					aria-label="Категория отчёта"
 					value={filters.category}
-					onValueChange={(value) => onChange("category", value)}
-					options={[
-						{ value: "all", label: "Все категории" },
-						...categories.map((category) => ({
-							value: category.id,
-							label: category.name,
-						})),
-					]}
+					onValueChange={handleCategoryChange}
+					options={categoryOptions}
 				/>
 			</div>
 			<details className={styles.advancedFilters}>
@@ -79,30 +118,22 @@ export function ReportFiltersPanel({
 					<DateRangeFields
 						from={filters.from}
 						to={filters.to}
-						onFromChange={(value) => onChange("from", value)}
-						onToChange={(value) => onChange("to", value)}
+						onFromChange={handleFromChange}
+						onToChange={handleToChange}
 					/>
 					<Field label="Статус">
 						<Select
 							aria-label="Статус операций"
 							value={filters.status}
-							onValueChange={(value) => onChange("status", value)}
-							options={[
-								{ value: "all", label: "Все статусы" },
-								...Array.from(new Set(orders.map((order) => order.status))).map(
-									(status) => ({
-										value: status,
-										label: statusLabels[status] ?? status,
-									}),
-								),
-							]}
+							onValueChange={handleStatusChange}
+							options={statusOptions}
 						/>
 					</Field>
 					<Label htmlFor={compareId} className={styles.compare}>
 						<Checkbox
 							id={compareId}
 							checked={filters.compare}
-							onCheckedChange={(value) => onChange("compare", value)}
+							onCheckedChange={handleCompareChange}
 						/>
 						Сравнить с предыдущим периодом
 					</Label>
