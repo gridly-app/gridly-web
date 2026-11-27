@@ -21,7 +21,7 @@ async function renderSharing(canIssueLink: boolean) {
 				revokeLink={notCalled}
 				retryLink={notCalled}
 				run={notCalled}
-				busy={false}
+				isBusy={false}
 				attempt={null}
 			/>
 		</MemoryRouter>,

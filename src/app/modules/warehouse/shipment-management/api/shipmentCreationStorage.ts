@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { KeyValueStorage } from "@/shared/lib";
 
 const shipmentCreationSchema = z.object({
@@ -23,11 +24,9 @@ export function readShipmentCreation(
 	if (!saved) return null;
 
 	const attempt = shipmentCreationSchema.parse(JSON.parse(saved));
+	const status = attempt.status === "sending" ? "unknown" : attempt.status;
 
-	return {
-		...attempt,
-		status: attempt.status === "sending" ? "unknown" : attempt.status,
-	};
+	return { ...attempt, status };
 }
 
 export function storeShipmentCreation(
@@ -36,6 +35,7 @@ export function storeShipmentCreation(
 	attempt: ShipmentCreation | null,
 ) {
 	if (!key) return;
+
 	if (!attempt) {
 		storage.removeItem(key);
 

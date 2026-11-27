@@ -184,7 +184,7 @@ function ManagementContent({
 				issueLink={resource.issueLink}
 				revokeLink={resource.revokeLink}
 				run={run}
-				busy={!canWrite}
+				isBusy={!canWrite}
 				attempt={resource.creation}
 				retryLink={resource.retryLink}
 			/>

@@ -5,9 +5,14 @@ import { availableStorage, UserError } from "@/shared/lib";
 
 import {
 	readShipmentCreation,
-	storeShipmentCreation,
 	type ShipmentCreation,
+	storeShipmentCreation,
 } from "./shipmentCreationStorage";
+
+const replayErrors = {
+	"secret-expired": "Ссылка создана, но её URL больше недоступен.",
+	mismatch: "Сервер не принял ключ повтора для этого выпуска.",
+} as const;
 
 export function useShipmentCreation(
 	queryKey: readonly string[],
@@ -30,11 +35,47 @@ export function useShipmentCreation(
 		initialData: () => readShipmentCreation(storage, storageKey),
 		gcTime: Infinity,
 	});
+
+	function getAttempt() {
+		return client.getQueryData<ShipmentCreation | null>(creationKey);
+	}
+
 	function setCreation(attempt: ShipmentCreation | null) {
 		storeShipmentCreation(storage, storageKey, attempt);
 		client.setQueryData(creationKey, attempt);
 
 		if (!attempt) client.setQueryData(uploadKey, null);
+	}
+
+	async function settleFailedAttempt(
+		attempt: ShipmentCreation,
+		error: unknown,
+		isRetry: boolean,
+	) {
+		const outcome =
+			attempt.kind === "link" ? guestLinkReplayOutcome(error) : undefined;
+
+		if (outcome?.status === "revoked") {
+			setCreation(null);
+			await refreshAfterRevocation();
+
+			throw new UserError("Ссылка уже отозвана.");
+		}
+
+		if (
+			outcome?.status === "secret-expired" ||
+			outcome?.status === "mismatch"
+		) {
+			setCreation({ ...attempt, ...outcome });
+
+			throw new UserError(replayErrors[outcome.status]);
+		}
+
+		const isRefused = isRefusedCreation(error);
+
+		setCreation(
+			isRefused && !isRetry ? null : { ...attempt, status: "unknown" },
+		);
 	}
 
 	async function create<T>(
@@ -45,7 +86,7 @@ export function useShipmentCreation(
 			retry,
 		}: { expiresAt?: string; retry?: ShipmentCreation | undefined },
 	) {
-		const previous = client.getQueryData<ShipmentCreation | null>(creationKey);
+		const previous = getAttempt();
 
 		if (previous !== undefined && previous !== (retry ?? null)) {
 			throw new UserError("Сначала завершите предыдущую операцию.");
@@ -64,53 +105,21 @@ export function useShipmentCreation(
 		try {
 			const result = await write(attempt.key);
 
-			if (
-				client.getQueryData<ShipmentCreation>(creationKey)?.key === attempt.key
-			)
-				setCreation(null);
+			if (getAttempt()?.key === attempt.key) setCreation(null);
 
 			return result;
 		} catch (error) {
-			if (
-				client.getQueryData<ShipmentCreation>(creationKey)?.key !== attempt.key
-			)
-				throw error;
+			if (getAttempt()?.key === attempt.key)
+				await settleFailedAttempt(attempt, error, Boolean(retry));
 
-			const outcome =
-				kind === "link" ? guestLinkReplayOutcome(error) : undefined;
-			const replayStatus = outcome?.status;
-
-			if (replayStatus === "revoked") {
-				setCreation(null);
-				await refreshAfterRevocation();
-
-				throw new UserError("Ссылка уже отозвана.");
-			}
-
-			if (replayStatus === "secret-expired" || replayStatus === "mismatch") {
-				const message =
-					replayStatus === "secret-expired"
-						? "Ссылка создана, но её URL больше недоступен."
-						: "Сервер не принял ключ повтора для этого выпуска.";
-
-				setCreation({ ...attempt, ...outcome });
-
-				throw new UserError(message);
-			}
-
-			const isRefused = isRefusedCreation(error);
-
-			setCreation(
-				isRefused && !retry ? null : { ...attempt, status: "unknown" },
-			);
 			throw error;
 		}
 	}
 
 	return {
 		attempt: creation.data,
-		hasUploadFile: !!savedUpload.data,
-		getAttempt: () => client.getQueryData<ShipmentCreation | null>(creationKey),
+		hasUploadFile: Boolean(savedUpload.data),
+		getAttempt,
 		getUpload: () => client.getQueryData<FormData | null>(uploadKey),
 		rememberUpload: (body: FormData) => client.setQueryData(uploadKey, body),
 		clear: () => setCreation(null),

@@ -7,6 +7,22 @@ import type { WorkingShipment } from "./shipment.dto";
 import type { ShipmentCreation } from "./shipmentCreationStorage";
 import type { ShipmentCreationAccess } from "./useShipmentCreation";
 
+type ShipmentUpdate = (
+	current: WorkingShipment | undefined,
+) => WorkingShipment | undefined;
+
+export function canReplayLink(
+	attempt: ShipmentCreation | null | undefined,
+): attempt is ShipmentCreation & { expiresAt: string } {
+	return (
+		attempt?.kind === "link" &&
+		attempt.status === "unknown" &&
+		Boolean(attempt.expiresAt) &&
+		environment.adminGuestLinkReplay &&
+		isReplayAvailable(attempt.startedAt)
+	);
+}
+
 export function shipmentSharing({
 	http,
 	path,
@@ -20,11 +36,21 @@ export function shipmentSharing({
 	rereadShipment: () => Promise<WorkingShipment | undefined>;
 	applyConfirmedUpdate: (
 		signal: AbortSignal,
-		update: (
-			current: WorkingShipment | undefined,
-		) => WorkingShipment | undefined,
+		update: ShipmentUpdate,
 	) => Promise<void>;
 }) {
+	async function sendLink(expiresAt: string, signal: AbortSignal, key: string) {
+		const response = await http.request(`${path}/share-link`, {
+			method: "POST",
+			body: { expires_at: expiresAt },
+			idempotencyKey: key,
+			privacy: true,
+			signal,
+		});
+
+		return parseResponse(issuedLinkSchema, response);
+	}
+
 	async function issueLink(
 		expiresAt: string,
 		signal: AbortSignal,
@@ -32,59 +58,53 @@ export function shipmentSharing({
 	) {
 		const link = await creation.create(
 			"link",
-			async (key) => {
-				const response = await http.request(`${path}/share-link`, {
-					method: "POST",
-					body: { expires_at: expiresAt },
-					idempotencyKey: key,
-					privacy: true,
-					signal,
-				});
-
-				return parseResponse(issuedLinkSchema, response);
-			},
+			(key) => sendLink(expiresAt, signal, key),
 			{ expiresAt, retry },
 		);
+		const shareLink = {
+			id: link.id,
+			expires_at: link.expires_at,
+			origin: "operator",
+		} as const;
 
 		await applyConfirmedUpdate(
 			signal,
-			(current) =>
-				current && {
-					...current,
-					share_link: {
-						id: link.id,
-						expires_at: link.expires_at,
-						origin: "operator",
-					},
-				},
+			(current) => current && { ...current, share_link: shareLink },
 		);
 
 		return link;
 	}
 
+	async function ensureCurrentLink(
+		attempt: ShipmentCreation,
+		signal: AbortSignal,
+	) {
+		const latest = await rereadShipment();
+
+		signal.throwIfAborted();
+
+		const currentLink = latest?.share_link;
+		const isAnotherLink =
+			currentLink?.id !== undefined && currentLink.id !== attempt.linkId;
+
+		if (currentLink && !isAnotherLink) return;
+
+		creation.clear();
+
+		throw new UserError(
+			"Ссылка этой попытки больше не является текущей. Обновите данные.",
+		);
+	}
+
 	async function revokeLink(signal: AbortSignal) {
 		const attempt = creation.getAttempt();
+		const isExpiredAttempt = attempt?.status === "secret-expired";
 
-		if (attempt?.status === "secret-expired") {
-			const latest = await rereadShipment();
-			signal.throwIfAborted();
-
-			const currentLink = latest?.share_link;
-			const isAnotherLink =
-				currentLink?.id !== undefined && currentLink.id !== attempt.linkId;
-
-			if (!currentLink || isAnotherLink) {
-				creation.clear();
-
-				throw new UserError(
-					"Ссылка этой попытки больше не является текущей. Обновите данные.",
-				);
-			}
-		}
+		if (isExpiredAttempt) await ensureCurrentLink(attempt, signal);
 
 		await http.request(`${path}/share-link`, { method: "DELETE", signal });
 
-		if (attempt?.status === "secret-expired") creation.clear();
+		if (isExpiredAttempt) creation.clear();
 
 		await applyConfirmedUpdate(
 			signal,
@@ -95,15 +115,8 @@ export function shipmentSharing({
 	async function retryLink(signal: AbortSignal) {
 		const attempt = creation.getAttempt();
 
-		if (
-			attempt?.kind !== "link" ||
-			attempt.status !== "unknown" ||
-			!attempt.expiresAt ||
-			!environment.adminGuestLinkReplay ||
-			!isReplayAvailable(attempt.startedAt)
-		) {
+		if (!canReplayLink(attempt))
 			throw new UserError("Безопасный повтор выпуска ссылки недоступен.");
-		}
 
 		return issueLink(attempt.expiresAt, signal, attempt);
 	}

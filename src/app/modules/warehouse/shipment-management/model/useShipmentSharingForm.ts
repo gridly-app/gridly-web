@@ -7,11 +7,28 @@ import {
 
 import { parseUtcDateTimeInput, toUtcDateTimeInput } from "@/shared/lib";
 
-import type { ShipmentResource } from "../api/useShipmentResource";
 import type { WorkingShipment } from "../api/shipment.dto";
+import type { ShipmentResource } from "../api/useShipmentResource";
 import type { RunShipmentAction } from "./useShipmentActions";
 
-const defaultLinkLifetimeMs = 7 * 86_400_000;
+const dayMs = 86_400_000;
+const defaultLinkLifetimeMs = 7 * dayMs;
+
+type IssuedLink = { id?: string | undefined; url: string; expires_at: string };
+
+function visibleLinkUrl(
+	issued: IssuedLink | null,
+	shareLink: WorkingShipment["share_link"],
+) {
+	if (!issued || !shareLink) return "";
+
+	const expiresAt = Date.parse(issued.expires_at);
+	const isSameLink = !issued.id || issued.id === shareLink.id;
+	const isSameExpiry = expiresAt === Date.parse(shareLink.expires_at);
+	const isActive = expiresAt > Date.now();
+
+	return isSameLink && isSameExpiry && isActive ? issued.url : "";
+}
 
 export function useShipmentSharingForm({
 	shareLink,
@@ -29,55 +46,38 @@ export function useShipmentSharingForm({
 	const [expiry, setExpiry] = useState(() =>
 		toUtcDateTimeInput(Date.now() + defaultLinkLifetimeMs),
 	);
-	const [issued, setIssued] = useState<{
-		id?: string | undefined;
-		url: string;
-		expires_at: string;
-	} | null>(null);
-	const url =
-		issued &&
-		shareLink &&
-		(!issued.id || issued.id === shareLink.id) &&
-		Date.parse(issued.expires_at) === Date.parse(shareLink.expires_at) &&
-		Date.parse(issued.expires_at) > Date.now()
-			? issued.url
-			: "";
+	const [issued, setIssued] = useState<IssuedLink | null>(null);
 	const [message, setMessage] = useState("");
-	const [confirm, setConfirm] = useState<"issue" | "revoke" | null>(null);
+	const [confirmation, setConfirmation] = useState<"issue" | "revoke" | null>(
+		null,
+	);
+	const url = visibleLinkUrl(issued, shareLink);
 
 	function handleIssue() {
 		const expiresAt = parseUtcDateTimeInput(expiry);
 
 		if (!expiresAt || Date.parse(expiresAt) <= Date.now()) {
 			setMessage("Выберите срок действия в будущем.");
+
 			return;
 		}
 
-		setConfirm(null);
+		setConfirmation(null);
 		setMessage("");
 
-		void run(
-			async (signal) => {
-				const result = await issueLink(expiresAt, signal);
-
-				setIssued(result);
-			},
-			{ refreshAfterWrite: true },
-		);
+		void run(async (signal) => setIssued(await issueLink(expiresAt, signal)), {
+			refreshAfterWrite: true,
+		});
 	}
 
 	function handleRetry() {
-		void run(
-			async (signal) => {
-				const result = await retryLink(signal);
-				setIssued(result);
-			},
-			{ refreshAfterWrite: true },
-		);
+		void run(async (signal) => setIssued(await retryLink(signal)), {
+			refreshAfterWrite: true,
+		});
 	}
 
 	function handleRevoke() {
-		setConfirm(null);
+		setConfirmation(null);
 		setMessage("");
 
 		void run(
@@ -102,7 +102,7 @@ export function useShipmentSharingForm({
 		event.preventDefault();
 
 		if (shareLink) {
-			setConfirm("issue");
+			setConfirmation("issue");
 
 			return;
 		}
@@ -115,11 +115,11 @@ export function useShipmentSharingForm({
 	}
 
 	function handleRequestRevoke() {
-		setConfirm("revoke");
+		setConfirmation("revoke");
 	}
 
 	function handleCloseConfirmation() {
-		setConfirm(null);
+		setConfirmation(null);
 	}
 
 	function handleLinkFocus(event: FocusEvent<HTMLInputElement>) {
@@ -130,7 +130,7 @@ export function useShipmentSharingForm({
 		expiry,
 		url,
 		message,
-		confirm,
+		confirmation,
 		handleRetry,
 		handleCopyLink,
 		handleSubmit,
@@ -138,6 +138,6 @@ export function useShipmentSharingForm({
 		handleRequestRevoke,
 		handleCloseConfirmation,
 		handleLinkFocus,
-		handleConfirm: confirm === "revoke" ? handleRevoke : handleIssue,
+		handleConfirm: confirmation === "revoke" ? handleRevoke : handleIssue,
 	};
 }
